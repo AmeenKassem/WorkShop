@@ -1,4 +1,4 @@
-package workshop.demo.ApplicationLayer.StoreService;
+package workshop.demo.ApplicationLayer;
 
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 

@@ -1,5 +1,7 @@
-package workshop.demo.ApplicationLayer.AuthenticationService;
+package workshop.demo.ApplicationLayer;
 
 public class AuthenticationService {
 
+    
+    
 }

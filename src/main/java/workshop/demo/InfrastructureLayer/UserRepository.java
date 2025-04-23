@@ -1,5 +1,7 @@
 package workshop.demo.InfrastructureLayer;
 
-public class UserRepository {
+import workshop.demo.DomainLayer.User.IUserRepo;
+
+public class UserRepository implements IUserRepo {
 
 }

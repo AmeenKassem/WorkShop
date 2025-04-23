@@ -1,5 +1,7 @@
 package workshop.demo.InfrastructureLayer;
 
-public class StockRepository {
+import workshop.demo.DomainLayer.Stock.IStockRepo;
+
+public class StockRepository implements IStockRepo {
 
 }
