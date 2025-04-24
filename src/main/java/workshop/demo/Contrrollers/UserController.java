@@ -21,8 +21,6 @@ public class UserController {
 
     @PostMapping("/reg/{user}")
     public String register(@PathVariable String user){
-        
-        
         return "done";
     }
 
