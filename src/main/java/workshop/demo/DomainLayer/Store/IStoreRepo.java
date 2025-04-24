@@ -8,11 +8,15 @@ public interface IStoreRepo {
     //boss is the main owner/root of the tree
 
     public void addStoreToSystem(int bossID, String storeName, String Category);
+
     //stock managment->
+    public void checkOwnershipToStore(int storeID, int ownerID, int newOwnerId) throws Exception;
 
-    public boolean AddOwnershipToStore(int storeID, int ownerID, int newOwnerId);
+    public Store findStoreByID(int Id);
 
-    public boolean DeleteOwnershipFromStore(int storeID, int ownerID, int OwnerToDelete);
+    public void AddOwnershipToStore(int storeID, int ownerID, int newOwnerId) throws Exception;
+
+    public void DeleteOwnershipFromStore(int storeID, int ownerID, int OwnerToDelete) throws Exception;
 
     public boolean AddManagerToStore(int storeID, int ownerId, int mangerId);
 

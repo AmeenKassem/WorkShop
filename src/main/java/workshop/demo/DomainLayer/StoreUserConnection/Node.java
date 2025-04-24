@@ -15,7 +15,7 @@ public class Node {
 
     public Node(int myId, boolean isManager, int parentId) {
         this.myId = myId;
-        if (!isManager) {
+        if (isManager) {
             this.myAuth = new Authorization();
         } else {
             this.myAuth = null;
@@ -48,7 +48,7 @@ public class Node {
     }
 
     public void addAuthrization(List<Permission> toAdd, int parentId) throws Exception {
-        if (!isManager) {
+        if (!isManager || myAuth == null) {
             throw new Exception("the owner is fully authorized, can't manipulate the aothrization!");
         }
         if (this.parentId != parentId) {
@@ -58,8 +58,8 @@ public class Node {
 
     }
 
-    public void updateAuthrization(List<Permission> toAdd, int parentId) throws Exception {
-        if (!isManager) {
+    public void updateAuthorization(List<Permission> toAdd, int parentId) throws Exception {
+        if (!isManager || myAuth == null) {
             throw new Exception("the owner is fully authorized, can't manipulate the aothrization!");
         }
         if (this.parentId != parentId) {
@@ -116,6 +116,10 @@ public class Node {
 
     public boolean getIsManager() {
         return isManager;
+    }
+
+    public Authorization getMyAuth() {
+        return myAuth;
     }
 
 }

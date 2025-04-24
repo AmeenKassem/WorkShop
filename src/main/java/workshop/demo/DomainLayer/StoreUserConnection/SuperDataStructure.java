@@ -17,12 +17,10 @@ public class SuperDataStructure {
     }
 
     public boolean checkAddNewOwner(int storeID, int ownerId, int newOnwerId) throws Exception {
-        //also MUST CHECK if its a registed user in the service layer using User repo
-        Tree currentWorkes = employees.get(storeID);
-        if (!currentWorkes.isRootById(ownerId)) {
-            throw new Exception("this is not the owner of this store!");
+        if (this.employees.get(storeID).getNodeById(ownerId) == null) {
+            throw new Exception("can't manupulate ownership: this is not the owner of this store!");
         }
-        Node child = currentWorkes.getRoot().getChild(newOnwerId);
+        Node child = employees.get(storeID).getNodeById(newOnwerId);
         if (child != null && !child.getIsManager()) {
             throw new Exception("this worker is already an owner");
         }
@@ -35,11 +33,31 @@ public class SuperDataStructure {
 
     }
 
+    public void DeleteOwnershipFromStore(int storeID, int ownerID, int OwnerToDelete) throws Exception {
+        Node toDelete = this.employees.get(storeID).getNodeById(OwnerToDelete);
+        if (this.employees.get(storeID).getNodeById(ownerID) == null) {
+            throw new Exception("this owner does not own this store:");
+        }
+        if (toDelete == null) {
+            throw new Exception("can't delete this owner: does not own this store");
+        }
+        if (toDelete.getParentId() != ownerID) {
+            throw new Exception(String.format("this owner: %d does own the ownership of: %d ", ownerID, OwnerToDelete));
+        }
+        this.employees.get(storeID).deleteNode(OwnerToDelete);
+
+    }
+
     public void addNewManager(int storeID, int ownerId, int newManagerId) {
 
     }
 
     public void addAuthoToManager(int storeID, int ownerID, int managerId, List<Permission> per) {
 
+    }
+
+    //for tests:
+    public Map<Integer, Tree> getEmployees() {
+        return employees;
     }
 }
