@@ -23,11 +23,11 @@ public class UserController {
     public String register(@PathVariable String user){
         
         
-        return auth.generateToken(user);
+        return "done";
     }
 
     @PostMapping("/log/{token}")
     public String login(@PathVariable String token){
-        return auth.extractUsername(token);
+        return "done";
     }
 }
