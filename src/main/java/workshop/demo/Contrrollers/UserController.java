@@ -21,13 +21,13 @@ public class UserController {
 
     @PostMapping("/reg")
     public String register(@PathVariable String user){
-        
-        
+
         return "done";
     }
 
     @PostMapping("/log")
     public String login(@PathVariable String token){
         return "done";
-        }
+
+    }
 }
