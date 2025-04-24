@@ -19,15 +19,15 @@ public class UserController {
         auth = repos.auth;
     }
 
-    @PostMapping("/reg/{user}")
+    @PostMapping("/reg")
     public String register(@PathVariable String user){
         
         
-        return auth.generateToken(user);
+        return "done";
     }
 
-    @PostMapping("/log/{token}")
+    @PostMapping("/log")
     public String login(@PathVariable String token){
-        return auth.extractUsername(token);
-    }
+        return "done";
+        }
 }
