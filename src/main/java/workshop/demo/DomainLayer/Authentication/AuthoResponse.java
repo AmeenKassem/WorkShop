@@ -2,15 +2,12 @@ package workshop.demo.DomainLayer.Authentication;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class AuthoResponse {
+public class AuthoResponse  {
 
     public String userName;
     public int id;
 
-    public boolean isRegisterd() {
-        return userName != null;
-    }
-
+   
     public AuthoResponse(String userName,int id) {
         this.userName = userName;
         this.id=id;
@@ -36,6 +33,7 @@ public class AuthoResponse {
             this.userName = parsed.userName;
             this.id = parsed.id;
         } catch (Exception e) {
+            System.out.println(e.toString());
             throw new RuntimeException("Failed to parse from JSON", e);
         }
     }

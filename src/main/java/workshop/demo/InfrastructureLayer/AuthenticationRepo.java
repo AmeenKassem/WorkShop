@@ -2,6 +2,8 @@ package workshop.demo.InfrastructureLayer;
 
 import java.util.Date;
 
+import javax.crypto.SecretKey;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -11,7 +13,7 @@ import workshop.demo.DomainLayer.Exceptions.TokenNotFoundException;
 public class AuthenticationRepo  implements IAuthRepo {
     
 
-    private final String SECRET = "secret_key_123"; // Use env/config in real apps
+    private  SecretKey SECRET =Keys.secretKeyFor(SignatureAlgorithm.HS256); // Use env/config in real apps
     private final long EXPIRATION_MS = 1000 * 60 * 60; // 1 hour
 
     private String generateToken(String tokenValue) {
@@ -19,14 +21,14 @@ public class AuthenticationRepo  implements IAuthRepo {
                 .setSubject(tokenValue)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
-                .signWith(Keys.hmacShaKeyFor(SECRET.getBytes()), SignatureAlgorithm.HS256)
+                .signWith(SECRET)
                 .compact();
     }
 
     private String extractTokenValue(String token) {
 
         return Jwts.parserBuilder()
-                .setSigningKey(SECRET.getBytes())
+                .setSigningKey(SECRET)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
@@ -36,7 +38,7 @@ public class AuthenticationRepo  implements IAuthRepo {
     private boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
-                .setSigningKey(SECRET.getBytes())
+                .setSigningKey(SECRET)
                 .build()
                 .parseClaimsJws(token);
             return true;
@@ -65,12 +67,13 @@ public class AuthenticationRepo  implements IAuthRepo {
     public boolean isRegistered(String token) {
         if(!validateToken(token))
             throw new TokenNotFoundException();
-        return new AuthoResponse(extractTokenValue(token)  ).isRegisterd();
+        return new AuthoResponse(extractTokenValue(token)  ).userName!=null;
     }
 
     @Override
     public String generateGuestToken(int id) {
         AuthoResponse req = new AuthoResponse(null,id);
+        System.out.println(req.toJson());
         return generateToken(req.toJson());
     }
 
@@ -78,6 +81,14 @@ public class AuthenticationRepo  implements IAuthRepo {
     public String generateUserToken(int id, String username) {
         AuthoResponse req = new AuthoResponse(username,id);
         return generateToken(req.toJson());
+    }
+
+    public static void main(String[] args){
+        AuthenticationRepo a = new AuthenticationRepo();
+        String  token = a.generateGuestToken(5);
+        System.out.println(a.getUserId(token));
+        System.out.println(a.getUserName(token));
+        System.out.println(a.isRegistered(token));
     }
     
 }
