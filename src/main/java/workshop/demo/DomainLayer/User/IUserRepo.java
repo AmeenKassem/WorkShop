@@ -2,10 +2,6 @@ package workshop.demo.DomainLayer.User;
 
 public interface IUserRepo {
 
-    public int getUserId(String token);
-
-    public boolean isRegisterd(String token);
-
 
     /**
      * 
@@ -20,12 +16,7 @@ public interface IUserRepo {
 
 
 
-    /**
-     * this function will destroy the guest . Frontend must call this function onClose event.
-     * @param token
-     */
-    public void destroyGuest(String token);
-
+    
     /**
      * This must destroy the token of the logged user. and return new token for user .
      * @param token
@@ -50,5 +41,6 @@ public interface IUserRepo {
 
     
 
+    
 
 }
