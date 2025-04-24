@@ -28,9 +28,9 @@ public interface IStoreRepo {
 
     public void deleteManager(int storeId, int ownerId, int managerId) throws Exception;
 
-    public void deactivateStore(int storeId, int ownerId) throws Exception;
+    public List<Integer> deactivateStore(int storeId, int ownerId) throws Exception;
 
-    public void closeStore(int storeId, int ownerId) throws Exception;
+    public List<Integer> closeStore(int storeId) throws Exception;
 
     //another: getting info about the owners and manager->4.11
     //another: messages to response->4.12

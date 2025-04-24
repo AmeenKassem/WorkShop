@@ -115,7 +115,7 @@ public class StoreService {
             storeRepo.changePermissions(ownerId, managerId, storeID, autorization);
             logger.info("authorizations have been added/changed succsesfully!");
         } catch (Exception e) {
-            logger.error("failed to give permission:, ERROR:", e.getMessage());
+            logger.error("failed to give/change permission:, ERROR:", e.getMessage());
         }
     }
 
@@ -130,14 +130,32 @@ public class StoreService {
         }
     }
 
-    public boolean deactivateteStore(int storeId, int ownerId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deactivateStore'");
+    public void deactivateteStore(int storeId, int ownerId) {
+        try {
+            logger.info("trying to deactivate store: {} by: {}", storeId, ownerId);
+            List<Integer> toNotify = storeRepo.deactivateStore(storeId, ownerId);
+            //here must notifu all the workes into the store by notification repo
+            logger.info("the store has been deactivated succesfully!");
+            //here must notify all users using notifiaction Repo and this list
+            logger.info("about to notify all the employees");
+
+        } catch (Exception e) {
+            logger.error("cannot deactivate this store, Error: {}", e.getMessage());
+        }
     }
 
-    public boolean closeStore(int storeId, int ownerId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'closeStore'");
+    public void closeStore(int storeId, int adminId) {
+        try {
+            logger.info("trying to close store: {} by: {}", storeId, adminId);
+            //here must check with the user if the is the admin for sure
+            List<Integer> toNotify = storeRepo.closeStore(storeId);
+            logger.info("store removed succesfully!");
+            //here must notify all users using notifiaction Repo and this list
+            logger.info("about to notify all the employees");
+
+        } catch (Exception e) {
+            logger.error("cannot close this store, Error: {}", e.getMessage());
+        }
     }
 
 }

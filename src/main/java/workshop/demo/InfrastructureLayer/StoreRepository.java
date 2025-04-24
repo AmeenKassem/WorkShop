@@ -124,7 +124,7 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public void deactivateStore(int storeId, int ownerId) throws Exception {
+    public List<Integer> deactivateStore(int storeId, int ownerId) throws Exception {
         try {
             if (findStoreByID(storeId) == null) {
                 throw new Exception("can't deactivate store: store does not exist");
@@ -136,6 +136,7 @@ public class StoreRepository implements IStoreRepo {
                 throw new Exception("only the boss/main owner can deactivate the store");
             }
             findStoreByID(storeId).setActive(false);
+            return this.data.getWorkersInStore(storeId);
 
         } catch (Exception e) {
             throw e;
@@ -143,9 +144,21 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public void closeStore(int storeId, int ownerId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'closeStore'");
+    public List<Integer> closeStore(int storeId) throws Exception {
+        try {
+            if (findStoreByID(storeId) == null) {
+                throw new Exception("can't be closed store: store does not exist");
+            }
+            List<Integer> toNotify = this.data.getWorkersInStore(storeId);
+            stores.removeIf(store -> store.getStroeID() == storeId);
+            this.data.closeStore(storeId);
+            return toNotify;
+
+        } catch (Exception e) {
+            throw e;
+
+        }
+
     }
 
     @Override
@@ -168,5 +181,4 @@ public class StoreRepository implements IStoreRepo {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'viewAllStores'");
     }
-
 }

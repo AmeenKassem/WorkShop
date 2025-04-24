@@ -1,5 +1,6 @@
 package workshop.demo.DomainLayer.StoreUserConnection;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -87,6 +88,21 @@ public class SuperDataStructure {
         }
         return true;
 
+    }
+
+    public List<Integer> getWorkersInStore(int storeId) {
+        Tree workers = this.employees.get(storeId);
+        List<Integer> toReturn = new LinkedList<>();
+        toReturn.add(workers.getRoot().getMyId());
+        for (Node node : workers.getRoot().getChildren()) {
+            toReturn.add(node.getMyId());
+        }
+
+        return toReturn;
+    }
+
+    public void closeStore(int storeID) {
+        this.employees.remove(storeID);
     }
 
     //for tests:
