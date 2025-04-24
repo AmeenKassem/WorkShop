@@ -19,6 +19,7 @@ public class Authorization {
         }
     }
 
+    //might delete later
     public void addAuthorization(List<Permission> toAdd) {
         for (Permission permission : toAdd) {
             myAutho.put(permission, true);

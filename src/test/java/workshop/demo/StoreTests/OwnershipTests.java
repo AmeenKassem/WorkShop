@@ -62,7 +62,7 @@ public class OwnershipTests {
         int newOwnerId = 2;
 
         // Step 1: Check ownership preconditions
-        repository.checkOwnershipToStore(storeId, owner1, newOwnerId);
+        repository.checkToAdd(storeId, owner1, newOwnerId);
 
         // Step 2: Add ownership
         repository.AddOwnershipToStore(storeId, owner1, newOwnerId);
@@ -80,11 +80,11 @@ public class OwnershipTests {
         int owner3 = 3;
 
         // Owner1 adds Owner2
-        repository.checkOwnershipToStore(storeId, owner1, owner2);
+        repository.checkToAdd(storeId, owner1, owner2);
         repository.AddOwnershipToStore(storeId, owner1, owner2);
 
         // Owner2 adds Owner3
-        repository.checkOwnershipToStore(storeId, owner2, owner3);
+        repository.checkToAdd(storeId, owner2, owner3);
         repository.AddOwnershipToStore(storeId, owner2, owner3);
 
         // Assert that Owner2 and Owner3 were added successfully
@@ -98,10 +98,10 @@ public class OwnershipTests {
         int newOwnerId = 2;
 
         Exception exception = assertThrows(Exception.class, ()
-                -> repository.checkOwnershipToStore(nonExistentStoreId, owner1, newOwnerId)
+                -> repository.checkToAdd(nonExistentStoreId, owner1, newOwnerId)
         );
 
-        assertEquals("can't add new ownership: store does not exist", exception.getMessage());
+        assertEquals("can't add new ownership/managment: store does not exist", exception.getMessage());
     }
 
     @Test
@@ -110,10 +110,10 @@ public class OwnershipTests {
         int newOwnerId = 2;
 
         Exception exception = assertThrows(Exception.class, ()
-                -> repository.checkOwnershipToStore(storeId, notAnOwnerId, newOwnerId)
+                -> repository.checkToAdd(storeId, notAnOwnerId, newOwnerId)
         );
 
-        assertEquals("can't manupulate ownership: this is not the owner of this store!", exception.getMessage());
+        assertEquals("can't manupulate ownership/managment: this is not the owner of this store!", exception.getMessage());
     }
 
     @Test
@@ -121,15 +121,15 @@ public class OwnershipTests {
         int newOwnerId = 2;
 
         // First time should succeed
-        repository.checkOwnershipToStore(storeId, owner1, newOwnerId);
+        repository.checkToAdd(storeId, owner1, newOwnerId);
         repository.AddOwnershipToStore(storeId, owner1, newOwnerId);
 
         // Second time should fail: already an owner
         Exception exception = assertThrows(Exception.class, ()
-                -> repository.checkOwnershipToStore(storeId, owner1, newOwnerId)
+                -> repository.checkToAdd(storeId, owner1, newOwnerId)
         );
 
-        assertEquals("this worker is already an owner", exception.getMessage());
+        assertEquals("this worker is already an owner/manager", exception.getMessage());
     }
 
     //delete ownership-------------------------------------------------------------
@@ -140,15 +140,15 @@ public class OwnershipTests {
         int owner4 = 4;
 
         // Owner1 adds owner2
-        repository.checkOwnershipToStore(storeId, owner1, owner2);
+        repository.checkToAdd(storeId, owner1, owner2);
         repository.AddOwnershipToStore(storeId, owner1, owner2);
 
         // Owner2 adds owner3
-        repository.checkOwnershipToStore(storeId, owner2, owner3);
+        repository.checkToAdd(storeId, owner2, owner3);
         repository.AddOwnershipToStore(storeId, owner2, owner3);
 
         // Owner2 adds owner4
-        repository.checkOwnershipToStore(storeId, owner2, owner4);
+        repository.checkToAdd(storeId, owner2, owner4);
         repository.AddOwnershipToStore(storeId, owner2, owner4);
 
         // Ensure all nodes exist before deletion
@@ -183,11 +183,11 @@ public class OwnershipTests {
         int owner3 = 3;
 
         // Owner1 adds Owner2
-        repository.checkOwnershipToStore(storeId, owner1, owner2);
+        repository.checkToAdd(storeId, owner1, owner2);
         repository.AddOwnershipToStore(storeId, owner1, owner2);
 
         // Owner2 adds Owner3
-        repository.checkOwnershipToStore(storeId, owner2, owner3);
+        repository.checkToAdd(storeId, owner2, owner3);
         repository.AddOwnershipToStore(storeId, owner2, owner3);
 
         // Owner1 tries to delete Owner3 (who was added by Owner2)

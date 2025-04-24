@@ -45,7 +45,7 @@ public class StoreService {
             //must check if the bossID is regestired user -> UserRepo
             //check token
             logger.info("trying to add a new owner to the store");
-            storeRepo.checkOwnershipToStore(storeID, ownerID, newOwnerId);
+            storeRepo.checkToAdd(storeID, ownerID, newOwnerId);
             logger.info("we can add a new owner to the store");
             boolean answer = this.sendMessageToTakeApproval(ownerID, newOwnerId);
             if (answer) {
@@ -73,29 +73,66 @@ public class StoreService {
         }
     }
 
-    public boolean AddManagerToStore(int storeID, int ownerId, int mangerId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'AddManagerToStore'");
+    public void AddManagerToStore(int storeID, int ownerId, int managerId) throws Exception {
+        try {
+            //must check if the bossID is regestired user -> UserRepo
+            //must check if manager is a registered user
+            //check token
+            logger.info("trying to add manager: {} in store: {} by: {}", managerId, storeID, ownerId);
+            storeRepo.checkToAdd(storeID, ownerId, managerId);
+            logger.info("we can add a new owner to the store");
+            boolean answer = this.sendMessageToTakeApproval(ownerId, managerId);
+            if (answer) {
+                logger.info("the new manager has approved!");
+            } else {
+                logger.info("failed to add a new manager: the manager did not accept the offer");
+                return;
+            }
+            storeRepo.AddManagerToStore(storeID, ownerId, managerId);
+            logger.info("the manager has been added successfly ");
+            //In UI should ask to select autho to give to the manager
+            // List<Permission> autorization= //get from UI
+            // //then call give per:
+            // this.givePermissions(ownerId, managerId, storeID, autorization);
+
+        } catch (Exception e) {
+            logger.error("failed to add the manager, Error: {}", e.getMessage());
+        }
     }
 
-    public boolean givePermissions(int ownerId, int managerId, List<Permission> autorization) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'givePermissions'");
+    // private void givePermissions(int ownerId, int managerId, int storeId, List<Permission> autorization) {
+    //     try {
+    //         logger.info("the owner: {} is trying to give authoriation to manager: {}", ownerId, managerId);
+    //         storeRepo.changePermissions(ownerId, managerId, storeId, autorization);
+    //         logger.info("authorizations have been added succsesfully!");
+    //     } catch (Exception e) {
+    //         logger.error("failed to give permission:, ERROR:", e.getMessage());
+    //     }
+    // }
+    public void changePermissions(int ownerId, int managerId, int storeID, List<Permission> autorization) throws Exception {
+        try {
+            logger.info("the owner: {} is trying to give authoriation to manager: {}", ownerId, managerId);
+            storeRepo.changePermissions(ownerId, managerId, storeID, autorization);
+            logger.info("authorizations have been added/changed succsesfully!");
+        } catch (Exception e) {
+            logger.error("failed to give permission:, ERROR:", e.getMessage());
+        }
     }
 
-    public boolean changePermissions(int ownerId, int managerId, List<Permission> autorization) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'changePermissions'");
+    public void deleteManager(int storeId, int ownerId, int managerId) {
+        try {
+            logger.info("trying to delete manager: {} from store: {} by: {}", managerId, storeId, ownerId);
+            storeRepo.deleteManager(storeId, ownerId, managerId);
+            logger.info("the manager has been deleted successfly with his workers");
+
+        } catch (Exception e) {
+            logger.error("failed to delete the manager, Error: {}", e.getMessage());
+        }
     }
 
-    public boolean deleteManager(int storeId, int ownerId, int managerId) {
+    public boolean deactivateteStore(int storeId, int ownerId) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteManager'");
-    }
-
-    public boolean deactovateStore(int storeId, int ownerId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deactovateStore'");
+        throw new UnsupportedOperationException("Unimplemented method 'deactivateStore'");
     }
 
     public boolean closeStore(int storeId, int ownerId) {

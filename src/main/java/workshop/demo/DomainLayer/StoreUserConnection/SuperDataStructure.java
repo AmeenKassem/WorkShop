@@ -16,13 +16,13 @@ public class SuperDataStructure {
         this.employees.put(storeID, new Tree(bossId, false, -1));
     }
 
-    public boolean checkAddNewOwner(int storeID, int ownerId, int newOnwerId) throws Exception {
+    public boolean checkToAdd(int storeID, int ownerId, int newOnwerId) throws Exception {
         if (this.employees.get(storeID).getNodeById(ownerId) == null) {
-            throw new Exception("can't manupulate ownership: this is not the owner of this store!");
+            throw new Exception("can't manupulate ownership/managment: this is not the owner of this store!");
         }
         Node child = employees.get(storeID).getNodeById(newOnwerId);
         if (child != null && !child.getIsManager()) {
-            throw new Exception("this worker is already an owner");
+            throw new Exception("this worker is already an owner/manager");
         }
 
         return true;
@@ -49,10 +49,43 @@ public class SuperDataStructure {
     }
 
     public void addNewManager(int storeID, int ownerId, int newManagerId) {
+        this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(newManagerId, true, ownerId));
 
     }
 
-    public void addAuthoToManager(int storeID, int ownerID, int managerId, List<Permission> per) {
+    public void changeAuthoToManager(int storeID, int ownerID, int managerId, List<Permission> per) throws Exception {
+        Node toChange = this.employees.get(storeID).getNodeById(managerId);
+        if (toChange == null) {
+            throw new Exception(String.format("this user: {} is not a manager int this store", managerId));
+        }
+        if (!toChange.getIsManager()) {
+            throw new Exception(String.format("this user: {} is not a manager-> owner", managerId));
+        }
+        if (toChange.getParentId() != ownerID) {
+            throw new Exception(String.format("this owner: {} can't change manager's issue: {}", ownerID, managerId));
+        }
+        toChange.updateAuthorization(per, ownerID);
+    }
+
+    public void deleteManager(int storeID, int ownerID, int managerId) throws Exception {
+        Node toDelete = this.employees.get(storeID).getNodeById(managerId);
+        if (toDelete == null) {
+            throw new Exception(String.format("this user: {} is not a manager in this store", managerId));
+        }
+        if (!toDelete.getIsManager()) {
+            throw new Exception(String.format("this user: {} is not a manager-> owner", managerId));
+        }
+        if (toDelete.getParentId() != ownerID) {
+            throw new Exception(String.format("this owner: {} can't change manager's issue: {}", ownerID, managerId));
+        }
+        this.employees.get(storeID).deleteNode(managerId);
+    }
+
+    public boolean checkDeactivateStore(int storeId, int ownerId) throws Exception {
+        if (this.employees.get(storeId).getRoot().getMyId() != ownerId) {
+            return false;
+        }
+        return true;
 
     }
 

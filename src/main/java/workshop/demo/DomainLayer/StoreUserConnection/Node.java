@@ -47,6 +47,7 @@ public class Node {
         return null; // not found
     }
 
+    //might delete later
     public void addAuthrization(List<Permission> toAdd, int parentId) throws Exception {
         if (!isManager || myAuth == null) {
             throw new Exception("the owner is fully authorized, can't manipulate the aothrization!");
