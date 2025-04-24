@@ -90,5 +90,18 @@ public class AuthenticationRepo  implements IAuthRepo {
         System.out.println(a.getUserName(token));
         System.out.println(a.isRegistered(token));
     }
+
+    @Override
+    public boolean validToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                .setSigningKey(SECRET)
+                .build()
+                .parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
     
 }

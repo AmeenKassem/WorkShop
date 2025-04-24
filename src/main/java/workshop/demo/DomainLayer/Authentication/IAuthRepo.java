@@ -12,4 +12,5 @@ public interface IAuthRepo {
 
     public String generateUserToken(int id,String username);
 
+    public boolean validToken(String token);
 } 
