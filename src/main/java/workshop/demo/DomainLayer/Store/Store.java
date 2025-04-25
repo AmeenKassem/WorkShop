@@ -1,7 +1,10 @@
 package workshop.demo.DomainLayer.Store;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import workshop.demo.DomainLayer.Stock.Product;
 
 public class Store {
 
@@ -9,7 +12,7 @@ public class Store {
     private String storeName;
     private String category;
     private boolean active;
-    private List<item> stock;//map of category -> item
+    private Map<Product.Category, List<item>> stock;//map of category -> item
     //must add something for messages
 
     public Store(int storeID, String storeName, String category) {
@@ -17,7 +20,7 @@ public class Store {
         this.storeName = storeName;
         this.category = category;
         this.active = true;
-        stock = new ArrayList<>();
+        stock = new HashMap<>();
     }
 
     public int getStroeID() {
@@ -43,5 +46,8 @@ public class Store {
     // remove product -> quantity=0
     // update price
     // rank product 
+    //display products in store
+    // search product by name 
+    //search product by category 
 
 }
