@@ -1,5 +1,7 @@
 package workshop.demo.DomainLayer.User;
 
+import workshop.demo.DTOs.ItemCartDTO;
+
 public interface IUserRepo {
 
 
@@ -12,17 +14,24 @@ public interface IUserRepo {
      * @return the new token of loged user
      * 
      */
-    public String login(String guestToken , String username,String password);
+    public int login(String username,String password);
 
 
 
     
     /**
-     * This must destroy the token of the logged user. and return new token for user .
-     * @param token
+     * 
+     * @param username of user to be loged out
+     * 
+     * @return new id for guest
      */
-    public String logoutUser(String token);
+    public int logoutUser(String username);
 
+
+    /**
+     * destroy cart and all data of the user
+     * @param id
+     */
     public void destroyGuest(int id);
 
     /**
@@ -31,20 +40,37 @@ public interface IUserRepo {
      * @param username
      * @param password
      */
-    public void registerUser(String token , String username, String password);
+    public int registerUser( String username, String password);
 
 
     /**
      * this function must return a token with new id user for the guest , must be called onLoad event.
-     * @return token contains id .
+     * @return id .
      */
-    public String generateGuest();
+    public int generateGuest();
 
     
-    public void addItemToGeustCart(int guestId, int productId,int quantity,int storeId);
+    //===========
+
+    public void addItemToGeustCart(int guestId, ItemCartDTO item);
+
+    public boolean isAdmin(int id);
+
+    public boolean isRegistered(int id);
 
 
+    public boolean isOnline(int id);
     
-    
+    //===========
+
+    /**
+     * The key is set on props of system
+     * if the key param is match the user will be as an admin
+     * the user must be registerd before this function
+     * @param id
+     * @param adminKey
+     * @return
+     */
+    public boolean setUserAsAdmin(int id ,String adminKey);
 
 }

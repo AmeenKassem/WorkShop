@@ -4,37 +4,51 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Assertions;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.stereotype.Service;
 
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.IncorrectLogin;
+import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.UserRepository;
 
+@Service
 @SpringBootTest
 public class UsersTests {
     private IAuthRepo auth = new AuthenticationRepo();
     private Encoder enc = new Encoder();
-    private IUserRepo userRepo = new UserRepository(auth, enc);
+    private String adminKey="123321";
+    
+    @Autowired
+    private AdminInitilizer a;
 
+    private IUserRepo userRepo = new UserRepository( enc,a);
+    
+
+
+    private int goodLogin(String username,String password){
+        int userIdFromRegister = userRepo.registerUser( username, password);
+
+        int userIdFromLogIn = userRepo.login(username, password);
+        return userIdFromLogIn;
+    }
 
     @Test
     public void test_register_and_login(){
-        String guestToken = userRepo.generateGuest();
-        userRepo.registerUser(guestToken, "bhaa", "123123");
-        System.out.println(enc.encodePassword("123123"));
-        System.out.println(enc.encodePassword("123123"));
+        int guestId = userRepo.generateGuest();
+        int userIdFromRegister = userRepo.registerUser( "bhaa", "123123");
 
-        String userToken = userRepo.login(guestToken,"bhaa", "123123");
+        int userIdFromLogIn = userRepo.login("bhaa", "123123");
         
-        //The username is on the token , and the login is succed
-        Assertions.assertEquals("bhaa",auth.getUserName(userToken) );
-
-        String token2 = userRepo.generateGuest();
+        Assertions.assertEquals(userIdFromRegister, userIdFromLogIn);
+        
+        int id2 = userRepo.generateGuest();
         try{
-            userRepo.login(token2, "bhaa", "11111");
+            userRepo.login("bhaa", "11111");
             Assertions.assertTrue(false);
         }catch(IncorrectLogin ex){
             Assertions.assertTrue(true);
@@ -43,6 +57,42 @@ public class UsersTests {
         }
 
     }
+
+
+    @Test
+    public void adminTest(){
+        int userId = goodLogin("bhaa2", "123321");
+        int userId2 = goodLogin("ghanem", "123321");
+        //user1 are not admin
+        Assertions.assertFalse(userRepo.isAdmin(userId));
+
+        // System.out.println(a.getPassword());
+        //wrong admin key
+        Assertions.assertFalse(userRepo.setUserAsAdmin(userId, adminKey+"2222"));
+        Assertions.assertFalse(userRepo.isAdmin(userId));
+
+        //good admin key
+        Assertions.assertTrue(userRepo.setUserAsAdmin(userId, adminKey));
+        Assertions.assertTrue(userRepo.isAdmin(userId));
+
+        //user2 still not admin
+        Assertions.assertFalse((userRepo.isAdmin(userId2)));
+    }
+
+
+    @Test
+    public void onlineTest(){
+        userRepo.registerUser("ghanem2", "123321");
+
+    }
+
+    
+    @Test
+    public void registeredTest(){
+
+    }
+
+
 
 
     

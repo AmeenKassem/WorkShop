@@ -1,6 +1,7 @@
 package workshop.demo.ApplicationLayer;
 
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
+import workshop.demo.DomainLayer.Exceptions.TokenNotFoundException;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
 public class UserService {
@@ -14,15 +15,23 @@ public class UserService {
     }
 
     public String generateGuest(){
-        return userRepo.generateGuest();
+        int id = userRepo.generateGuest();
+        return authRepo.generateGuestToken(id);
     }
 
     public void register(String token,String username,String password){
-        userRepo.registerUser(token, username, password);
+        if(authRepo.validToken(token)){
+            userRepo.registerUser(username, password);
+        } else 
+            throw new TokenNotFoundException();
     }
 
     public String login(String token , String username, String pass){
-        return userRepo.login(token, username, pass);
+        if(authRepo.validToken(token)){
+            int id = userRepo.login(username, pass);
+            return authRepo.generateUserToken(id, username);
+        } else 
+            throw new TokenNotFoundException();
     }
 
     public void destroyGuest(String token){
@@ -32,5 +41,22 @@ public class UserService {
         }
     }
 
+    public String logoutUser(String token){
+        if(authRepo.validToken(token)){
+            String userName = authRepo.getUserName(token);
+            int id = userRepo.logoutUser(userName);
+            return authRepo.generateGuestToken(id);
+        }else 
+            throw new TokenNotFoundException();
+    }
 
+
+    public boolean setAdmin(String token , String adminKey){
+        if(authRepo.validToken(token)){
+            String userName = authRepo.getUserName(token);
+            int id = userRepo.logoutUser(userName);
+            return userRepo.setUserAsAdmin(id, adminKey);
+        }else 
+            throw new TokenNotFoundException();
+    }
 }
