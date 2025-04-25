@@ -3,6 +3,7 @@ package workshop.demo.InfrastructureLayer;
 import java.util.HashMap;
 
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
+import workshop.demo.DomainLayer.Exceptions.GuestNotFoundException;
 import workshop.demo.DomainLayer.Exceptions.IncorrectLogin;
 import workshop.demo.DomainLayer.Exceptions.TokenNotFoundException;
 import workshop.demo.DomainLayer.Exceptions.UserIdNotFound;
@@ -78,7 +79,6 @@ public class UserRepository implements IUserRepo {
         }else{
             throw new UserIdNotFound(username);
         }
-        // return null;
     }
 
 
@@ -100,10 +100,22 @@ public class UserRepository implements IUserRepo {
     public void addItemToGeustCart(int guestId, int productId, int quantity, int storeId) {
         CartItem item = new CartItem(productId,quantity);
         if(guestExist(guestId)){
-            //add to guestcart
+            Guest geust = guests.get(guestId);
+            geust.addToCart(storeId , item);
         }else{
-            //throw exception
+            throw new GuestNotFoundException(guestId);
         }
+    }
+
+
+
+
+
+
+    @Override
+    public void destroyGuest(int id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'destroyGuest'");
     }
 
 

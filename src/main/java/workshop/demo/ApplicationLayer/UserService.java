@@ -1,13 +1,16 @@
 package workshop.demo.ApplicationLayer;
 
+import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
 public class UserService {
 
     private IUserRepo userRepo;
+    private IAuthRepo authRepo;
 
-    public UserService(IUserRepo userRepo){
+    public UserService(IUserRepo userRepo,IAuthRepo authRepo){
         this.userRepo=userRepo;
+        this.authRepo = authRepo;
     }
 
     public String generateGuest(){
@@ -22,5 +25,12 @@ public class UserService {
         return userRepo.login(token, username, pass);
     }
 
-    
+    public void destroyGuest(String token){
+        if(authRepo.validToken(token)){
+            int id = authRepo.getUserId(token);
+            userRepo.destroyGuest(id);
+        }
+    }
+
+
 }

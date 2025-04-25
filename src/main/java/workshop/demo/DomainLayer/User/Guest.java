@@ -14,7 +14,13 @@ public class Guest {
         return id;
     }
 
-    
+    public void addToCart(int storeId, CartItem item) {
+        cart.addItem(storeId,item);
+    }
+
+    public void clearCart(){
+        cart = new ShoppingCart();
+    }
 
     
 }

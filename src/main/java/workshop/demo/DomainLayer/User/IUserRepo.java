@@ -23,6 +23,7 @@ public interface IUserRepo {
      */
     public String logoutUser(String token);
 
+    public void destroyGuest(int id);
 
     /**
      * in this function , do not destroy the guest token , just add the user to the data ...
@@ -43,6 +44,7 @@ public interface IUserRepo {
     public void addItemToGeustCart(int guestId, int productId,int quantity,int storeId);
 
 
+    
     
 
 }
