@@ -9,5 +9,13 @@ public class ShoppingBasket {
     
     private int storeId ;
 
+    public ShoppingBasket(int id){
+        storeId= id;
+    }
+
+    public void addItem(CartItem item) {
+        itemsOnCart.add(item);
+    }
+
 
 }

@@ -12,7 +12,12 @@ public class ShoppingCart {
         return null;
     }
 
-    public void clearCart(){
+    
+
+    public void addItem(int storeId, CartItem item) {
+        if(!storeBaskets.containsKey(storeId))
+            storeBaskets.put(storeId,new ShoppingBasket(storeId));
+        storeBaskets.get(storeId).addItem(item);
         
     }
 }

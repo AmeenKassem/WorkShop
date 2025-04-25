@@ -17,24 +17,25 @@ import workshop.demo.InfrastructureLayer.UserRepository;
 public class UsersTests {
     private IAuthRepo auth = new AuthenticationRepo();
     private Encoder enc = new Encoder();
-    private IUserRepo userRepo = new UserRepository(auth, enc);
+    private IUserRepo userRepo = new UserRepository( enc);
 
+
+    private int goodLogin(String username){
+        return -1;
+    }
 
     @Test
     public void test_register_and_login(){
-        String guestToken = userRepo.generateGuest();
-        userRepo.registerUser(guestToken, "bhaa", "123123");
-        System.out.println(enc.encodePassword("123123"));
-        System.out.println(enc.encodePassword("123123"));
+        int guestId = userRepo.generateGuest();
+        int userIdFromRegister = userRepo.registerUser( "bhaa", "123123");
 
-        String userToken = userRepo.login(guestToken,"bhaa", "123123");
+        int userIdFromLogIn = userRepo.login("bhaa", "123123");
         
-        //The username is on the token , and the login is succed
-        Assertions.assertEquals("bhaa",auth.getUserName(userToken) );
-
-        String token2 = userRepo.generateGuest();
+        Assertions.assertEquals(userIdFromRegister, userIdFromLogIn);
+        
+        int id2 = userRepo.generateGuest();
         try{
-            userRepo.login(token2, "bhaa", "11111");
+            userRepo.login("bhaa", "11111");
             Assertions.assertTrue(false);
         }catch(IncorrectLogin ex){
             Assertions.assertTrue(true);
@@ -43,6 +44,10 @@ public class UsersTests {
         }
 
     }
+
+
+
+
 
 
     
