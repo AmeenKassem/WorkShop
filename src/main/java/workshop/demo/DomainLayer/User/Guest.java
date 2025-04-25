@@ -1,5 +1,7 @@
 package workshop.demo.DomainLayer.User;
 
+import workshop.demo.DTOs.ItemCartDTO;
+
 public class Guest {
     
     private int id;
@@ -20,6 +22,11 @@ public class Guest {
 
     public void clearCart(){
         cart = new ShoppingCart();
+    }
+
+    public void addToCart(ItemCartDTO item) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addToCart'");
     }
 
     
