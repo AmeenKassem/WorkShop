@@ -23,12 +23,13 @@ public class UserRepository implements IUserRepo {
     private HashMap<String, Registered> users;
     private HashMap<Integer, String> idToUsername;
     private Encoder encoder;
-    @Autowired
+    // @Autowired
     private AdminInitilizer adminInit;
 
 
-    public UserRepository(Encoder encoder) {
+    public UserRepository(Encoder encoder,AdminInitilizer adminInit) {
         this.encoder = encoder;
+        this.adminInit=adminInit;
         users = new HashMap<>();
         guests = new HashMap<>();
         idToUsername = new HashMap<>();
@@ -150,5 +151,11 @@ public class UserRepository implements IUserRepo {
         }
         return false;
 	}
+
+    @Override
+    public void removeItemFromGeustCart(int guestId, int productId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'removeItemFromGeustCart'");
+    }
 
 }

@@ -13,6 +13,10 @@ public class AdminInitilizer {
     public void setPassword(String password) { this.password = password; }
 
     public boolean matchPassword(String pass){
+        if(password==null) throw new IllegalArgumentException("The system has no admin key!!");
         return pass==password;
     }
+    
+
+   
 }
