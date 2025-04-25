@@ -40,6 +40,8 @@ public interface IUserRepo {
     public String generateGuest();
 
     
+    public void addItemToGeustCart(int guestId, int productId,int quantity,int storeId);
+
 
     
 

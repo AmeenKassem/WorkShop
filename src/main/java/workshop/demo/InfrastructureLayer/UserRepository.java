@@ -6,6 +6,7 @@ import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.IncorrectLogin;
 import workshop.demo.DomainLayer.Exceptions.TokenNotFoundException;
 import workshop.demo.DomainLayer.Exceptions.UserIdNotFound;
+import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
@@ -85,6 +86,24 @@ public class UserRepository implements IUserRepo {
 
     private boolean userExist(String username) {
         return users.containsKey(username);
+    }
+
+    private boolean guestExist(int id) {
+        return guests.containsKey(id);
+    }
+
+
+
+
+
+    @Override
+    public void addItemToGeustCart(int guestId, int productId, int quantity, int storeId) {
+        CartItem item = new CartItem(productId,quantity);
+        if(guestExist(guestId)){
+            //add to guestcart
+        }else{
+            //throw exception
+        }
     }
 
 
