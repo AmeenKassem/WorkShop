@@ -5,11 +5,13 @@ public interface IAuthRepo {
     public String getUserName(String token);
 
     public int getUserId(String token);
-    
+
     public boolean isRegistered(String token);
 
     public String generateGuestToken(int id);
 
-    public String generateUserToken(int id,String username);
+    public String generateUserToken(int id, String username);
 
-} 
+    public boolean validToken(String token);
+
+}

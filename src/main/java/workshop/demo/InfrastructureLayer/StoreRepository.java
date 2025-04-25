@@ -4,8 +4,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.springframework.ui.context.ThemeSource;
-
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.Store.StoreDTO;
@@ -36,7 +34,7 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public void checkToAdd(int storeID, int ownerID, int newOwnerId) throws Exception {
+    public void checkToAdd(int storeID, int ownerID, int newOwnerId) throws Exception {//for owner
         try {
             if (findStoreByID(storeID) == null) {
                 throw new Exception("can't add new ownership/managment: store does not exist");
@@ -45,6 +43,21 @@ public class StoreRepository implements IStoreRepo {
                 throw new Exception("can't add new ownership/managment: store IS DEactivated");
             }
             this.data.checkToAdd(storeID, ownerID, newOwnerId);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public void checkToAddManager(int storeID, int ownerID, int newOwnerId) throws Exception {
+        try {
+            if (findStoreByID(storeID) == null) {
+                throw new Exception("can't add new ownership/managment: store does not exist");
+            }
+            if (!findStoreByID(storeID).isActive()) {
+                throw new Exception("can't add new ownership/managment: store IS DEactivated");
+            }
+            this.data.checkToAddManager(storeID, ownerID, newOwnerId);
         } catch (Exception e) {
             throw e;
         }

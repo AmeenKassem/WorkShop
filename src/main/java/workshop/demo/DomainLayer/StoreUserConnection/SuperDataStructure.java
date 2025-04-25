@@ -29,6 +29,18 @@ public class SuperDataStructure {
         return true;
     }
 
+    public boolean checkToAddManager(int storeID, int ownerId, int newOnwerId) throws Exception {
+        if (this.employees.get(storeID).getNodeById(ownerId) == null) {
+            throw new Exception("can't manupulate ownership/managment: this is not the owner of this store!");
+        }
+        Node child = employees.get(storeID).getNodeById(newOnwerId);
+        if (child != null && child.getIsManager()) {
+            throw new Exception("this worker is already an owner/manager");
+        }
+
+        return true;
+    }
+
     public void addNewOwner(int storeID, int ownerId, int newOnwerId) {
         this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(newOnwerId, false, ownerId));
 

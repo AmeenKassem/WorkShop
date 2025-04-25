@@ -5,19 +5,24 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+import workshop.demo.DomainLayer.User.IUserRepo;
 
 public class StoreService {
 
     private IStoreRepo storeRepo;
     private INotificationRepo notiRepo;
+    private IAuthRepo authRepo;
+    private IUserRepo userRepo;
     private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
 
-    public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo) {
+    public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, IUserRepo userRepo) {
         this.storeRepo = storeRepository;
         this.notiRepo = notiRepo;
+        this.authRepo = authRepo;
         logger.info("created the StoreService");
     }
 
@@ -27,11 +32,16 @@ public class StoreService {
 
     }
 
-    public void addStoreToSystem(int bossID, String storeName, String Category) {
-        //must check if the bossID is regestired user -> UserRepo
-        //check token
-        //get an approval from the new owner then add it
+    public void addStoreToSystem(String token, String storeName, String Category) throws Exception {
         try {
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int bossID = authRepo.getUserId(token);
+            if (!userRepo.isRegisterd(token)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", bossID));
+            }
+            //get an approval from the new owner then add it
             logger.info("trying to add new sotre to the system for the BOSS:", bossID);
             storeRepo.addStoreToSystem(bossID, storeName, Category);
             logger.info("added the store succsessfully");
@@ -40,12 +50,20 @@ public class StoreService {
         }
     }
 
-    public void AddOwnershipToStore(int storeID, int ownerID, int newOwnerId) {
+    public void AddOwnershipToStore(int storeID, String token, int newOwnerId) {
         try {
-            //must check if the bossID is regestired user -> UserRepo
-            //check token
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int ownerID = authRepo.getUserId(token);
+            if (!userRepo.isRegisterd(token)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", ownerID));
+            }
+            if (!userRepo.isRegisterd(newOwnerId)) {
+                throw new Exception(String.format("can't make owner to unregistered user:%d ", newOwnerId));
+            }
             logger.info("trying to add a new owner to the store");
-            storeRepo.checkToAdd(storeID, ownerID, newOwnerId);
+            storeRepo.checkToAddManager(storeID, ownerID, newOwnerId);
             logger.info("we can add a new owner to the store");
             boolean answer = this.sendMessageToTakeApproval(ownerID, newOwnerId);
             if (answer) {
@@ -62,8 +80,18 @@ public class StoreService {
         }
     }
 
-    public void DeleteOwnershipFromStore(int storeID, int ownerID, int OwnerToDelete) throws Exception {
+    public void DeleteOwnershipFromStore(int storeID, String token, int OwnerToDelete) throws Exception {
         try {
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int ownerID = authRepo.getUserId(token);
+            if (!userRepo.isRegisterd(token)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", ownerID));
+            }
+            if (!userRepo.isRegisterd(OwnerToDelete)) {
+                throw new Exception(String.format("can't delete owner:the user:%d is not registered to the system!", OwnerToDelete));
+            }
             logger.info("trying to delete owner: {} from store: {} by: {}", OwnerToDelete, storeID, ownerID);
             storeRepo.DeleteOwnershipFromStore(storeID, ownerID, OwnerToDelete);
             logger.info("the owner has been deleted successfly with his workers");
@@ -73,13 +101,20 @@ public class StoreService {
         }
     }
 
-    public void AddManagerToStore(int storeID, int ownerId, int managerId) throws Exception {
+    public void AddManagerToStore(int storeID, String token, int managerId) throws Exception {
         try {
-            //must check if the bossID is regestired user -> UserRepo
-            //must check if manager is a registered user
-            //check token
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int ownerId = authRepo.getUserId(token);
+            if (!userRepo.isRegisterd(token)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", ownerId));
+            }
+            if (!userRepo.isRegisterd(managerId)) {
+                throw new Exception(String.format("can't add as manager: the user:%d is not registered to the system!", managerId));
+            }
             logger.info("trying to add manager: {} in store: {} by: {}", managerId, storeID, ownerId);
-            storeRepo.checkToAdd(storeID, ownerId, managerId);
+            storeRepo.checkToAddManager(storeID, ownerId, managerId);
             logger.info("we can add a new owner to the store");
             boolean answer = this.sendMessageToTakeApproval(ownerId, managerId);
             if (answer) {
@@ -109,8 +144,18 @@ public class StoreService {
     //         logger.error("failed to give permission:, ERROR:", e.getMessage());
     //     }
     // }
-    public void changePermissions(int ownerId, int managerId, int storeID, List<Permission> autorization) throws Exception {
+    public void changePermissions(String token, int managerId, int storeID, List<Permission> autorization) throws Exception {
         try {
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int ownerId = authRepo.getUserId(token);
+            if (!userRepo.isRegisterd(token)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", ownerId));
+            }
+            if (!userRepo.isRegisterd(managerId)) {
+                throw new Exception(String.format("can't change permssion: the user:%d is not registered to the system!", managerId));
+            }
             logger.info("the owner: {} is trying to give authoriation to manager: {}", ownerId, managerId);
             storeRepo.changePermissions(ownerId, managerId, storeID, autorization);
             logger.info("authorizations have been added/changed succsesfully!");
@@ -119,8 +164,18 @@ public class StoreService {
         }
     }
 
-    public void deleteManager(int storeId, int ownerId, int managerId) {
+    public void deleteManager(int storeId, String token, int managerId) throws Exception {
         try {
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int ownerId = authRepo.getUserId(token);
+            if (!userRepo.isRegisterd(token)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", ownerId));
+            }
+            if (!userRepo.isRegisterd(managerId)) {
+                throw new Exception(String.format("can't delete manager: the user:%d is not registered to the system!", managerId));
+            }
             logger.info("trying to delete manager: {} from store: {} by: {}", managerId, storeId, ownerId);
             storeRepo.deleteManager(storeId, ownerId, managerId);
             logger.info("the manager has been deleted successfly with his workers");
@@ -130,8 +185,15 @@ public class StoreService {
         }
     }
 
-    public void deactivateteStore(int storeId, int ownerId) {
+    public void deactivateteStore(int storeId, String token) throws Exception {
         try {
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int ownerId = authRepo.getUserId(token);
+            if (!userRepo.isRegisterd(token)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", ownerId));
+            }
             logger.info("trying to deactivate store: {} by: {}", storeId, ownerId);
             List<Integer> toNotify = storeRepo.deactivateStore(storeId, ownerId);
             //here must notifu all the workes into the store by notification repo
@@ -144,10 +206,16 @@ public class StoreService {
         }
     }
 
-    public void closeStore(int storeId, int adminId) {
+    public void closeStore(int storeId, String token) {
         try {
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int adminId = authRepo.getUserId(token);
+            if (!userRepo.isRegisterd(token) || !userRepo.isAdmin(adminId)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", adminId));
+            }
             logger.info("trying to close store: {} by: {}", storeId, adminId);
-            //here must check with the user if the is the admin for sure
             List<Integer> toNotify = storeRepo.closeStore(storeId);
             logger.info("store removed succesfully!");
             //here must notify all users using notifiaction Repo and this list

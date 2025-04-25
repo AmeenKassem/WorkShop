@@ -1,20 +1,19 @@
 package workshop.demo.StoreTests;
 
+import java.lang.reflect.Field;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import java.util.concurrent.atomic.AtomicInteger;
-import java.lang.reflect.Field;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
+import workshop.demo.InfrastructureLayer.StoreRepository;
 
 public class OwnershipTests {
 

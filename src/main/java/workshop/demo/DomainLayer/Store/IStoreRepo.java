@@ -15,6 +15,8 @@ public interface IStoreRepo {
     //stock managment->
     public void checkToAdd(int storeID, int ownerID, int newOwnerId) throws Exception;
 
+    public void checkToAddManager(int storeID, int ownerID, int newOwnerId) throws Exception;
+
     public Store findStoreByID(int Id);
 
     public void AddOwnershipToStore(int storeID, int ownerID, int newOwnerId) throws Exception;

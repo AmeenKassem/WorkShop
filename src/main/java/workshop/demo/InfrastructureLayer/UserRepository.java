@@ -16,4 +16,16 @@ public class UserRepository implements IUserRepo {
         throw new UnsupportedOperationException("Unimplemented method 'isRegisterd'");
     }
 
+    @Override
+    public boolean isRegisterd(int id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isRegisterd'");
+    }
+
+    @Override
+    public boolean isAdmin(int id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isAdmin'");
+    }
+
 }

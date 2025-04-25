@@ -6,6 +6,7 @@ public interface IUserRepo {
 
     public boolean isRegisterd(String token);
 
-    
+    public boolean isRegisterd(int id);
+    public boolean isAdmin(int id);
 
 }
