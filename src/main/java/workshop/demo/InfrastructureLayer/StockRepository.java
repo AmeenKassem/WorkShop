@@ -5,11 +5,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 
 public class StockRepository implements IStockRepo {
 
+
+    //id must be int and have a generator 
+    //must contains <category,List<Product>>
+    //remove rating and quantity 
+    //all functions must be deal with DTOs and primitive (params and return values)
+    //think about the usecases that has to synchronized
+    //add list of store ids .
     private final Map<String, Product> products = new HashMap<>(); // store products with their productId as the key.
 
     @Override
@@ -56,6 +65,18 @@ public class StockRepository implements IStockRepo {
 
         product.setDescription(newDescription);
         return true;
+    }
+
+    @Override
+    public ProductDTO[] searchByName(String name) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'searchByName'");
+    }
+
+    @Override
+    public ProductDTO[] searchByName(String name, Category category) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'searchByName'");
     }
 
 }

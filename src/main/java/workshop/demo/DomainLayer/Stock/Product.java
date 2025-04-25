@@ -9,6 +9,8 @@ public class Product {
     private String description;
     private Category category;  // Using enum Category
 
+    
+
     public Product(String name, String productId, Category category, String description) {
         this.name = name;
         this.productId = productId;

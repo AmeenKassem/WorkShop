@@ -53,6 +53,10 @@ public interface IUserRepo {
     //===========
 
     public void addItemToGeustCart(int guestId, ItemCartDTO item);
+    
+    public void removeItemFromGeustCart(int guestId, int productId);
+
+
 
     public boolean isAdmin(int id);
 
