@@ -1,12 +1,13 @@
 package workshop.demo.DomainLayer.Store;
 
-import java.lang.reflect.Array;
+import workshop.demo.DomainLayer.Stock.Product.Category;
 
 public class item {
 
     private int produtId;
     private int quantity;
     private int price;
+    private Category category;
     private int[] rank;//rank[x] is the number of people who ranked i+1
 
     public item(int produtId, int quantity, int price) {
@@ -50,6 +51,18 @@ public class item {
 
     public int getProdutId() {
         return produtId;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public int getPrice() {
+        return price;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
     }
 
 }
