@@ -6,6 +6,8 @@ import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
+import workshop.demo.InfrastructureLayer.UserRepository;
+
 
 @Component
 public class Repos {

@@ -1,12 +1,76 @@
 package workshop.demo.DomainLayer.User;
 
+import workshop.demo.DTOs.ItemCartDTO;
+
 public interface IUserRepo {
 
-    public int getUserId(String token);
 
-    public boolean isRegisterd(String token);
+    /**
+     * 
+     * 
+     * @param guestToken the token will contains the id of the guest , to destroy geust token ...
+     * @param username
+     * @param password
+     * @return the new token of loged user
+     * 
+     */
+    public int login(String username,String password);
 
-    public boolean isRegisterd(int id);
+
+
+    
+    /**
+     * 
+     * @param username of user to be loged out
+     * 
+     * @return new id for guest
+     */
+    public int logoutUser(String username);
+
+
+    /**
+     * destroy cart and all data of the user
+     * @param id
+     */
+    public void destroyGuest(int id);
+
+    /**
+     * in this function , do not destroy the guest token , just add the user to the data ...
+     * @param token
+     * @param username
+     * @param password
+     */
+    public int registerUser( String username, String password);
+
+
+    /**
+     * this function must return a token with new id user for the guest , must be called onLoad event.
+     * @return id .
+     */
+    public int generateGuest();
+
+    
+    //===========
+
+    public void addItemToGeustCart(int guestId, ItemCartDTO item);
+
     public boolean isAdmin(int id);
+
+    public boolean isRegistered(int id);
+
+
+    public boolean isOnline(int id);
+    
+    //===========
+
+    /**
+     * The key is set on props of system
+     * if the key param is match the user will be as an admin
+     * the user must be registerd before this function
+     * @param id
+     * @param adminKey
+     * @return
+     */
+    public boolean setUserAsAdmin(int id ,String adminKey);
 
 }
