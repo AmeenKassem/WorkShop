@@ -1,5 +1,6 @@
 package workshop.demo.InfrastructureLayer;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,8 +13,8 @@ import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 
 public class StoreRepository implements IStoreRepo {
 
-    private List<Store> stores;
-    private SuperDataStructure data;
+    private final List<Store> stores;
+    private final SuperDataStructure data;
     //switch it when use database!!
     private static final AtomicInteger counterSId = new AtomicInteger(1);
 
@@ -22,7 +23,7 @@ public class StoreRepository implements IStoreRepo {
     }
 
     public StoreRepository() {
-        this.stores = new LinkedList<>();
+        this.stores = Collections.synchronizedList(new LinkedList<>());
         data = new SuperDataStructure();
     }
 

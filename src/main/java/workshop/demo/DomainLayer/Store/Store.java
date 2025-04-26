@@ -1,12 +1,15 @@
 package workshop.demo.DomainLayer.Store;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Stock.Product.Category;
+import workshop.demo.DomainLayer.Store.item;
 
 public class Store {
 
@@ -18,11 +21,12 @@ public class Store {
     //must add something for messages
 
     public Store(int storeID, String storeName, String category) {
+        this.stock = new ConcurrentHashMap<>();
         this.stroeID = storeID;
         this.storeName = storeName;
         this.category = category;
         this.active = true;
-        stock = new HashMap<>();
+
     }
 
     public int getStroeID() {
@@ -41,14 +45,14 @@ public class Store {
         return active;
     }
 
-    public void setActive(boolean active) {
+    public synchronized void setActive(boolean active) {
         this.active = active;
     }
 
     public item getProductById(int id) {
         for (List<item> items : stock.values()) {
             for (item item : items) {
-                if (item.getProdutId() == id) {
+                if (item.getProductId() == id) {
                     return item;
                 }
             }
@@ -57,60 +61,134 @@ public class Store {
     }
 
     // add product  -> in repo: 1.getProductById if->not excist 2. add MainStock 3. calling this func:
+    // public void addItem(item newItem) {
+    //     List<item> items;
+    //     synchronized (stock) {
+    //         items = stock.get(newItem.getCategory());
+    //         if (items == null) {
+    //             items = new ArrayList<>();
+    //             stock.put(newItem.getCategory(), items);
+    //         }
+    //     }
+    //     synchronized (items) {
+    //         item existingItem = null;
+    //         for (item i : items) {
+    //             if (i.getProductId() == newItem.getProductId()) {
+    //                 existingItem = i;
+    //                 break;
+    //             }
+    //         }
+    //         if (existingItem != null) {
+    //             existingItem.AddQuantity(); // Update quantity
+    //         } else {
+    //             items.add(newItem); // Add new item
+    //         }
+    //     }
+    // }
     public void addItem(item newItem) {
-        List<item> items;
-        synchronized (stock) {
-            items = stock.get(newItem.getCategory());
-            if (items == null) {
-                items = new ArrayList<>();
-                stock.put(newItem.getCategory(), items);
+
+        // Retrieve or create the list of items for the given category
+        List<item> items = stock.computeIfAbsent(newItem.getCategory(), k -> new ArrayList<>());
+        synchronized (items) {
+            item existingItem = null;
+            for (item i : items) {
+                if (i.getProductId() == newItem.getProductId()) {
+                    existingItem = i;
+                    break;
+                }
+            }
+            if (existingItem != null) {
+                existingItem.AddQuantity();
+            } else {
+                items.add(newItem);
             }
         }
 
-        synchronized (items) {
-            for (item item : items) {
-                if (item.getProdutId() == newItem.getProdutId()) {
-                    item.setQuantity(item.getQuantity() + 1);
-                    return;
-                }
-            }
-            items.add(newItem);
-        }
     }
 
     // remove product -> quantity=0
-    public void removeItem(int itemId) {
-        for (List<item> items : stock.values()) {
-            synchronized (items) {
-                Iterator<item> iterator = items.iterator();
-                while (iterator.hasNext()) {
-                    item item = iterator.next();
-                    if (item.getProdutId() == itemId) {
-                        item.setQuantity(0);
-                        iterator.remove();
-                        return;
-                    }
-                }
-            }
+    public void removeItem(int itemId) throws Exception {
+        item foundItem = getItemByProductId(itemId);
+        if (foundItem == null) {
+            throw new Exception("Item not fount with ID " + itemId);
         }
+        foundItem.changeQuantity(0); // Set quantity to 0 — and that's it
+    }
+
+    //update quantity
+    public void changeQuantity(int itemId, int quantity) throws Exception {
+        item foundItem = getItemByProductId(itemId);
+        if (foundItem == null) {
+            throw new Exception("Item not fount with ID " + itemId);
+        }
+        foundItem.changeQuantity(quantity);
     }
 
     // update price
-    public void updatePrice(int itemId, int newPrice) {
-        for (List<item> items : stock.values()) {
-            synchronized (items) {
-                for (item item : items) {
-                    if (item.getProdutId() == itemId) {
-                        item.setPrice(newPrice);
-                        return;
-                    }
-                }
-            }
+    public void updatePrice(int itemId, int newPrice) throws Exception {
+        item foundItem = getItemByProductId(itemId);
+        if (foundItem == null) {
+            throw new Exception("Item not fount with ID " + itemId);
+        } else {
+            foundItem.setPrice(newPrice);
         }
     }
 
     // rank product 
+    public void rankProduct(int productId, int newRank) {
+        item currenItem = getItemByProductId(productId);
+        if (currenItem != null) {
+            AtomicInteger[] ranks = currenItem.getRank();
+            if (newRank >= 0 && newRank < ranks.length) {
+                ranks[newRank - 1].incrementAndGet();  // thread-safe increment
+            } else {
+                throw new IllegalArgumentException("Invalid rank index: " + newRank);
+            }
+        } else {
+            throw new IllegalArgumentException("Product ID not found: " + productId);
+        }
+    }
+
     //display products in store
-    // search product by name 
+    // Thread-safe method to get an item by its productId
+    public item getItemByProductId(int productId) {
+        for (List<item> items : stock.values()) {
+            // Synchronize the list of items to ensure thread-safety when accessing the list
+            synchronized (items) {
+                for (item i : items) {
+                    if (i.getProductId() == productId) {
+                        return i;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     //search product by category 
+    public List<ItemStoreDTO> getItemsByCategory(Category category) throws Exception {
+        List<ItemStoreDTO> itemStoreDTOList = new ArrayList<>();
+        List<item> items = stock.get(category);
+        if (items == null) {
+            throw new Exception("there is no such category!");
+        }
+        for (item i : items) {
+            //int regularInt = i.getQuantity().get();
+            itemStoreDTOList.add(new ItemStoreDTO(i.getQuantity(), i.getPrice(), i.getCategory(), i.getFinalRank()));
+        }
+
+        return itemStoreDTOList;
+    }
+
+    //just for testing
+    //public List<item> getItemsByCategoryObject(Category category) throws Exception {
+    public List<item> getItemsByCategoryObject(Category category) {
+        // Use computeIfAbsent to safely retrieve or create the list for the category
+        return stock.computeIfAbsent(category, k -> new ArrayList<>());
+    }
+
+    public Map<Category, List<item>> getStock() {
+        return stock;
+    }
+
 }
