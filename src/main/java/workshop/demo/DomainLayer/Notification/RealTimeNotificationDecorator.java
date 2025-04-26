@@ -1,5 +1,7 @@
 package workshop.demo.DomainLayer.Notification;
-import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
+import java.util.List;
+
+//import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 
 
 public class RealTimeNotificationDecorator extends BaseNotifier {
@@ -10,5 +12,12 @@ public class RealTimeNotificationDecorator extends BaseNotifier {
         this.notifier = notifier;
     }
 
-    public
+    public void sendRTMessageToUser(int senderId ,int receiverId, String message, boolean isReceiverOnline) {
+        if (isReceiverOnline) {
+            notifier.sendMessageToUser(message, senderId, receiverId); // Send immediately if online
+        } else {
+            // Handle the case when the receiver is offline (e.g., store the message for later delivery)
+            // This part can be implemented based on your requirements
+        }
+    }
 }

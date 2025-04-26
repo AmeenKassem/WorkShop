@@ -3,41 +3,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
+//import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 import org.springframework.stereotype.Component;
 
-@Component
+import workshop.demo.DTOs.MessageDTO;
+
 public class DelayedNotificationDecorator {
 
     private BaseNotifier notifier;
-    private Map<Integer, List<String>> delayedMessages = new ConcurrentHashMap<>();
+    private Map<Integer, List<MessageDTO>> delayedMessages; 
 
     public DelayedNotificationDecorator(BaseNotifier notifier) {
         this.notifier = notifier;
-
+        delayedMessages = new ConcurrentHashMap<>();
     }
 
-    public void sendMessageToUser(User u, String message) {
+    public void sendDelayedMessageToUser(int senderId, int receiverId, String message, boolean isReceiverOnline) {
         
-        // if(user.isOnline()){
-        //     try {
-        //         // Logic to send real-time notification to the user
-        //         notifier.sendMessageToUser(u, message);
-        //     } catch (Exception e) {
-        //         // Handle any exceptions that may occur during notification sending
-        //         System.err.println("Error sending real-time notification: " + e.getMessage());
-        //     }
-        // } else {
-        //     // Store the message for delayed delivery
-        //     delayedMessages.computeIfAbsent(u.getId(), k -> new ArrayList<>()).add(message);
-        //     System.out.println("User is offline. Message stored for later delivery: " + message);
-        // }
+        MessageDTO msg = new MessageDTO(senderId, receiverId, message);
+        if (isReceiverOnline) {
+            notifier.sendMessageToUser(message, senderId, receiverId); // Send immediately if online
+        } else if(delayedMessages.containsKey(receiverId)) {
+            delayedMessages.get(receiverId).add(msg);
+        } else {
+            delayedMessages.put(receiverId, List.of(msg));
+        }
     }
 
-    public void sendMessageToAll(List<User> users, String message) {
-        // for (User user : users) {
-        //     sendMessageToUser(user, message);
-        // }
+    public MessageDTO[] getDelayedMessages(int userId) {
+
+        if(!delayedMessages.containsKey(userId)) {
+            return null; // No delayed messages for this user
+        }else{
+            return delayedMessages.remove(userId).toArray(new MessageDTO[0]); // Return and remove the delayed messages for this user
+        }
     }
 
 }
