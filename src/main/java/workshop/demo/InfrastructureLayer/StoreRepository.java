@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.Store.StoreDTO;
@@ -194,4 +195,14 @@ public class StoreRepository implements IStoreRepo {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'viewAllStores'");
     }
+
+    @Override
+    public SingleBid bidOnAuction(int StoreId, int userId, int auctionId, double price) throws Exception {
+        if (findStoreByID(StoreId) == null) {
+            throw new Exception("can't delete manager: store does not exist");
+        }
+        return findStoreByID(StoreId).bidOnAuctionProduct(auctionId, userId, price);
+    }
+
+    
 }

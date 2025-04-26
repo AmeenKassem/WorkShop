@@ -2,6 +2,7 @@ package workshop.demo.DomainLayer.Store;
 
 import java.util.List;
 
+import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 //import workshop.demo.DomainLayer.Stock.ProductDTO;
 
@@ -37,4 +38,7 @@ public interface IStoreRepo {
     //another: getting info about the owners and manager->4.11
     //another: messages to response->4.12
     //another: getting info about the history of purcheses in a specific store
+
+    public SingleBid bidOnAuction(int StoreId,int userId, int auctionId , double price) throws Exception;
+
 }

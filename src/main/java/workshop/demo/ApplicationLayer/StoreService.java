@@ -5,7 +5,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
+import workshop.demo.DomainLayer.Exceptions.DevException;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
@@ -224,6 +227,20 @@ public class StoreService {
 
         } catch (Exception e) {
             logger.error("cannot close this store, Error: {}", e.getMessage());
+        }
+    }
+
+    public boolean bidOnProduct(String token, int auctionId, int storeId, double price) throws Exception{
+        if (!authRepo.validToken(token)) {
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if(userRepo.isRegistered(userId)&&userRepo.isOnline(userId)){
+            SingleBid bid = storeRepo.bidOnAuction(storeId, userId, auctionId, price);
+            userRepo.addBidToSpecialCart(bid);
+            return true;
+        }else{
+            throw new UIException("you are not logged in !");
         }
     }
 

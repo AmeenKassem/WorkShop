@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Stock.Product;
 
 public class Store {
@@ -13,6 +14,7 @@ public class Store {
     private String category;
     private boolean active;
     private Map<Product.Category, List<item>> stock;//map of category -> item
+    private ActivePurcheses activePurchases;
     //must add something for messages
 
     public Store(int storeID, String storeName, String category) {
@@ -49,5 +51,10 @@ public class Store {
     //display products in store
     // search product by name 
     //search product by category 
+
+
+    public SingleBid bidOnAuctionProduct(int auctionId, int userId,double price) throws Exception{
+        return activePurchases.addUserBidToAuction(auctionId, userId, price);
+    }
 
 }
