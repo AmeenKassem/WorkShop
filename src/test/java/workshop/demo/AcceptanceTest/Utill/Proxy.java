@@ -3,10 +3,10 @@ package workshop.demo.AcceptanceTest.Utill;
 public class Proxy implements Bridge {
     public Bridge real = new Real();
     // System
-    @Override
-    public String testSystem_InitMarket(String admin) throws Exception {
-        return "T";
-    }
+    // @Override
+    // public String testSystem_InitMarket(String admin) throws Exception {
+    // return "T";
+    // }
     // @Override
     // String testSystem_ConnectToPaymentService() throws Exception{
     // return "T";
@@ -18,18 +18,18 @@ public class Proxy implements Bridge {
     // Guest
 
     @Override
-    public String testGuest_LogIn() throws Exception {
-        return "T";
+    public String testGuest_Enter() throws Exception {
+        return real.testGuest_Enter();
     }
 
     @Override
-    public String testGuest_LogOut(String username) throws Exception {
-        return "T";
+    public String testGuest_Exit(String token) throws Exception {
+        return real.testGuest_Exit(token);
     }
-    
+
     @Override
-    public String testGuest_Register(String username, String password, int age) throws Exception {
-        return "T";
+    public String testGuest_Register(String token, String username, String password, int age) throws Exception {
+        return real.testGuest_Register(token, username, password, age);
     }
 
     @Override
@@ -67,15 +67,15 @@ public class Proxy implements Bridge {
         return "T";
     }
 
-    // User
+    //////////////////////////// User////////////////////////////
     @Override
-    public String testUser_LogIn() throws Exception {
-        return "T";
+    public String testUser_LogIn(String token, String username, String password) throws Exception {
+        return real.testUser_LogIn(token, username, password);
     }
 
     @Override
-    public String testUser_LogOut() throws Exception {
-        return "T";
+    public String testUser_LogOut(String token) throws Exception {
+        return real.testUser_LogOut(token);
     }
 
     @Override
@@ -136,6 +136,12 @@ public class Proxy implements Bridge {
     @Override
     public String testUser_ReceiveDelayedNotifications() throws Exception {
         return "T";
+    }
+
+    @Override
+    public String testUser_setAdmin() throws Exception {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'testUser_setAdmin'");
     }
 
     // Owner
@@ -224,11 +230,6 @@ public class Proxy implements Bridge {
         return "T";
     }
 
-    @Override
-    public String testOwner_OpenNewStore() throws Exception {
-        return "T";
-    }
-
     // Manager
     @Override
     public String testManager_PerformPermittedActions() throws Exception {
@@ -265,4 +266,11 @@ public class Proxy implements Bridge {
     public String testAdmin_ViewSystemInfo() throws Exception {
         return "T";
     }
+
+    @Override
+    public String testSystem_InitMarket(String admin) throws Exception {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'testSystem_InitMarket'");
+    }
+
 }

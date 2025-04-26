@@ -1,7 +1,6 @@
 package workshop.demo.AcceptanceTest.Utill;
 
 public class Real implements Bridge {
-    public Bridge real = new Real();
 
     // System
     @Override
@@ -19,17 +18,18 @@ public class Real implements Bridge {
 
     // Guest
     @Override
-    public String testGuest_LogIn() throws Exception {
+    public String testGuest_Enter() throws Exception {
+        return "T";
+
+    }
+
+    @Override
+    public String testGuest_Exit(String username) throws Exception {
         return "T";
     }
 
     @Override
-    public String testGuest_LogOut(String username) throws Exception {
-        return "T";
-    }
-
-    @Override
-    public String testGuest_Register(String username, String password, int age) throws Exception {
+    public String testGuest_Register(String token, String username, String password, int age) throws Exception {
         return "T";
     }
 
@@ -70,12 +70,12 @@ public class Real implements Bridge {
 
     // User
     @Override
-    public String testUser_LogIn() throws Exception {
-        return "T";
+    public String testUser_LogIn(String token, String username, String password) throws Exception {
+        return "T ";
     }
 
     @Override
-    public String testUser_LogOut() throws Exception {
+    public String testUser_LogOut(String token) throws Exception {
         return "T";
     }
 
@@ -137,6 +137,12 @@ public class Real implements Bridge {
     @Override
     public String testUser_ReceiveDelayedNotifications() throws Exception {
         return "T";
+    }
+
+    @Override
+    public String testUser_setAdmin() throws Exception {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'testUser_setAdmin'");
     }
 
     // Owner
@@ -222,11 +228,6 @@ public class Real implements Bridge {
 
     @Override
     public String testOwner_ViewStorePurchaseHistory() throws Exception {
-        return "T";
-    }
-
-    @Override
-    public String testOwner_OpenNewStore() throws Exception {
         return "T";
     }
 

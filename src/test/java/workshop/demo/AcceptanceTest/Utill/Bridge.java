@@ -6,18 +6,22 @@ public interface Bridge {
 
     // String testSystem_ConnectToPaymentService() throws Exception;
     // String testSystem_ConnectToSupplyService() throws Exception;
+
     // Guest
-    String testGuest_LogIn() throws Exception;
+    // generateGuest
+    String testGuest_Enter() throws Exception;
 
-    String testGuest_LogOut(String username) throws Exception;
+    // destroyGuest
+    String testGuest_Exit(String token) throws Exception;
 
-    String testGuest_Register(String username, String password, int age) throws Exception;
+    // register
+    String testGuest_Register(String token, String username, String password, int age) throws Exception;
 
     String testGuest_GetStoreInfo(String username, int storeID) throws Exception;
 
     String testGuest_GetProductInfo(String username, int productID) throws Exception;
 
-    String testGuest_SearchProduct(String username, String catagory) throws Exception;
+    String testGuest_SearchProduct(String username, String productname) throws Exception;
 
     String testGuest_SearchProductInStore(String username, int storeID, String catagory) throws Exception;
 
@@ -27,11 +31,15 @@ public interface Bridge {
 
     String testGuest_BuyCart(String username, int i) throws Exception;
 
-    // User
-    String testUser_LogIn() throws Exception;
+    //////////////////////////// User////////////////////////////
 
-    String testUser_LogOut() throws Exception;
+    // login
+    String testUser_LogIn(String token, String username, String password) throws Exception;
 
+    // logoutUser
+    String testUser_LogOut(String token) throws Exception;
+
+    // addStoreToSystem
     String testUser_OpenStore() throws Exception;
 
     String testUser_AddReview() throws Exception;
@@ -56,6 +64,9 @@ public interface Bridge {
 
     String testUser_ReceiveDelayedNotifications() throws Exception;
 
+    // setAdmin
+    String testUser_setAdmin() throws Exception;
+
     // Owner
     String testOwner_ManageInventory_AddProduct() throws Exception;
 
@@ -69,20 +80,27 @@ public interface Bridge {
 
     String testOwner_AssignNewOwner() throws Exception;
 
+    // DeleteOwnershipFromStore
     String testOwner_RemoveOwner() throws Exception;
 
+    // AddOwnershipToStore
     String testOwner_ResignOwnership() throws Exception;
 
+    // AddManagerToStore
     String testOwner_AssignManager() throws Exception;
 
+    // changePermissions
     String testOwner_EditManagerPermissions() throws Exception;
 
+    // deleteManager
     String testOwner_RemoveManager() throws Exception;
 
+    // closeStore
     String testOwner_CloseStore() throws Exception;
 
     String testOwner_ReopenStore() throws Exception;
 
+    // deactivateteStore
     String testOwner_ViewRolesAndPermissions() throws Exception;
 
     String testOwner_ReceiveNotifications() throws Exception;
@@ -91,12 +109,11 @@ public interface Bridge {
 
     String testOwner_ViewStorePurchaseHistory() throws Exception;
 
-    String testOwner_OpenNewStore() throws Exception;
-
     // Manager
     String testManager_PerformPermittedActions() throws Exception;
 
     // Admin
+    // closeStore
     String testAdmin_CloseStore() throws Exception;
 
     String testAdmin_RemoveUser() throws Exception;
