@@ -9,16 +9,18 @@ import workshop.demo.DomainLayer.Notification.INotificationRepo;
 public class NotificationRepository implements INotificationRepo {
 
     @Override
-    public void sendMessageToUser(User u, String message) {
+    public void sendMessageToUser(String message, int senderId, int receiverId) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'sendMessageToUser'");
     }
 
     @Override
-    public void sendMessageToAll(List<User> users, String message) {
+    public void sendMessageToAll(List<Integer> receiversIds, String message, int senderId) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'sendMessageToAll'");
     }
+
+    @Override
 
     
 }

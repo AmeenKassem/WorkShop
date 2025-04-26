@@ -4,8 +4,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
+import org.springframework.stereotype.Component;
 
-
+@Component
 public class DelayedNotificationDecorator {
 
     private BaseNotifier notifier;
@@ -39,5 +40,4 @@ public class DelayedNotificationDecorator {
         // }
     }
 
-    
 }

@@ -11,17 +11,16 @@ public class BaseNotifier implements INotificationRepo{
     }
 
     @Override
-    public void sendMessageToUser(User user,String message) {
+    public void sendMessageToUser(String message, int senderId, int receiverId) {
         // Default implementation for sending notification
         System.out.println("Sending notification: " + message);
     }
 
     @Override
-    public void sendMessageToAll(List<User> users, String message) {
+    public void sendMessageToAll(List<Integer> receiversIds, String message, int senderId) {
         // Default implementation for sending notification to all users
-        for (User user : users) {
-            sendMessageToUser(user, message);
+        for (Integer userId : receiversIds) {
+            sendMessageToUser(message, senderId, userId);
         }
     }
-
 }
