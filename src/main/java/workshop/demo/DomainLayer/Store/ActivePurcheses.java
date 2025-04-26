@@ -1,5 +1,5 @@
 package workshop.demo.DomainLayer.Store;
 
-public interface ActivePurcheses {
+public class ActivePurcheses {
 
 }
