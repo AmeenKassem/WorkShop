@@ -5,11 +5,15 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.OrderDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.Order.IOrderRepo;
 
 public class StoreService {
 
@@ -17,12 +21,14 @@ public class StoreService {
     private INotificationRepo notiRepo;
     private IAuthRepo authRepo;
     private IUserRepo userRepo;
+    private IOrderRepo orderRepo;
     private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
 
-    public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, IUserRepo userRepo) {
+    public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, IUserRepo userRepo,IOrderRepo orderRepo) {
         this.storeRepo = storeRepository;
         this.notiRepo = notiRepo;
         this.authRepo = authRepo;
+        this.orderRepo = orderRepo;
         logger.info("created the StoreService");
     }
 
@@ -227,4 +233,137 @@ public class StoreService {
         }
     }
 
+    public List<ItemStoreDTO> getProductsInStore(int storeId) throws Exception {
+        try {
+            logger.info("about to get all the products in store: {}", storeId);
+            return this.storeRepo.getProductsInStore(storeId);
+        } catch (Exception e) {
+            logger.error("could not get the products in store: {}, ERROR:", storeId, e.getMessage());
+
+        }
+        return null;
+    }
+
+    public void addItem(int storeId, String token, int productId, int quantity, int price, Category category) throws Exception {
+        try {
+            logger.info("about to to add an item into store: {}", storeId);
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int adderId = authRepo.getUserId(token);
+            if (!userRepo.isRegistered(adderId)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", adderId));
+            }
+            if (!storeRepo.manipulateItem(adderId, storeId, Permission.AddToStock)) {
+                throw new Exception("this worker is not authorized!");
+            }
+            this.storeRepo.addItem(storeId, productId, quantity, price, category);
+            logger.info("item added sucessfully!");
+
+        } catch (Exception e) {
+            logger.error("could not add item: {} in store: {}, ERROR:", productId, storeId, e.getMessage());
+
+        }
+    }
+
+    public void removeItem(int storeId, String token, int productId) throws Exception {
+        try {
+            logger.info("about to to remove(quantity=0) an item into store: {}", storeId);
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int removerId = authRepo.getUserId(token);
+            if (!userRepo.isRegistered(removerId)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", removerId));
+            }
+            if (!storeRepo.manipulateItem(removerId, storeId, Permission.DeleteFromStock)) {
+                throw new Exception("this worker is not authorized!");
+            }
+            logger.info("this worker is authorized");
+            this.storeRepo.removeItem(storeId, productId);
+            logger.info("item removed sucessfully!");
+
+        } catch (Exception e) {
+            logger.error("could not add item: {} in store: {}, ERROR:", productId, storeId, e.getMessage());
+
+        }
+    }
+
+    public void decreaseQtoBuy(int storeId, String token, int productId) throws Exception {
+        try {
+            logger.info("about to to decrease quantity to buy an item from store: {}", storeId);
+            if (!authRepo.validToken(token)) {//this token is for the buyer
+                throw new Exception("unvalid token!");
+            }
+            this.storeRepo.decreaseQtoBuy(storeId, productId);
+            logger.info("quantity decresed successfully!");
+        } catch (Exception e) {
+            logger.error("could not decreased ", e.getMessage());
+        }
+    }
+
+    public void updateQuantity(int storeId, String token, int productId) throws Exception {
+        try {
+            logger.info("about to to update quantity from store: {}", storeId);
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int changerId = authRepo.getUserId(token);
+            if (!userRepo.isRegistered(changerId)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", changerId));
+            }
+            if (!storeRepo.manipulateItem(changerId, storeId, Permission.UpdateQuantity)) {
+                throw new Exception("this worker is not authorized!");
+            }
+            logger.info("this worker is authorized");
+            this.storeRepo.updateQuantity(storeId, productId, productId);
+            logger.info("quantity updated sucessfully!");
+
+        } catch (Exception e) {
+            logger.error("could not update quantity ", e.getMessage());
+        }
+
+    }
+
+    public void updatePrice(int storeId, String token, int productId, int newPrice) throws Exception {
+        try {
+            logger.info("about to to update quantity from store: {}", storeId);
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int updaterId = authRepo.getUserId(token);
+            if (!userRepo.isRegistered(updaterId)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", updaterId));
+            }
+            if (!storeRepo.manipulateItem(updaterId, storeId, Permission.UpdatePrice)) {
+                throw new Exception("this worker is not authorized!");
+            }
+            logger.info("this worker is authorized");
+            this.storeRepo.updatePrice(storeId, productId, newPrice);
+            logger.info("price updated sucessfully!");
+
+        } catch (Exception e) {
+            logger.error("could not update quantity ", e.getMessage());
+        }
+    }
+
+    public void rankProduct(int storeId, String token, int productId, int newRank) throws Exception {
+        try {
+            logger.info("about to to update quantity from store: {}", storeId);
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int updaterId = authRepo.getUserId(token);
+            if (!userRepo.isRegistered(updaterId)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", updaterId));
+            }
+            this.storeRepo.rankProduct(storeId, productId, newRank);
+            logger.info("product ranked sucessfully!");
+        } catch (Exception e) {
+            logger.error("could notrank product", e.getMessage());
+        }
+    }
+    public List<OrderDTO> veiwStoreHistory(int storeId) throws Exception{
+       return this.orderRepo.getAllOrderByStore(storeId);
+    }
 }

@@ -1,25 +1,29 @@
 package workshop.demo.DomainLayer.Store;
 
-import java.lang.reflect.Array;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import workshop.demo.DTOs.Category;
 
 public class item {
 
-    private int produtId;
-    private int quantity;
+    private int productId;
+    private AtomicInteger quantity;
     private int price;
-    private int[] rank;//rank[x] is the number of people who ranked i+1
+    private Category category;
+    private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
 
-    public item(int produtId, int quantity, int price) {
+    public item(int produtId, int quantity, int price, Category category) {
+        this.productId = produtId;
         this.price = price;
-        this.quantity = quantity;
-        this.price = price;
-        this.rank = new int[5];
+        this.quantity = new AtomicInteger(quantity);;
+        this.rank = new AtomicInteger[5];
+        this.category = category;
     }
 
-    public double getFinalRank() {
-        double fRank = 0;
+    public int getFinalRank() {
+        int fRank = 0;
         for (int i = 0; i < rank.length; i++) {
-            fRank += rank[0] * (i + 1);
+            fRank += rank[i].get() * (i + 1);
         }
         return fRank;
     }
@@ -28,28 +32,45 @@ public class item {
         if (i < 1 || i > 5) {
             return false;
         }
-        rank[i]++;
+        rank[i].incrementAndGet();
         return true;
     }
 
     public int getQuantity() {
-        return quantity;
+        return quantity.get();
     }
 
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
+    public void AddQuantity() {
+        this.quantity.incrementAndGet();
     }
 
-    public int[] getRank() {
+    public void changeQuantity(int quantity) {
+        this.quantity.set(quantity);
+    }
+
+    public AtomicInteger[] getRank() {
         return rank;
     }
 
-    public void setRank(int[] rank) {
-        this.rank = rank;
+    public int getProductId() {
+        return productId;
     }
 
-    public int getProdutId() {
-        return produtId;
+    public Category getCategory() {
+        return category;
+    }
+
+    public synchronized int getPrice() {
+        return price;
+    }
+
+    public synchronized void setPrice(int price) {
+        this.price = price;
+    }
+
+    //for tests:
+    public void setRank(AtomicInteger[] rank) {
+        this.rank = rank;
     }
 
 }

@@ -1,6 +1,5 @@
 package workshop.demo.DTOs;
 
-
 public class ProductDTO {
 
     private int productId;

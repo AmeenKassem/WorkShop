@@ -1,7 +1,6 @@
-
 package workshop.demo.DomainLayer.Stock;
 
-import workshop.demo.DTOs.Category; 
+import workshop.demo.DTOs.Category;
 
 public class Product {
 
@@ -12,17 +11,15 @@ public class Product {
     private String description;
     private Category category;  // Using enum Category
 
-    
-
-    public Product(String name,int id, Category category, String description) {
+    public Product(String name, int id, Category category, String description) {
         this.name = name;
         this.productId = id;
         this.category = category;
         this.description = description;
-        this.totalAmount = 0;  
-        this.rating = 0.0;     
+        this.totalAmount = 0;
+        this.rating = 0.0;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -78,4 +75,3 @@ public class Product {
     }
 
 }
-

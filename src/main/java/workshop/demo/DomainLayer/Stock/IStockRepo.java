@@ -1,5 +1,5 @@
 package workshop.demo.DomainLayer.Stock;
-
+import workshop.demo.DTOs.ProductDTO;
 import java.util.List;
 
 import workshop.demo.DTOs.*;
