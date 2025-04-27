@@ -1,151 +1,157 @@
 package workshop.demo.AcceptanceTest.Utill;
 
+import workshop.demo.ApplicationLayer.UserService;
+import workshop.demo.DomainLayer.Authentication.IAuthRepo;
+import workshop.demo.DomainLayer.User.IUserRepo;
+import static org.mockito.Mockito.*;
+
 public class Real implements Bridge {
 
-    // System
+    private UserService user;
+
+    public Real() {
+        IUserRepo fakeUserRepo = mock(IUserRepo.class);
+        IAuthRepo fakeAuthRepo = mock(IAuthRepo.class);
+
+        when(fakeUserRepo.generateGuest()).thenReturn(123);
+        when(fakeAuthRepo.generateGuestToken(123)).thenReturn("guest-token");
+
+        this.user = new UserService(fakeUserRepo, fakeAuthRepo);
+    }
+
     @Override
     public String testSystem_InitMarket(String admin) throws Exception {
         return "T";
     }
-    // @Override
-    // String testSystem_ConnectToPaymentService() throws Exception{
-    // return "T";
-    // }
-    // @Override
-    // String testSystem_ConnectToSupplyService() throws Exception{
-    // return "T";
-    // }
 
-    // Guest
     @Override
     public String testGuest_Enter() throws Exception {
-        return "T";
-
+        return user.generateGuest();
     }
 
     @Override
-    public String testGuest_Exit(String username) throws Exception {
+    public String testGuest_Exit(String token) throws Exception {
+        user.destroyGuest(token);
         return "T";
     }
 
     @Override
     public String testGuest_Register(String token, String username, String password, int age) throws Exception {
+        user.register(token, username, password);
         return "T";
     }
 
     @Override
-    public String testGuest_GetStoreInfo(String username, int storeID) throws Exception {
+    public String testGuest_GetStoreInfo(String token, String username, int storeID) throws Exception {
         return "T";
     }
 
     @Override
-    public String testGuest_GetProductInfo(String username, int productID) throws Exception {
+    public String testGuest_GetProductInfo(String token, String username, int productID) throws Exception {
         return "T";
     }
 
     @Override
-    public String testGuest_SearchProduct(String username, String catagory) throws Exception {
+    public String testGuest_SearchProduct(String token, String username, String productname) throws Exception {
         return "T";
     }
 
     @Override
-    public String testGuest_SearchProductInStore(String username, int storeID, String catagory) throws Exception {
+    public String testGuest_SearchProductInStore(String token, String username, int storeID, int productId)
+            throws Exception {
         return "T";
     }
 
     @Override
-    public String testGuest_AddProductToCart(String username, int storeID, int productID, int count) throws Exception {
+    public String testGuest_AddProductToCart(String token, String username, int storeID, int productID, int count)
+            throws Exception {
         return "T";
     }
 
     @Override
-    public String testGuest_ModifyCart(String username, int storeID) throws Exception {
+    public String testGuest_ModifyCart(String token, String username, int cartID) throws Exception {
         return "T";
     }
 
     @Override
-    public String testGuest_BuyCart(String username, int i) throws Exception {
+    public String testGuest_BuyCart(String token, String username, String cartID) throws Exception {
         return "T";
     }
 
-    // User
+    // ================= USER =================
+
     @Override
     public String testUser_LogIn(String token, String username, String password) throws Exception {
-        return "T ";
+        user.login(token, username, password);
+        return "T";
     }
 
     @Override
     public String testUser_LogOut(String token) throws Exception {
+        user.logoutUser(token);
         return "T";
     }
 
     @Override
-    public String testUser_OpenStore() throws Exception {
+    public String testUser_OpenStore(String token, String username) throws Exception {
         return "T";
     }
 
     @Override
-    public String testUser_AddReview() throws Exception {
+    public String testUser_AddReview(String token, String username, int storeId, String review) throws Exception {
         return "T";
     }
 
     @Override
-    public String testUser_RateProductAndStore() throws Exception {
+    public String testUser_RateProductAndStore(String token, String username, int storeID, int productId, int rate)
+            throws Exception {
         return "T";
     }
 
     @Override
-    public String testUser_SendMessageToStoreOwner() throws Exception {
+    public String testUser_SendMessageToStoreOwner(String token, String username, String msg, int storeID)
+            throws Exception {
         return "T";
     }
 
     @Override
-    public String testUser_SendMessageToAdmin() throws Exception {
+    public String testUser_SendMessageToAdmin(String token, String username, String msg) throws Exception {
         return "T";
     }
 
     @Override
-    public String testUser_CheckPurchaseHistory() throws Exception {
+    public String testUser_CheckPurchaseHistory(String token, String username, String pass) throws Exception {
         return "T";
     }
 
     @Override
-    public String testUser_updateProfile() throws Exception {
+    public String testUser_updateProfile(String token, String username) throws Exception {
         return "T";
     }
 
     @Override
-    public String testUser_AddBid() throws Exception {
+    public String testUser_AddBid(String token, String username, int storeid, int productID, int bid) throws Exception {
         return "T";
     }
 
     @Override
-    public String testUser_JoinAuction() throws Exception {
+    public String testUser_JoinAuction(String token, String username, int storeID, int Auctionid) throws Exception {
         return "T";
     }
 
     @Override
-    public String testUser_JoinRaffle() throws Exception {
-        return "T";
-    }
-
-    @Override
-    public String testUser_ReceiveNotifications() throws Exception {
-        return "T";
-    }
-
-    @Override
-    public String testUser_ReceiveDelayedNotifications() throws Exception {
+    public String testUser_JoinRaffle(String token, String username, int storeID, int raffelid, int num)
+            throws Exception {
         return "T";
     }
 
     @Override
     public String testUser_setAdmin() throws Exception {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'testUser_setAdmin'");
+        return "T";
     }
 
-    // Owner
+    // ================= OWNER =================
+
     @Override
     public String testOwner_ManageInventory_AddProduct() throws Exception {
         return "T";
@@ -231,13 +237,15 @@ public class Real implements Bridge {
         return "T";
     }
 
-    // Manager
+    // ================= MANAGER =================
+
     @Override
     public String testManager_PerformPermittedActions() throws Exception {
         return "T";
     }
 
-    // Admin
+    // ================= ADMIN =================
+
     @Override
     public String testAdmin_CloseStore() throws Exception {
         return "T";
