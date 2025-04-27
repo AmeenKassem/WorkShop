@@ -1,6 +1,11 @@
 package workshop.demo.DomainLayer.Stock;
 
+<<<<<<< HEAD
 import workshop.demo.DTOs.Category;
+=======
+import workshop.demo.DTOs.Category;
+
+>>>>>>> development
 
 public class Product {
 
@@ -75,3 +80,7 @@ public class Product {
     }
 
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> development

@@ -13,7 +13,9 @@ import workshop.demo.DomainLayer.Exceptions.ProductNotFoundException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
+import workshop.demo.DomainLayer.Exceptions.ProductNotFoundException;
 
+//import workshop.demo.DomainLayer.Stock.ProductDTO;
 public class StockRepository implements IStockRepo {
 
     private final Map<Integer, Product> products = new HashMap<>();  // Map of productId -> Product
