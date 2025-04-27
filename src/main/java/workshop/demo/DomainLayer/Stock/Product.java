@@ -1,7 +1,11 @@
 
 package workshop.demo.DomainLayer.Stock;
 
+<<<<<<< HEAD
+import workshop.demo.DTOs.Category;
+=======
 import workshop.demo.DTOs.Category; 
+>>>>>>> development
 
 public class Product {
 
@@ -19,10 +23,10 @@ public class Product {
         this.productId = id;
         this.category = category;
         this.description = description;
-        this.totalAmount = 0;  
-        this.rating = 0.0;     
+        this.totalAmount = 0;
+        this.rating = 0.0;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -78,4 +82,7 @@ public class Product {
     }
 
 }
+<<<<<<< HEAD
+=======
 
+>>>>>>> development

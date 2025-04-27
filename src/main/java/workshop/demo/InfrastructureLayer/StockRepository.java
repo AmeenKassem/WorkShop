@@ -1,6 +1,4 @@
-
 package workshop.demo.InfrastructureLayer;
-
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +13,6 @@ import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 import workshop.demo.DomainLayer.Exceptions.ProductNotFoundException;
-
 
 //import workshop.demo.DomainLayer.Stock.ProductDTO;
 public class StockRepository implements IStockRepo {
@@ -33,18 +30,17 @@ public class StockRepository implements IStockRepo {
         return counterSId.getAndIncrement();
     }
 
-
-    public synchronized int addProduct(String name,Category category, String description) throws Exception {
-        for(Product product : products.values()){
-            if(product.getName().equals(name)){
+    public synchronized int addProduct(String name, Category category, String description) throws Exception {
+        for (Product product : products.values()) {
+            if (product.getName().equals(name)) {
                 throw new Exception("Product already exists in the system");
             }
             int id = generateId();
-            Product newProduct = new Product(name,id, category, description); 
+            Product newProduct = new Product(name, id, category, description);
             products.put(newProduct.getProductId(), newProduct);
             return id;
         }
-        return -1; 
+        return -1;
     }
 
     @Override
@@ -56,7 +52,7 @@ public class StockRepository implements IStockRepo {
             throw new ProductNotFoundException("Product " + productID + " does not exist.");
         }
     }
-    
+
     @Override
     public Product findById(int productId) {
         return products.get(productId);
@@ -80,15 +76,10 @@ public class StockRepository implements IStockRepo {
     // Search by category
     public List<ProductDTO> searchByCategory(Category category) {
         List<Product> matchingProducts = categoryProducts.getOrDefault(category, new ArrayList<>());
-        
+
         return matchingProducts.stream()
                 .map(product -> new ProductDTO(product.getProductId(), product.getName(), product.getCategory(), product.getDescription()))
                 .collect(Collectors.toList());
     }
 
-
-
-
 }
-
-
