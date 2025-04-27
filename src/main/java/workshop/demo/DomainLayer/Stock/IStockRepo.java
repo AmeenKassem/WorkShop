@@ -2,16 +2,16 @@ package workshop.demo.DomainLayer.Stock;
 import workshop.demo.DTOs.ProductDTO;
 import java.util.List;
 
+import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.ProductDTO;
+
 public interface IStockRepo {
 
-    public List<ProductDTO> viewProductsInStore(int storeID);
-
-    String addProduct(Product product);  // Adds a global product
-    boolean removeProduct(String productId);  
-    Product findById(String productId);  
-    List<Product> getAllProducts();  
-
-    boolean updateRating(String productId, double newRating);  
-    boolean updateDescription(String productId, String newDescription);  
-
+    int addProduct(String name, Category category, String description) throws Exception; // Adds a global product
+    String removeProduct(int productID);
+    Product findById(int productId);  
+    List<Product> getAllProducts();
+    public List<ProductDTO> searchByName(String name);
+    List<ProductDTO> searchByCategory(Category category);
 }
+

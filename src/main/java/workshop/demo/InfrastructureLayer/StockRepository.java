@@ -4,35 +4,57 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
+import workshop.demo.DomainLayer.Exceptions.ProductNotFoundException;
 
-import workshop.demo.DTOs.ProductDTO;
+//import workshop.demo.DomainLayer.Stock.ProductDTO;
 public class StockRepository implements IStockRepo {
 
-    private final Map<String, Product> products = new HashMap<>(); // store products with their productId as the key.
+    private final Map<Integer, Product> products = new HashMap<>();  // Map of productId -> Product
+    private final Map<Category, List<Product>> categoryProducts = new HashMap<>(); // Category -> List of Products
+    private static final AtomicInteger counterSId = new AtomicInteger(1);
+    private SuperDataStructure data;
 
-    @Override
-    public String addProduct(Product product) {
-        if (products.containsKey(product.getProductId())) {
-            return "Product already exists.";
+    public StockRepository() {
+        this.data = new SuperDataStructure();
+    }
+
+    public static int generateId() {
+        return counterSId.getAndIncrement();
+    }
+
+    public synchronized int addProduct(String name, Category category, String description) throws Exception {
+        for (Product product : products.values()) {
+            if (product.getName().equals(name)) {
+                throw new Exception("Product already exists in the system");
+            }
+            int id = generateId();
+            Product newProduct = new Product(name, id, category, description);
+            products.put(newProduct.getProductId(), newProduct);
+            return id;
         }
-        products.put(product.getProductId(), product);
-        return "Product added successfully.";
+        return -1;
     }
 
     @Override
-    public boolean removeProduct(String productId) {
-        if (productId == null || !products.containsKey(productId)) {
-            return false;
+    public synchronized String removeProduct(int productID) throws ProductNotFoundException {
+        if (products.containsKey(productID)) {
+            products.remove(productID);
+            return "Product " + productID + " removed successfully.";
+        } else {
+            throw new ProductNotFoundException("Product " + productID + " does not exist.");
         }
-        products.remove(productId);
-        return true;
     }
-    
+
     @Override
-    public Product findById(String productId) {
+    public Product findById(int productId) {
         return products.get(productId);
     }
 
@@ -41,29 +63,23 @@ public class StockRepository implements IStockRepo {
         return new ArrayList<>(products.values());
     }
 
-    @Override
-    public boolean updateRating(String productId, double newRating) {
-        Product product = products.get(productId);
-        if (product == null || newRating < 0 || newRating > 5) return false;
+    public List<ProductDTO> searchByName(String name) {
+        List<Product> matchingProducts = products.values().stream()
+                .filter(product -> product.getName().toLowerCase().contains(name.toLowerCase()))
+                .collect(Collectors.toList());
 
-        product.setRating(newRating);
-        return true;
+        return matchingProducts.stream()
+                .map(product -> new ProductDTO(product.getProductId(), product.getName(), product.getCategory(), product.getDescription()))
+                .collect(Collectors.toList());
     }
 
-    @Override
-    public boolean updateDescription(String productId, String newDescription) {
-        Product product = products.get(productId);
-        if (product == null) return false;
+    // Search by category
+    public List<ProductDTO> searchByCategory(Category category) {
+        List<Product> matchingProducts = categoryProducts.getOrDefault(category, new ArrayList<>());
 
-        product.setDescription(newDescription);
-        return true;
+        return matchingProducts.stream()
+                .map(product -> new ProductDTO(product.getProductId(), product.getName(), product.getCategory(), product.getDescription()))
+                .collect(Collectors.toList());
     }
 
-    @Override
-    public List<ProductDTO> viewProductsInStore(int storeID) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'viewProductsInStore'");
-    }
-
-    
 }
