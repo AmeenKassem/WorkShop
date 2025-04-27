@@ -1,22 +1,18 @@
-
-
 package workshop.demo.DomainLayer.Stock;
 
-//doesnt implement searching in specific store yet
-
 public class ProductSearchCriteria {
-    private String searchType; // keyword, productName, category
+    private String searchType;
     private String productNameFilter;
     private String categoryFilter;
     private String keywordFilter;
-
-    // filters
     private boolean isPriceRangeSpecified;
     private double minPrice;
     private double maxPrice;
     private boolean isProductRatingSpecified;
     private boolean isStoreRatingSpecified;
     private boolean isCategorySpecified;
+    private boolean isStoreSpecified;
+    private Integer storeId;
 
     public ProductSearchCriteria(
         String searchType, 
@@ -28,8 +24,10 @@ public class ProductSearchCriteria {
         double maxPrice, 
         boolean isProductRatingSpecified, 
         boolean isStoreRatingSpecified, 
-        boolean isCategorySpecified) 
-    {
+        boolean isCategorySpecified,
+        boolean isStoreSpecified,
+        Integer storeId
+    ) {
         this.searchType = searchType;
         this.productNameFilter = productNameFilter;
         this.categoryFilter = categoryFilter;
@@ -40,11 +38,12 @@ public class ProductSearchCriteria {
         this.isProductRatingSpecified = isProductRatingSpecified;
         this.isStoreRatingSpecified = isStoreRatingSpecified;
         this.isCategorySpecified = isCategorySpecified;
+        this.isStoreSpecified = isStoreSpecified;
+        this.storeId = storeId;
     }
 
     public ProductSearchCriteria() {}
 
-    // Getters and Setters
     public String getSearchType() {
         return searchType;
     }
@@ -124,5 +123,20 @@ public class ProductSearchCriteria {
     public void setCategorySpecified(boolean isCategorySpecified) {
         this.isCategorySpecified = isCategorySpecified;
     }
-}
 
+    public boolean isStoreSpecified() {
+        return isStoreSpecified;
+    }
+
+    public void setStoreSpecified(boolean storeSpecified) {
+        isStoreSpecified = storeSpecified;
+    }
+
+    public Integer getStoreId() {
+        return storeId;
+    }
+
+    public void setStoreId(Integer storeId) {
+        this.storeId = storeId;
+    }
+}

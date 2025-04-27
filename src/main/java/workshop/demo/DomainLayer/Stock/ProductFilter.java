@@ -1,44 +1,41 @@
-
-
 package workshop.demo.DomainLayer.Stock;
+
+import org.springframework.stereotype.Component;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.InfrastructureLayer.StockRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import org.springframework.stereotype.Component;
-import workshop.demo.DTOs.Category;
-import workshop.demo.InfrastructureLayer.StockRepository;
-import workshop.demo.DTOs.ProductDTO;
-
 
 @Component
 public class ProductFilter { 
 
-    private StockRepository stockRepository;
-    private static Map<String, List<Integer>> keywordSearch;// keyword ==> List of product ID's
+    private final StockRepository stockRepository;
 
     public ProductFilter(StockRepository stockRepository) {
         this.stockRepository = stockRepository;
     }
 
-    public static void addToKeyWords(String keyword, int prodID){
-        keywordSearch.computeIfAbsent(keyword, k -> new ArrayList<>()).add(prodID);
-    }
+    public ProductDTO[] handleSearch(ProductSearchCriteria entity) {
+        if (entity.isStoreSpecified()) {
+            return handleStoreSearch(entity);
+        }
 
-
-    public List<ProductDTO> handleSearch(ProductSearchCriteria entity) {
         String searchBy = entity.getSearchType();
-        List<ProductDTO> result = new ArrayList<>();
+        ProductDTO[] result = new ProductDTO[0];
 
         switch (searchBy) {
             case "keyWord":
-                result = searchByKeyword(entity.getKeywordFilter());
+                result = stockRepository.searchByKeyword(entity.getKeywordFilter());
                 break;
             case "productName":
-                result = searchByProductName(entity.getProductNameFilter());
+                result = stockRepository.searchByName(entity.getProductNameFilter());
                 break;
-            case "categotry":
-                result = searchByCategory(entity.getCategoryFilter());
+            case "category":
+                result = stockRepository.searchByCategory(Category.valueOf(entity.getCategoryFilter()));
                 break;
             default:
                 break;
@@ -46,49 +43,77 @@ public class ProductFilter {
         handleResult(result, entity);
         return result;
     }
-    public void handleResult(List<ProductDTO> result, ProductSearchCriteria entity) {
-        // Filter by product name if a product name filter is specified
-        if (entity.getProductNameFilter() != null && !entity.getKeywordFilter().isEmpty()) {
-            result.removeIf(pdto -> !pdto.getName().toLowerCase().contains(entity.getProductNameFilter().toLowerCase()));
+
+    private ProductDTO[] handleStoreSearch(ProductSearchCriteria entity) {
+        int storeId = entity.getStoreId();
+        List<ItemCartDTO> itemsInStore = stockRepository.getItemsByStoreId(storeId);
+        List<ProductDTO> result = new ArrayList<>();
+
+        for (ItemCartDTO item : itemsInStore) {
+            Product product = stockRepository.findById(item.id);
+            if (product != null) {
+                ProductDTO productDTO = new ProductDTO(
+                        product.getProductId(),
+                        product.getName(),
+                        product.getCategory(),
+                        product.getDescription()
+                );
+                result.add(productDTO);
+            }
         }
-    
-        if (entity.isCategorySpecified()) {
-            result.removeIf(pdto -> !pdto.getCategory().name().equalsIgnoreCase(entity.getCategoryFilter()));
-        }
-    
-        // Filter by product rating if prodRating is specified
-        if (entity.isProductRatingSpecified()) {
-            result.removeIf(pdto -> pdto.getRating() < entity.getMinPrice() || pdto.getRating() > entity.getMaxPrice());
-        }
+
+        ProductDTO[] resultArray = result.toArray(new ProductDTO[0]);
+        handleStoreResult(resultArray, entity, itemsInStore);
+        return resultArray;
     }
 
-
-    public List<ProductDTO> searchByProductName(String productName) {
-        return stockRepository.searchByName(productName);
-    }
-
-    public List<ProductDTO> searchByCategory(String categoryName) {
-        Category category = Category.valueOf(categoryName); // Convert string to enum
-        return stockRepository.searchByCategory(category);
-    }
-
-        // Search by keyword (using StockRepository to get products)
-        public List<ProductDTO> searchByKeyword(String keyword) {
-            List<ProductDTO> result = new ArrayList<>();
-            List<Integer> productIds = keywordSearch.get(keyword);
+    private void handleResult(ProductDTO[] products, ProductSearchCriteria entity) {
+        for (int i = 0; i < products.length; i++) {
+            ProductDTO pdto = products[i];
+            if (pdto == null) continue;
     
-            // Check if there are matching product IDs for the given keyword
-            if (productIds != null) {
-                for (Integer productId : productIds) {
-                    Product product = stockRepository.findById(productId); 
-                    if (product != null) {
-                        result.add(new ProductDTO(product.getProductId(), product.getName(), product.getCategory(), product.getDescription()));
-                    }
+            if (entity.getProductNameFilter() != null && !entity.getProductNameFilter().isEmpty()) {
+                if (!pdto.getName().toLowerCase().contains(entity.getProductNameFilter().toLowerCase())) {
+                    products[i] = null;
+                    continue;
                 }
             }
-            return result;
+    
+            if (entity.isCategorySpecified()) {
+                if (!pdto.getCategory().name().equalsIgnoreCase(entity.getCategoryFilter())) {
+                    products[i] = null;
+                    continue;
+                }
+            }
+    
+            if (entity.isProductRatingSpecified()) {
+                if (pdto.getRating() < entity.getMinPrice() || pdto.getRating() > entity.getMaxPrice()) {
+                    products[i] = null;
+                }
+            }
         }
+    }
+    private void handleStoreResult(ProductDTO[] products, ProductSearchCriteria entity, List<ItemCartDTO> itemsInStore) {
+        for (int i = 0; i < products.length; i++) {
+            ProductDTO product = products[i];
+            if (product == null) continue;
+            ItemCartDTO item = itemsInStore.get(i);
+    
+            if (entity.isCategorySpecified() && !product.getCategory().name().equalsIgnoreCase(entity.getCategoryFilter())) {
+                products[i] = null;
+                continue;
+            }
+    
+            if (entity.isPriceRangeSpecified() && (item.price < entity.getMinPrice() || item.price > entity.getMaxPrice())) {
+                products[i] = null;
+                continue;
+            }
+    
+            if (entity.isProductRatingSpecified() && (item.rank < 3)) {
+                products[i] = null;
+            }
+        }
+    }
 
-
-}
-
+ 
+}    

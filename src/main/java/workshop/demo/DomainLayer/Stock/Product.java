@@ -1,5 +1,6 @@
 
 package workshop.demo.DomainLayer.Stock;
+import java.util.List;
 
 import workshop.demo.DTOs.Category; 
 
@@ -11,6 +12,7 @@ public class Product {
     private double rating;
     private String description;
     private Category category;  // Using enum Category
+    private List<String> keywords; // List of keywords associated with the product
 
     
 
@@ -75,6 +77,17 @@ public class Product {
 
     public synchronized void setCategory(Category category) {
         this.category = category;
+    }
+
+    public List<String> getKeywords() {
+        return keywords;
+    }
+    
+    public synchronized void setKeywords(List<String> keywords) {
+        this.keywords = keywords;
+    }
+    public void addKeyword(String keyword) {
+        this.keywords.add(keyword);
     }
 
 }
