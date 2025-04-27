@@ -54,10 +54,8 @@ public class OrderRepository implements IOrderRepo {
     public List<ReceiptDTO> getReceiptDTOsByUser(int userId) throws Exception {
         boolean flag = false;
         List<ReceiptDTO> toReturn = new ArrayList<>();
-        List<Order> result = new ArrayList<>();
         for (List<Order> orderList : history.values()) {
-            result.addAll(orderList);
-            for (Order order : result) {
+            for (Order order : orderList) {
                 if (order.getUserId() == userId) {
                     flag = true;
                     ReceiptDTO receiptDTO = new ReceiptDTO(order.getStoreName(), order.getDate(), order.getProductsList(), order.getFinalPrice());
