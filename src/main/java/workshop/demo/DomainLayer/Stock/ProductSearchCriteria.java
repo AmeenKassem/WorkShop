@@ -1,3 +1,5 @@
+
+
 package workshop.demo.DomainLayer.Stock;
 
 //doesnt implement searching in specific store yet
@@ -123,3 +125,4 @@ public class ProductSearchCriteria {
         this.isCategorySpecified = isCategorySpecified;
     }
 }
+
