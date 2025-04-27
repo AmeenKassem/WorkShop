@@ -3,28 +3,26 @@ package workshop.demo.DomainLayer.Purchase;
 import java.util.ArrayList;
 import java.util.List;
 
-import workshop.demo.DTOs.RecieptDTO;
+import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.InfrastructureLayer.StockRepository;
-import workshop.demo.InfrastructureLayer.StoreRepository; 
+import workshop.demo.InfrastructureLayer.StoreRepository;
 
 public class Purchase {
 
-    
     private final ShoppingCart shoppingCart;
-    private final StockRepository stockRepository; 
-    private final StoreRepository storeRepository; 
+    private final StockRepository stockRepository;
+    private final StoreRepository storeRepository;
 
     public Purchase(ShoppingCart shoppingCart, StockRepository stockRepository, StoreRepository storeRepository) {
-        this.storeRepository = storeRepository; 
         this.shoppingCart = shoppingCart;
         this.stockRepository = stockRepository;
+        this.storeRepository = storeRepository;
     }
 
-    
     private boolean allProductsAvailable() {
         for (ShoppingBasket basket : shoppingCart.getBaskets().values()) {
             for (CartItem item : basket.getItems()) {
@@ -41,28 +39,25 @@ public class Purchase {
         System.out.println("Payment successful for: " + item.getProductId());
     }
 
-    // Mock supply function
     private void mockSupply(CartItem item) {
         System.out.println("Supply successful for: " + item.getProductId());
     }
 
-        public List<RecieptDTO> executePurchase(boolean isGuest) throws Exception {
-        List<RecieptDTO> receipts = new ArrayList<>();
+    public List<ReceiptDTO> executePurchase(boolean isGuest) throws Exception {
+        List<ReceiptDTO> receipts = new ArrayList<>();
 
-        // Step 1: Validate availability
-        if (isGuest) {
-            if (!allProductsAvailable()) {
-                throw new Exception("Guest purchase failed: Not all products are available.");
-            }
+        // Step 1: Validate availability (only for guests)
+        if (isGuest && !allProductsAvailable()) {
+            throw new Exception("Guest purchase failed: Not all products are available.");
         }
 
-        // Step 2: Go over each basket
+        // Step 2: For each basket (store) in the cart
         for (ShoppingBasket basket : shoppingCart.getBaskets().values()) {
             double totalPrice = 0;
-            String storeName = storeRepository.getStoreNameById(storeId); // get from repo
-            String storeName = basket.getStoreName(); // I assume you have store name in Basket
-
             List<String> boughtItems = new ArrayList<>();
+
+            // Get store name
+            String storeName = storeRepository.getStoreNameById(basket.getStoreId());
 
             for (CartItem item : basket.getItems()) {
                 Product product = stockRepository.findById(item.getProductId());
@@ -71,28 +66,30 @@ public class Purchase {
                     // Product is available
                     totalPrice += item.getPrice() * item.getQuantity();
                     boughtItems.add(item.getName() + " x" + item.getQuantity());
+                    
+                    // Reduce stock
                     product.setTotalAmount(product.getTotalAmount() - item.getQuantity());
-            
+
+                    // Simulate payment and supply
                     mockPayment(item);
                     mockSupply(item);
 
                 } else if (!isGuest) {
-                    // Product not available and registered user → skip
+                    // Registered user: skip unavailable items
                     continue;
                 } else {
+                    // Guest must have all products available
                     throw new Exception("Unexpected missing product during Guest purchase.");
                 }
             }
 
-            // If anything was bought, create a receipt
+            // Create a receipt if items were bought
             if (!boughtItems.isEmpty()) {
-                RecieptDTO receipt = new RecieptDTO(storeName, totalPrice, boughtItems);  //missing implementation of RecieptDTO
+                RecieptDTO receipt = new ReceiptDTO(storeName, totalPrice, boughtItems);
                 receipts.add(receipt);
             }
         }
 
         return receipts;
     }
-
-
 }
