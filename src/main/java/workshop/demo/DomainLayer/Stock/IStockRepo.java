@@ -1,6 +1,8 @@
 package workshop.demo.DomainLayer.Stock;
 
 import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.ProductDTO;
+
 
 public interface IStockRepo {
 
@@ -8,7 +10,7 @@ public interface IStockRepo {
     String removeProduct(int productID);
     Product findById(int productId);  
     ProductDTO[] getAllProducts();
-    public ProductDTO[] searchByName(String name);
+    ProductDTO[] searchByName(String name);
     ProductDTO[] searchByCategory(Category category);
 }
 
