@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -244,4 +245,27 @@ public class StoreService {
         }
     }
 
+    public AuctionDTO[] getAllAuctions(String token , int storeId)throws Exception{
+        if (!authRepo.validToken(token)) {
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if(userRepo.isRegistered(userId)&&userRepo.isOnline(userId)){
+           return storeRepo.getAuctionsOnStore(userId,storeId);
+        }else{
+            throw new UIException("you are not logged in !");
+        }
+    }
+
+    public int setProductToAuction(String token,int id ,int productId,int quantity,long time,double startPrice) throws Exception{
+        if (!authRepo.validToken(token)) {
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if(!(userRepo.isRegistered(userId)&&userRepo.isOnline(userId))){
+            throw new UIException("you are not logged in !");
+        }
+        return storeRepo.addAuctionToStore(id, userId, productId, quantity, time, startPrice);
+    }
+    
 }

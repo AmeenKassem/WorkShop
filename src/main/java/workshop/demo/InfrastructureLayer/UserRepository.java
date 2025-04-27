@@ -5,6 +5,7 @@ import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.GuestNotFoundException;
 import workshop.demo.DomainLayer.Exceptions.IncorrectLogin;
@@ -151,5 +152,11 @@ public class UserRepository implements IUserRepo {
         }
         return false;
 	}
+
+    @Override
+    public void addBidToSpecialCart(SingleBid bid) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addBidToSpecialCart'");
+    }
 
 }

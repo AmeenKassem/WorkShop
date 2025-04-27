@@ -121,4 +121,9 @@ public class SuperDataStructure {
     public Map<Integer, Tree> getEmployees() {
         return employees;
     }
+
+    public boolean checkPermession(int userId, int storeId, Permission auction) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'checkPermession'");
+    }
 }

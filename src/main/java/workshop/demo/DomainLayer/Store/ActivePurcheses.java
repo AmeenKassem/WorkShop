@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.User.bidShoppingCart;
@@ -27,9 +28,9 @@ public class ActivePurcheses {
         return id;
     }
 
-    public int addProductToBid(int productId, int quantity, long time){
+    public int addProductToBid(int productId, int quantity, long time,double startPrice){
         int id = bidIdGen.incrementAndGet();
-        BID bid = new BID(productId,quantity,time,id, storeId);
+        BID bid = new BID(productId,quantity,time,id, storeId,startPrice);
         activeBid.add(bid);
         return id;
     }
@@ -40,6 +41,16 @@ public class ActivePurcheses {
         }
         return activeAuction.get(auctionId).bid(userId, price);
     }
+
+	public AuctionDTO[] getAuctions() {
+		AuctionDTO[] auctionDTOs = new AuctionDTO[activeAuction.size()];
+        int i=0;
+        for(Auction auction : activeAuction.values()){
+            auctionDTOs[i]=auction.getDTO();
+            i++;
+        }
+        return auctionDTOs;
+	}
 
 
 

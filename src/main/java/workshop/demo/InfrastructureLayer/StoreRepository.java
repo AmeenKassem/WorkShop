@@ -4,7 +4,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.Store.StoreDTO;
@@ -202,6 +204,32 @@ public class StoreRepository implements IStoreRepo {
             throw new Exception("can't delete manager: store does not exist");
         }
         return findStoreByID(StoreId).bidOnAuctionProduct(auctionId, userId, price);
+    }
+
+    @Override
+    public int addAuctionToStore(int StoreId,int userId, int productId, int quantity, long tome, double startPrice)
+            throws Exception {
+                if (findStoreByID(StoreId) == null) {
+                    throw new Exception("can't delete manager: store does not exist");
+                }
+                if(!data.checkPermession(userId,StoreId ,Permission.Auction)){
+                    throw new UIException("you have no permession to add auction.");
+                }
+                
+                return findStoreByID(StoreId).addProductToAuction(productId, quantity, startPrice, tome);
+        
+    }
+
+    @Override
+    public AuctionDTO[] getAuctionsOnStore(int storeId,int userId) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.Auction)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        
+        return findStoreByID(storeId).getAllAuctions();
     }
 
     
