@@ -1,7 +1,6 @@
 package workshop.demo.InfrastructureLayer;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +27,8 @@ public class OrderRepository implements IOrderRepo {
     }
 
     @Override
-    public void setOrderToStore(int storeId, int userId, ReceiptDTO receiptDTO) {
-        Order order = new Order(generateId(), userId, receiptDTO);
+    public void setOrderToStore(int storeId, int userId, ReceiptDTO receiptDTO, String storeName) {
+        Order order = new Order(generateId(), userId, receiptDTO, storeName);
         if (!history.containsKey(storeId)) {
             history.put(storeId, new ArrayList<>());
         }
@@ -45,8 +44,8 @@ public class OrderRepository implements IOrderRepo {
         List<OrderDTO> toReturn = new ArrayList<>();
         List<Order> tochange = this.history.get(storeId);
         for (Order order : tochange) {
-            // OrderDTO TOadd = new OrderDTO(order.getUserId(), storeId, order.getDate(), order.getProductsList(), order.getFinalPrice());
-            // toReturn.add(TOadd);
+            OrderDTO TOadd = new OrderDTO(order.getUserId(), storeId, order.getDate(), order.getProductsList(), order.getFinalPrice());
+            toReturn.add(TOadd);
         }
         return toReturn;
     }

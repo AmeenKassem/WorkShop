@@ -7,7 +7,7 @@ import workshop.demo.DTOs.ReceiptDTO;
 
 public interface IOrderRepo {
 
-    public void setOrderToStore(int storeId, int userId, ReceiptDTO receiptDTO);
+    public void setOrderToStore(int storeId, int userId, ReceiptDTO receiptDTO, String storeName);
 
     public List<OrderDTO> getAllOrderByStore(int storeId) throws Exception;
 

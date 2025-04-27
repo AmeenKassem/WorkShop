@@ -6,12 +6,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.Order.IOrderRepo;
 
 public class StoreService {
 
@@ -19,12 +21,14 @@ public class StoreService {
     private INotificationRepo notiRepo;
     private IAuthRepo authRepo;
     private IUserRepo userRepo;
+    private IOrderRepo orderRepo;
     private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
 
-    public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, IUserRepo userRepo) {
+    public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, IUserRepo userRepo,IOrderRepo orderRepo) {
         this.storeRepo = storeRepository;
         this.notiRepo = notiRepo;
         this.authRepo = authRepo;
+        this.orderRepo = orderRepo;
         logger.info("created the StoreService");
     }
 
@@ -358,5 +362,8 @@ public class StoreService {
         } catch (Exception e) {
             logger.error("could notrank product", e.getMessage());
         }
+    }
+    public List<OrderDTO> veiwStoreHistory(int storeId) throws Exception{
+       return this.orderRepo.getAllOrderByStore(storeId);
     }
 }
