@@ -1,15 +1,15 @@
 package workshop.demo.DTOs;
 
-import workshop.demo.DomainLayer.Stock.Product.Category;
-
 public class ItemStoreDTO {
 
+    private int id;
     public int quantity;
     public int price;
     public Category category;
     public int rank;
 
-    public ItemStoreDTO(int quantity, int price, Category category, int rank) {
+    public ItemStoreDTO(int id, int quantity, int price, Category category, int rank) {
+        this.id = id;
         this.quantity = quantity;
         this.price = price;
         this.category = category;

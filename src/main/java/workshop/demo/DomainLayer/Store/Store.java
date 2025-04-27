@@ -6,10 +6,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DomainLayer.Stock.Product;
-import workshop.demo.DomainLayer.Stock.Product.Category;
-import workshop.demo.DomainLayer.Store.item;
 
 public class Store {
 
@@ -17,7 +15,8 @@ public class Store {
     private String storeName;
     private String category;
     private boolean active;
-    private Map<Product.Category, List<item>> stock;//map of category -> item
+    private Map<Category, List<item>> stock;//map of category -> item
+    //ADD RANK FOR STORE
     //must add something for messages
 
     public Store(int storeID, String storeName, String category) {
@@ -60,31 +59,6 @@ public class Store {
         return null; // not found
     }
 
-    // add product  -> in repo: 1.getProductById if->not excist 2. add MainStock 3. calling this func:
-    // public void addItem(item newItem) {
-    //     List<item> items;
-    //     synchronized (stock) {
-    //         items = stock.get(newItem.getCategory());
-    //         if (items == null) {
-    //             items = new ArrayList<>();
-    //             stock.put(newItem.getCategory(), items);
-    //         }
-    //     }
-    //     synchronized (items) {
-    //         item existingItem = null;
-    //         for (item i : items) {
-    //             if (i.getProductId() == newItem.getProductId()) {
-    //                 existingItem = i;
-    //                 break;
-    //             }
-    //         }
-    //         if (existingItem != null) {
-    //             existingItem.AddQuantity(); // Update quantity
-    //         } else {
-    //             items.add(newItem); // Add new item
-    //         }
-    //     }
-    // }
     public void addItem(item newItem) {
 
         // Retrieve or create the list of items for the given category
@@ -124,6 +98,15 @@ public class Store {
         foundItem.changeQuantity(quantity);
     }
 
+    //decrase quantity to buy: -> check if I need synchronized the item???
+    public void decreaseQtoBuy(int itemId) throws Exception {
+        item foundItem = getItemByProductId(itemId);
+        if (foundItem == null) {
+            throw new Exception("Item not fount with ID " + itemId);
+        }
+        foundItem.changeQuantity(foundItem.getQuantity() - 1);
+    }
+
     // update price
     public void updatePrice(int itemId, int newPrice) throws Exception {
         item foundItem = getItemByProductId(itemId);
@@ -149,7 +132,7 @@ public class Store {
         }
     }
 
-    //display products in store
+    //FOR STORE AND TESTING
     // Thread-safe method to get an item by its productId
     public item getItemByProductId(int productId) {
         for (List<item> items : stock.values()) {
@@ -165,21 +148,19 @@ public class Store {
         return null;
     }
 
-    //search product by category 
-    public List<ItemStoreDTO> getItemsByCategory(Category category) throws Exception {
-        List<ItemStoreDTO> itemStoreDTOList = new ArrayList<>();
-        List<item> items = stock.get(category);
-        if (items == null) {
-            throw new Exception("there is no such category!");
-        }
-        for (item i : items) {
-            //int regularInt = i.getQuantity().get();
-            itemStoreDTOList.add(new ItemStoreDTO(i.getQuantity(), i.getPrice(), i.getCategory(), i.getFinalRank()));
-        }
-
-        return itemStoreDTOList;
-    }
-
+    // //search product by category //no need for it 
+    // public List<ItemStoreDTO> getItemsByCategory(Category category) throws Exception {
+    //     List<ItemStoreDTO> itemStoreDTOList = new ArrayList<>();
+    //     List<item> items = stock.get(category);
+    //     if (items == null) {
+    //         throw new Exception("there is no such category!");
+    //     }
+    //     for (item i : items) {
+    //         //int regularInt = i.getQuantity().get();
+    //         itemStoreDTOList.add(new ItemStoreDTO(i.getQuantity(), i.getPrice(), i.getCategory(), i.getFinalRank()));
+    //     }
+    //     return itemStoreDTOList;
+    // }
     //just for testing
     //public List<item> getItemsByCategoryObject(Category category) throws Exception {
     public List<item> getItemsByCategoryObject(Category category) {
@@ -189,6 +170,20 @@ public class Store {
 
     public Map<Category, List<item>> getStock() {
         return stock;
+    }
+
+    //display products in store -> also for layan
+    public List<ItemStoreDTO> getProductsInStore() {
+        List<ItemStoreDTO> itemStoreDTOList = new ArrayList<>();
+        for (List<item> items : stock.values()) {
+            // Synchronize the list of items to ensure thread-safety when accessing the list
+            synchronized (items) {//must check if it needed to be synchronized
+                for (item i : items) {
+                    itemStoreDTOList.add(new ItemStoreDTO(i.getProductId(), i.getQuantity(), i.getPrice(), i.getCategory(), i.getFinalRank()));
+                }
+            }
+        }
+        return null;
     }
 
 }

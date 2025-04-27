@@ -2,7 +2,7 @@ package workshop.demo.DomainLayer.Store;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import workshop.demo.DomainLayer.Stock.Product.Category;
+import workshop.demo.DTOs.Category;
 
 public class item {
 

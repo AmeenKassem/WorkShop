@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import workshop.demo.DomainLayer.Stock.Product.Category;
+import workshop.demo.DTOs.Category;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.Store.item;
 
@@ -129,7 +129,7 @@ public class StoreStockTests {
     @Test
     public void testRankProductConcurrency() throws InterruptedException {
         // Create a sample item with rank array of length 5 (for ranks 1 to 5)
-        item testItem = new item(1, 10, 100, Category.ELECTRONICS);
+        item testItem = new item(1, 10, 100, workshop.demo.DTOs.Category.ELECTRONICS);
         testItem.setRank(new AtomicInteger[5]);  // Assuming ranks from 1 to 5
         for (int i = 0; i < 5; i++) {
             testItem.getRank()[i] = new AtomicInteger(0);

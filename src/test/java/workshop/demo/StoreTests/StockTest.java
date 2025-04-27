@@ -1,14 +1,13 @@
 package workshop.demo.StoreTests;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import workshop.demo.DomainLayer.Stock.Product.Category;
+import workshop.demo.DTOs.Category;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.Store.item;
 

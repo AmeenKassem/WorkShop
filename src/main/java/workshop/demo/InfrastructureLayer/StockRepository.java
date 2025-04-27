@@ -8,7 +8,7 @@ import java.util.Map;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 
-import workshop.demo.DomainLayer.Stock.ProductDTO;
+import workshop.demo.DTOs.ProductDTO;
 public class StockRepository implements IStockRepo {
 
     private final Map<String, Product> products = new HashMap<>(); // store products with their productId as the key.

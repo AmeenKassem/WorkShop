@@ -1,6 +1,6 @@
 package workshop.demo.DTOs;
 
-import workshop.demo.DomainLayer.Stock.Product.Category;
+import workshop.demo.DTOs.Category;
 
 public class ItemCartDTO {
 
