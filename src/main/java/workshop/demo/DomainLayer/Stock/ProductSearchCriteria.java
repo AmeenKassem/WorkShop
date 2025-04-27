@@ -8,6 +8,7 @@ public class ProductSearchCriteria {
     private boolean isPriceRangeSpecified;
     private double minPrice;
     private double maxPrice;
+    
     private boolean isProductRatingSpecified;
     private boolean isStoreRatingSpecified;
     private boolean isCategorySpecified;

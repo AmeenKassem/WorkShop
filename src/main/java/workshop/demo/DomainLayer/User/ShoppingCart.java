@@ -20,4 +20,11 @@ public class ShoppingCart {
         storeBaskets.get(storeId).addItem(item);
         
     }
+
+
+
+    public Object getBaskets() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getBaskets'");
+    }
 }

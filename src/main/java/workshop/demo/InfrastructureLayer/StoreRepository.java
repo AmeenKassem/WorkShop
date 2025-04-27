@@ -194,4 +194,13 @@ public class StoreRepository implements IStoreRepo {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'viewAllStores'");
     }
+
+    public String getStoreNameById(int storeId) {
+        for (Store store : stores) {
+            if (store.getStroeID() == storeId) {
+                return store.getStoreName();
+            }
+        }
+        return null;
+    }
 }

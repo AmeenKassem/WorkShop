@@ -6,7 +6,6 @@ import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.InfrastructureLayer.StockRepository;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,6 +92,7 @@ public class ProductFilter {
             }
         }
     }
+    
     private void handleStoreResult(ProductDTO[] products, ProductSearchCriteria entity, List<ItemCartDTO> itemsInStore) {
         for (int i = 0; i < products.length; i++) {
             ProductDTO product = products[i];

@@ -17,5 +17,10 @@ public class ShoppingBasket {
         itemsOnCart.add(item);
     }
 
+    public CartItem[] getItems() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getItems'");
+    }
+
 
 }
