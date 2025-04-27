@@ -152,4 +152,10 @@ public class UserRepository implements IUserRepo {
         return false;
 	}
 
+    @Override
+    public void removeItemFromGeustCart(int guestId, int productId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'removeItemFromGeustCart'");
+    }
+
 }
