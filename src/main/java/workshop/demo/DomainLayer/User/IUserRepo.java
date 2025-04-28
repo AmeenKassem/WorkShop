@@ -1,6 +1,7 @@
 package workshop.demo.DomainLayer.User;
 
 import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.SingleBid;
 
 public interface IUserRepo {
 
@@ -53,6 +54,10 @@ public interface IUserRepo {
     //===========
 
     public void addItemToGeustCart(int guestId, ItemCartDTO item);
+    
+    public void removeItemFromGeustCart(int guestId, int productId);
+
+
 
     public boolean isAdmin(int id);
 
@@ -72,5 +77,14 @@ public interface IUserRepo {
      * @return
      */
     public boolean setUserAsAdmin(int id ,String adminKey);
+
+
+
+
+    /**
+     * this function must add a bid to user special cart.
+     * @param bid
+     */
+    public void addBidToSpecialCart(SingleBid bid);
 
 }

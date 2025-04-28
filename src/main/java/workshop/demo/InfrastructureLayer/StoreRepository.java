@@ -4,6 +4,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.Store.StoreDTO;
@@ -194,4 +198,90 @@ public class StoreRepository implements IStoreRepo {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'viewAllStores'");
     }
+
+    //======================================
+
+    @Override
+    public SingleBid bidOnAuction(int StoreId, int userId, int auctionId, double price) throws Exception {
+        if (findStoreByID(StoreId) == null) {
+            throw new Exception("can't delete manager: store does not exist");
+        }
+        return findStoreByID(StoreId).bidOnAuctionProduct(auctionId, userId, price);
+    }
+
+    @Override
+    public int addAuctionToStore(int StoreId,int userId, int productId, int quantity, long tome, double startPrice)
+            throws Exception {
+                if (findStoreByID(StoreId) == null) {
+                    throw new Exception("can't delete manager: store does not exist");
+                }
+                if(!data.checkPermession(userId,StoreId ,Permission.SpecialType)){
+                    throw new UIException("you have no permession to add auction.");
+                }
+                
+                return findStoreByID(StoreId).addProductToAuction(userId,productId, quantity, startPrice, tome);
+        
+    }
+
+    @Override
+    public AuctionDTO[] getAuctionsOnStore(int storeId,int userId) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        
+        return findStoreByID(storeId).getAllAuctions();
+    }
+
+    @Override
+    public int addProductToBid(int storeId, int userId, int productId, int quantity) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        
+        return findStoreByID(storeId).addProductToBid(userId, productId, quantity);
+    }
+
+    @Override
+    public SingleBid bidOnBid(int bidId, double price, int userId,int storeId) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        
+        return findStoreByID(storeId).bidOnBid(bidId, userId, price);
+    }
+
+    @Override
+    public BidDTO[] getAllBids(int userId, int storeId) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        
+        return findStoreByID(storeId).getAllBids();
+    }
+
+    @Override
+    public SingleBid acceptBid(int storeId, int bidId) throws Exception {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'acceptBid'");
+    }
+
+    @Override
+    public int addProductToRandom(int productId, int storeId, int quantity, int cardsNumber, double priceForCard) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addProductToRandom'");
+    }
+
+    
 }
