@@ -49,6 +49,8 @@ public interface IStoreRepo {
 
     public AuctionDTO[] getAuctionsOnStore(int userId, int storeId) throws Exception ;
 
+    
+    
     //bid:
 
     public int addProductToBid(int storeId,int userid,int productId,int quantity) throws Exception;
