@@ -18,6 +18,7 @@ public class Store {
     private Map<Category, List<item>> stock;//map of category -> item
     //ADD RANK FOR STORE
     //must add something for messages
+    private double storeRating; 
 
     public Store(int storeID, String storeName, String category) {
         this.stock = new ConcurrentHashMap<>();
@@ -25,6 +26,7 @@ public class Store {
         this.storeName = storeName;
         this.category = category;
         this.active = true;
+        this.storeRating = 0.0; 
 
     }
 
@@ -44,6 +46,13 @@ public class Store {
         return active;
     }
 
+    public double getStoreRating() {
+        return storeRating;
+    }
+    public void setStoreRating(double storeRating) {
+        this.storeRating = storeRating;
+    }
+    
     public synchronized void setActive(boolean active) {
         this.active = active;
     }
