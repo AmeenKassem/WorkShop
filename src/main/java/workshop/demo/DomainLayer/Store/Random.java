@@ -44,7 +44,7 @@ public class Random {
         synchronized(lock){
             if(cardsLeft<=0) throw new UIException("there is no cards left...");
             if(!userCards.containsKey(userId)) 
-                userCards.put(userId, new CardForRandomDTO(productId,storeId,userId));
+                userCards.put(userId, new CardForRandomDTO(productId,storeId,userId,id));
             cardsLeft--;
             return userCards.get(userId);
         }
