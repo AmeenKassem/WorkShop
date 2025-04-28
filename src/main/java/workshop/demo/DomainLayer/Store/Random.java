@@ -43,8 +43,8 @@ public class Random {
     public CardForRandomDTO buyCard(int userId) throws Exception{
         synchronized(lock){
             if(cardsLeft<=0) throw new UIException("there is no cards left...");
-            if(userCards.containsKey(userId)) userCards.put(userId, userCards.get(id).addCard());
-            else userCards.put(userId, new CardForRandomDTO(productId,storeId,userId));
+            if(!userCards.containsKey(userId)) 
+                userCards.put(userId, new CardForRandomDTO(productId,storeId,userId));
             cardsLeft--;
             return userCards.get(userId);
         }

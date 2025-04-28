@@ -4,6 +4,8 @@ import java.util.List;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.CardForRandomDTO;
+import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 //import workshop.demo.DomainLayer.Stock.ProductDTO;
@@ -63,6 +65,12 @@ public interface IStoreRepo {
 
     //random:
 
-    public int addProductToRandom(int productId,int storeId,int quantity,int cardsNumber,double priceForCard);
+    public int addProductToRandom(int productId,int userId,int storeId,int quantity,int cardsNumber,double priceForCard) throws Exception;
+
+    public CardForRandomDTO buyCardForRandom(int userId,int randomId,int storeId) throws Exception;
+
+    public CardForRandomDTO endRandom(int storeId,int userId,int randomId) throws Exception;
+
+    public RandomDTO[] getRandomsInStore(int storeId, int userId) throws Exception;
 
 }

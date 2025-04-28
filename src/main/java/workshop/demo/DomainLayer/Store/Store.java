@@ -6,7 +6,9 @@ import java.util.Map;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.CardForRandomDTO;
 import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.Product;
@@ -112,6 +114,25 @@ public class Store {
 
     public SingleBid acceptBid(int bidId,int userBidId) throws Exception {
         return activePurchases.acceptBid(userBidId, bidId);
+    }
+
+    //====================== random
+
+    public int addProductToRandom(int productId, int quantity, int cardsNumber, double priceForCard) throws Exception {
+        decreaseFromQuantity(quantity, productId);
+        return activePurchases.addProductToRandom(productId, quantity, cardsNumber, priceForCard);
+    }
+
+    public CardForRandomDTO buyCardForRandom(int userId,int randomid) throws Exception{
+        return activePurchases.buyCardForRandomDTO(userId, randomid);
+    }
+
+    public CardForRandomDTO end(int randomId) throws Exception{
+        return activePurchases.endRandom(randomId);
+    }
+
+    public RandomDTO[] getRandoms(){
+        return activePurchases.getRandoms();
     }
 
 }
