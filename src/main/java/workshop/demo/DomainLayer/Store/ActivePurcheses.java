@@ -96,7 +96,7 @@ public class ActivePurcheses {
     
     public int addProductToRandom(int productId, int quantity, int numberOfCards,double priceForCard) {
         int id = randomIdGen.incrementAndGet();
-        Random random = new Random(productId, quantity, numberOfCards,priceForCard,id);
+        Random random = new Random(productId, quantity, numberOfCards,priceForCard,id,storeId);
         activeRandom.put(id, random);
         return id;
     }

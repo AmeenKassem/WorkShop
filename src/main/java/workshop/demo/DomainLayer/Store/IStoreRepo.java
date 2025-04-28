@@ -57,4 +57,10 @@ public interface IStoreRepo {
 
     public BidDTO[] getAllBids(int userId,int storeId) throws Exception;
 
+    public SingleBid acceptBid(int storeId,int bidId) throws Exception;
+
+    //random:
+
+    public int addProductToRandom(int productId,int storeId,int quantity,int cardsNumber,double priceForCard);
+
 }

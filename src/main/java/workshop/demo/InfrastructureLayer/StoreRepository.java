@@ -199,6 +199,8 @@ public class StoreRepository implements IStoreRepo {
         throw new UnsupportedOperationException("Unimplemented method 'viewAllStores'");
     }
 
+    //======================================
+
     @Override
     public SingleBid bidOnAuction(int StoreId, int userId, int auctionId, double price) throws Exception {
         if (findStoreByID(StoreId) == null) {
@@ -267,6 +269,18 @@ public class StoreRepository implements IStoreRepo {
         }
         
         return findStoreByID(storeId).getAllBids();
+    }
+
+    @Override
+    public SingleBid acceptBid(int storeId, int bidId) throws Exception {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'acceptBid'");
+    }
+
+    @Override
+    public int addProductToRandom(int productId, int storeId, int quantity, int cardsNumber, double priceForCard) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addProductToRandom'");
     }
 
     
