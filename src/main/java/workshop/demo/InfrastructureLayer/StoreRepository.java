@@ -284,4 +284,17 @@ public class StoreRepository implements IStoreRepo {
         }
 
     }
+
+    public double getStoreRating(int storeId) {
+        Store store = findStoreByID(storeId);  
+        if (store == null) {
+            throw new IllegalArgumentException("Store with ID " + storeId + " not found");
+        }
+        return store.getStoreRating(); 
+    }
+
+    public List<Store> getStores() {
+        return stores; 
+    }
+
 }
