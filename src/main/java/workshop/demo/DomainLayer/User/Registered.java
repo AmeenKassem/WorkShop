@@ -42,4 +42,8 @@ public class Registered extends Guest {
     public void login(){
         isOnline = true;
     }
+
+    public String getUsername() {
+        return username;
+    }
 }
