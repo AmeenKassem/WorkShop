@@ -1,10 +1,10 @@
-
 package workshop.demo.DomainLayer.Stock;
 
 <<<<<<< HEAD
 import workshop.demo.DTOs.Category;
 =======
-import workshop.demo.DTOs.Category; 
+import workshop.demo.DTOs.Category;
+
 >>>>>>> development
 
 public class Product {
@@ -16,9 +16,7 @@ public class Product {
     private String description;
     private Category category;  // Using enum Category
 
-    
-
-    public Product(String name,int id, Category category, String description) {
+    public Product(String name, int id, Category category, String description) {
         this.name = name;
         this.productId = id;
         this.category = category;

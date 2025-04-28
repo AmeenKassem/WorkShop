@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DomainLayer.Exceptions.ProductNotFoundException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;

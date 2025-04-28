@@ -199,7 +199,7 @@ public class StoreRepository implements IStoreRepo {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'viewAllStores'");
     }
-
+    //stock managment:
     @Override
     public List<ItemStoreDTO> getProductsInStore(int storeId) throws Exception {
         if (findStoreByID(storeId) == null) {
