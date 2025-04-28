@@ -169,15 +169,34 @@ public class UserRepository implements IUserRepo {
 	}
 
     @Override
-    public void addBidToSpecialCart(SingleBid bid) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addBidToSpecialCart'");
-    }
-
-    @Override
     public void removeItemFromGeustCart(int guestId, int productId) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'removeItemFromGeustCart'");
+    }
+
+    @Override
+    public void addBidToRegularCart(SingleBid bid) {
+        
+        try{
+            getRegisteredUser(bid.getUserId()).addRegularBid(bid);
+            logger.info("Bid added to regular cart for user id: " + bid.getUserId());
+        }
+        catch (UserIdNotFound e){
+            logger.warning("User not found: " + bid.getUserId());
+            throw new UserIdNotFound(bid.getUserId() + "");
+        }
+    }
+
+    @Override
+    public void addBidToAuctionCart(SingleBid bid) {
+        try{
+            getRegisteredUser(bid.getUserId()).addAuctionBid(bid);
+            logger.info("Bid added to auction cart for user id: " + bid.getUserId());
+        }
+        catch (UserIdNotFound e){
+            logger.warning("User not found: " + bid.getUserId());
+            throw new UserIdNotFound(bid.getUserId() + "");
+        }
     }
 
 }

@@ -37,6 +37,10 @@ public class SingleBid {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'rejectBid'");
     }
+    public int getUserId() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getUserId'");
+    }
 
 
 }

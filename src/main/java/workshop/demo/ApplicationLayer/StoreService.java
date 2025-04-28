@@ -231,14 +231,28 @@ public class StoreService {
         }
     }
 
-    public boolean bidOnProduct(String token, int auctionId, int storeId, double price) throws Exception{
+    public boolean addBidOnAucction(String token, int auctionId, int storeId, double price) throws Exception{
         if (!authRepo.validToken(token)) {
             throw new Exception("unvalid token!");
         }
         int userId = authRepo.getUserId(token);
         if(userRepo.isRegistered(userId)&&userRepo.isOnline(userId)){
             SingleBid bid = storeRepo.bidOnAuction(storeId, userId, auctionId, price);
-            userRepo.addBidToSpecialCart(bid);
+            userRepo.addBidToAuctionCart(bid);
+            return true;
+        }else{
+            throw new UIException("you are not logged in !");
+        }
+    }
+
+    public boolean addRegularBid(String token, int bitId, int storeId, double price) throws Exception{
+        if (!authRepo.validToken(token)) {
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if(userRepo.isRegistered(userId)&&userRepo.isOnline(userId)){
+            SingleBid bid = storeRepo.bidOnBid(bitId, price, userId, storeId);
+            userRepo.addBidToRegularCart(bid);
             return true;
         }else{
             throw new UIException("you are not logged in !");

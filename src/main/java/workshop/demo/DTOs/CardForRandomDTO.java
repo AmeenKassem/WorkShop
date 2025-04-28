@@ -7,13 +7,16 @@ public class CardForRandomDTO {
    public int numberOfCards;
    public boolean isWinner ;
    public boolean ended;
+   public int randomId; 
    
 
-   public CardForRandomDTO(int productId2, int storeId2, int userId2) {
+   public CardForRandomDTO(int productId2, int storeId2, int userId2, int randomId) {
     userId=userId2 ;
     this.storeId=storeId2;
     this.productId= productId2;
-}
+   this.randomId=randomId;
+
+   }
 
 
    public CardForRandomDTO addCard() {
@@ -32,5 +35,9 @@ public class CardForRandomDTO {
       isWinner=false;
        ended=true;
    } 
+
+   public int getRandomId() {
+      return randomId;
+   }
    
 }
