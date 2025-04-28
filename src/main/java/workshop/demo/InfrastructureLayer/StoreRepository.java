@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
@@ -212,11 +213,11 @@ public class StoreRepository implements IStoreRepo {
                 if (findStoreByID(StoreId) == null) {
                     throw new Exception("can't delete manager: store does not exist");
                 }
-                if(!data.checkPermession(userId,StoreId ,Permission.Auction)){
+                if(!data.checkPermession(userId,StoreId ,Permission.SpecialType)){
                     throw new UIException("you have no permession to add auction.");
                 }
                 
-                return findStoreByID(StoreId).addProductToAuction(productId, quantity, startPrice, tome);
+                return findStoreByID(StoreId).addProductToAuction(userId,productId, quantity, startPrice, tome);
         
     }
 
@@ -225,11 +226,47 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!data.checkPermession(userId,storeId ,Permission.Auction)){
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
             throw new UIException("you have no permession to see auctions info.");
         }
         
         return findStoreByID(storeId).getAllAuctions();
+    }
+
+    @Override
+    public int addProductToBid(int storeId, int userId, int productId, int quantity) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        
+        return findStoreByID(storeId).addProductToBid(userId, productId, quantity);
+    }
+
+    @Override
+    public SingleBid bidOnBid(int bidId, double price, int userId,int storeId) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        
+        return findStoreByID(storeId).bidOnBid(bidId, userId, price);
+    }
+
+    @Override
+    public BidDTO[] getAllBids(int userId, int storeId) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        
+        return findStoreByID(storeId).getAllBids();
     }
 
     

@@ -3,6 +3,7 @@ package workshop.demo.DomainLayer.Store;
 import java.util.List;
 
 import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 //import workshop.demo.DomainLayer.Stock.ProductDTO;
@@ -40,12 +41,20 @@ public interface IStoreRepo {
     //another: messages to response->4.12
     //another: getting info about the history of purcheses in a specific store
 
+    //auction:
+
     public SingleBid bidOnAuction(int StoreId,int userId, int auctionId , double price) throws Exception;
 
     public int addAuctionToStore(int StoreId,int userId, int productId,int quantity,long tome,double startPrice) throws Exception;
 
-    // public AuctionDTO[] getAuctionsOnStore(int storeId) throws Exception;
-
     public AuctionDTO[] getAuctionsOnStore(int userId, int storeId) throws Exception ;
+
+    //bid:
+
+    public int addProductToBid(int storeId,int userid,int productId,int quantity) throws Exception;
+
+    public SingleBid bidOnBid(int bidId,double price,int userId,int storeId) throws Exception;
+
+    public BidDTO[] getAllBids(int userId,int storeId) throws Exception;
 
 }

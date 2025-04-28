@@ -25,6 +25,18 @@ public class SingleBid {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'markAsLosed'");
     }
+    public Integer getId() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getId'");
+    }
+    public void acceptBid() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'acceptBid'");
+    }
+    public void rejectBid() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'rejectBid'");
+    }
 
 
 }
