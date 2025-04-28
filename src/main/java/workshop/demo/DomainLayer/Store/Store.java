@@ -110,4 +110,8 @@ public class Store {
        return activePurchases.getAuctions();
     }
 
+    public SingleBid acceptBid(int bidId,int userBidId) throws Exception {
+        return activePurchases.acceptBid(userBidId, bidId);
+    }
+
 }

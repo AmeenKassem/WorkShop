@@ -59,7 +59,7 @@ public interface IStoreRepo {
 
     public BidDTO[] getAllBids(int userId,int storeId) throws Exception;
 
-    public SingleBid acceptBid(int storeId,int bidId) throws Exception;
+    public SingleBid acceptBid(int storeId,int bidId,int userId,int userBidId) throws Exception;
 
     //random:
 

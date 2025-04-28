@@ -6,16 +6,31 @@ public class CardForRandomDTO {
    public int productId;
    public int numberOfCards;
    public boolean isWinner ;
-
+   public boolean ended;
+   
 
    public CardForRandomDTO(int productId2, int storeId2, int userId2) {
-    //TODO Auto-generated constructor stub
+    userId=userId2 ;
+    this.storeId=storeId2;
+    this.productId= productId2;
 }
 
 
    public CardForRandomDTO addCard() {
-      // TODO Auto-generated method stub
-      throw new UnsupportedOperationException("Unimplemented method 'addCard'");
+      numberOfCards++;
+      return this;
+   }
+
+
+   public void markAsWinner() {
+         isWinner=true;
+         ended=true;
+   }
+
+
+   public void markAsLoser() {
+      isWinner=false;
+       ended=true;
    } 
    
 }

@@ -235,6 +235,8 @@ public class StoreRepository implements IStoreRepo {
         return findStoreByID(storeId).getAllAuctions();
     }
 
+
+    //=============Bid
     @Override
     public int addProductToBid(int storeId, int userId, int productId, int quantity) throws Exception {
         if (findStoreByID(storeId) == null) {
@@ -272,16 +274,25 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public SingleBid acceptBid(int storeId, int bidId) throws Exception {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'acceptBid'");
+    public SingleBid acceptBid(int storeId, int bidId,int userId,int userBidId) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        
+        return findStoreByID(storeId).acceptBid(bidId);
     }
+
+    //===================Random
 
     @Override
     public int addProductToRandom(int productId, int storeId, int quantity, int cardsNumber, double priceForCard) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'addProductToRandom'");
     }
+
 
     
 }

@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.CardForRandomDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -77,12 +78,12 @@ public class ActivePurcheses {
         return bidDTOs;
     }
 
-    public boolean acceptBid(int userBidId,int bidId) throws Exception{
+    public SingleBid acceptBid(int userBidId,int bidId) throws Exception{
         if (!activeBid.containsKey(bidId)) {
             throw new DevException("Id is not found on bid hashmap!");
         }
-        activeBid.get(bidId).acceptBid(userBidId);
-        return true;
+        return activeBid.get(bidId).acceptBid(userBidId);
+        
     }
 
     public void rejectBid(int userBidId,int bidId)throws Exception{
@@ -100,7 +101,17 @@ public class ActivePurcheses {
         activeRandom.put(id, random);
         return id;
     }
+
+    public CardForRandomDTO buyCardForRandomDTO(int userId,int randomId) throws Exception{
+        if(!activeRandom.containsKey(randomId)) throw new DevException("trying to buy a card from unfound random id...");
+        return activeRandom.get(randomId).buyCard(userId);
+    }
     
+    public CardForRandomDTO endRandom(int randomId) throws Exception{
+        if(!activeRandom.containsKey(randomId)) throw new DevException("trying to buy a card from unfound random id...");
+        return activeRandom.get(randomId).endRandom();
+    }
+
     public RandomDTO[] getRandoms() {
         RandomDTO[] randomDTOs = new RandomDTO[activeRandom.size()];
         int i = 0;
