@@ -18,6 +18,7 @@ public class Store {
     private Map<Category, List<item>> stock;//map of category -> item
     private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
     //must add something for messages
+    private double storeRating;
 
     public Store(int storeID, String storeName, String category) {
         this.stock = new ConcurrentHashMap<>();
@@ -46,6 +47,14 @@ public class Store {
 
     public boolean isActive() {
         return active;
+    }
+
+    public double getStoreRating() {
+        return storeRating;
+    }
+
+    public void setStoreRating(double storeRating) {
+        this.storeRating = storeRating;
     }
 
     public synchronized void setActive(boolean active) {

@@ -200,6 +200,7 @@ public class StoreRepository implements IStoreRepo {
         throw new UnsupportedOperationException("Unimplemented method 'viewAllStores'");
     }
 
+    //stock managment:
     @Override
     public List<ItemStoreDTO> getProductsInStore(int storeId) throws Exception {
         if (findStoreByID(storeId) == null) {

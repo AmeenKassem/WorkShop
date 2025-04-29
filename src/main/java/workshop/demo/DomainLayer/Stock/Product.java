@@ -1,5 +1,8 @@
 package workshop.demo.DomainLayer.Stock;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import workshop.demo.DTOs.Category;
 
 public class Product {
@@ -10,6 +13,7 @@ public class Product {
     private double rating;
     private String description;
     private Category category;  // Using enum Category
+    private List<String> keywords; // List of keywords for the product
 
     public Product(String name, int id, Category category, String description) {
         this.name = name;
@@ -72,6 +76,21 @@ public class Product {
 
     public synchronized void setCategory(Category category) {
         this.category = category;
+    }
+
+    public List<String> getKeywords() {
+        return keywords;
+    }
+
+    public synchronized void setKeywords(List<String> keywords) {
+        this.keywords = keywords;
+    }
+
+    public void addKeyword(String keyword) {
+        if (this.keywords == null) {
+            this.keywords = new ArrayList<>();
+        }
+        this.keywords.add(keyword);
     }
 
 }
