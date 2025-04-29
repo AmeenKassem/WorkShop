@@ -54,6 +54,11 @@ public interface IStoreRepo {
 
     public void rankProduct(int storeId, int productId, int newRank) throws Exception;
 
+    //STORE RANK:
+    public void rankStore(int storeId, int newRank) throws Exception;
+
+    public int getFinalRateInStore(int storeId) throws Exception;
+
     //another: getting info about the owners and manager->4.11
     //another: messages to response->4.12
     //another: getting info about the history of purcheses in a specific store -> taking it from Layan

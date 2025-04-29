@@ -199,6 +199,7 @@ public class StoreRepository implements IStoreRepo {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'viewAllStores'");
     }
+
     //stock managment:
     @Override
     public List<ItemStoreDTO> getProductsInStore(int storeId) throws Exception {
@@ -285,16 +286,23 @@ public class StoreRepository implements IStoreRepo {
 
     }
 
-    public double getStoreRating(int storeId) {
-        Store store = findStoreByID(storeId);  
+    //RANK STORE:
+    @Override
+    public void rankStore(int storeId, int newRank) throws Exception {
+        Store store = findStoreByID(storeId);
         if (store == null) {
-            throw new IllegalArgumentException("Store with ID " + storeId + " not found");
+            throw new Exception("store does not exist");
         }
-        return store.getStoreRating(); 
+        store.rankStore(newRank);
     }
 
-    public List<Store> getStores() {
-        return stores; 
-    }
+    @Override
+    public int getFinalRateInStore(int storeId) throws Exception {
+        Store store = findStoreByID(storeId);
+        if (store == null) {
+            throw new Exception("store does not exist");
+        }
+        return store.getFinalRateInStore(storeId);
 
+    }
 }
