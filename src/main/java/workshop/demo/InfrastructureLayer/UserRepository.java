@@ -2,16 +2,11 @@ package workshop.demo.InfrastructureLayer;
 
 import java.util.HashMap;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.GuestNotFoundException;
 import workshop.demo.DomainLayer.Exceptions.IncorrectLogin;
-import workshop.demo.DomainLayer.Exceptions.TokenNotFoundException;
 import workshop.demo.DomainLayer.Exceptions.UserIdNotFound;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
-import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
@@ -23,13 +18,11 @@ public class UserRepository implements IUserRepo {
     private HashMap<String, Registered> users;
     private HashMap<Integer, String> idToUsername;
     private Encoder encoder;
-    // @Autowired
     private AdminInitilizer adminInit;
 
-
-    public UserRepository(Encoder encoder,AdminInitilizer adminInit) {
+    public UserRepository(Encoder encoder, AdminInitilizer adminInit) {
         this.encoder = encoder;
-        this.adminInit=adminInit;
+        this.adminInit = adminInit;
         users = new HashMap<>();
         guests = new HashMap<>();
         idToUsername = new HashMap<>();
@@ -37,12 +30,13 @@ public class UserRepository implements IUserRepo {
 
     @Override
     public int logoutUser(String username) {
-        if(userExist(username)){
+        if (userExist(username)) {
             Registered user = users.get(username);
             user.logout();
             return generateGuest();
-        }else
+        } else {
             throw new UserIdNotFound(username);
+        }
     }
 
     @Override
@@ -95,8 +89,8 @@ public class UserRepository implements IUserRepo {
     @Override
     public void addItemToGeustCart(int guestId, ItemCartDTO item) {
         if (guestExist(guestId)) {
-            Guest geust = guests.get(guestId);
-            geust.addToCart(item);
+            Guest guest = guests.get(guestId);
+            guest.addToCart(item);
         } else {
             throw new GuestNotFoundException(guestId);
         }
@@ -110,52 +104,52 @@ public class UserRepository implements IUserRepo {
     @Override
     public boolean isAdmin(int id) {
         Registered registered = getRegisteredUser(id);
-        if(registered!=null)
+        if (registered != null) {
             return registered.isAdmin();
+        }
         return false;
     }
 
     @Override
     public boolean isRegistered(int id) {
-        return getRegisteredUser(id)!=null;
-        
+        return getRegisteredUser(id) != null;
     }
 
     @Override
     public boolean isOnline(int id) {
         Registered registered = getRegisteredUser(id);
-        if(registered!=null)
+        if (registered != null) {
             return registered.isOnlien();
+        }
         return false;
     }
 
-    private Registered getRegisteredUser(int id){
-        if(idToUsername.containsKey(id)){
+    private Registered getRegisteredUser(int id) {
+        if (idToUsername.containsKey(id)) {
             String username = idToUsername.get(id);
-            if(users.containsKey(username)){
+            if (users.containsKey(username)) {
                 return users.get(username);
+            } else {
+                throw new UserIdNotFound(username);
             }
-            else throw new UserIdNotFound(username);
         }
         return null;
     }
 
-	@Override
-	public boolean setUserAsAdmin(int id, String adminKey) {
-		Registered registered = getRegisteredUser(id);
-        if(registered!=null){
-            if(adminInit.matchPassword(adminKey)){
+    @Override
+    public boolean setUserAsAdmin(int id, String adminKey) {
+        Registered registered = getRegisteredUser(id);
+        if (registered != null) {
+            if (adminInit.matchPassword(adminKey)) {
                 registered.setAdmin();
                 return true;
             }
         }
         return false;
-	}
+    }
 
     @Override
     public void removeItemFromGeustCart(int guestId, int productId) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'removeItemFromGeustCart'");
     }
-
 }
