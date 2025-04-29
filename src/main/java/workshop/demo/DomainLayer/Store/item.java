@@ -17,22 +17,33 @@ public class item {
         this.price = price;
         this.quantity = new AtomicInteger(quantity);;
         this.rank = new AtomicInteger[5];
+        for (int i = 0; i < 5; i++) {
+            rank[i] = new AtomicInteger(0);
+        }
         this.category = category;
     }
 
     public int getFinalRank() {
-        int fRank = 0;
+        int totalVotes = 0;
+        int WRank = 0;
         for (int i = 0; i < rank.length; i++) {
-            fRank += rank[i].get() * (i + 1);
+            int count = rank[i].get(); // votes for rank (i+1)
+            totalVotes += count;
+            WRank += (i + 1) * count;
         }
-        return fRank;
+        if (totalVotes == 0) {
+            return 3;//defult rank
+
+        }
+        int avgRank = (int) Math.round((double) WRank / totalVotes);
+        return Math.max(1, Math.min(5, avgRank));//to make surre the result is between 1 and 5
     }
 
-    public boolean rankP(int i) {
+    public boolean rankItem(int i) {
         if (i < 1 || i > 5) {
             return false;
         }
-        rank[i].incrementAndGet();
+        rank[i - 1].incrementAndGet();
         return true;
     }
 

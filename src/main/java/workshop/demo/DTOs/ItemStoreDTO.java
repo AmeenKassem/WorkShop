@@ -8,6 +8,11 @@ public class ItemStoreDTO {
     public Category category;
     public int rank;
 
+    //name
+    //store name
+    //rating
+    //price
+    //product id
     public ItemStoreDTO(int id, int quantity, int price, Category category, int rank) {
         this.id = id;
         this.quantity = quantity;

@@ -200,6 +200,10 @@ public class StoreRepository implements IStoreRepo {
         throw new UnsupportedOperationException("Unimplemented method 'viewAllStores'");
     }
 
+<<<<<<< Updated upstream
+=======
+    //stock managment:
+>>>>>>> Stashed changes
     @Override
     public List<ItemStoreDTO> getProductsInStore(int storeId) throws Exception {
         if (findStoreByID(storeId) == null) {
@@ -282,6 +286,26 @@ public class StoreRepository implements IStoreRepo {
         } else {
             return false;
         }
+
+    }
+
+    //RANK STORE:
+    @Override
+    public void rankStore(int storeId, int newRank) throws Exception {
+        Store store = findStoreByID(storeId);
+        if (store == null) {
+            throw new Exception("store does not exist");
+        }
+        store.rankStore(newRank);
+    }
+
+    @Override
+    public int getFinalRateInStore(int storeId) throws Exception {
+        Store store = findStoreByID(storeId);
+        if (store == null) {
+            throw new Exception("store does not exist");
+        }
+        return store.getFinalRateInStore(storeId);
 
     }
 }

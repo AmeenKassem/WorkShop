@@ -7,8 +7,10 @@ import org.slf4j.LoggerFactory;
 
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
+import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
@@ -21,7 +23,11 @@ public class StoreService {
     private IUserRepo userRepo;
     private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
 
+<<<<<<< Updated upstream
     public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, IUserRepo userRepo) {
+=======
+    public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, IUserRepo userRepo, IOrderRepo orderRepo) {
+>>>>>>> Stashed changes
         this.storeRepo = storeRepository;
         this.notiRepo = notiRepo;
         this.authRepo = authRepo;
@@ -323,7 +329,7 @@ public class StoreService {
 
     public void updatePrice(int storeId, String token, int productId, int newPrice) throws Exception {
         try {
-            logger.info("about to to update quantity from store: {}", storeId);
+            logger.info("about to to update price from store: {}", storeId);
             if (!authRepo.validToken(token)) {
                 throw new Exception("unvalid token!");
             }
@@ -345,7 +351,7 @@ public class StoreService {
 
     public void rankProduct(int storeId, String token, int productId, int newRank) throws Exception {
         try {
-            logger.info("about to to update quantity from store: {}", storeId);
+            logger.info("about to rank product in store: {}", storeId);
             if (!authRepo.validToken(token)) {
                 throw new Exception("unvalid token!");
             }
@@ -359,4 +365,33 @@ public class StoreService {
             logger.error("could notrank product", e.getMessage());
         }
     }
+<<<<<<< Updated upstream
+=======
+
+    //MUST CHECK WHO CAN DO IT???
+    public List<OrderDTO> veiwStoreHistory(int storeId) throws Exception {
+        return this.orderRepo.getAllOrderByStore(storeId);
+    }
+
+    public void rankStore(String token, int storeId, int newRank) throws Exception {
+        try {
+            logger.info("about to rank store: {}", storeId);
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            this.storeRepo.rankStore(storeId, newRank);
+            logger.info("product ranked sucessfully!");
+        } catch (Exception e) {
+            logger.error("could notrank product", e.getMessage());
+        }
+
+    }
+
+    //who can do it???
+    public int getFinalRateInStore(int storeId) throws Exception {
+        logger.info("about to get the final rank of the stroe");
+        return this.storeRepo.getFinalRateInStore(storeId);
+
+    }
+>>>>>>> Stashed changes
 }

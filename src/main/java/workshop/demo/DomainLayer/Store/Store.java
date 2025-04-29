@@ -16,7 +16,7 @@ public class Store {
     private String category;
     private boolean active;
     private Map<Category, List<item>> stock;//map of category -> item
-    //ADD RANK FOR STORE
+    private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
     //must add something for messages
 
     public Store(int storeID, String storeName, String category) {
@@ -25,6 +25,10 @@ public class Store {
         this.storeName = storeName;
         this.category = category;
         this.active = true;
+        this.rank = new AtomicInteger[5];
+        for (int i = 0; i < 5; i++) {
+            rank[i] = new AtomicInteger(0);
+        }
 
     }
 
@@ -186,4 +190,29 @@ public class Store {
         return null;
     }
 
+    //rank store:
+    public boolean rankStore(int i) {
+        if (i < 1 || i > 5) {
+            return false;
+        }
+        rank[i - 1].incrementAndGet();
+        return true;
+    }
+
+    public int getFinalRateInStore(int storeId) {
+        int totalVotes = 0;
+        int WRank = 0;
+        for (int i = 0; i < rank.length; i++) {
+            int count = rank[i].get(); // votes for rank (i+1)
+            totalVotes += count;
+            WRank += (i + 1) * count;
+        }
+        if (totalVotes == 0) {
+            return 3;//defult rank
+
+        }
+        int avgRank = (int) Math.round((double) WRank / totalVotes);
+        return Math.max(1, Math.min(5, avgRank));//to make surre the result is between 1 and 5
+
+    }
 }
