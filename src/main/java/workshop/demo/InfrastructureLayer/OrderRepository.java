@@ -27,7 +27,7 @@ public class OrderRepository implements IOrderRepo {
     }
 
     @Override
-    public void setOrderToStore(int storeId, int userId, ReceiptDTO receiptDTO, String storeName) {
+    public synchronized void setOrderToStore(int storeId, int userId, ReceiptDTO receiptDTO, String storeName) {
         Order order = new Order(generateId(), userId, receiptDTO, storeName);
         if (!history.containsKey(storeId)) {
             history.put(storeId, new ArrayList<>());

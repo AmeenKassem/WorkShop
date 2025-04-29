@@ -1,6 +1,8 @@
 package workshop.demo.DomainLayer.Store;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.MessageDTO;
 
 public class Store {
 
@@ -18,6 +21,7 @@ public class Store {
     private Map<Category, List<item>> stock;//map of category -> item
     private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
     //must add something for messages
+    private List<MessageDTO> messgesInStore;
     private double storeRating;
 
     public Store(int storeID, String storeName, String category) {
@@ -30,6 +34,7 @@ public class Store {
         for (int i = 0; i < 5; i++) {
             rank[i] = new AtomicInteger(0);
         }
+        this.messgesInStore = Collections.synchronizedList(new LinkedList<>());
 
     }
 
@@ -192,7 +197,9 @@ public class Store {
             // Synchronize the list of items to ensure thread-safety when accessing the list
             synchronized (items) {//must check if it needed to be synchronized
                 for (item i : items) {
-                    itemStoreDTOList.add(new ItemStoreDTO(i.getProductId(), i.getQuantity(), i.getPrice(), i.getCategory(), i.getFinalRank()));
+                    ItemStoreDTO toAdd = new ItemStoreDTO(i.getProductId(), i.getQuantity(), i.getPrice(), i.getCategory(), i.getFinalRank(), stroeID);
+                    itemStoreDTOList.add(toAdd);
+                    //itemStoreDTOList.add(new ItemStoreDTO(i.getProductId(), i.getQuantity(), i.getPrice(), i.getCategory(), i.getFinalRank()));
                 }
             }
         }

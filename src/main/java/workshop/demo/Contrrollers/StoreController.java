@@ -12,7 +12,7 @@ public class StoreController {
     private StoreService storeService;
 
     public StoreController(Repos repo) {
-        this.storeService = new StoreService(repo.storeRepo, repo.notificationRepo, repo.auth, repo.userRepo);
+        this.storeService = new StoreService(repo.storeRepo, repo.notificationRepo, repo.auth, repo.userRepo, repo.orderRepo);
     }
 
 }

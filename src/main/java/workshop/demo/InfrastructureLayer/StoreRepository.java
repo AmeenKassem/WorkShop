@@ -305,4 +305,9 @@ public class StoreRepository implements IStoreRepo {
         return store.getFinalRateInStore(storeId);
 
     }
+
+    @Override
+    public List<Store> getStores() {
+        return this.stores;
+    }
 }
