@@ -323,9 +323,6 @@ public class Real implements Bridge {
             numberOfStores, numberOfRegisteredUsers, numberOfGuests, numberOfProducts
         );
     }
-    // @Override
-    // public String testManager_PerformPermittedActions(String token, int storeID) throws Exception {
-    //     throw new UnsupportedOperationException("Not supported yet.");
-    // }
+    
     
 }
