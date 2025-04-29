@@ -297,4 +297,12 @@ public class StoreRepository implements IStoreRepo {
         return stores; 
     }
 
+    public String getStoreNameById(int storeId) {
+    Store store = findStoreByID(storeId);
+    if (store != null) {
+        return store.getStoreName();
+    } else {
+        throw new IllegalArgumentException("Store not found for ID: " + storeId);
+    }
+}
 }
