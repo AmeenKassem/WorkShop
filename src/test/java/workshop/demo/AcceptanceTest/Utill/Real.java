@@ -12,35 +12,21 @@ import workshop.demo.ApplicationLayer.StockService;
 import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
-import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+import workshop.demo.DomainLayer.User.*;
 
 public class Real implements Bridge {
 
-    private final UserService userService;
-    private final StoreService storeService;
-    private final StockService stockService;
-    private final OrderService orderService;
-    private final PurchaseService purchaseService;
-    private final NotificationService notificationService;
+    UserService userService;
+    StoreService storeService;
 
-    public Real() {
-        IUserRepo fakeUserRepo = mock(IUserRepo.class);
-        IAuthRepo fakeAuthRepo = mock(IAuthRepo.class);
-
-        when(fakeUserRepo.generateGuest()).thenReturn(123);
-        when(fakeAuthRepo.generateGuestToken(123)).thenReturn("guest-token");
-
-        this.userService = mock(UserService.class);
-        this.storeService = mock(StoreService.class);
-        this.stockService = mock(StockService.class);
-        this.orderService = mock(OrderService.class);
-        this.purchaseService = mock(PurchaseService.class);
-        this.notificationService = mock(NotificationService.class);
-    }
+    private Guest user = new Guest(0);
+    private Guest user2 = new Guest(1);
 
     /////////////////////// System /////////////////////////////
     @Override
     public String testSystem_InitMarket(String admin) throws Exception {
+
         return "TODO";
     }
 
@@ -52,7 +38,7 @@ public class Real implements Bridge {
 
     @Override
     public String testGuest_Exit(String token) throws Exception {
-        return userService.destroyGuest(authRepo.getUserId(token));
+        return userService.destroyGuest(token);
     }
 
     @Override
@@ -62,12 +48,12 @@ public class Real implements Bridge {
 
     @Override
     public String testGuest_GetStoreInfo(String token, int storeID) throws Exception {
-        return storeService.getStoreInfo(storeID);
+        return userService.getStoreInfo(token, storeID);
     }
 
     @Override
     public String testGuest_GetProductInfo(String token, int productID) throws Exception {
-        return stockService.getProductInfo(productID);
+        return userService.getProductInfo(token, productID);
     }
 
     @Override
@@ -108,7 +94,7 @@ public class Real implements Bridge {
 
     @Override
     public String testUser_OpenStore(String token, String storeName, String category) throws Exception {
-        return storeService.openStore(token, storeName, category);
+        return storeService.addStoreToSystem(token, storeName, category);
     }
 
     @Override
@@ -155,100 +141,82 @@ public class Real implements Bridge {
     public String testUser_JoinRandom(String token, int storeID, int randomID, int num) throws Exception {
         return purchaseService.joinRandom(token, storeID, raffleID, num);
     }
+
     @Override
     public String testUser_setAdmin(String token, String newAdminUsername) throws Exception {
         return userService.setUserAdmin(token, newAdminUsername);
     }
 
-
     //////////////////////////// Owner ////////////////////////////
     @Override
-    public String testOwner_ManageInventory_AddProduct(String token, int storeID, int productID, int amount) throws Exception {
-        return stockService.addProductToInventory(token, storeID, productID, amount);
+    public String testOwner_ManageInventory_AddProduct(String token, int storeID, int productID, int amount)
+            
     }
 
     @Override
     public String testOwner_ManageInventory_RemoveProduct(String token, int storeID, int productID) throws Exception {
-        return stockService.removeProductFromInventory(token, storeID, productID);
     }
 
     @Override
-    public String testOwner_ManageInventory_UpdateProductDetails(String token, int storeID, int productID) throws Exception {
-        return stockService.updateProductDetails(token, storeID, productID);
+    public String testOwner_ManageInventory_UpdateProductDetails(String token, int storeID, int productID)
+            throws Exception {
     }
+
     @Override
     public String testOwner_SetPurchasePolicies(String token, int storeID, String newPolicies) throws Exception {
-        int userId = authRepo.getUserId(token);
-        if (!storeService.hasSpecialPermission(userId, storeID)) {
-            throw new Exception("User does not have permission to set purchase policies");
-        }
-        storeService.setPurchasePolicy(userId, storeID, newPolicies);
-        return "Purchase policies set successfully.";
+
     }
-    
+
     @Override
     public String testOwner_SetDiscountPolicies(String token, int storeID, String newPolicies) throws Exception {
-        int userId = authRepo.getUserId(token);
-        if (!storeService.hasSpecialPermission(userId, storeID)) {
-            throw new Exception("User does not have permission to set discount policies");
-        }
-        storeService.setDiscountPolicy(userId, storeID, newPolicies);
-        return "Discount policies set successfully.";
+
     }
-    
+
     @Override
-    public String testOwner_AssignNewOwner(String token, int storeID, String newOwnerUsername) throws Exception {
-        int ownerId = authRepo.getUserId(token);
-        int newOwnerId = userService.getUserIdByUsername(newOwnerUsername); 
-        return storeService.addOwnershipToStore(storeID, ownerId, newOwnerId);
+    public String testOwner_AssignNewOwner(String token, int storeID, int NewOwner) throws Exception {
+        return storeService.AddOwnershipToStore(storeID, token, NewOwner);
     }
 
     @Override
     public String testOwner_RemoveOwner(String token, int storeID, String ownerToRemoveUsername) throws Exception {
         int ownerId = authRepo.getUserId(token);
-        int ownerToDeleteId = userService.getUserIdByUsername(ownerToRemoveUsername); 
+        int ownerToDeleteId = userService.getUserIdByUsername(ownerToRemoveUsername);
         return storeService.deleteOwnershipFromStore(storeID, ownerId, ownerToDeleteId);
     }
 
-
     @Override
-    public String testOwner_ResignOwnership(String token, int storeID) throws Exception {
-        int ownerId = authRepo.getUserId(token);
-        return storeService.deleteOwnershipFromStore(storeID, ownerId, ownerId);
+    public String testOwner_ResignOwnership(String token, int NewOwner, int storeID) throws Exception {
+
     }
 
-
     @Override
-    public String testOwner_AssignManager(String token, int storeID, String managerUsername) throws Exception {
-        int ownerId = authRepo.getUserId(token);
-        int managerId = userService.getUserIdByUsername(managerUsername);
-        return storeService.addManagerToStore(storeID, ownerId, managerId);
+    public String testOwner_AssignManager(String token, int storeID, int mangerId) throws Exception {
+        return storeService.AddManagerToStore(storeID, token, mangerId);
     }
 
+    @Override
+    public String testOwner_EditManagerPermissions(String token, int managerId, int storeID,
+            List<Permission> autorization) throws Exception {
+        return storeService.changePermissions(token, managerId, storeID, autorization);
+    }
 
     @Override
-    public String testOwner_EditManagerPermissions(String token, int storeID, String managerUsername, String newPermission) throws Exception {
-        int ownerId = authRepo.getUserId(token);
-        int managerId = userService.getUserIdByUsername(managerUsername); 
-        List<Permission> permissions = Permission.parsePermissions(newPermission); 
-        return storeService.changePermissions(ownerId, managerId, storeID, permissions);
-    }
-    @Override
-    public String testOwner_RemoveManager(String token, int storeID, String managerUsername) throws Exception {
-        int ownerId = authRepo.getUserId(token);
-        int managerId = userService.getUserIdByUsername(managerUsername);
+    public String testOwner_RemoveManager(String token, int storeID, int managerId) throws Exception {
         return storeService.deleteManager(storeID, token, managerId);
+
     }
+
     @Override
     public String testOwner_CloseStore(String token, int storeID) throws Exception {
-        int ownerId = authRepo.getUserId(token);
-        return storeService.closeStore(storeID, token);
+        return storeService.deactivateteStore(storeID, token);
     }
+
     @Override
     public String testOwner_ReopenStore(String token, int storeID) throws Exception {
         int ownerId = authRepo.getUserId(token);
         return storeService.reopenStore(storeID, ownerId);
     }
+
     @Override
     public String testOwner_ViewRolesAndPermissions(String token, int storeID) throws Exception {
         int ownerId = authRepo.getUserId(token);
@@ -260,25 +228,27 @@ public class Real implements Bridge {
         int userId = authRepo.getUserId(token);
         return notificationService.receiveNotifications(userId);
     }
-    
+
     @Override
     public String testOwner_ReplyToMessages(String token) throws Exception {
         int userId = authRepo.getUserId(token);
         return notificationService.replyToMessages(userId);
     }
+
     @Override
     public String testOwner_ViewStorePurchaseHistory(String token, int storeID) throws Exception {
         int ownerId = authRepo.getUserId(token);
         return purchaseService.viewStorePurchaseHistory(ownerId, storeID);
     }
-        //////////////////////////// Manager ////////////////////////////
+    //////////////////////////// Manager ////////////////////////////
     // @Override
-    // public String testManager_PerformPermittedActions(String token, int storeID) throws Exception {
-    //     return "TODO";
+    // public String testManager_PerformPermittedActions(String token, int storeID)
+    // throws Exception {
+    // return "TODO";
     // }
 
     //////////////////////////// Admin ////////////////////////////
-    
+
     @Override
     public String testAdmin_CloseStore(String token, int storeID) throws Exception {
         int adminId = authRepo.getUserId(token);
@@ -287,7 +257,7 @@ public class Real implements Bridge {
         }
         return storeService.closeStore(storeID);
     }
-    
+
     @Override
     public String testAdmin_RemoveUser(String token, String userToRemove) throws Exception {
         int adminId = authRepo.getUserId(token);
@@ -305,24 +275,22 @@ public class Real implements Bridge {
         }
         return purchaseService.getSystemPurchaseHistory();
     }
-    
+
     @Override
     public String testAdmin_ViewSystemInfo(String token) throws Exception {
         int adminId = authRepo.getUserId(token);
         if (!userService.isAdmin(adminId)) {
             throw new Exception("User is not an admin");
         }
-    
+
         int numberOfStores = storeService.getStoreCount();
         int numberOfRegisteredUsers = userService.getRegisteredUserCount();
         int numberOfGuests = userService.getGuestCount();
         int numberOfProducts = stockService.getProductCount();
-    
+
         return String.format(
-            "System Info:\nStores: %d\nRegistered Users: %d\nGuests: %d\nProducts: %d",
-            numberOfStores, numberOfRegisteredUsers, numberOfGuests, numberOfProducts
-        );
+                "System Info:\nStores: %d\nRegistered Users: %d\nGuests: %d\nProducts: %d",
+                numberOfStores, numberOfRegisteredUsers, numberOfGuests, numberOfProducts);
     }
-    
-    
+
 }
