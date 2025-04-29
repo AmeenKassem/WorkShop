@@ -23,11 +23,7 @@ public class StoreService {
     private IUserRepo userRepo;
     private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
 
-<<<<<<< Updated upstream
-    public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, IUserRepo userRepo) {
-=======
     public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, IUserRepo userRepo, IOrderRepo orderRepo) {
->>>>>>> Stashed changes
         this.storeRepo = storeRepository;
         this.notiRepo = notiRepo;
         this.authRepo = authRepo;
@@ -365,8 +361,6 @@ public class StoreService {
             logger.error("could notrank product", e.getMessage());
         }
     }
-<<<<<<< Updated upstream
-=======
 
     //MUST CHECK WHO CAN DO IT???
     public List<OrderDTO> veiwStoreHistory(int storeId) throws Exception {
@@ -393,5 +387,4 @@ public class StoreService {
         return this.storeRepo.getFinalRateInStore(storeId);
 
     }
->>>>>>> Stashed changes
 }
