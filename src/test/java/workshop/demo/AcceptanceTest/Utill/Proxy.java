@@ -118,7 +118,7 @@ public class Proxy implements Bridge {
 
     @Override
     public String testUser_JoinRandom(String token, int storeID, int randomID, int num) throws Exception {
-        return real.testUser_JoinRaffle(token, storeID, randomID, num);
+        return real.testUser_JoinRandom(token, storeID, randomID, num);
     }
 
     @Override
