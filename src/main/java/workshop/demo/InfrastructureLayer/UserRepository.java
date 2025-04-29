@@ -2,16 +2,11 @@ package workshop.demo.InfrastructureLayer;
 
 import java.util.HashMap;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.GuestNotFoundException;
 import workshop.demo.DomainLayer.Exceptions.IncorrectLogin;
-import workshop.demo.DomainLayer.Exceptions.TokenNotFoundException;
 import workshop.demo.DomainLayer.Exceptions.UserIdNotFound;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
-import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;

@@ -11,7 +11,7 @@ public class Order {
     private int userId;
     private String date;
     private List<ReceiptProduct> productsList;
-    private int finalPrice;
+    private double finalPrice;
     private String storeName;
 
     public Order(int orderId, int userId, ReceiptDTO receiptDTO, String storeName) {
@@ -44,7 +44,7 @@ public class Order {
         this.finalPrice = finalPrice;
     }
 
-    public int getFinalPrice() {
+    public double getFinalPrice() {
         return finalPrice;
     }
 

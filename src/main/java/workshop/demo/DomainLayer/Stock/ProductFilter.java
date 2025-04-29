@@ -80,7 +80,7 @@ public class ProductFilter {
     
             for (ItemStoreDTO itemStoreDTO : itemsInStore) {
                 int storeId = itemStoreDTO.getStoreId(); 
-                double storeRating = storeRepository.getStoreRating(storeId); 
+                double storeRating = storeRepository.getFinalRateInStore(storeId); 
                 if (storeRating >= minStoreRating && storeRating <= maxStoreRating) {
                     filteredList.add(productDTO); 
                     break; 

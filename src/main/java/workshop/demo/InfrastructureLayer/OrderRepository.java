@@ -44,7 +44,7 @@ public class OrderRepository implements IOrderRepo {
         List<OrderDTO> toReturn = new ArrayList<>();
         List<Order> tochange = this.history.get(storeId);
         for (Order order : tochange) {
-            OrderDTO TOadd = new OrderDTO(order.getUserId(), storeId, order.getDate(), order.getProductsList(), order.getFinalPrice());
+            OrderDTO TOadd = new OrderDTO(order.getUserId(), storeId, order.getDate(), order.getProductsList(), order.getFinalPrice(),);
             toReturn.add(TOadd);
         }
         return toReturn;

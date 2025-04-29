@@ -17,5 +17,12 @@ public class ShoppingBasket {
         itemsOnCart.add(item);
     }
 
+    public List<CartItem> getItems() {
+        return itemsOnCart;
+    }
+
+    public int getStoreId() {
+        return storeId;
+    }
 
 }
