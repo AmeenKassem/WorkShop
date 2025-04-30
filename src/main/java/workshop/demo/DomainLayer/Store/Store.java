@@ -192,7 +192,7 @@ public class Store {
             // Synchronize the list of items to ensure thread-safety when accessing the list
             synchronized (items) {//must check if it needed to be synchronized
                 for (item i : items) {
-                    itemStoreDTOList.add(new ItemStoreDTO(i.getProductId(), i.getQuantity(), i.getPrice(), i.getCategory(), i.getFinalRank()));
+                    itemStoreDTOList.add(new ItemStoreDTO(i.getProductId(), i.getQuantity(), i.getPrice(), i.getCategory(), i.getFinalRank(),stroeID));
                 }
             }
         }
