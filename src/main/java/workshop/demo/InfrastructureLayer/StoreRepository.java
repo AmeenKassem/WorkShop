@@ -440,7 +440,7 @@ public class StoreRepository implements IStoreRepo {
         if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
             throw new UIException("you have no permession to see auctions info.");
         }
-        return findStoreByID(storeId).end( randomId);
+        return findStoreByID(storeId).end(randomId);
     }
 
 

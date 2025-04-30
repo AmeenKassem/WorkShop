@@ -109,6 +109,7 @@ public class StockRepository implements IStockRepo {
                 .toArray(ProductDTO[]::new);
     }
 
+    @Override
     public List<ItemStoreDTO> getItemsByStoreId(int storeId) throws Exception {
         Store store = IStoreRepo.findStoreByID(storeId);
 
