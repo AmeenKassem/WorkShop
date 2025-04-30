@@ -75,6 +75,11 @@ public class Proxy implements Bridge {
     public String testGuest_BuyCart(String token, int cartID) throws Exception {
         return real.testGuest_BuyCart(token, cartID);
     }
+    @Override
+    public String testGuest_GetPurchasePolicy(String token, int storeID) throws Exception {
+        return real.testGuest_GetPurchasePolicy(token, storeID);
+    }
+
 
     //////////////////////////// User ////////////////////////////
     @Override

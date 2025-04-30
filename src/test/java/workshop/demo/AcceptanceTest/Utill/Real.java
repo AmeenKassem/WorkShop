@@ -113,6 +113,13 @@ public class Real implements Bridge {
         return "TO=DO";
 
     }
+    @Override
+    public String testGuest_GetPurchasePolicy(String token, int storeID) throws Exception {
+        //  have to be in the usersirvice ?
+        // return storeService.getPurchasePolicy(token ,storeID);
+        return "TO-DO";
+    }
+
 
     //////////////////////////// User ////////////////////////////
     @Override

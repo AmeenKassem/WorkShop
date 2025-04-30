@@ -34,6 +34,8 @@ public interface Bridge {
 
     String testGuest_BuyCart(String token, int cartID) throws Exception;
 
+    String testGuest_GetPurchasePolicy(String token, int storeID) throws Exception;
+
     //////////////////////////// User ////////////////////////////
     String testUser_LogIn(String token, String username, String password) throws Exception;
 
