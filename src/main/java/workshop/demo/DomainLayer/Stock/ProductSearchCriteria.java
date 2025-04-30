@@ -2,13 +2,12 @@
 
 package workshop.demo.DomainLayer.Stock;
 
-//doesnt implement searching in specific store yet
-
 public class ProductSearchCriteria {
     private String searchType; // keyword, productName, category
     private String productNameFilter;
     private String categoryFilter;
     private String keywordFilter;
+    private int storeId; // for searching in a specific store
 
     // filters
     private boolean isPriceRangeSpecified;
@@ -17,18 +16,23 @@ public class ProductSearchCriteria {
     private boolean isProductRatingSpecified;
     private boolean isStoreRatingSpecified;
     private boolean isCategorySpecified;
+    private double minStoreRating;  // Minimum store rating
+    private double maxStoreRating;  // Maximum store rating
 
     public ProductSearchCriteria(
         String searchType, 
         String productNameFilter, 
         String categoryFilter, 
         String keywordFilter,
+        int storeId,
         boolean isPriceRangeSpecified, 
         double minPrice, 
         double maxPrice, 
         boolean isProductRatingSpecified, 
         boolean isStoreRatingSpecified, 
-        boolean isCategorySpecified) 
+        boolean isCategorySpecified,
+        double minStoreRating,
+        double maxStoreRating) 
     {
         this.searchType = searchType;
         this.productNameFilter = productNameFilter;
@@ -40,6 +44,9 @@ public class ProductSearchCriteria {
         this.isProductRatingSpecified = isProductRatingSpecified;
         this.isStoreRatingSpecified = isStoreRatingSpecified;
         this.isCategorySpecified = isCategorySpecified;
+        this.storeId = storeId; 
+        this.minStoreRating = minStoreRating;
+        this.maxStoreRating = maxStoreRating;
     }
 
     public ProductSearchCriteria() {}
@@ -124,5 +131,27 @@ public class ProductSearchCriteria {
     public void setCategorySpecified(boolean isCategorySpecified) {
         this.isCategorySpecified = isCategorySpecified;
     }
+    public int getStoreId() {
+        return storeId;
+    }
+    public void setStoreId(int storeId) {
+        this.storeId = storeId;
+    }
+    public boolean isStoreSpecified() {
+        return storeId > 0;
+    }
+    public double getMinStoreRating() {
+        return minStoreRating;
+    }
+    public void setMinStoreRating(double minStoreRating) {
+        this.minStoreRating = minStoreRating;
+    }
+    public double getMaxStoreRating() {
+        return maxStoreRating;
+    }   
+    public void setMaxStoreRating(double maxStoreRating) {
+        this.maxStoreRating = maxStoreRating;
+    }
+
 }
 

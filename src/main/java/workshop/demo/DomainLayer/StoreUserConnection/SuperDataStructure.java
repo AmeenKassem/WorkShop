@@ -113,6 +113,10 @@ public class SuperDataStructure {
         return toReturn;
     }
 
+    public Tree getWorkersTreeInStore(int storeId) {
+        return employees.get(storeId);
+    }
+
     public void closeStore(int storeID) {
         this.employees.remove(storeID);
     }

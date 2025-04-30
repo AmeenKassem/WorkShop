@@ -1,55 +1,87 @@
 package workshop.demo.DomainLayer.Store;
 
-import java.lang.reflect.Array;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import workshop.demo.DTOs.Category;
 
 public class item {
 
-    private int produtId;
-    private int quantity;
+    private int productId;
+    private AtomicInteger quantity;
     private int price;
-    private int[] rank;//rank[x] is the number of people who ranked i+1
+    private Category category;
+    private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
 
-    public item(int produtId, int quantity, int price) {
+    public item(int produtId, int quantity, int price, Category category) {
+        this.productId = produtId;
         this.price = price;
-        this.quantity = quantity;
-        this.price = price;
-        this.rank = new int[5];
-    }
-
-    public double getFinalRank() {
-        double fRank = 0;
-        for (int i = 0; i < rank.length; i++) {
-            fRank += rank[0] * (i + 1);
+        this.quantity = new AtomicInteger(quantity);;
+        this.rank = new AtomicInteger[5];
+        for (int i = 0; i < 5; i++) {
+            rank[i] = new AtomicInteger(0);
         }
-        return fRank;
+        this.category = category;
     }
 
-    public boolean rankP(int i) {
+    public int getFinalRank() {
+        int totalVotes = 0;
+        int WRank = 0;
+        for (int i = 0; i < rank.length; i++) {
+            int count = rank[i].get(); // votes for rank (i+1)
+            totalVotes += count;
+            WRank += (i + 1) * count;
+        }
+        if (totalVotes == 0) {
+            return 3;//defult rank
+
+        }
+        int avgRank = (int) Math.round((double) WRank / totalVotes);
+        return Math.max(1, Math.min(5, avgRank));//to make surre the result is between 1 and 5
+    }
+
+    public boolean rankItem(int i) {
         if (i < 1 || i > 5) {
             return false;
         }
-        rank[i]++;
+        rank[i - 1].incrementAndGet();
         return true;
     }
 
     public int getQuantity() {
-        return quantity;
+        return quantity.get();
     }
 
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
+    public void AddQuantity() {
+        this.quantity.incrementAndGet();
     }
 
-    public int[] getRank() {
+    public void changeQuantity(int quantity) {
+        this.quantity.set(quantity);
+    }
+
+    public AtomicInteger[] getRank() {
         return rank;
     }
 
-    public void setRank(int[] rank) {
-        this.rank = rank;
+    public int getProductId() {
+        return productId;
     }
 
-    public int getProdutId() {
-        return produtId;
+    public Category getCategory() {
+        return category;
+    }
+
+    public synchronized int getPrice() {
+        return price;
+    }
+
+    public synchronized void setPrice(int price) {
+        this.price = price;
+    }
+
+    //for tests:
+    public void setRank(AtomicInteger[] rank) {
+        this.rank = rank;
     }
 
 }
