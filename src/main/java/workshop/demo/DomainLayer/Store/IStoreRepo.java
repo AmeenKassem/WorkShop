@@ -2,6 +2,9 @@ package workshop.demo.DomainLayer.Store;
 
 import java.util.List;
 
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.CardForRandomDTO;
@@ -38,6 +41,28 @@ public interface IStoreRepo {
     public List<Integer> deactivateStore(int storeId, int ownerId) throws Exception;
 
     public List<Integer> closeStore(int storeId) throws Exception;
+
+    //STOCK MANAGMENT:
+    public List<ItemStoreDTO> getProductsInStore(int storeId) throws Exception;
+
+    public boolean manipulateItem(int adderId, int storeId, Permission permission) throws Exception;
+
+    public void addItem(int storeId, int productId, int quantity, int price, Category category) throws Exception;
+
+    public void removeItem(int storeId, int productId) throws Exception;
+
+    public void decreaseQtoBuy(int storeId, int productId) throws Exception;
+
+    public void updateQuantity(int storeId, int productId, int newQuantity) throws Exception;
+
+    public void updatePrice(int storeId, int productId, int newPrice) throws Exception;
+
+    public void rankProduct(int storeId, int productId, int newRank) throws Exception;
+
+    //STORE RANK:
+    public void rankStore(int storeId, int newRank) throws Exception;
+
+    public int getFinalRateInStore(int storeId) throws Exception;
 
     //another: getting info about the owners and manager->4.11
     //another: messages to response->4.12
