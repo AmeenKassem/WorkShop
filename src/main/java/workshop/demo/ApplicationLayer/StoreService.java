@@ -1,15 +1,24 @@
 package workshop.demo.ApplicationLayer;
 
 import java.util.List;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.CardForRandomDTO;
+import workshop.demo.DTOs.MessageDTO;
+import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
+import workshop.demo.DomainLayer.Exceptions.DevException;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
@@ -234,6 +243,132 @@ public class StoreService {
             logger.error("cannot close this store, Error: {}", e.getMessage());
         }
     }
+
+    public boolean addBidOnAucction(String token, int auctionId, int storeId, double price) throws Exception{
+        if (!authRepo.validToken(token)) {
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if(userRepo.isRegistered(userId)&&userRepo.isOnline(userId)){
+            SingleBid bid = storeRepo.bidOnAuction(storeId, userId, auctionId, price);
+            userRepo.addBidToAuctionCart(bid);
+            return true;
+        }else{
+            throw new UIException("you are not logged in !");
+        }
+    }
+
+    public boolean addRegularBid(String token, int bitId, int storeId, double price) throws Exception{
+        if (!authRepo.validToken(token)) {
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if(userRepo.isRegistered(userId)&&userRepo.isOnline(userId)){
+            SingleBid bid = storeRepo.bidOnBid(bitId, price, userId, storeId);
+            userRepo.addBidToRegularCart(bid);
+            return true;
+        }else{
+            throw new UIException("you are not logged in !");
+        }
+    }
+
+    public AuctionDTO[] getAllAuctions(String token , int storeId)throws Exception{
+        if (!authRepo.validToken(token)) {
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if(userRepo.isRegistered(userId)&&userRepo.isOnline(userId)){
+           return storeRepo.getAuctionsOnStore(userId,storeId);
+        }else{
+            throw new UIException("you are not logged in !");
+        }
+    }
+
+    public int setProductToAuction(String token,int id ,int productId,int quantity,long time,double startPrice) throws Exception{
+        if (!authRepo.validToken(token)) {
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if(!(userRepo.isRegistered(userId)&&userRepo.isOnline(userId))){
+            throw new UIException("you are not logged in !");
+        }
+        return storeRepo.addAuctionToStore(id, userId, productId, quantity, time, startPrice);
+    }
+    
+
+    public int setProductToBid(String token,int storeid,int productId,int quantity) throws Exception{
+        if (!authRepo.validToken(token)) {
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if(!(userRepo.isRegistered(userId)&&userRepo.isOnline(userId))){
+            throw new UIException("you are not logged in !");
+        }
+        return storeRepo.addProductToBid(storeid, userId, productId, quantity);
+    }
+
+    public BidDTO[] getAllBidsStatus(String token , int storeId) throws Exception{
+        if (!authRepo.validToken(token)) {
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if(!(userRepo.isRegistered(userId)&&userRepo.isOnline(userId))){
+            throw new UIException("you are not logged in !");
+        }
+        return storeRepo.getAllBids(userId, storeId);
+    }
+
+
+    public SingleBid acceptBid(String token ,int storeId, int bidId,int bidToAcceptId) throws Exception{
+        if (!authRepo.validToken(token)) {
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if(!(userRepo.isRegistered(userId)&&userRepo.isOnline(userId))){
+            throw new UIException("you are not logged in !");
+        }
+        SingleBid winner = storeRepo.acceptBid(storeId, bidId, userId, bidToAcceptId);
+        //TODO
+        // notiRepo.sendRTMessageToUser(new MessageDTO(userId, winner.getUserId(), "your bid "), userId, userId, false);
+        return winner;
+    }
+
+
+    public int setProductToRandom(String token, int storeId, int quantity,int productId,int numberOfCards,double priceForCard) throws Exception{
+        if (!authRepo.validToken(token)) {
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if(!(userRepo.isRegistered(userId)&&userRepo.isOnline(userId))){
+            throw new UIException("you are not logged in !");
+        }
+        return storeRepo.addProductToRandom(productId, userId, storeId, quantity, numberOfCards, priceForCard);
+    }
+
+    public CardForRandomDTO endBid(String token , int storeId, int randomId) throws Exception{
+        if (!authRepo.validToken(token)) {
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if(!(userRepo.isRegistered(userId)&&userRepo.isOnline(userId))){
+            throw new UIException("you are not logged in !");
+        }
+        return storeRepo.endRandom(storeId, userId, randomId);
+    }
+
+    public RandomDTO[] getAllRandomInStore(String token,int storeId) throws Exception{
+        if (!authRepo.validToken(token)) {
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if(!(userRepo.isRegistered(userId)&&userRepo.isOnline(userId))){
+            throw new UIException("you are not logged in !");
+        }
+        return storeRepo.getRandomsInStore(storeId, userId);
+    }
+
+
+
 
     public List<ItemStoreDTO> getProductsInStore(int storeId) throws Exception {
         try {
