@@ -200,7 +200,7 @@ public class Store {
             // Synchronize the list of items to ensure thread-safety when accessing the list
             synchronized (items) {//must check if it needed to be synchronized
                 for (item i : items) {
-                    itemStoreDTOList.add(new ItemStoreDTO(i.getProductId(), i.getQuantity(), i.getPrice(), i.getCategory(), i.getFinalRank()));
+                    itemStoreDTOList.add(new ItemStoreDTO(i.getProductId(), i.getQuantity(), i.getPrice(), i.getCategory(), i.getFinalRank(),stroeID));
                 }
             }
         }
@@ -268,14 +268,14 @@ public class Store {
         if(item.getQuantity()<quantity){
             throw new UIException("stock not enought to make this auction .");
         }
-        item.setQuantity(item.getQuantity()-quantity);
+        item.changeQuantity(item.getQuantity()-quantity);
         // return item;
     }
 
     private item getItemById(int productId){
         for (List<item> category : stock.values()) {
             for (item item : category) {
-                if(item.getProdutId()==productId)
+                if(item.getProductId()==productId)
                     return item;
             }
         }

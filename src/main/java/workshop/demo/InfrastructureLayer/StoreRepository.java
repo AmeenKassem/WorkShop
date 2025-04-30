@@ -442,6 +442,16 @@ public class StoreRepository implements IStoreRepo {
         return findStoreByID(storeId).getRandoms();
     }
 
+    public double getStoreRating(int storeId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getStoreRating'");
+    }
+
+    public Store[] getStores() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getStores'");
+    }
+
     
 
     
