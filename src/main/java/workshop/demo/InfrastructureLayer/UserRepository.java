@@ -1,6 +1,7 @@
 package workshop.demo.InfrastructureLayer;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
@@ -201,6 +202,18 @@ public class UserRepository implements IUserRepo {
     @Override
     public void addRandomCardToCart(CardForRandomDTO card) {
         getRegisteredUser(card.userId).addCardForRandom(card);
+    }
+
+    @Override
+    public List<SingleBid> getWinningBids(int userId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWinningBids'");
+    }
+
+    @Override
+    public List<CardForRandomDTO> getWinningCards(int userId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWinningCards'");
     }
 
 }
