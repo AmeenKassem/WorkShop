@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
-import workshop.demo.DTOs.CardForRandomDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.MessageDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
@@ -345,7 +345,7 @@ public class StoreService {
         return storeRepo.addProductToRandom(productId, userId, storeId, quantity, numberOfCards, priceForCard);
     }
 
-    public CardForRandomDTO endBid(String token , int storeId, int randomId) throws Exception{
+    public ParticipationInRandomDTO endBid(String token , int storeId, int randomId) throws Exception{
         if (!authRepo.validToken(token)) {
             throw new Exception("unvalid token!");
         }

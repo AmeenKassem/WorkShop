@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
-import workshop.demo.DTOs.CardForRandomDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
@@ -298,11 +298,11 @@ public class Store {
         return activePurchases.addProductToRandom(productId, quantity, cardsNumber, priceForCard);
     }
 
-    public CardForRandomDTO buyCardForRandom(int userId,int randomid) throws Exception{
-        return activePurchases.buyCardForRandomDTO(userId, randomid);
+    public ParticipationInRandomDTO participateInRandom(int userId,int randomid,double amountPaid) throws Exception{
+        return activePurchases.participateInRandom(userId, randomid, amountPaid);
     }
 
-    public CardForRandomDTO end(int randomId) throws Exception{
+    public ParticipationInRandomDTO end(int randomId) throws Exception{
         return activePurchases.endRandom(randomId);
     }
 
@@ -310,8 +310,15 @@ public class Store {
         return activePurchases.getRandoms();
     }
 
-	public double getCardPrice(int randomId) throws DevException {
-		return activePurchases.getCardPrice(randomId);
+	// public double getCardPrice(int randomId) throws DevException {
+	// 	return activePurchases.getCardPrice(randomId);
+	// }
+
+    public double getProductPrice(int randomId) throws DevException {
+		return activePurchases.getProductPrice(randomId);
 	}
+
+    
+
 
 }
