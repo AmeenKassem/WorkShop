@@ -6,6 +6,7 @@ import java.util.List;
 
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
@@ -97,6 +98,8 @@ public class Purchase {
 
                 // Save to order history
                 orderRepository.setOrderToStore(basket.getStoreId(), userId, receipt, storeName);
+            }else{
+                throw new DevException("bought items is embty!");
             }
         }
 

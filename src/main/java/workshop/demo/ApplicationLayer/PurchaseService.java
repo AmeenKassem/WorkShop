@@ -36,6 +36,8 @@ public class PurchaseService {
         }
 
         int ownerId = authRepo.getUserId(token);
+
+        
         ShoppingCart shoppingCart = shoppingCartRepo.getCart(ownerId);
 
         if (shoppingCart == null) {
