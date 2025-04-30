@@ -3,45 +3,79 @@ package workshop.demo.DTOs;
 public class SingleBid {
     private int amount;
     private int id;
-    private int price;
+    private double price;
     private SpecialType type;
     private int specialId;
     private Status status;
     private int storeId;
     private int userId;
-    public SingleBid(int productId, int amount2, int userId2, double price2, SpecialType auction, int storeId2,
-			int incrementAndGet, int auctionId) {
-		//TODO Auto-generated constructor stub
-	}
-	public int getBidPrice() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getBidPrice'");
+
+    
+
+  
+
+    public SingleBid(int productId, int amount, int userId, double price, SpecialType type, int storeId, int id, int specialId) {
+        this.amount = amount;
+        this.userId = userId;
+        this.price = price;
+        this.type = type;
+        this.storeId = storeId;
+        this.id = id;
+        this.specialId = specialId;
+        if(type == SpecialType.Auction) status = Status.AUCTION_PENDING;
+        else status = Status.BID_PENDING;
     }
+
+    public double getBidPrice() {
+        return this.price;
+    }
+
     public void markAsWinner() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'markAsWinner'");
+        this.status = Status.AUCTION_WON;
     }
+
     public void markAsLosed() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'markAsLosed'");
+        this.status = Status.AUCTION_LOSED;
     }
-    public Integer getId() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getId'");
+
+    public int getId() {
+        return this.id;
     }
+
     public void acceptBid() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'acceptBid'");
+        this.status = Status.BID_ACCEPTED;
     }
+
     public void rejectBid() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'rejectBid'");
+        this.status = Status.BID_REJECTED;
     }
+
     public int getUserId() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getUserId'");
+        return this.userId;
     }
 
+    public boolean isWon() {
+        return this.status == Status.AUCTION_WON || this.status == Status.BID_ACCEPTED;
+    }
 
+    // Optional: add more getters if needed
+    public Status getStatus() {
+        return this.status;
+    }
+
+    public int getAmount() {
+        return this.amount;
+    }
+
+    public SpecialType getType() {
+        return this.type;
+    }
+
+    public int getSpecialId() {
+        return this.specialId;
+    }
+
+    public int getStoreId() {
+        return this.storeId;
+    }
 }
-

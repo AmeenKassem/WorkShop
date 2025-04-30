@@ -114,6 +114,25 @@ public class Registered extends Guest {
         auctionBids.remove(bid);
     }
 
+    public List<CardForRandomDTO> getWinningCards() {
+        List<CardForRandomDTO> res = new ArrayList<>();
+        for (CardForRandomDTO cardForRandomDTO : res) {
+            if(cardForRandomDTO.won()) res.add(cardForRandomDTO);
+        }
+        return res;
+    }
+
+    public List<SingleBid> getWinningBids() {
+        List<SingleBid> bidsResult = new ArrayList<>();
+        for (SingleBid singleBid : auctionBids) {
+            if(singleBid.isWon()) bidsResult.add(singleBid);
+        }
+        for (SingleBid singleBid : regularBids) {
+            if(singleBid.isWon()) bidsResult.add(singleBid);
+        }
+        return bidsResult;
+    }
+
 
 
 

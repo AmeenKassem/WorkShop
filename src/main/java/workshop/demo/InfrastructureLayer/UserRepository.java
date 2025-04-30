@@ -206,14 +206,12 @@ public class UserRepository implements IUserRepo {
 
     @Override
     public List<SingleBid> getWinningBids(int userId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getWinningBids'");
+        return getRegisteredUser(userId).getWinningBids();
     }
 
     @Override
     public List<CardForRandomDTO> getWinningCards(int userId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getWinningCards'");
+        return getRegisteredUser(userId).getWinningCards();
     }
 
 }

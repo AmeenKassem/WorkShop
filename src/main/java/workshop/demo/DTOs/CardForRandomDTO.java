@@ -39,5 +39,10 @@ public class CardForRandomDTO {
    public int getRandomId() {
       return randomId;
    }
+
+
+   public boolean won() {
+    return ended && isWinner;
+   }
    
 }
