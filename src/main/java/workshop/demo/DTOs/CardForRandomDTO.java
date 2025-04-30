@@ -44,5 +44,14 @@ public class CardForRandomDTO {
    public boolean won() {
     return ended && isWinner;
    }
+
+   public int getProductId() {
+      return productId;
+  }
+
+  public int getStoreId() {
+   return storeId;
+}
+
    
 }

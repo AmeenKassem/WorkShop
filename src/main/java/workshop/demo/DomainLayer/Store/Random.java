@@ -1,6 +1,7 @@
 package workshop.demo.DomainLayer.Store;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import workshop.demo.DTOs.CardForRandomDTO;
@@ -21,9 +22,6 @@ public class Random {
     private Object lock;
 
     private static AtomicInteger idGen=new AtomicInteger();
-    
-    
-
 
     public Random(int productId, int quantity, int numberOfCards, double priceForCard, int id,int storeId) {
         this.productId=productId;
@@ -49,7 +47,7 @@ public class Random {
             return userCards.get(userId);
         }
     }
-
+    
     public CardForRandomDTO endRandom(){
         int[] cards = new int[totalCards];
         int i=0;
@@ -71,6 +69,7 @@ public class Random {
             return winner;
         }
     }
+        
 
 
 

@@ -9,22 +9,23 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Purchase.Purchase;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.ShoppingCart;
-import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.OrderRepository;
+import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepo;
+
 
 public class PurchaseService {
-
-    private final StockRepository stockRepo;
-    private final StoreRepository storeRepo;
     private final IAuthRepo authRepo;
     private final ShoppingCartRepo shoppingCartRepo;
     private final OrderRepository orderRepo;
     private IUserRepo userRepo;
+    private IStockRepo stockRepo;
+    private IStoreRepo storeRepo;
 
     public PurchaseService(IAuthRepo authRepo,
-            StockRepository stockRepo,
-            StoreRepository storeRepo,
+            IStockRepo stockRepo,
+            IStoreRepo storeRepo,
             ShoppingCartRepo shoppingCartRepo,
             OrderRepository orderRepo) {
         this.authRepo = authRepo;
@@ -48,7 +49,7 @@ public class PurchaseService {
         }
 
         Purchase purchase = new Purchase(shoppingCart, stockRepo, storeRepo, orderRepo);
-        return purchase.executePurchase(true, ownerId);
+        return purchase.processRegularPurchase(true, ownerId);
     }
 
     public List<ReceiptDTO> buyRegisteredCart(String token) throws Exception {
@@ -64,7 +65,7 @@ public class PurchaseService {
         }
 
         Purchase purchase = new Purchase(shoppingCart, stockRepo, storeRepo, orderRepo);
-        return purchase.executePurchase(false, ownerId);
+        return purchase.processRegularPurchase(false, ownerId);
     }
 
     public CardForRandomDTO buyCardForUser(String token, int randomId, int storeId) throws Exception {

@@ -1,17 +1,11 @@
 package workshop.demo.InfrastructureLayer;
-
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import workshop.demo.DTOs.CardForRandomDTO;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.SingleBid;
-import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.GuestNotFoundException;
 import workshop.demo.DomainLayer.Exceptions.IncorrectLogin;
 import workshop.demo.DomainLayer.Exceptions.UserIdNotFound;
