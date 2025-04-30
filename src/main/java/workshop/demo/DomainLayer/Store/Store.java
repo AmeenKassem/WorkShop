@@ -12,6 +12,7 @@ import workshop.demo.DTOs.CardForRandomDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
@@ -308,5 +309,9 @@ public class Store {
     public RandomDTO[] getRandoms(){
         return activePurchases.getRandoms();
     }
+
+	public double getCardPrice(int randomId) throws DevException {
+		return activePurchases.getCardPrice(randomId);
+	}
 
 }

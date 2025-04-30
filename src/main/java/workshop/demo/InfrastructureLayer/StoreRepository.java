@@ -460,6 +460,13 @@ public class StoreRepository implements IStoreRepo {
         throw new UnsupportedOperationException("Unimplemented method 'getStoreRating'");
     }
 
+    public double getPriceForCard(int storeId, int randomId) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        return findStoreByID(storeId).getCardPrice(randomId);
+    }
+
    
     
 

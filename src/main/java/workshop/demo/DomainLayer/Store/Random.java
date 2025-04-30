@@ -93,5 +93,9 @@ public class Random {
         randomDTO.cards=cards;
         return randomDTO;
     }
+
+    public double getPrice() {
+        return cardPrice;
+    }
     
 }

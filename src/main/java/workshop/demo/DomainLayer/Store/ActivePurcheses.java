@@ -121,6 +121,11 @@ public class ActivePurcheses {
         }
         return randomDTOs;
     }
+
+    public double getCardPrice(int randomId) throws DevException {
+        if(!activeRandom.containsKey(randomId)) throw new DevException("trying to buy a card from unfound random id...");
+        return activeRandom.get(randomId).getPrice();
+    }
     
 
 }
