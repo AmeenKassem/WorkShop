@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import workshop.demo.DTOs.CardForRandomDTO;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
@@ -197,6 +198,11 @@ public class UserRepository implements IUserRepo {
             logger.warning("User not found: " + bid.getUserId());
             throw new UserIdNotFound(bid.getUserId() + "");
         }
+    }
+
+    @Override
+    public void addRandomCardToCart(CardForRandomDTO card) {
+        getRegisteredUser(card.userId).addCardForRandom(card);
     }
 
 }

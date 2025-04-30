@@ -311,7 +311,7 @@ public class StoreService {
     }
 
 
-    public SingleBid acceptBid(Stirng token ,int storeId, int bidId,int bidToAcceptId) throws Exception{
+    public SingleBid acceptBid(String token ,int storeId, int bidId,int bidToAcceptId) throws Exception{
         if (!authRepo.validToken(token)) {
             throw new Exception("unvalid token!");
         }
@@ -359,7 +359,7 @@ public class StoreService {
         return storeRepo.getRandomsInStore(storeId, userId);
     }
 
-    
+
 
 
 }
