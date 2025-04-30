@@ -8,6 +8,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.CardForRandomDTO;
+import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.Store.item;
@@ -319,4 +325,147 @@ public class StoreRepository implements IStoreRepo {
 
     }
 
+    //======================================
+
+    @Override
+    public SingleBid bidOnAuction(int StoreId, int userId, int auctionId, double price) throws Exception {
+        if (findStoreByID(StoreId) == null) {
+            throw new Exception("can't delete manager: store does not exist");
+        }
+        return findStoreByID(StoreId).bidOnAuctionProduct(auctionId, userId, price);
+    }
+
+    @Override
+    public int addAuctionToStore(int StoreId,int userId, int productId, int quantity, long tome, double startPrice)
+            throws Exception {
+                if (findStoreByID(StoreId) == null) {
+                    throw new Exception("can't delete manager: store does not exist");
+                }
+                if(!data.checkPermession(userId,StoreId ,Permission.SpecialType)){
+                    throw new UIException("you have no permession to add auction.");
+                }
+                
+                return findStoreByID(StoreId).addProductToAuction(userId,productId, quantity, startPrice, tome);
+        
+    }
+
+    @Override
+    public AuctionDTO[] getAuctionsOnStore(int storeId,int userId) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        
+        return findStoreByID(storeId).getAllAuctions();
+    }
+
+
+    //=============Bid
+    @Override
+    public int addProductToBid(int storeId, int userId, int productId, int quantity) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        
+        return findStoreByID(storeId).addProductToBid(userId, productId, quantity);
+    }
+
+    @Override
+    public SingleBid bidOnBid(int bidId, double price, int userId,int storeId) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        
+        return findStoreByID(storeId).bidOnBid(bidId, userId, price);
+    }
+
+    @Override
+    public BidDTO[] getAllBids(int userId, int storeId) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        
+        return findStoreByID(storeId).getAllBids();
+    }
+
+    @Override
+    public SingleBid acceptBid(int storeId, int bidId,int userId,int userBidId) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        
+        return findStoreByID(storeId).acceptBid(bidId,userBidId);
+    }
+
+    //===================Random
+
+    @Override
+    public int addProductToRandom(int productId,int userId, int storeId, int quantity, int cardsNumber, double priceForCard) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        return findStoreByID(storeId).addProductToRandom(productId,quantity,cardsNumber,priceForCard);
+    }
+
+    @Override
+    public CardForRandomDTO buyCardForRandom(int userId,int randomId,int storeId) throws Exception{
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        return findStoreByID(storeId).buyCardForRandom(userId, randomId);
+    }
+
+    @Override
+    public CardForRandomDTO endRandom(int storeId, int userId, int randomId) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        return findStoreByID(storeId).end( randomId);
+    }
+
+
+    @Override
+    public RandomDTO[] getRandomsInStore(int storeId, int userId) throws Exception{
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        return findStoreByID(storeId).getRandoms();
+    }
+
+    public double getStoreRating(int storeId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getStoreRating'");
+    }
+
+    public Store[] getStores() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getStores'");
+    }
+
+    
+
+    
 }

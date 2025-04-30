@@ -1,8 +1,16 @@
 package workshop.demo.InfrastructureLayer;
 
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import workshop.demo.DTOs.CardForRandomDTO;
 import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.GuestNotFoundException;
 import workshop.demo.DomainLayer.Exceptions.IncorrectLogin;
 import workshop.demo.DomainLayer.Exceptions.UserIdNotFound;
@@ -13,21 +21,24 @@ import workshop.demo.DomainLayer.User.Registered;
 
 public class UserRepository implements IUserRepo {
 
-    private int idGen;
-    private HashMap<Integer, Guest> guests;
-    private HashMap<String, Registered> users;
-    private HashMap<Integer, String> idToUsername;
+    private AtomicInteger idGen;
+    private ConcurrentHashMap<Integer, Guest> guests;
+    private ConcurrentHashMap<String, Registered> users;
+    private ConcurrentHashMap<Integer, String> idToUsername;
     private Encoder encoder;
     // @Autowired
     private AdminInitilizer adminInit;
 
+    private static final Logger logger = Logger.getLogger(UserRepository.class.getName());
+
 
     public UserRepository(Encoder encoder,AdminInitilizer adminInit) {
         this.encoder = encoder;
+        this.idGen = new AtomicInteger(1); // Start from 1 to avoid 0 as a valid ID
         this.adminInit=adminInit;
-        users = new HashMap<>();
-        guests = new HashMap<>();
-        idToUsername = new HashMap<>();
+        users = new ConcurrentHashMap<>();
+        guests = new ConcurrentHashMap<>();
+        idToUsername = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -35,8 +46,10 @@ public class UserRepository implements IUserRepo {
         if(userExist(username)){
             Registered user = users.get(username);
             user.logout();
+            logger.info("User logged out: " + username);
             return generateGuest();
         }else
+            logger.warning("User not found: " + username);
             throw new UserIdNotFound(username);
     }
 
@@ -44,12 +57,14 @@ public class UserRepository implements IUserRepo {
     public int registerUser(String username, String password) {
         if (validPassword(username, password)) {
             String encPass = encoder.encodePassword(password);
-            int id = idGen++;
+            int id = idGen.getAndIncrement();
             Registered userToAdd = new Registered(id, username, encPass);
             users.put(username, userToAdd);
             idToUsername.put(id, username);
+            logger.info("User " + username + " registered successfully");
             return id;
         }
+        logger.warning("Invalid password for user: " + username);
         return -1;
     }
 
@@ -59,7 +74,7 @@ public class UserRepository implements IUserRepo {
 
     @Override
     public int generateGuest() {
-        int id = idGen++;
+        int id = idGen.getAndIncrement();
         Guest newGuest = new Guest(id);
         guests.put(id, newGuest);
         return id;
@@ -70,8 +85,10 @@ public class UserRepository implements IUserRepo {
         if (userExist(username)) {
             Registered user = users.get(username);
             if (user.check(encoder, username, password)) {
+                logger.info("User logged in: " + username);
                 return user.getId();
             } else {
+                logger.warning("Invalid password for user: " + username);
                 throw new IncorrectLogin();
             }
         } else {
@@ -92,6 +109,7 @@ public class UserRepository implements IUserRepo {
         if (guestExist(guestId)) {
             Guest geust = guests.get(guestId);
             geust.addToCart(item);
+            logger.info("Item added to guest cart: " + item.getProdutId() + " for guest id: " + guestId);
         } else {
             throw new GuestNotFoundException(guestId);
         }
@@ -100,6 +118,7 @@ public class UserRepository implements IUserRepo {
     @Override
     public void destroyGuest(int id) {
         guests.remove(id);
+        logger.info("guest destroyed: " + id);
     }
 
     @Override
@@ -141,6 +160,7 @@ public class UserRepository implements IUserRepo {
         if(registered!=null){
             if(adminInit.matchPassword(adminKey)){
                 registered.setAdmin();
+                logger.info("User " + registered.getUsername() + " is now an admin.");
                 return true;
             }
         }
@@ -151,6 +171,36 @@ public class UserRepository implements IUserRepo {
     public void removeItemFromGeustCart(int guestId, int productId) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'removeItemFromGeustCart'");
+    }
+
+    @Override
+    public void addBidToRegularCart(SingleBid bid) {
+        
+        try{
+            getRegisteredUser(bid.getUserId()).addRegularBid(bid);
+            logger.info("Bid added to regular cart for user id: " + bid.getUserId());
+        }
+        catch (UserIdNotFound e){
+            logger.warning("User not found: " + bid.getUserId());
+            throw new UserIdNotFound(bid.getUserId() + "");
+        }
+    }
+
+    @Override
+    public void addBidToAuctionCart(SingleBid bid) {
+        try{
+            getRegisteredUser(bid.getUserId()).addAuctionBid(bid);
+            logger.info("Bid added to auction cart for user id: " + bid.getUserId());
+        }
+        catch (UserIdNotFound e){
+            logger.warning("User not found: " + bid.getUserId());
+            throw new UserIdNotFound(bid.getUserId() + "");
+        }
+    }
+
+    @Override
+    public void addRandomCardToCart(CardForRandomDTO card) {
+        getRegisteredUser(card.userId).addCardForRandom(card);
     }
 
 }

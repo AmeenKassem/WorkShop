@@ -5,6 +5,11 @@ import java.util.List;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.CardForRandomDTO;
+import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 //import workshop.demo.DomainLayer.Stock.ProductDTO;
 
@@ -65,5 +70,41 @@ public interface IStoreRepo {
 
     //another: getting info about the owners and manager->4.11
     //another: messages to response->4.12
-    //another: getting info about the history of purcheses in a specific store -> taking it from Layan
+    //another: getting info about the history of purcheses in a specific store
+
+    //auction:
+
+    //done
+    public SingleBid bidOnAuction(int StoreId,int userId, int auctionId , double price) throws Exception;
+
+
+    //done
+    public int addAuctionToStore(int StoreId,int userId, int productId,int quantity,long tome,double startPrice) throws Exception;
+
+    
+    //done
+    public AuctionDTO[] getAuctionsOnStore(int userId, int storeId) throws Exception ;
+
+    
+    
+    //bid:
+
+    public int addProductToBid(int storeId,int userid,int productId,int quantity) throws Exception;
+
+    public SingleBid bidOnBid(int bidId,double price,int userId,int storeId) throws Exception;
+
+    public BidDTO[] getAllBids(int userId,int storeId) throws Exception;
+
+    public SingleBid acceptBid(int storeId,int bidId,int userId,int userBidId) throws Exception;
+
+    //random:
+
+    public int addProductToRandom(int productId,int userId,int storeId,int quantity,int cardsNumber,double priceForCard) throws Exception;
+
+    public CardForRandomDTO buyCardForRandom(int userId,int randomId,int storeId) throws Exception;
+
+    public CardForRandomDTO endRandom(int storeId,int userId,int randomId) throws Exception;
+
+    public RandomDTO[] getRandomsInStore(int storeId, int userId) throws Exception;
+
 }
