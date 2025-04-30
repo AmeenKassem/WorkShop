@@ -64,6 +64,10 @@ public interface IStoreRepo {
 
     public int getFinalRateInStore(int storeId) throws Exception;
 
+    public List<Store> getStores();
+
+    String getStoreNameById(int storeId);
+
     //another: getting info about the owners and manager->4.11
     //another: messages to response->4.12
     //another: getting info about the history of purcheses in a specific store

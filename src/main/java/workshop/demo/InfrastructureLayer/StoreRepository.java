@@ -291,6 +291,19 @@ public class StoreRepository implements IStoreRepo {
         }
 
     }
+    public List<Store> getStores() {
+        return stores; 
+    }
+
+    
+    public String getStoreNameById(int storeId) {
+        Store store = findStoreByID(storeId);
+        if (store != null) {
+            return store.getStoreName();
+        } else {
+            throw new IllegalArgumentException("Store not found for ID: " + storeId);
+        }
+    }
 
     //RANK STORE:
     @Override
@@ -447,11 +460,7 @@ public class StoreRepository implements IStoreRepo {
         throw new UnsupportedOperationException("Unimplemented method 'getStoreRating'");
     }
 
-    public Store[] getStores() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getStores'");
-    }
-
+   
     
 
     
