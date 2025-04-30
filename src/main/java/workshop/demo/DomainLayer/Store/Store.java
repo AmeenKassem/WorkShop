@@ -26,6 +26,7 @@ public class Store {
     private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
     //must add something for messages
     private double storeRating;
+    private ActivePurcheses activePurchases;
 
     public Store(int storeID, String storeName, String category) {
         this.stock = new ConcurrentHashMap<>();
