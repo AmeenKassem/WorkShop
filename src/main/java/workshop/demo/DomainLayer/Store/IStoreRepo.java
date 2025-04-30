@@ -45,10 +45,15 @@ public interface IStoreRepo {
 
     //auction:
 
+    //done
     public SingleBid bidOnAuction(int StoreId,int userId, int auctionId , double price) throws Exception;
 
+
+    //done
     public int addAuctionToStore(int StoreId,int userId, int productId,int quantity,long tome,double startPrice) throws Exception;
 
+    
+    //done
     public AuctionDTO[] getAuctionsOnStore(int userId, int storeId) throws Exception ;
 
     
