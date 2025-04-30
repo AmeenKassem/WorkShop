@@ -1,6 +1,8 @@
 package workshop.demo.DomainLayer.User;
 
+import workshop.demo.DTOs.CardForRandomDTO;
 import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.SingleBid;
 
 public interface IUserRepo {
 
@@ -77,4 +79,31 @@ public interface IUserRepo {
      */
     public boolean setUserAsAdmin(int id ,String adminKey);
 
+
+
+
+    // /**
+    //  * this function must add a bid to user special cart.
+    //  * @param bid
+    //  */
+    // public void addBidToSpecialCart(SingleBid bid);
+
+    /*
+     * this function must add a bid to user regular cart.
+     * @param bid
+     */
+    public void addBidToRegularCart(SingleBid bid);
+
+    /**
+     * this function must add a bid to user auction cart.
+     * @param bid
+     */
+    public void addBidToAuctionCart(SingleBid bid);
+
+
+    /**
+     * this will add the card to user special cart
+     * @param card
+     */
+    public void addRandomCardToCart(CardForRandomDTO card);
 }
