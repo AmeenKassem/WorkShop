@@ -27,6 +27,11 @@ public class Real implements Bridge {
     INotificationRepo mockNotificationRepo = Mockito.mock(INotificationRepo.class);
     NotificationService notificationService = new NotificationService(mockNotificationRepo, mockUserRepo);
 
+    public Real() {
+        Mockito.when(mockAuthRepo.validToken(Mockito.anyString())).thenReturn(true);
+        Mockito.when(mockAuthRepo.getUserId(Mockito.anyString())).thenReturn(1);
+    }
+
     /////////////////////// System /////////////////////////////
     @Override
     public String testSystem_InitMarket(String admin) throws Exception {
@@ -71,65 +76,67 @@ public class Real implements Bridge {
 
     @Override
     public String testGuest_GetStoreInfo(String token, int storeID) throws Exception {
-        return "TO-DO";
+        return "TODO";
     }
 
     @Override
     public String testGuest_GetProductInfo(String token, int productID) throws Exception {
-        return "TO=DO";
+        return "TODO";
     }
 
     @Override
     public String testGuest_SearchProduct(String token, String productname) throws Exception {
         // return stockService.searchProduct(productname);
-        return "TO=DO";
+        return "TODO";
 
     }
 
     @Override
     public String testGuest_SearchProductInStore(String token, int storeID, int productID) throws Exception {
         // return stockService.searchProductInStore(storeID, productID);
-        return "TO=DO";
+        return "TODO";
 
     }
 
     @Override
     public String testGuest_AddProductToCart(String token, int storeID, int productID, int count) throws Exception {
         // return stockService.addProductToCart(token, storeID, productID, count);
-        return "TO=DO";
+        return "TODO";
 
     }
 
     @Override
     public String testGuest_ModifyCart(String token, int cartID) throws Exception {
         // return stockService.modifyCart(token, cartID);
-        return "TO=DO";
+        return "TODO";
 
     }
 
     @Override
     public String testGuest_BuyCart(String token, int cartID) throws Exception {
         // return purchaseService.buyCart(token, cartID);
-        return "TO=DO";
+        return "TODO";
 
     }
+
     @Override
     public String testGuest_GetPurchasePolicy(String token, int storeID) throws Exception {
-        //  have to be in the usersirvice ?
+        // have to be in the usersirvice ?
         // return storeService.getPurchasePolicy(token ,storeID);
-        return "TO-DO";
+        return "TODO";
     }
-
 
     //////////////////////////// User ////////////////////////////
     @Override
     public String testUser_LogIn(String token, String username, String password) throws Exception {
-        return userService.login(token, username, password);
+        userService.login(token, username, password);
+        return "Done";
     }
 
     @Override
     public String testUser_LogOut(String token) throws Exception {
-        return userService.logoutUser(token);
+        userService.logoutUser(token);
+        return "Done";
     }
 
     @Override
@@ -141,7 +148,7 @@ public class Real implements Bridge {
     @Override
     public String testUser_AddReviewToStore(String token, int storeId, String review) throws Exception {
         // return storeService.addReview(token, storeId, review);
-        return "TO=DO";
+        return "TODO";
 
     }
 
@@ -149,21 +156,21 @@ public class Real implements Bridge {
     public String testUser_AddReviewToProduct(String token, int storeId, int productId, String review)
             throws Exception {
         // return productService.addReview(token, storeId, review);
-        return "TO=DO";
+        return "TODO";
 
     }
 
     @Override
     public String testUser_RateProduct(String token, int storeID, int productID, int rate) throws Exception {
         // return productService.rateProduct(token, storeID, productID, rate);
-        return "TO=DO";
+        return "TODO";
 
     }
 
     @Override
     public String testUser_RateStore(String token, int storeID, int productID, int rate) throws Exception {
         // return storeService.rateStore(token, storeID, productID, rate);
-        return "TO=DO";
+        return "TODO";
 
     }
 
@@ -182,35 +189,35 @@ public class Real implements Bridge {
     @Override
     public String testUser_CheckPurchaseHistory(String token) throws Exception {
         // return purchaseService.getPurchaseHistory(token);
-        return "TO=DO";
+        return "TODO";
 
     }
 
     @Override
     public String testUser_updateProfile(String token) throws Exception {
         // return userService.updateProfile(token);
-        return "TO=DO";
+        return "TODO";
 
     }
 
     @Override
     public String testUser_AddBid(String token, int storeID, int productID, int bid) throws Exception {
         // return purchaseService.addBid(token, storeID, productID, bid);
-        return "TO=DO";
+        return "TODO";
 
     }
 
     @Override
     public String testUser_JoinAuction(String token, int storeID, int auctionID) throws Exception {
         // return purchaseService.joinAuction(token, storeID, auctionID);
-        return "TO=DO";
+        return "TODO";
 
     }
 
     @Override
     public String testUser_JoinRandom(String token, int storeID, int randomID, int num) throws Exception {
         // return purchaseService.joinRandom(token, storeID, raffleID, num);
-        return "TO=DO";
+        return "TODO";
 
     }
 
@@ -219,38 +226,38 @@ public class Real implements Bridge {
         if (userService.setAdmin(token, newAdminUsername))
             return "Done";
         else
-            return "false";
+            return "";
     }
 
     //////////////////////////// Owner ////////////////////////////
     @Override
     public String testOwner_ManageInventory_AddProduct(String token, int storeID, int productID, int amount)
             throws Exception {
-        return "TO-DO";
+        return "TODO";
     }
 
     @Override
     public String testOwner_ManageInventory_RemoveProduct(String token, int storeID, int productID) throws Exception {
-        return "TO-DO";
+        return "TODO";
 
     }
 
     @Override
     public String testOwner_ManageInventory_UpdateProductDetails(String token, int storeID, int productID)
             throws Exception {
-        return "TO-DO";
+        return "TODO";
 
     }
 
     @Override
     public String testOwner_SetPurchasePolicies(String token, int storeID, String newPolicies) throws Exception {
-        return "TO-DO";
+        return "TODO";
 
     }
 
     @Override
     public String testOwner_SetDiscountPolicies(String token, int storeID, String newPolicies) throws Exception {
-        return "TO-DO";
+        return "TODO";
 
     }
 
@@ -299,12 +306,12 @@ public class Real implements Bridge {
 
     @Override
     public String testOwner_ReopenStore(String token, int storeID) throws Exception {
-        return "TO-DO";
+        return "TODO";
     }
 
     @Override
     public String testOwner_ViewRolesAndPermissions(String token, int storeID) throws Exception {
-        return "TO-DO";
+        return "TODO";
 
     }
 
@@ -322,7 +329,7 @@ public class Real implements Bridge {
 
     @Override
     public String testOwner_ViewStorePurchaseHistory(String token, int storeID) throws Exception {
-        return "TO-DO";
+        return "TODO";
     }
     //////////////////////////// Manager ////////////////////////////
     // @Override
@@ -341,19 +348,19 @@ public class Real implements Bridge {
 
     @Override
     public String testAdmin_RemoveUser(String token, String userToRemove) throws Exception {
-        return "To-do";
+        return "TODO";
 
     }
 
     @Override
     public String testAdmin_ViewSystemPurchaseHistory(String token) throws Exception {
-        return "To-do";
+        return "TODO";
 
     }
 
     @Override
     public String testAdmin_ViewSystemInfo(String token) throws Exception {
-        return "To-do";
+        return "TODO";
     }
 
 }
