@@ -460,11 +460,7 @@ public class StoreRepository implements IStoreRepo {
         throw new UnsupportedOperationException("Unimplemented method 'getStoreRating'");
     }
 
-    public Store[] getStores() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getStores'");
-    }
-
+   
     
 
     

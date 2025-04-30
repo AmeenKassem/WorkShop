@@ -8,9 +8,9 @@ public class OrderDTO {
     private int storeId; //-> write get name by ID ->store 
     private String date;
     private List<ReceiptProduct> productsList;
-    private int finalPrice;
+    private double finalPrice;
 
-    public OrderDTO(int userId, int storeId, String date, List<ReceiptProduct> productsList, int finalPrice) {
+    public OrderDTO(int userId, int storeId, String date, List<ReceiptProduct> productsList, double finalPrice) {
         this.userId = userId;
         this.storeId = storeId;
         this.date = date;

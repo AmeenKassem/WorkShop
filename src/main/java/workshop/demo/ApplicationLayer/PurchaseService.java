@@ -1,4 +1,4 @@
-ackage workshop.demo.ApplicationLayer;
+package workshop.demo.ApplicationLayer;
 
 import java.util.List;
 
