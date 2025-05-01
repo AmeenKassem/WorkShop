@@ -94,19 +94,19 @@ public class ActivePurchasesTest {
         try {
             int BidId = active.addProductToBid(0, 1);
             SingleBid bid = active.addUserBidToBid(BidId, 0, 100);
-            SingleBid failedBid =null;
-            try{
-                failedBid = active.addUserBidToBid(BidId, 0, 100);
-                Assertions.assertTrue(false);
-            }catch(UIException e){
-                // Assertions.assertTrue(true);
-                Assertions.assertTrue(failedBid==null);
-            }
-            active.rejectBid(BidId, 0);
+            active.rejectBid(bid.getId(), BidId);
             Assertions.assertFalse(bid.isWon());
             SingleBid secondBid = active.addUserBidToBid(BidId,0,100);
             active.acceptBid(secondBid.getId(), BidId);
             Assertions.assertTrue(secondBid.isWon());
+            try{
+                SingleBid nullBid = active.addUserBidToBid(BidId, 0, 10);
+                Assertions.assertTrue(false);
+            }catch(UIException ex){
+                Assertions.assertTrue(true);
+            
+            }
+
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

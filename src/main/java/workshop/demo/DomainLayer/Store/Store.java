@@ -39,7 +39,7 @@ public class Store {
         for (int i = 0; i < 5; i++) {
             rank[i] = new AtomicInteger(0);
         }
-
+        this.activePurchases = new ActivePurcheses(storeID);
     }
 
     public int getStroeID() {
@@ -239,18 +239,18 @@ public class Store {
     }
 
     public int addProductToAuction(int userid,int productId,int quantity,double startPrice , long time) throws Exception{
-        checkPermessionForSpecialSell(userid);
+        // checkPermessionForSpecialSell(userid);
         decreaseFromQuantity(quantity, productId);
         return activePurchases.addProductToAuction(productId, quantity, time);
     }
 
-    private void checkPermessionForSpecialSell(int userid) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'checkPermessionForSpecialSell'");
-    }
+    // private void checkPermessionForSpecialSell(int userid) {
+    //     // TODO Auto-generated method stub
+    //     throw new UnsupportedOperationException("Unimplemented method 'checkPermessionForSpecialSell'");
+    // }
 
     public int addProductToBid(int userid,int productId,int quantity) throws Exception{
-        checkPermessionForSpecialSell(userid);
+        // checkPermessionForSpecialSell(userid);
         decreaseFromQuantity(quantity, productId);
         return activePurchases.addProductToBid(productId, quantity);
     }

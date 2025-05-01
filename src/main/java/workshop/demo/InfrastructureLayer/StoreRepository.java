@@ -279,7 +279,7 @@ public class StoreRepository implements IStoreRepo {
         if (store == null) {
             throw new Exception("store does not exist");
         }
-        Node Worker = this.data.getWorkersTreeInStore(storeId).getNodeById(storeId);
+        Node Worker = this.data.getWorkersTreeInStore(storeId).getNodeById(adderId);
         if (Worker == null) {
             throw new Exception("this user is not a worker in this store");
         }
@@ -341,7 +341,7 @@ public class StoreRepository implements IStoreRepo {
                 if (findStoreByID(StoreId) == null) {
                     throw new Exception("can't delete manager: store does not exist");
                 }
-                if(!data.checkPermession(userId,StoreId ,Permission.SpecialType)){
+                if(!manipulateItem(userId,StoreId ,Permission.SpecialType)){
                     throw new UIException("you have no permession to add auction.");
                 }
                 
@@ -354,7 +354,7 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+        if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
             throw new UIException("you have no permession to see auctions info.");
         }
         
@@ -368,7 +368,7 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+        if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
             throw new UIException("you have no permession to see auctions info.");
         }
         
@@ -380,9 +380,7 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
-            throw new UIException("you have no permession to see auctions info.");
-        }
+        
         
         return findStoreByID(storeId).bidOnBid(bidId, userId, price);
     }
@@ -392,7 +390,7 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+        if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
             throw new UIException("you have no permession to see auctions info.");
         }
         
@@ -404,7 +402,7 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+        if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
             throw new UIException("you have no permession to see auctions info.");
         }
         
@@ -417,7 +415,7 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+        if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
             throw new UIException("you have no permession to see auctions info.");
         }
         return findStoreByID(storeId).rejectBid(bidId,userBidId);
@@ -429,7 +427,7 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+        if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
             throw new UIException("you have no permession to see auctions info.");
         }
         return findStoreByID(storeId).addProductToRandom(productId,quantity,cardsNumber,priceForCard);
@@ -448,7 +446,7 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+        if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
             throw new UIException("you have no permession to see auctions info.");
         }
         return findStoreByID(storeId).end(randomId);
@@ -460,7 +458,7 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+        if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
             throw new UIException("you have no permession to see auctions info.");
         }
         return findStoreByID(storeId).getRandoms();
