@@ -10,7 +10,7 @@ public class Node {
     private int myId;
     private Authorization myAuth;//null if owner
     private boolean isManager;//false->owner
-    private List<Node> children;
+    private final List<Node> children;
     private int parentId;//-1 if I'm the boss
 
     public Node(int myId, boolean isManager, int parentId) {
@@ -26,8 +26,10 @@ public class Node {
     }
 
     public void addChild(Node child) {
-        this.children.add(child);
-        child.parentId = this.myId;
+        synchronized (this) {
+            this.children.add(child);
+            child.parentId = this.myId;
+        }
 
     }
 
@@ -36,10 +38,12 @@ public class Node {
             return this;
         }
         if (children != null) {
-            for (Node child : children) {
-                Node result = child.getNode(searchId);
-                if (result != null) {
-                    return result;
+            synchronized (children) {
+                for (Node child : children) {
+                    Node result = child.getNode(searchId);
+                    if (result != null) {
+                        return result;
+                    }
                 }
             }
         }
@@ -49,24 +53,28 @@ public class Node {
 
     //might delete later
     public void addAuthrization(List<Permission> toAdd, int parentId) throws Exception {
-        if (!isManager || myAuth == null) {
-            throw new Exception("the owner is fully authorized, can't manipulate the aothrization!");
+        synchronized (this) {
+            if (!isManager || myAuth == null) {
+                throw new Exception("the owner is fully authorized, can't manipulate the aothrization!");
+            }
+            if (this.parentId != parentId) {
+                throw new Exception("this owner can't manipulate the authorization for this manager");
+            }
+            myAuth.addAuthorization(toAdd);
         }
-        if (this.parentId != parentId) {
-            throw new Exception("this owner can't manipulate the authorization for this manager");
-        }
-        myAuth.addAuthorization(toAdd);
 
     }
 
     public void updateAuthorization(List<Permission> toAdd, int parentId) throws Exception {
-        if (!isManager || myAuth == null) {
-            throw new Exception("the owner is fully authorized, can't manipulate the aothrization!");
+        synchronized (this) {
+            if (!isManager || myAuth == null) {
+                throw new Exception("the owner is fully authorized, can't manipulate the aothrization!");
+            }
+            if (this.parentId != parentId) {
+                throw new Exception("this owner can't manipulate the authorization for this manager");
+            }
+            myAuth.updateAuthorixation(toAdd);
         }
-        if (this.parentId != parentId) {
-            throw new Exception("this owner can't manipulate the authorization for this manager");
-        }
-        myAuth.updateAuthorixation(toAdd);
     }
 
     //returns an instance of node and null iff not a child
@@ -81,22 +89,23 @@ public class Node {
 
     //here must check if it really deletes it----------------------
     public boolean deleteNode(int userId) {
+        synchronized (this) {
+            if (children == null || children.isEmpty()) {
+                return false;
+            }
 
-        if (children == null || children.isEmpty()) {
-            return false;
-        }
+            Iterator<Node> iterator = children.iterator();
 
-        Iterator<Node> iterator = children.iterator();
-
-        while (iterator.hasNext()) {
-            Node child = iterator.next();
-            if (child.getMyId() == userId) {
-                iterator.remove(); // safely remove the child node
-                return true;
-            } else {
-                // recursively search in child subtree
-                if (child.deleteNode(userId)) {
+            while (iterator.hasNext()) {
+                Node child = iterator.next();
+                if (child.getMyId() == userId) {
+                    iterator.remove(); // safely remove the child node
                     return true;
+                } else {
+                    // recursively search in child subtree
+                    if (child.deleteNode(userId)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -107,7 +116,7 @@ public class Node {
         return this.parentId;
     }
 
-    public List<Node> getChildren() {
+    public synchronized List<Node> getChildren() {
         return children;
     }
 
