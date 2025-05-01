@@ -1,10 +1,18 @@
 package workshop.demo.StoreTests;
 
+import java.util.concurrent.CountDownLatch;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.util.Assert;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+
 import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.ActivePurcheses;
 
@@ -16,6 +24,11 @@ public class ActivePurchasesTest {
     public int setAuction() throws Exception{
         active = new ActivePurcheses(0);
         return active.addProductToAuction(0, 1, 1000);
+    }
+
+    public int setRandom() throws Exception{
+        active = new ActivePurcheses(0);
+        return active.addProductToRandom(0, 1, 20.0, 0, 10000);
     }
 
     @Test
@@ -107,5 +120,202 @@ public class ActivePurchasesTest {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-    } 
+    }
+    
+    @Test
+    public void TestAddRandom() {
+        try {
+            int id = setRandom();
+            Assertions.assertTrue(id > 0);
+            ParticipationInRandomDTO user0 = active.participateInRandom(0, id, 15.0);
+            ParticipationInRandomDTO user1 = active.participateInRandom(1, id, 5.0);
+
+            Assertions.assertTrue(user0.won() || user1.won(), "One of the users should have won the random");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assertions.fail("Exception thrown: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void TestAddRandomFail() {
+        Assertions.assertThrows(UIException.class, () -> {
+            active.addProductToAuction(0, 0,10000);
+        }, "Expected participateInRandom to throw, but it didn't");
+    }
+
+    @Test
+    public void TestAddRandomFail2() {
+        Assertions.assertThrows(UIException.class, () -> {
+            active.addProductToAuction(0, 20, 0);
+        }, "Expected participateInRandom to throw, but it didn't");
+    }
+
+    @Test
+    public void TestParticipateInRandom() {
+        try {
+            int id = setRandom();
+            ParticipationInRandomDTO user0 = active.participateInRandom(0, id, 15.0);
+            ParticipationInRandomDTO user1 = active.participateInRandom(1, id, 5.0);
+            Assertions.assertTrue(user0.won() || user1.won(), "One of the users should have won the random");
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assertions.fail("Exception thrown: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void TestParticipateInRandomFail() {
+        try{
+        int id = setRandom();
+        UIException ex = Assertions.assertThrows(UIException.class, () -> {
+            active.participateInRandom(0, id, 20.5);
+        }, "Expected participateInRandom to throw, but it didn't");
+        Assertions.assertEquals("max amount can pay is: "+active.getRandom(id).getAmountLeft(), ex.getMessage());;
+        }catch(Exception e){
+            e.printStackTrace();
+            Assertions.fail("Exception thrown: " + e.getMessage());
+        }
+        
+    }
+
+    @Test
+    public void TestParticipateInRandomFail2() {
+        try{
+        int id = setRandom();
+        UIException ex = Assertions.assertThrows(UIException.class, () -> {
+            active.participateInRandom(0, id, 0);
+        }, "Expected participateInRandom to throw, but it didn't");
+        Assertions.assertEquals("you cant set 0.0 value!", ex.getMessage());;
+        }catch(Exception e){
+            e.printStackTrace();
+            Assertions.fail("Exception thrown: " + e.getMessage());
+        }
+        
+    }
+
+    @Test
+    public void TestParticipateInRandomFail3() {
+        try{
+        int id = setRandom();
+        active.participateInRandom(0, id, 15.0);
+        active.participateInRandom(1, id, 5.0);
+        UIException ex = Assertions.assertThrows(UIException.class, () -> {
+            active.participateInRandom(2, id, 10.0);
+        }, "Expected participateInRandom to throw, but it didn't");
+        DevException ex2 = Assertions.assertThrows(DevException.class, () -> {
+            active.getRandom(id);
+        }, "Expected participateInRandom to throw, but it didn't");
+        Assertions.assertEquals("Random has ended...", ex.getMessage());
+        }catch(Exception e){
+            e.printStackTrace();
+            Assertions.fail("Exception thrown: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void TestParticipateInRandomFail4() {
+        try{
+        int id = active.addProductToRandom(0, 1, 20.0, 0, 10);
+        Thread.sleep(1000);
+        UIException ex = Assertions.assertThrows(UIException.class, () -> {
+            active.participateInRandom(0, id, 15.0);
+        }, "Expected participateInRandom to throw, but it didn't");
+        Assertions.assertEquals("Random has ended...", ex.getMessage());
+        }catch(Exception e){
+            e.printStackTrace();
+            Assertions.fail("Exception thrown: " + e.getMessage());
+        }
+    }
+
+
+    @Test
+    public void concurrencyTest1() {
+        try {
+            
+            int id = setRandom();
+            boolean[] isSuccess = new boolean[2];
+            CountDownLatch startSignal = new CountDownLatch(1);
+            CountDownLatch doneSignal = new CountDownLatch(2); // 2 threads to wait for
+            Thread t1 = new Thread(() -> {
+                try {
+                    //startSignal.await(); // wait for the signal to start
+                    active.participateInRandom(0, id, 20.0);
+                    isSuccess[0] = true; 
+                   // doneSignal.countDown(); // signal that this thread is done
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    isSuccess[0] = false;
+                }
+            });
+            Thread t2 = new Thread(() -> {
+                try {
+                    //startSignal.await(); // wait for the signal to start
+                    active.participateInRandom(1, id, 20.0);
+                    isSuccess[1] = true;
+                    //doneSignal.countDown(); // signal that this thread is done
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    isSuccess[1] = false;
+                }
+            });
+            t1.start();
+            t2.start();
+            t1.join(); // wait for t1 to finish
+            t2.join(); // wait for t2 to finish
+            //startSignal.countDown(); // let both threads proceed
+            //doneSignal.await(); // wait for both threads to finish
+            Assertions.assertTrue(active.getRandom(id).getAmountLeft() <= 0, "The random should be over");
+            Assertions.assertFalse(active.getRandom(id).isActive());
+            Assertions.assertTrue(isSuccess[0] || isSuccess[1], "At least one thread should have succeeded");
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assertions.fail("Exception thrown: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void concurrencyTest2() {
+        try {
+            int id = setRandom();
+            CountDownLatch startSignal = new CountDownLatch(1);
+            CountDownLatch doneSignal = new CountDownLatch(2); // 2 threads to wait for
+            Thread t1 = new Thread(() -> {
+                try {
+                    startSignal.await(); // wait for the signal to start
+                    active.participateInRandom(0, id, 10.0);
+                    doneSignal.countDown(); // signal that this thread is done 
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    
+                }
+            });
+            Thread t2 = new Thread(() -> {
+                try {
+                    startSignal.await(); // wait for the signal to start
+                    active.participateInRandom(1, id, 5.0);
+                    doneSignal.countDown(); // signal that this thread is done
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    
+                }
+            });
+            t1.start();
+            t2.start();
+            //t1.join(); // wait for t1 to finish
+            //t2.join(); // wait for t2 to finish
+            startSignal.countDown(); // let both threads proceed
+            doneSignal.await(); // wait for both threads to finish
+            Assertions.assertTrue(active.getRandom(id).getAmountLeft() == 5.0);
+            Assertions.assertTrue(active.getRandom(id).isActive());
+        
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assertions.fail("Exception thrown: " + e.getMessage());
+        }
+    }
+    
 }

@@ -102,7 +102,10 @@ public class ActivePurcheses {
     
     // ========== Random ==========
     
-    public int addProductToRandom(int productId, int quantity, int numberOfCards,double productPrice, long RandomTime) {
+    public int addProductToRandom(int productId, int quantity, double productPrice,int storeId, long RandomTime) throws Exception {
+        if(quantity<=0) throw new UIException("you cant set "+quantity+" value!");
+        if(productPrice<=0) throw new UIException("you cant set "+productPrice+" value!");
+        if(RandomTime<=0) throw new UIException("you cant set "+RandomTime+" value!");
         int id = randomIdGen.incrementAndGet();
         Random random = new Random(productId, quantity,productPrice,id,storeId,RandomTime);
         activeRandom.put(id, random);
@@ -110,7 +113,12 @@ public class ActivePurcheses {
     }
 
     public ParticipationInRandomDTO participateInRandom(int userId,int randomId,double productPrice) throws Exception{
-        if(!activeRandom.containsKey(randomId)) throw new DevException("trying to buy a card from unfound random id...");
+        if(!activeRandom.containsKey(randomId)) throw new UIException("trying to buy a card from unfound random id...");
+        if(productPrice <= 0) throw new UIException("you cant set "+productPrice+" value!");
+        if(!activeRandom.get(randomId).isActive()){
+             activeRandom.remove(randomId);
+             throw new UIException("Random has ended...");
+        }
         return activeRandom.get(randomId).participateInRandom(userId, productPrice);
     }
     
@@ -127,6 +135,11 @@ public class ActivePurcheses {
             i++;
         }
         return randomDTOs;
+    }
+
+    public Random getRandom(int randomId) throws Exception {
+        if(!activeRandom.containsKey(randomId)) throw new DevException("trying to buy a card from unfound random id...");
+        return activeRandom.get(randomId);
     }
 
     // public double getCardPrice(int randomId) throws DevException {

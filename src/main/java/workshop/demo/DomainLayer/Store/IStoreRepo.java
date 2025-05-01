@@ -101,7 +101,7 @@ public interface IStoreRepo {
 
     //random:
 
-    public int addProductToRandom(int productId,int userId,int storeId,int quantity,int cardsNumber,double priceForCard, long RandomTime) throws Exception;
+    public int addProductToRandom(int userId ,int productId, int quantity, double productPrice,int storeId, long RandomTime) throws Exception;
 
     public ParticipationInRandomDTO participateInRandom(int userId,int randomId,int storeId, double amountPaid) throws Exception;
 

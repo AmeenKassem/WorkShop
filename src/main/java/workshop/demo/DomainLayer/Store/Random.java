@@ -24,6 +24,7 @@ public class Random {
     //private int totalCards;
     private Object lock = new Object();
     private Timer timer;
+    private boolean isActive = true;
 
     private static AtomicInteger idGen=new AtomicInteger();
     
@@ -41,11 +42,14 @@ public class Random {
         //totalCards=numberOfCards;
         this.productPrice=productPrice;
         this.id=id;
+        this.isActive = true;
         this.timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                endRandom();
+                synchronized(lock){
+                if(!isActive) return; // If the random is already ended, do nothing
+                isActive = false;
                 // Notify the winner and other participants
                 // here we give back the money for all participants that didn't win
                 for (ParticipationInRandomDTO participation : usersParticipations.values()) {
@@ -54,6 +58,8 @@ public class Random {
                         // You can implement the refund logic here
                     }
                 }
+                }
+                
             }
         }, RandomTime);
 
@@ -65,6 +71,7 @@ public class Random {
 
     public ParticipationInRandomDTO participateInRandom(int userId, double amountPaid) throws Exception{
         synchronized(lock){
+            if(!isActive) throw new UIException("random is over...");
             if(amountPaid > amountLeft) throw new UIException("max amount can pay is: "+amountLeft);
             if(amountPaid <= 0) throw new UIException("amount paid should be positive...");
             if(!usersParticipations.containsKey(userId)) 
@@ -74,7 +81,7 @@ public class Random {
             }
             amountLeft -= amountPaid;
             if(amountLeft == 0) {
-                endRandom();
+                endRandom(); // Mark the random as inactive
                 timer.cancel(); // Cancel the timer if the random is over
             }
             return usersParticipations.get(userId);
@@ -84,6 +91,7 @@ public class Random {
     public ParticipationInRandomDTO endRandom(){
         //int[] cards = new int[totalCards];
         synchronized(lock){
+            isActive = false;
             double rand = new java.util.Random().nextDouble() * productPrice;
             double cumulativeWeight = 0.0;
             for (ParticipationInRandomDTO participation : usersParticipations.values()) {
@@ -133,6 +141,14 @@ public class Random {
 
     public double getProductPrice() {
         return productPrice;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public double getAmountLeft() {
+        return amountLeft;
     }
     
 }
