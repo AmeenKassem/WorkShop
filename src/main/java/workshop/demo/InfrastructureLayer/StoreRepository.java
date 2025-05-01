@@ -7,6 +7,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
@@ -473,4 +475,10 @@ public class StoreRepository implements IStoreRepo {
         return findStoreByID(storeId).getProductPrice(randomId);
     }
 
+    public double getProductPrice(int storeId, int randomId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getProductPrice'");
+    }
+
+    
 }

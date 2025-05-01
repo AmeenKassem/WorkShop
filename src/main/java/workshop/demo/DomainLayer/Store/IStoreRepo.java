@@ -88,12 +88,11 @@ public interface IStoreRepo {
 
     public BidDTO[] getAllBids(int userId, int storeId) throws Exception;
 
-    
+    public boolean rejectBid(int userId,int storeId, int bidId,int userBidId) throws Exception;
 
     public SingleBid acceptBid(int storeId,int bidId,int userId,int userBidId) throws Exception;
 
     //random:
-    public int addProductToRandom(int productId, int userId, int storeId, int quantity, int cardsNumber, double priceForCard) throws Exception;
 
     public int addProductToRandom(int userId ,int productId, int quantity, double productPrice,int storeId, long RandomTime) throws Exception;
 

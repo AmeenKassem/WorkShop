@@ -241,7 +241,6 @@ public class Store {
     }
 
     // private void checkPermessionForSpecialSell(int userid) {
-    //     // TODO Auto-generated method stub
     //     throw new UnsupportedOperationException("Unimplemented method 'checkPermessionForSpecialSell'");
     // }
 
@@ -320,6 +319,10 @@ public class Store {
     public boolean rejectBid(int bidId, int userBidId) throws Exception {
         activePurchases.rejectBid(userBidId,bidId);
         return true;
+    }
+
+    public double getStoreRating() {
+        return getFinalRateInStore(stroeID);
     }
 
     // public boolean rejectBid(int bidId, int userBidId) throws Exception {
