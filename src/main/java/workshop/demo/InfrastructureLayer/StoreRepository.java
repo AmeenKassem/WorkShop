@@ -411,6 +411,17 @@ public class StoreRepository implements IStoreRepo {
         return findStoreByID(storeId).acceptBid(bidId,userBidId);
     }
 
+
+    @Override
+    public boolean rejectBid(int userId,int storeId, int bidId,int userBidId) throws Exception{
+        if (findStoreByID(storeId) == null) {
+            throw new Exception("can't delete manager: store does not exist.");
+        }
+        if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        return findStoreByID(storeId).rejectBid(bidId,userBidId);
+    }
     //===================Random
 
     @Override

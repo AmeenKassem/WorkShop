@@ -314,4 +314,9 @@ public class Store {
 		return activePurchases.getCardPrice(randomId);
 	}
 
+    public boolean rejectBid(int bidId, int userBidId) throws Exception {
+        activePurchases.rejectBid(userBidId,bidId);
+        return true;
+    }
+
 }

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.ActivePurcheses;
 
 @SpringBootTest
@@ -84,6 +85,27 @@ public class ActivePurchasesTest {
             e.printStackTrace();
             System.out.println(e.getMessage());
             Assertions.assertFalse(true);
+        }
+    } 
+
+
+    @Test
+    public void testBid(){
+        try {
+            int BidId = active.addProductToBid(0, 1);
+            SingleBid bid = active.addUserBidToBid(BidId, 0, 100);
+            SingleBid failedBid =null;
+            try{
+                failedBid = active.addUserBidToBid(BidId, 0, 100);
+                Assertions.assertTrue(false);
+            }catch(UIException e){
+                // Assertions.assertTrue(true);
+                Assertions.assertTrue(failedBid==null);
+            }
+            
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     } 
 }

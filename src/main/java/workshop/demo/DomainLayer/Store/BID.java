@@ -83,6 +83,7 @@ public class BID {
             if(isAccepted) throw new UIException("The bid is finished");
             if(!bids.containsKey(userBidId)) throw new DevException("trying to reject bid with not found id");
             bids.get(userBidId).rejectBid();
+            bids.remove(userBidId);
             return true;
         }
     }
