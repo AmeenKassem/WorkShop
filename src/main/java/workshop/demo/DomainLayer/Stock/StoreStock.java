@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DomainLayer.Store.item;
 
@@ -17,9 +18,9 @@ public class StoreStock {
 
 
 
-    public List<ProductDTO> getProducts(Filters filter){
+    public List<ItemStoreDTO> getProducts(Filters filter){
         Set<Category> categories = new HashSet<>();
-        List<ProductDTO> products = new ArrayList<>();
+        List<ItemStoreDTO> products = new ArrayList<>();
         if(filter.specificCategory()){
             categories.add(filter.getCategory());
         }else{
@@ -27,7 +28,13 @@ public class StoreStock {
         }
         for (Category category : categories) {
             if(categoryToitems.containsKey(category)){
-                products.addAll(filter.filteredProducts(categoryToitems.get(category),storeId));
+                for (item itemOnCategory : categoryToitems.get(category)) {
+                    if(filter.matches(itemOnCategory)) {
+                        // ItemStoreDTO toAdd = new ItemStoreDTO(storeId, , storeId, null, storeId, storeId)
+                        //add to returned list
+                        
+                    }
+                }
             }
         }
         return products;

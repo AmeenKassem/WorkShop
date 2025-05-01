@@ -1,34 +1,71 @@
 package workshop.demo.DomainLayer.Stock;
 
-import java.util.Collection;
-import java.util.List;
-
-import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DomainLayer.Store.item;
+import workshop.demo.DTOs.Category;
 
 public class Filters {
-    private double minRank;
-    private double maxRank;
-    //...
+    private String productNameFilter;
+    private Category categoryFilter;
+    private String keywordFilter;
+    private int storeId;
+    private double minPrice;
+    private double maxPrice;
+    private double minStoreRating;
+    private double maxStoreRating;
+
+    public Filters(
+            String productNameFilter,
+            Category categoryFilter,
+            String keywordFilter,
+            int storeId,
+            double minPrice,
+            double maxPrice,
+            double minStoreRating,
+            double maxStoreRating) {
+        this.productNameFilter = productNameFilter;
+        this.categoryFilter = categoryFilter;
+        this.keywordFilter = keywordFilter;
+        this.storeId = storeId;
+        this.minPrice = minPrice;
+        this.maxPrice = maxPrice;
+        this.minStoreRating = minStoreRating;
+        this.maxStoreRating = maxStoreRating;
+    }
+
+    // public ProductSearchCriteria() {}
+
+    public boolean matches(item item) {
+        if (item == null) return false;
+
+        // Category match
+        if (categoryFilter != null && !categoryFilter.equals(item.getCategory())) {
+            return false;
+        }
+
+        // Price range check (minPrice ≤ price ≤ maxPrice)
+        if (minPrice > 0 || maxPrice > 0) {
+            int price = item.getPrice();
+            if (minPrice > 0 && price < minPrice) return false;
+            if (maxPrice > 0 && price > maxPrice) return false;
+        }
+
+        // Store rating check
+        if (minStoreRating > 0 || maxStoreRating > 0) {
+            double rank = item.getFinalRank();
+            if (minStoreRating > 0 && rank < minStoreRating) return false;
+            if (maxStoreRating > 0 && rank > maxStoreRating) return false;
+        }
+
+        return true;
+    }
+
     public boolean specificCategory() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'specificCategory'");
     }
+
     public Category getCategory() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getCategory'");
-    }
-    public List<ProductDTO> filteredProducts(List<item> list) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'filteredProducts'");
-    }
-    public boolean specificStore() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'specificStore'");
-    }
-    public Object getStoreId() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getStoreId'");
     }
 }
