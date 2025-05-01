@@ -326,7 +326,7 @@ public class StoreService {
         return storeRepo.addProductToRandom(productId, userId, storeId, quantity, numberOfCards, priceForCard, RandomTime);
     }
     
-    public CardForRandomDTO endBid(String token, int storeId, int randomId) throws Exception {
+    public ParticipationInRandomDTO endBid(String token, int storeId, int randomId) throws Exception {
         logger.info("Ending random bid {} in store {}", randomId, storeId);
         if (!authRepo.validToken(token)) {
             logger.error("Invalid token in endBid");
