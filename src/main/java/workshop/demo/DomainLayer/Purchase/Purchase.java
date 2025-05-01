@@ -23,18 +23,18 @@ import workshop.demo.InfrastructureLayer.OrderRepository;
 public class Purchase {
 
     private final ShoppingCart shoppingCart;
-    private final StoreRepository storeRepository;
-    private final OrderRepository orderRepository;
-    private final IUserRepo userRepo;
-    private final IStockRepo stockRepository;
+    // private final StoreRepository storeRepository;
+    // private final OrderRepository orderRepository;
+    // private final IUserRepo userRepo;
+    // private final IStockRepo stockRepository;
 
     public Purchase(ShoppingCart shoppingCart, IStockRepo stockRepository,
                     StoreRepository storeRepository, OrderRepository orderRepository, IUserRepo userRepo) {
         this.shoppingCart = shoppingCart;
-        this.storeRepository = storeRepository;
-        this.orderRepository = orderRepository;
-        this.userRepo = userRepo;
-        this.stockRepository = stockRepository;
+        // this.storeRepository = storeRepository;
+        // this.orderRepository = orderRepository;
+        // this.userRepo = userRepo;
+        // this.stockRepository = stockRepository;
     }
 
 
@@ -122,33 +122,34 @@ public class Purchase {
 
     
     public void processRandomWinnings(int userId) throws Exception {
-        List<CardForRandomDTO> cards = userRepo.getWinningCards(userId);
-        Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
+        //TODO take a look on the random how it works now and change your implementation accordingly
+        // List<CardForRandomDTO> cards = userRepo.getWinningCards(userId);
+        // Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
     
-        for (CardForRandomDTO card : cards) {
-            Product product = stockRepository.findById(card.getProductId());
-            if (product == null || product.getTotalAmount() < 1) {
-                throw new Exception("Product unavailable for supply in random win");
-            }
+        // for (CardForRandomDTO card : cards) {
+        //     Product product = stockRepository.findById(card.getProductId());
+        //     if (product == null || product.getTotalAmount() < 1) {
+        //         throw new Exception("Product unavailable for supply in random win");
+        //     }
     
-            product.setTotalAmount(product.getTotalAmount() - 1);
+        //     product.setTotalAmount(product.getTotalAmount() - 1);
     
-            String storeName = storeRepository.getStoreNameById(card.getStoreId());
+        //     String storeName = storeRepository.getStoreNameById(card.getStoreId());
     
-            ReceiptProduct receiptProduct = new ReceiptProduct(
-                product.getName(),
-                product.getCategory(),
-                product.getDescription(),
-                storeName,
-                1,
-                0 // price is 0 for won products
-            );
+        //     ReceiptProduct receiptProduct = new ReceiptProduct(
+        //         product.getName(),
+        //         product.getCategory(),
+        //         product.getDescription(),
+        //         storeName,
+        //         1,
+        //         0 // price is 0 for won products
+        //     );
     
-            storeToProducts.computeIfAbsent(card.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
-            System.out.println("Supplying won product " + product.getName() + " to user " + userId);
-        }
+        //     storeToProducts.computeIfAbsent(card.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
+        //     System.out.println("Supplying won product " + product.getName() + " to user " + userId);
+        // }
     
-        createReceiptsPerStore(storeToProducts, userId);
+        // createReceiptsPerStore(storeToProducts, userId);
     }
     
     public void processAuctionWinnings(int userId) throws Exception {
@@ -191,7 +192,7 @@ public class Purchase {
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
     
         for (SingleBid bid : acceptedBids) {
-            if (bid.getType() != SpecialType.BID) continue;
+            if (bid.getType() != SpecialType.Bid) continue;
     
             Product product = stockRepository.findById(bid.getId());
             if (product == null || product.getTotalAmount() < bid.getAmount()) {

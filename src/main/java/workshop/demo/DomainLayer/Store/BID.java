@@ -50,7 +50,7 @@ public class BID {
     }
 
     public SingleBid bid(int userId, double price) throws Exception {
-        SingleBid bid = new SingleBid(productId, quantity, userId, price, SpecialType.BID, storeId, idGen.incrementAndGet(), bidId);
+        SingleBid bid = new SingleBid(productId, quantity, userId, price, SpecialType.Bid, storeId, idGen.incrementAndGet(), bidId);
         
         // if(bids.containsKey(userId)) throw new UIException("cant bid twice");
         synchronized(lock){

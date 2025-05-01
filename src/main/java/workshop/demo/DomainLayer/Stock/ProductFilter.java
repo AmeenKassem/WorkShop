@@ -10,16 +10,16 @@ import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 
 
-@Component
+// @Component
 public class ProductFilter {
 
     private IStockRepo stockRepository;
     private IStoreRepo storeRepository;
 
-    // public ProductFilter( IStoreRepo storeRepository,IStockRepo stockRepository) {
-    //     this.stockRepository = stockRepository;
-    //     this.storeRepository = storeRepository;
-    // }
+    public ProductFilter( IStoreRepo storeRepository,IStockRepo stockRepository) {
+        this.stockRepository = stockRepository;
+        this.storeRepository = storeRepository;
+    }
 
     public ProductDTO[] handleSearch(ProductSearchCriteria entity) throws Exception {
         if (entity.isStoreSpecified()) {
@@ -117,6 +117,7 @@ public class ProductFilter {
         }
     }
 
+
     private void handleStoreResult(ProductDTO[] products, ProductSearchCriteria entity, List<ItemStoreDTO> itemsInStore) {
         for (int i = 0; i < products.length; i++) {
             ProductDTO product = products[i];
@@ -139,15 +140,23 @@ public class ProductFilter {
         }
     }
 
+
+
+
+
+
+    // in the service
     public ProductDTO[] searchByProductName(String productName) {
         return stockRepository.searchByName(productName);
     }
 
+    //in the service
     public ProductDTO[] searchByCategory(String categoryName) {
         Category category = Category.valueOf(categoryName);
         return stockRepository.searchByCategory(category);
     }
 
+    //in the service
     public ProductDTO[] searchByKeyword(String keyword) {
         return stockRepository.searchByKeyword(keyword);
     }

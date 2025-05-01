@@ -4,6 +4,7 @@ import java.util.List;
 
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DTOs.ProductElementOnSearchDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.TokenNotFoundException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
@@ -33,4 +34,11 @@ public class StockService {
             throw new TokenNotFoundException();
         }
     }
+
+    public ProductElementOnSearchDTO[] searchProduct(String token,ProductSearchCriteria criteria) throws Exception{
+        if(!authRepo.validToken(token)) {
+            throw new TokenNotFoundException();
+        }
+        
+    }   
 }

@@ -78,7 +78,7 @@ public class PurchaseService {
             throw new UIException("you have to sign in!");
         }
         
-        double cardPrice=storeRepo.getProductPrice(storeId,randomId);
+        // double cardPrice=storeRepo.getProductPrice(storeId,randomId);
         if(true){//must check Payment
             ParticipationInRandomDTO card = storeRepo.participateInRandom(userId, randomId, storeId, amountPaid);
             userRepo.ParticipateInRandom(card);
