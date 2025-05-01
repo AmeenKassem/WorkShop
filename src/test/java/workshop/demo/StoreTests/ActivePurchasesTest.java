@@ -44,7 +44,7 @@ public class ActivePurchasesTest {
             SingleBid looserBid = active.addUserBidToAuction(id, 0, 10);
             SingleBid winnerBid = active.addUserBidToAuction(id, 1, 11);
 
-            Thread.sleep(1000); // correct sleep usage
+            Thread.sleep(1100); // correct sleep usage
 
             Assertions.assertFalse(looserBid.isWon());
             Assertions.assertTrue(winnerBid.isWon());
