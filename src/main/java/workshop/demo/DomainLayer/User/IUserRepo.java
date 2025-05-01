@@ -1,6 +1,10 @@
 package workshop.demo.DomainLayer.User;
 
+import java.util.List;
+
+import workshop.demo.DTOs.CardForRandomDTO;
 import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.SingleBid;
 
 public interface IUserRepo {
 
@@ -53,6 +57,10 @@ public interface IUserRepo {
     //===========
 
     public void addItemToGeustCart(int guestId, ItemCartDTO item);
+    
+    public void removeItemFromGeustCart(int guestId, int productId);
+
+
 
     public boolean isAdmin(int id);
 
@@ -73,4 +81,35 @@ public interface IUserRepo {
      */
     public boolean setUserAsAdmin(int id ,String adminKey);
 
+
+
+
+    // /**
+    //  * this function must add a bid to user special cart.
+    //  * @param bid
+    //  */
+    // public void addBidToSpecialCart(SingleBid bid);
+
+    /*
+     * this function must add a bid to user regular cart.
+     * @param bid
+     */
+    public void addBidToRegularCart(SingleBid bid);
+
+    /**
+     * this function must add a bid to user auction cart.
+     * @param bid
+     */
+    public void addBidToAuctionCart(SingleBid bid);
+
+
+    /**
+     * this will add the card to user special cart
+     * @param card
+     */
+    public void addRandomCardToCart(CardForRandomDTO card);
+
+
+    public List<SingleBid> getWinningBids(int userId);
+    public List<CardForRandomDTO> getWinningCards(int userId);
 }

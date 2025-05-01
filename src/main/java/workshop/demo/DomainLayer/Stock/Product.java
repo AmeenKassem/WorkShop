@@ -1,36 +1,42 @@
 package workshop.demo.DomainLayer.Stock;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import workshop.demo.DTOs.Category;
+
 public class Product {
 
     private String name;
-    private String productId;
+    private int productId;
     private int totalAmount;
     private double rating;
     private String description;
     private Category category;  // Using enum Category
+    private List<String> keywords; // List of keywords for the product
 
-    public Product(String name, String productId, Category category, String description) {
+    public Product(String name, int id, Category category, String description) {
         this.name = name;
-        this.productId = productId;
+        this.productId = id;
         this.category = category;
         this.description = description;
-        this.totalAmount = 0;  
-        this.rating = 0.0;     
+        this.totalAmount = 0;
+        this.rating = 0.0;
     }
-    
+
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public synchronized void setName(String name) {
         this.name = name;
     }
 
-    public String getProductId() {
+    public int getProductId() {
         return productId;
     }
 
-    public void setProductId(String productId) {
+    public synchronized void setProductId(int productId) {
         this.productId = productId;
     }
 
@@ -38,7 +44,10 @@ public class Product {
         return totalAmount;
     }
 
-    public void setTotalAmount(int totalAmount) {
+    public synchronized void setTotalAmount(int totalAmount) {
+        if (totalAmount < 0) {
+            throw new IllegalArgumentException("Total amount cannot be negative.");
+        }
         this.totalAmount = totalAmount;
     }
 
@@ -46,7 +55,10 @@ public class Product {
         return rating;
     }
 
-    public void setRating(double rating) {
+    public synchronized void setRating(double rating) {
+        if (rating < 0 || rating > 5) {
+            throw new IllegalArgumentException("Rating must be between 0 and 5.");
+        }
         this.rating = rating;
     }
 
@@ -54,7 +66,7 @@ public class Product {
         return description;
     }
 
-    public void setDescription(String description) {
+    public synchronized void setDescription(String description) {
         this.description = description;
     }
 
@@ -62,17 +74,23 @@ public class Product {
         return category;
     }
 
-    public void setCategory(Category category) {
+    public synchronized void setCategory(Category category) {
         this.category = category;
     }
 
-    // Enum for Category
-    public enum Category {
-        FOOD,
-        ELECTRONICS,
-        CLOTHING,
-        BEAUTY,
-        HOME,
-        TOYS
+    public List<String> getKeywords() {
+        return keywords;
     }
+
+    public synchronized void setKeywords(List<String> keywords) {
+        this.keywords = keywords;
+    }
+
+    public void addKeyword(String keyword) {
+        if (this.keywords == null) {
+            this.keywords = new ArrayList<>();
+        }
+        this.keywords.add(keyword);
+    }
+
 }

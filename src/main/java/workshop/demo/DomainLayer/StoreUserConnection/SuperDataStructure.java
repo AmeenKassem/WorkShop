@@ -113,6 +113,10 @@ public class SuperDataStructure {
         return toReturn;
     }
 
+    public Tree getWorkersTreeInStore(int storeId) {
+        return employees.get(storeId);
+    }
+
     public void closeStore(int storeID) {
         this.employees.remove(storeID);
     }
@@ -120,5 +124,10 @@ public class SuperDataStructure {
     //for tests:
     public Map<Integer, Tree> getEmployees() {
         return employees;
+    }
+
+    public boolean checkPermession(int userId, int storeId, Permission auction) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'checkPermession'");
     }
 }

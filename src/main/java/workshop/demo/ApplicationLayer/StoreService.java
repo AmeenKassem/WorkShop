@@ -1,15 +1,30 @@
 package workshop.demo.ApplicationLayer;
 
 import java.util.List;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.CardForRandomDTO;
+import workshop.demo.DTOs.MessageDTO;
+import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.OrderDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
+import workshop.demo.DomainLayer.Exceptions.DevException;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
+import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.Order.IOrderRepo;
 
 public class StoreService {
 
@@ -17,12 +32,14 @@ public class StoreService {
     private INotificationRepo notiRepo;
     private IAuthRepo authRepo;
     private IUserRepo userRepo;
+    private IOrderRepo orderRepo;
     private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
 
-    public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, IUserRepo userRepo) {
+    public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, IUserRepo userRepo, IOrderRepo orderRepo) {
         this.storeRepo = storeRepository;
         this.notiRepo = notiRepo;
         this.authRepo = authRepo;
+        this.orderRepo = orderRepo;
         logger.info("created the StoreService");
     }
 
@@ -185,46 +202,315 @@ public class StoreService {
             logger.error("failed to delete the manager, Error: {}", e.getMessage());
         }
     }
+    public boolean addBidOnAucction(String token, int auctionId, int storeId, double price) throws Exception {
+        logger.info("User trying to bid on auction: {}, store: {}", auctionId, storeId);
+        if (!authRepo.validToken(token)) {
+            logger.error("Invalid token provided for bidding on auction");
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if (userRepo.isRegistered(userId) && userRepo.isOnline(userId)) {
+            SingleBid bid = storeRepo.bidOnAuction(storeId, userId, auctionId, price);
+            userRepo.addBidToAuctionCart(bid);
+            logger.info("Bid placed successfully by user: {} on auction: {}", userId, auctionId);
+            return true;
+        } else {
+            logger.error("User not logged in for auction bid: {}", userId);
+            throw new UIException("you are not logged in !");
+        }
+    }
+    
+    public boolean addRegularBid(String token, int bitId, int storeId, double price) throws Exception {
+        logger.info("User attempting regular bid on bidId: {}, storeId: {}", bitId, storeId);
+        if (!authRepo.validToken(token)) {
+            logger.error("Invalid token on addRegularBid");
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if (userRepo.isRegistered(userId) && userRepo.isOnline(userId)) {
+            SingleBid bid = storeRepo.bidOnBid(bitId, price, userId, storeId);
+            userRepo.addBidToRegularCart(bid);
+            logger.info("Regular bid successful by user: {}", userId);
+            return true;
+        } else {
+            logger.error("User not logged in for regular bid: {}", userId);
+            throw new UIException("you are not logged in !");
+        }
+    }
+    
+    public AuctionDTO[] getAllAuctions(String token, int storeId) throws Exception {
+        logger.info("User requesting all auctions in store: {}", storeId);
+        if (!authRepo.validToken(token)) {
+            logger.error("Invalid token on getAllAuctions");
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if (userRepo.isRegistered(userId) && userRepo.isOnline(userId)) {
+            logger.info("Returning auction list to user: {}", userId);
+            return storeRepo.getAuctionsOnStore(userId, storeId);
+        } else {
+            logger.error("User not logged in for getAllAuctions: {}", userId);
+            throw new UIException("you are not logged in !");
+        }
+    }
+    
+    public int setProductToAuction(String token, int id, int productId, int quantity, long time, double startPrice) throws Exception {
+        logger.info("Setting product {} to auction in store {}", productId, id);
+        if (!authRepo.validToken(token)) {
+            logger.error("Invalid token for setProductToAuction");
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if (!(userRepo.isRegistered(userId) && userRepo.isOnline(userId))) {
+            logger.error("User not logged in for setProductToAuction: {}", userId);
+            throw new UIException("you are not logged in !");
+        }
+        return storeRepo.addAuctionToStore(id, userId, productId, quantity, time, startPrice);
+    }
+    
+    public int setProductToBid(String token, int storeid, int productId, int quantity) throws Exception {
+        logger.info("User attempting to set product {} as bid in store {}", productId, storeid);
+        if (!authRepo.validToken(token)) {
+            logger.error("Invalid token in setProductToBid");
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if (!(userRepo.isRegistered(userId) && userRepo.isOnline(userId))) {
+            logger.error("User not logged in for setProductToBid: {}", userId);
+            throw new UIException("you are not logged in !");
+        }
+        return storeRepo.addProductToBid(storeid, userId, productId, quantity);
+    }
+    
+    public BidDTO[] getAllBidsStatus(String token, int storeId) throws Exception {
+        logger.info("Fetching bid status for store: {}", storeId);
+        if (!authRepo.validToken(token)) {
+            logger.error("Invalid token in getAllBidsStatus");
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if (!(userRepo.isRegistered(userId) && userRepo.isOnline(userId))) {
+            logger.error("User not logged in for getAllBidsStatus: {}", userId);
+            throw new UIException("you are not logged in !");
+        }
+        return storeRepo.getAllBids(userId, storeId);
+    }
+    
+    public SingleBid acceptBid(String token, int storeId, int bidId, int bidToAcceptId) throws Exception {
+        logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidToAcceptId, bidId, storeId);
+        if (!authRepo.validToken(token)) {
+            logger.error("Invalid token in acceptBid");
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if (!(userRepo.isRegistered(userId) && userRepo.isOnline(userId))) {
+            logger.error("User not logged in for acceptBid: {}", userId);
+            throw new UIException("you are not logged in !");
+        }
+        SingleBid winner = storeRepo.acceptBid(storeId, bidId, userId, bidToAcceptId);
+        logger.info("Bid accepted. User: {} is the winner.", winner.getUserId());
+        return winner;
+    }
+    
+    public int setProductToRandom(String token, int storeId, int quantity, int productId, int numberOfCards, double priceForCard) throws Exception {
+        logger.info("Setting product {} to random in store {}", productId, storeId);
+        if (!authRepo.validToken(token)) {
+            logger.error("Invalid token in setProductToRandom");
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if (!(userRepo.isRegistered(userId) && userRepo.isOnline(userId))) {
+            logger.error("User not logged in for setProductToRandom: {}", userId);
+            throw new UIException("you are not logged in !");
+        }
+        return storeRepo.addProductToRandom(productId, userId, storeId, quantity, numberOfCards, priceForCard);
+    }
+    
+    public CardForRandomDTO endBid(String token, int storeId, int randomId) throws Exception {
+        logger.info("Ending random bid {} in store {}", randomId, storeId);
+        if (!authRepo.validToken(token)) {
+            logger.error("Invalid token in endBid");
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if (!(userRepo.isRegistered(userId) && userRepo.isOnline(userId))) {
+            logger.error("User not logged in for endBid: {}", userId);
+            throw new UIException("you are not logged in !");
+        }
+        return storeRepo.endRandom(storeId, userId, randomId);
+    }
+    
+    public RandomDTO[] getAllRandomInStore(String token, int storeId) throws Exception {
+        logger.info("Fetching all randoms in store {}", storeId);
+        if (!authRepo.validToken(token)) {
+            logger.error("Invalid token in getAllRandomInStore");
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if (!(userRepo.isRegistered(userId) && userRepo.isOnline(userId))) {
+            logger.error("User not logged in for getAllRandomInStore: {}", userId);
+            throw new UIException("you are not logged in !");
+        }
+        return storeRepo.getRandomsInStore(storeId, userId);
+    }
+    
 
-    public void deactivateteStore(int storeId, String token) throws Exception {
+
+
+    public List<ItemStoreDTO> getProductsInStore(int storeId) throws Exception {
         try {
+            logger.info("about to get all the products in store: {}", storeId);
+            return this.storeRepo.getProductsInStore(storeId);
+        } catch (Exception e) {
+            logger.error("could not get the products in store: {}, ERROR:", storeId, e.getMessage());
+
+        }
+        return null;
+    }
+
+    public void addItem(int storeId, String token, int productId, int quantity, int price, Category category) throws Exception {
+        try {
+            logger.info("about to to add an item into store: {}", storeId);
             if (!authRepo.validToken(token)) {
                 throw new Exception("unvalid token!");
             }
-            int ownerId = authRepo.getUserId(token);
-            if (!userRepo.isRegistered(ownerId)) {
-                throw new Exception(String.format("the user:%d is not registered to the system!", ownerId));
+            int adderId = authRepo.getUserId(token);
+            if (!userRepo.isRegistered(adderId)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", adderId));
             }
-            logger.info("trying to deactivate store: {} by: {}", storeId, ownerId);
-            List<Integer> toNotify = storeRepo.deactivateStore(storeId, ownerId);
-            //here must notifu all the workes into the store by notification repo
-            logger.info("the store has been deactivated succesfully!");
-            //here must notify all users using notifiaction Repo and this list
-            logger.info("about to notify all the employees");
+            if (!storeRepo.manipulateItem(adderId, storeId, Permission.AddToStock)) {
+                throw new Exception("this worker is not authorized!");
+            }
+            this.storeRepo.addItem(storeId, productId, quantity, price, category);
+            logger.info("item added sucessfully!");
 
         } catch (Exception e) {
-            logger.error("cannot deactivate this store, Error: {}", e.getMessage());
+            logger.error("could not add item: {} in store: {}, ERROR:", productId, storeId, e.getMessage());
+
         }
     }
 
-    public void closeStore(int storeId, String token) {
+    public void removeItem(int storeId, String token, int productId) throws Exception {
         try {
+            logger.info("about to to remove(quantity=0) an item into store: {}", storeId);
             if (!authRepo.validToken(token)) {
                 throw new Exception("unvalid token!");
             }
-            int adminId = authRepo.getUserId(token);
-            if (!userRepo.isRegistered(adminId) || !userRepo.isAdmin(adminId)) {
-                throw new Exception(String.format("the user:%d is not registered to the system!", adminId));
+            int removerId = authRepo.getUserId(token);
+            if (!userRepo.isRegistered(removerId)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", removerId));
             }
-            logger.info("trying to close store: {} by: {}", storeId, adminId);
-            List<Integer> toNotify = storeRepo.closeStore(storeId);
-            logger.info("store removed succesfully!");
-            //here must notify all users using notifiaction Repo and this list
-            logger.info("about to notify all the employees");
+            if (!storeRepo.manipulateItem(removerId, storeId, Permission.DeleteFromStock)) {
+                throw new Exception("this worker is not authorized!");
+            }
+            logger.info("this worker is authorized");
+            this.storeRepo.removeItem(storeId, productId);
+            logger.info("item removed sucessfully!");
 
         } catch (Exception e) {
-            logger.error("cannot close this store, Error: {}", e.getMessage());
+            logger.error("could not add item: {} in store: {}, ERROR:", productId, storeId, e.getMessage());
+
         }
     }
 
+    public void decreaseQtoBuy(int storeId, String token, int productId) throws Exception {
+        try {
+            logger.info("about to to decrease quantity to buy an item from store: {}", storeId);
+            if (!authRepo.validToken(token)) {//this token is for the buyer
+                throw new Exception("unvalid token!");
+            }
+            this.storeRepo.decreaseQtoBuy(storeId, productId);
+            logger.info("quantity decresed successfully!");
+        } catch (Exception e) {
+            logger.error("could not decreased ", e.getMessage());
+        }
+    }
+
+    public void updateQuantity(int storeId, String token, int productId) throws Exception {
+        try {
+            logger.info("about to to update quantity from store: {}", storeId);
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int changerId = authRepo.getUserId(token);
+            if (!userRepo.isRegistered(changerId)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", changerId));
+            }
+            if (!storeRepo.manipulateItem(changerId, storeId, Permission.UpdateQuantity)) {
+                throw new Exception("this worker is not authorized!");
+            }
+            logger.info("this worker is authorized");
+            this.storeRepo.updateQuantity(storeId, productId, productId);
+            logger.info("quantity updated sucessfully!");
+
+        } catch (Exception e) {
+            logger.error("could not update quantity ", e.getMessage());
+        }
+
+    }
+
+    public void updatePrice(int storeId, String token, int productId, int newPrice) throws Exception {
+        try {
+            logger.info("about to to update price from store: {}", storeId);
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int updaterId = authRepo.getUserId(token);
+            if (!userRepo.isRegistered(updaterId)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", updaterId));
+            }
+            if (!storeRepo.manipulateItem(updaterId, storeId, Permission.UpdatePrice)) {
+                throw new Exception("this worker is not authorized!");
+            }
+            logger.info("this worker is authorized");
+            this.storeRepo.updatePrice(storeId, productId, newPrice);
+            logger.info("price updated sucessfully!");
+
+        } catch (Exception e) {
+            logger.error("could not update quantity ", e.getMessage());
+        }
+    }
+
+    public void rankProduct(int storeId, String token, int productId, int newRank) throws Exception {
+        try {
+            logger.info("about to rank product in store: {}", storeId);
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int updaterId = authRepo.getUserId(token);
+            if (!userRepo.isRegistered(updaterId)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", updaterId));
+            }
+            this.storeRepo.rankProduct(storeId, productId, newRank);
+            logger.info("product ranked sucessfully!");
+        } catch (Exception e) {
+            logger.error("could notrank product", e.getMessage());
+        }
+    }
+
+    //MUST CHECK WHO CAN DO IT???
+    public List<OrderDTO> veiwStoreHistory(int storeId) throws Exception {
+        return this.orderRepo.getAllOrderByStore(storeId);
+    }
+
+    public void rankStore(String token, int storeId, int newRank) throws Exception {
+        try {
+            logger.info("about to rank store: {}", storeId);
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            this.storeRepo.rankStore(storeId, newRank);
+            logger.info("product ranked sucessfully!");
+        } catch (Exception e) {
+            logger.error("could notrank product", e.getMessage());
+        }
+
+    }
+
+    //who can do it???
+    public int getFinalRateInStore(int storeId) throws Exception {
+        logger.info("about to get the final rank of the stroe");
+        return this.storeRepo.getFinalRateInStore(storeId);
+
+    }
 }
