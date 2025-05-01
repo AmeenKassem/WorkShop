@@ -330,4 +330,8 @@ public class Store {
     //     return true;
     // }
 
+    public Random getRandom(int randomId) throws Exception {
+        return activePurchases.getRandom(randomId);
+    }
+
 }

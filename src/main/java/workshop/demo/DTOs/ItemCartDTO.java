@@ -1,6 +1,5 @@
 package workshop.demo.DTOs;
 
-import workshop.demo.DTOs.Category;
 
 public class ItemCartDTO {
 

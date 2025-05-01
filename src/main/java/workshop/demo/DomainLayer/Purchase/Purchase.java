@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import workshop.demo.DTOs.CardForRandomDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SingleBid;
@@ -13,6 +13,7 @@ import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Store.Random;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
@@ -120,35 +121,48 @@ public class Purchase {
         return receipts;
     }
 
+    //buying a random ticket
+    public ParticipationInRandomDTO buyRandomTicket(int userId, int randomId, double amountPaid) throws Exception {
+        Random random = storeRepository.getRandomById(randomId); 
+        ParticipationInRandomDTO participation = random.participateInRandom(userId, amountPaid);
+        userRepo.ParticipateInRandom(participation); // Save participation in userRepo
+    
+        mockPayment(userId, amountPaid, randomId);
+        return participation;
+    }
+    
+    private void mockPayment(int userId, double amountPaid, int randomId) {
+        System.out.println("Mock payment: user " + userId + " paid " + amountPaid + " for random ID " + randomId);
+    }
+
     
     public void processRandomWinnings(int userId) throws Exception {
-        List<CardForRandomDTO> cards = userRepo.getWinningCards(userId);
-        Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
-    
-        for (CardForRandomDTO card : cards) {
-            Product product = stockRepository.findById(card.getProductId());
-            if (product == null || product.getTotalAmount() < 1) {
-                throw new Exception("Product unavailable for supply in random win");
-            }
-    
-            product.setTotalAmount(product.getTotalAmount() - 1);
-    
-            String storeName = storeRepository.getStoreNameById(card.getStoreId());
-    
-            ReceiptProduct receiptProduct = new ReceiptProduct(
-                product.getName(),
-                product.getCategory(),
-                product.getDescription(),
-                storeName,
-                1,
-                0 // price is 0 for won products
-            );
-    
-            storeToProducts.computeIfAbsent(card.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
-            System.out.println("Supplying won product " + product.getName() + " to user " + userId);
+    List<ParticipationInRandomDTO> cards = userRepo.getWinningCards(userId);
+    Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
+
+    for (ParticipationInRandomDTO card : cards) {
+        Product product = stockRepository.findById(card.productId);
+        if (product == null || product.getTotalAmount() < 1) {
+            throw new Exception("Product unavailable for supply in random win");
         }
-    
-        createReceiptsPerStore(storeToProducts, userId);
+
+        product.setTotalAmount(product.getTotalAmount() - 1); 
+
+        String storeName = storeRepository.getStoreNameById(card.storeId);
+
+        ReceiptProduct receiptProduct = new ReceiptProduct(
+            product.getName(),
+            product.getCategory(),
+            product.getDescription(),
+            storeName,
+            1,
+            0 // already paid when buying the random ticket
+        );
+        storeToProducts.computeIfAbsent(card.storeId, k -> new ArrayList<>()).add(receiptProduct);
+        System.out.println("Supplying random-won product " + product.getName() + " to user " + userId);
+    }
+
+    createReceiptsPerStore(storeToProducts, userId);
     }
     
     public void processAuctionWinnings(int userId) throws Exception {

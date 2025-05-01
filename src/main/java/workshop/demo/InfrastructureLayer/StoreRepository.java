@@ -15,6 +15,7 @@ import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.Random;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.Store.item;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
@@ -480,5 +481,17 @@ public class StoreRepository implements IStoreRepo {
         throw new UnsupportedOperationException("Unimplemented method 'getProductPrice'");
     }
 
+    public Random getRandomById(int randomId) throws Exception {
+        for (Store store : stores) {
+            try {
+                return store.getRandom(randomId); 
+            } catch (Exception e) {
+                // Ignore the exception
+            }
+        }
+        throw new Exception("Random with ID " + randomId + " not found in any store.");
+    }
+
+    
     
 }
