@@ -7,11 +7,27 @@ public class ProductDTO {
     private Category category;
     private String description;
 
+    // store:
+    private boolean initStoreValues = false;
+    private int storeId;
+    private double price;
+    private double rating;
+    private String storeName;
+
     public ProductDTO(int productId, String name, Category category, String description) {
         this.productId = productId;
         this.name = name;
         this.category = category;
         this.description = description;
+    }
+
+    //Builder:
+    public void initStoreValues(int storeId, double price, double rating, String storeName) {
+        this.storeId = storeId;
+        this.price = price;
+        this.rating = rating;
+        this.storeName = storeName;
+        this.initStoreValues = true;
     }
 
     // Getters and setters
@@ -47,8 +63,24 @@ public class ProductDTO {
         this.description = description;
     }
 
-    public double getRating() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getRating'");
+    public int getStoreId() {
+        return storeId;
     }
+    
+    public double getPrice() {
+        return price;
+    }
+    
+    public double getRating() {
+        return rating;
+    }
+    
+    public String getStoreName() {
+        return storeName;
+    }
+    
+    public boolean isInitStoreValues() {
+        return initStoreValues;
+    }
+    
 }
