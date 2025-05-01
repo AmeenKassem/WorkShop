@@ -1,6 +1,8 @@
 package workshop.demo.DomainLayer.Store;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,12 +12,12 @@ import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.MessageDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.ItemStoreDTO;
 
 public class Store {
 
@@ -26,7 +28,7 @@ public class Store {
     private Map<Category, List<item>> stock;//map of category -> item
     private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
     //must add something for messages
-    private double storeRating;
+    private List<MessageDTO> messgesInStore;
     private ActivePurcheses activePurchases;
 
     public Store(int storeID, String storeName, String category) {
@@ -39,6 +41,7 @@ public class Store {
         for (int i = 0; i < 5; i++) {
             rank[i] = new AtomicInteger(0);
         }
+        this.messgesInStore = Collections.synchronizedList(new LinkedList<>());
         this.activePurchases = new ActivePurcheses(storeID);
     }
 
@@ -56,14 +59,6 @@ public class Store {
 
     public boolean isActive() {
         return active;
-    }
-
-    public double getStoreRating() {
-        return storeRating;
-    }
-
-    public void setStoreRating(double storeRating) {
-        this.storeRating = storeRating;
     }
 
     public synchronized void setActive(boolean active) {
@@ -201,7 +196,8 @@ public class Store {
             // Synchronize the list of items to ensure thread-safety when accessing the list
             synchronized (items) {//must check if it needed to be synchronized
                 for (item i : items) {
-                    itemStoreDTOList.add(new ItemStoreDTO(i.getProductId(), i.getQuantity(), i.getPrice(), i.getCategory(), i.getFinalRank(),stroeID));
+                    ItemStoreDTO toAdd = new ItemStoreDTO(i.getProductId(), i.getQuantity(), i.getPrice(), i.getCategory(), i.getFinalRank(), stroeID);
+                    itemStoreDTOList.add(toAdd);
                 }
             }
         }
@@ -234,7 +230,7 @@ public class Store {
 
     }
 
-    public SingleBid bidOnAuctionProduct(int auctionId, int userId,double price) throws Exception{
+    public SingleBid bidOnAuctionProduct(int auctionId, int userId, double price) throws Exception {
         return activePurchases.addUserBidToAuction(auctionId, userId, price);
     }
 
@@ -255,39 +251,39 @@ public class Store {
         return activePurchases.addProductToBid(productId, quantity);
     }
 
-    public SingleBid bidOnBid(int bidId,int userid,double price) throws Exception {
+    public SingleBid bidOnBid(int bidId, int userid, double price) throws Exception {
         return activePurchases.addUserBidToBid(bidId, userid, price);
     }
 
-
-    public BidDTO[] getAllBids(){
+    public BidDTO[] getAllBids() {
         return activePurchases.getBids();
     }
 
-    private void decreaseFromQuantity(int quantity,int id) throws Exception{
+    private void decreaseFromQuantity(int quantity, int id) throws Exception {
         item item = getItemById(id);
-        if(item.getQuantity()<quantity){
+        if (item.getQuantity() < quantity) {
             throw new UIException("stock not enought to make this auction .");
         }
-        item.changeQuantity(item.getQuantity()-quantity);
+        item.changeQuantity(item.getQuantity() - quantity);
         // return item;
     }
 
-    private item getItemById(int productId){
+    private item getItemById(int productId) {
         for (List<item> category : stock.values()) {
             for (item item : category) {
-                if(item.getProductId()==productId)
+                if (item.getProductId() == productId) {
                     return item;
+                }
             }
         }
         return null;
     }
 
     public AuctionDTO[] getAllAuctions() {
-       return activePurchases.getAuctions();
+        return activePurchases.getAuctions();
     }
 
-    public SingleBid acceptBid(int bidId,int userBidId) throws Exception {
+    public SingleBid acceptBid(int bidId, int userBidId) throws Exception {
         return activePurchases.acceptBid(userBidId, bidId);
     }
 
@@ -306,7 +302,7 @@ public class Store {
         return activePurchases.endRandom(randomId);
     }
 
-    public RandomDTO[] getRandoms(){
+    public RandomDTO[] getRandoms() {
         return activePurchases.getRandoms();
     }
 
