@@ -46,6 +46,14 @@ public class Random {
             @Override
             public void run() {
                 endRandom();
+                // Notify the winner and other participants
+                // here we give back the money for all participants that didn't win
+                for (ParticipationInRandomDTO participation : usersParticipations.values()) {
+                    if (participation != winner) {
+                        // Refund the amount paid to the participant
+                        // You can implement the refund logic here
+                    }
+                }
             }
         }, RandomTime);
 
@@ -65,6 +73,10 @@ public class Random {
                 throw new UIException("user already participated in this random...");
             }
             amountLeft -= amountPaid;
+            if(amountLeft == 0) {
+                endRandom();
+                timer.cancel(); // Cancel the timer if the random is over
+            }
             return usersParticipations.get(userId);
         }
     }
