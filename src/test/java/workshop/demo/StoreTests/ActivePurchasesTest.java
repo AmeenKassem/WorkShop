@@ -102,10 +102,16 @@ public class ActivePurchasesTest {
                 // Assertions.assertTrue(true);
                 Assertions.assertTrue(failedBid==null);
             }
-            
+            active.rejectBid(BidId, 0);
+            Assertions.assertFalse(bid.isWon());
+            SingleBid secondBid = active.addUserBidToBid(BidId,0,100);
+            active.acceptBid(secondBid.getId(), BidId);
+            Assertions.assertTrue(secondBid.isWon());
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            System.out.println(e.getMessage());
+            Assertions.assertTrue(false);
         }
     } 
 }
