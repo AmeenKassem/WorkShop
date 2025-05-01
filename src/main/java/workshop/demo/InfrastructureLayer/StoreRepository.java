@@ -414,14 +414,14 @@ public class StoreRepository implements IStoreRepo {
     //===================Random
 
     @Override
-    public int addProductToRandom(int productId,int userId, int storeId, int quantity, int cardsNumber, double priceForCard) throws Exception {
+    public int addProductToRandom(int productId,int userId, int storeId, int quantity, int cardsNumber, double priceForCard, long RandomTime) throws Exception {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
         if(!data.checkPermession(userId,storeId ,Permission.SpecialType)){
             throw new UIException("you have no permession to see auctions info.");
         }
-        return findStoreByID(storeId).addProductToRandom(productId,quantity,cardsNumber,priceForCard);
+        return findStoreByID(storeId).addProductToRandom(productId,quantity,cardsNumber,priceForCard,RandomTime);
     }
 
     @Override

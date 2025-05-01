@@ -95,9 +95,9 @@ public class ActivePurcheses {
     
     // ========== Random ==========
     
-    public int addProductToRandom(int productId, int quantity, int numberOfCards,double productPrice) {
+    public int addProductToRandom(int productId, int quantity, int numberOfCards,double productPrice, long RandomTime) {
         int id = randomIdGen.incrementAndGet();
-        Random random = new Random(productId, quantity,productPrice,id,storeId);
+        Random random = new Random(productId, quantity,productPrice,id,storeId,RandomTime);
         activeRandom.put(id, random);
         return id;
     }

@@ -293,9 +293,9 @@ public class Store {
 
     //====================== random
 
-    public int addProductToRandom(int productId, int quantity, int cardsNumber, double priceForCard) throws Exception {
+    public int addProductToRandom(int productId, int quantity, int cardsNumber, double priceForCard, long RandomTime) throws Exception {
         decreaseFromQuantity(quantity, productId);
-        return activePurchases.addProductToRandom(productId, quantity, cardsNumber, priceForCard);
+        return activePurchases.addProductToRandom(productId, quantity, cardsNumber, priceForCard, RandomTime);
     }
 
     public ParticipationInRandomDTO participateInRandom(int userId,int randomid,double amountPaid) throws Exception{

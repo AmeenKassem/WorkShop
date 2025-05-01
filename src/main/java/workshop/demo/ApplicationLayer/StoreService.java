@@ -334,7 +334,7 @@ public class StoreService {
     }
 
 
-    public int setProductToRandom(String token, int storeId, int quantity,int productId,int numberOfCards,double priceForCard) throws Exception{
+    public int setProductToRandom(String token, int storeId, int quantity,int productId,int numberOfCards,double priceForCard, long RandomTime) throws Exception{
         if (!authRepo.validToken(token)) {
             throw new Exception("unvalid token!");
         }
@@ -342,7 +342,7 @@ public class StoreService {
         if(!(userRepo.isRegistered(userId)&&userRepo.isOnline(userId))){
             throw new UIException("you are not logged in !");
         }
-        return storeRepo.addProductToRandom(productId, userId, storeId, quantity, numberOfCards, priceForCard);
+        return storeRepo.addProductToRandom(productId, userId, storeId, quantity, numberOfCards, priceForCard, RandomTime);
     }
 
     public ParticipationInRandomDTO endBid(String token , int storeId, int randomId) throws Exception{
