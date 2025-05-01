@@ -273,7 +273,7 @@ public class StoreRepository implements IStoreRepo {
         if (store == null) {
             throw new Exception("store does not exist");
         }
-        Node Worker = this.data.getWorkersTreeInStore(storeId).getNodeById(storeId);
+        Node Worker = this.data.getWorkersTreeInStore(storeId).getNodeById(adderId);
         if (Worker == null) {
             throw new Exception("this user is not a worker in this store");
         }

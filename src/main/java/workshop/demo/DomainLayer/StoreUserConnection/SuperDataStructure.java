@@ -23,6 +23,7 @@ public class SuperDataStructure {
             this.employees.put(storeID, new Tree(bossId, false, -1));
 
         } finally {
+            lock.unlock();
         }
     }
 
