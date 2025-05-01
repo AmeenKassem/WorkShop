@@ -321,4 +321,14 @@ public class Store {
     
 
 
+    public boolean rejectBid(int bidId, int userBidId) throws Exception {
+        activePurchases.rejectBid(userBidId,bidId);
+        return true;
+    }
+
+    // public boolean rejectBid(int bidId, int userBidId) throws Exception {
+    //     activePurchases.rejectBid(userBidId,bidId);
+    //     return true;
+    // }
+
 }

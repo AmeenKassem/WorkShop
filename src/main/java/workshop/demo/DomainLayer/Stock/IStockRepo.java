@@ -1,7 +1,8 @@
 package workshop.demo.DomainLayer.Stock;
 
+import java.util.List;
+
 import workshop.demo.DTOs.*;
-import workshop.demo.DTOs.ProductDTO;
 
 
 public interface IStockRepo {
@@ -12,5 +13,8 @@ public interface IStockRepo {
     ProductDTO[] getAllProducts();
     ProductDTO[] searchByName(String name);
     ProductDTO[] searchByCategory(Category category);
+    ProductDTO[] searchByKeyword(String keywordFilter);
+    List<ItemStoreDTO> getItemsByStoreId(int storeId) throws Exception;
+    List<ItemStoreDTO> getItemsByProductId(int productId) throws Exception;
 }
 

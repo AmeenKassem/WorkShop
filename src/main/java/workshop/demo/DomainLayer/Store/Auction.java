@@ -34,6 +34,8 @@ public class Auction {
 
     private AtomicInteger idGen = new AtomicInteger();
 
+    private Object lock=new Object();
+
     public Auction(int productId, int quantity, long time, int id, int storeId) {
         this.productId = productId;
         this.quantity = quantity;
@@ -60,21 +62,25 @@ public class Auction {
     }
 
     public SingleBid bid(int userId, double price) throws Exception {
-        if (price <= maxBid) {
-            throw new UIException("Cant bid less than current");
+        synchronized(lock){
+
+            if (price <= maxBid) {
+                throw new UIException("Cant bid less than current");
+            }
+            if (status == AuctionStatus.FINISH) {
+                throw new UIException("This Bid is done!");
+            }
+    
+            maxBid = price;
+    
+            SingleBid bid = new SingleBid(productId, quantity, userId, price, SpecialType.Auction, storeId,
+                    idGen.incrementAndGet(), auctionId);
+    
+            bids.add(bid);
+    
+            return bid;
         }
-        if (status == AuctionStatus.FINISH) {
-            throw new UIException("This Bid is done!");
-        }
 
-        maxBid = price;
-
-        SingleBid bid = new SingleBid(productId, quantity, userId, price, SpecialType.Auction, storeId,
-                idGen.incrementAndGet(), auctionId);
-
-        bids.add(bid);
-
-        return bid;
     }
 
     public AuctionDTO getDTO() {
@@ -89,7 +95,7 @@ public class Auction {
         for (int i = 0; i < arrayBids.length; i++)
             arrayBids[i] = bids.get(i);
         //TODO set a time date for ending product.
-        
+        res.auctionId = this.auctionId;
         return res;
     }
 
