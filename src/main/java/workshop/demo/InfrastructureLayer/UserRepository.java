@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import workshop.demo.DTOs.CardForRandomDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
@@ -200,8 +200,8 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public void addRandomCardToCart(CardForRandomDTO card) {
-        getRegisteredUser(card.userId).addCardForRandom(card);
+    public void ParticipateInRandom(ParticipationInRandomDTO card) {
+        getRegisteredUser(card.userId).addParticipationForRandom(card);
     }
 
     @Override
@@ -210,7 +210,7 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public List<CardForRandomDTO> getWinningCards(int userId) {
+    public List<ParticipationInRandomDTO> getWinningCards(int userId) {
         return getRegisteredUser(userId).getWinningCards();
     }
 

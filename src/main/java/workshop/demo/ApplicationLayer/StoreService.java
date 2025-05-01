@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
-import workshop.demo.DTOs.CardForRandomDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.MessageDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
@@ -311,9 +311,9 @@ public class StoreService {
         logger.info("Bid accepted. User: {} is the winner.", winner.getUserId());
         return winner;
     }
-    
-    public int setProductToRandom(String token, int storeId, int quantity, int productId, int numberOfCards, double priceForCard) throws Exception {
-        logger.info("Setting product {} to random in store {}", productId, storeId);
+
+
+    public int setProductToRandom(String token ,int productId, int quantity, double productPrice,int storeId, long RandomTime) throws Exception{
         if (!authRepo.validToken(token)) {
             logger.error("Invalid token in setProductToRandom");
             throw new Exception("unvalid token!");
@@ -323,10 +323,10 @@ public class StoreService {
             logger.error("User not logged in for setProductToRandom: {}", userId);
             throw new UIException("you are not logged in !");
         }
-        return storeRepo.addProductToRandom(productId, userId, storeId, quantity, numberOfCards, priceForCard);
+        return storeRepo.addProductToRandom(userId ,productId, quantity ,productPrice ,storeId, RandomTime);
     }
     
-    public CardForRandomDTO endBid(String token, int storeId, int randomId) throws Exception {
+    public ParticipationInRandomDTO endBid(String token, int storeId, int randomId) throws Exception {
         logger.info("Ending random bid {} in store {}", randomId, storeId);
         if (!authRepo.validToken(token)) {
             logger.error("Invalid token in endBid");

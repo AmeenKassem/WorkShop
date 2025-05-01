@@ -10,7 +10,7 @@ import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
-import workshop.demo.DTOs.CardForRandomDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -423,26 +423,26 @@ public class StoreRepository implements IStoreRepo {
     //===================Random
 
     @Override
-    public int addProductToRandom(int productId,int userId, int storeId, int quantity, int cardsNumber, double priceForCard) throws Exception {
+    public int addProductToRandom(int userId ,int productId, int quantity, double productPrice,int storeId, long RandomTime) throws Exception {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
         if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
             throw new UIException("you have no permession to see auctions info.");
         }
-        return findStoreByID(storeId).addProductToRandom(productId,quantity,cardsNumber,priceForCard);
+        return findStoreByID(storeId).addProductToRandom(productId,quantity,productPrice,storeId,RandomTime);
     }
 
     @Override
-    public CardForRandomDTO buyCardForRandom(int userId,int randomId,int storeId) throws Exception{
+    public ParticipationInRandomDTO participateInRandom(int userId,int randomId,int storeId, double amountPaid) throws Exception{
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        return findStoreByID(storeId).buyCardForRandom(userId, randomId);
+        return findStoreByID(storeId).participateInRandom(userId, randomId, amountPaid);
     }
 
     @Override
-    public CardForRandomDTO endRandom(int storeId, int userId, int randomId) throws Exception {
+    public ParticipationInRandomDTO endRandom(int storeId, int userId, int randomId) throws Exception {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
@@ -469,11 +469,18 @@ public class StoreRepository implements IStoreRepo {
         throw new UnsupportedOperationException("Unimplemented method 'getStoreRating'");
     }
 
-    public double getPriceForCard(int storeId, int randomId) throws Exception {
+    // public double getPriceForCard(int storeId, int randomId) throws Exception {
+    //     if (findStoreByID(storeId) == null) {
+    //         throw new Exception("can't delete manager: store does not exist.");
+    //     }
+    //     return findStoreByID(storeId).getCardPrice(randomId);
+    // }
+
+    public double getProductPrice(int storeId, int randomId) throws Exception {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        return findStoreByID(storeId).getCardPrice(randomId);
+        return findStoreByID(storeId).getProductPrice(randomId);
     }
 
    

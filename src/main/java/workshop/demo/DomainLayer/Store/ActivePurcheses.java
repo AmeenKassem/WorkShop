@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
-import workshop.demo.DTOs.CardForRandomDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -102,19 +102,27 @@ public class ActivePurcheses {
     
     // ========== Random ==========
     
-    public int addProductToRandom(int productId, int quantity, int numberOfCards,double priceForCard) {
+    public int addProductToRandom(int productId, int quantity, double productPrice,int storeId, long RandomTime) throws Exception {
+        if(quantity<=0) throw new UIException("you cant set "+quantity+" value!");
+        if(productPrice<=0) throw new UIException("you cant set "+productPrice+" value!");
+        if(RandomTime<=0) throw new UIException("you cant set "+RandomTime+" value!");
         int id = randomIdGen.incrementAndGet();
-        Random random = new Random(productId, quantity, numberOfCards,priceForCard,id,storeId);
+        Random random = new Random(productId, quantity,productPrice,id,storeId,RandomTime);
         activeRandom.put(id, random);
         return id;
     }
 
-    public CardForRandomDTO buyCardForRandomDTO(int userId,int randomId) throws Exception{
-        if(!activeRandom.containsKey(randomId)) throw new DevException("trying to buy a card from unfound random id...");
-        return activeRandom.get(randomId).buyCard(userId);
+    public ParticipationInRandomDTO participateInRandom(int userId,int randomId,double productPrice) throws Exception{
+        if(!activeRandom.containsKey(randomId)) throw new UIException("trying to buy a card from unfound random id...");
+        if(productPrice <= 0) throw new UIException("you cant set "+productPrice+" value!");
+        if(!activeRandom.get(randomId).isActive()){
+             activeRandom.remove(randomId);
+             throw new UIException("Random has ended...");
+        }
+        return activeRandom.get(randomId).participateInRandom(userId, productPrice);
     }
     
-    public CardForRandomDTO endRandom(int randomId) throws Exception{
+    public ParticipationInRandomDTO endRandom(int randomId) throws Exception{
         if(!activeRandom.containsKey(randomId)) throw new DevException("trying to buy a card from unfound random id...");
         return activeRandom.get(randomId).endRandom();
     }
@@ -129,10 +137,21 @@ public class ActivePurcheses {
         return randomDTOs;
     }
 
-    public double getCardPrice(int randomId) throws DevException {
+    public Random getRandom(int randomId) throws Exception {
         if(!activeRandom.containsKey(randomId)) throw new DevException("trying to buy a card from unfound random id...");
-        return activeRandom.get(randomId).getPrice();
+        return activeRandom.get(randomId);
+    }
+
+    // public double getCardPrice(int randomId) throws DevException {
+    //     if(!activeRandom.containsKey(randomId)) throw new DevException("trying to buy a card from unfound random id...");
+    //     return activeRandom.get(randomId).getPrice();
+    // }
+
+    public double getProductPrice(int randomId) throws DevException {
+        if(!activeRandom.containsKey(randomId)) throw new DevException("trying to buy a card from unfound random id...");
+        return activeRandom.get(randomId).getProductPrice();
     }
     
+
 
 }

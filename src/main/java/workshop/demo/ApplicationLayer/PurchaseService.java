@@ -2,7 +2,7 @@ package workshop.demo.ApplicationLayer;
 
 import java.util.List;
 
-import workshop.demo.DTOs.CardForRandomDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -67,7 +67,7 @@ public class PurchaseService {
         return purchase.executePurchase(false, ownerId);
     }
 
-    public CardForRandomDTO buyCardForUser(String token, int randomId, int storeId) throws Exception {
+    public ParticipationInRandomDTO participateInRandomForUser(String token, int randomId, int storeId, double amountPaid) throws Exception {
         if (!authRepo.validToken(token)) {
             throw new UIException("timeout!");
         }
@@ -77,10 +77,10 @@ public class PurchaseService {
             throw new UIException("you have to sign in!");
         }
         
-        double cardPrice=storeRepo.getPriceForCard(storeId,randomId);
+        double cardPrice=storeRepo.getProductPrice(storeId,randomId);
         if(true){//must check Payment
-            CardForRandomDTO card = storeRepo.buyCardForRandom(userId, randomId, storeId);
-            userRepo.addRandomCardToCart(card);
+            ParticipationInRandomDTO card = storeRepo.participateInRandom(userId, randomId, storeId, amountPaid);
+            userRepo.ParticipateInRandom(card);
             return card;
         }else{
             throw new UIException("you cant pay");

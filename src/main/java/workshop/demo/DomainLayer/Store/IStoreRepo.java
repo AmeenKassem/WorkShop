@@ -7,7 +7,7 @@ import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
-import workshop.demo.DTOs.CardForRandomDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
@@ -101,11 +101,11 @@ public interface IStoreRepo {
 
     //random:
 
-    public int addProductToRandom(int productId,int userId,int storeId,int quantity,int cardsNumber,double priceForCard) throws Exception;
+    public int addProductToRandom(int userId ,int productId, int quantity, double productPrice,int storeId, long RandomTime) throws Exception;
 
-    public CardForRandomDTO buyCardForRandom(int userId,int randomId,int storeId) throws Exception;
+    public ParticipationInRandomDTO participateInRandom(int userId,int randomId,int storeId, double amountPaid) throws Exception;
 
-    public CardForRandomDTO endRandom(int storeId,int userId,int randomId) throws Exception;
+    public ParticipationInRandomDTO endRandom(int storeId,int userId,int randomId) throws Exception;
 
     public RandomDTO[] getRandomsInStore(int storeId, int userId) throws Exception;
 
