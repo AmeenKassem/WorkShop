@@ -1,10 +1,12 @@
 package workshop.demo.DomainLayer.StoreUserConnection;
 
 import java.util.Iterator;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Tree implements Iterable<Node> {
 
     private Node root;//root is the boss
+    private final ReentrantLock lock = new ReentrantLock();
 
     //FOR BOSS: isManager->false + parenetId-> -1
     public Tree(int myId, boolean isManager, int parentId) {
@@ -21,15 +23,25 @@ public class Tree implements Iterable<Node> {
 
     //for delete-> must check it:
     public boolean deleteNode(int userId) {
-        if (root.getMyId() == userId) {
-            root = null; // delete whole tree if root matches -> close store
-            return true;
+        lock.lock();
+        try {
+            if (root.getMyId() == userId) {
+                root = null; // delete whole tree if root matches -> close store
+                return true;
+            }
+            return root.deleteNode(userId);
+        } finally {
+            lock.unlock();
         }
-        return root.deleteNode(userId);
     }
 
     public Node getNodeById(int searchId) {
-        return root.getNode(searchId);
+        lock.lock();
+        try {
+            return root.getNode(searchId);
+        } finally {
+            lock.unlock();
+        }
 
     }
 
@@ -39,7 +51,9 @@ public class Tree implements Iterable<Node> {
 
     @Override
     public Iterator<Node> iterator() {
-        return new TreeIterator(root);
+        synchronized (lock) {
+            return new TreeIterator(root);
+        }
     }
 
 }

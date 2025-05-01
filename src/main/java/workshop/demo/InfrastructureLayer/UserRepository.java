@@ -3,7 +3,10 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-import workshop.demo.DTOs.CardForRandomDTO;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Exceptions.GuestNotFoundException;
@@ -194,8 +197,8 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public void addRandomCardToCart(CardForRandomDTO card) {
-        getRegisteredUser(card.userId).addCardForRandom(card);
+    public void ParticipateInRandom(ParticipationInRandomDTO card) {
+        getRegisteredUser(card.userId).addParticipationForRandom(card);
     }
 
     @Override
@@ -204,7 +207,7 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public List<CardForRandomDTO> getWinningCards(int userId) {
+    public List<ParticipationInRandomDTO> getWinningCards(int userId) {
         return getRegisteredUser(userId).getWinningCards();
     }
 

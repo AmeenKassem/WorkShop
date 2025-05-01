@@ -19,7 +19,7 @@ public class BID {
 
     private Object lock = new Object();
 
-    private static AtomicInteger idGen;
+    private static AtomicInteger idGen=new AtomicInteger();
 
     public HashMap<Integer, SingleBid> bids;
 
@@ -52,6 +52,7 @@ public class BID {
     public SingleBid bid(int userId, double price) throws Exception {
         SingleBid bid = new SingleBid(productId, quantity, userId, price, SpecialType.BID, storeId, idGen.incrementAndGet(), bidId);
         
+        // if(bids.containsKey(userId)) throw new UIException("cant bid twice");
         synchronized(lock){
             if(isAccepted) throw new UIException("This bid is finished!");
             bids.put(bid.getId(), bid);
@@ -83,6 +84,7 @@ public class BID {
             if(isAccepted) throw new UIException("The bid is finished");
             if(!bids.containsKey(userBidId)) throw new DevException("trying to reject bid with not found id");
             bids.get(userBidId).rejectBid();
+            bids.remove(userBidId);
             return true;
         }
     }

@@ -3,7 +3,7 @@ package workshop.demo.DomainLayer.User;
 import java.util.ArrayList;
 import java.util.List;
 
-import workshop.demo.DTOs.CardForRandomDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.InfrastructureLayer.Encoder;
 
@@ -16,7 +16,7 @@ public class Registered extends Guest {
 
     private List<SingleBid> regularBids;
     private List<SingleBid> auctionBids;
-    private List<CardForRandomDTO> cardsForRandom;
+    private List<ParticipationInRandomDTO> participationsOnRandoms;
 
 
     public Registered(int id2,String username,String encrybtedPassword ) {
@@ -25,7 +25,7 @@ public class Registered extends Guest {
         this.encrybtedPassword = encrybtedPassword;
         regularBids = new ArrayList<SingleBid>();
         auctionBids = new ArrayList<SingleBid>();
-        cardsForRandom = new ArrayList<CardForRandomDTO>();
+        participationsOnRandoms = new ArrayList<ParticipationInRandomDTO>();
     }
 
     public boolean check(Encoder encoder, String username, String password) {
@@ -67,22 +67,23 @@ public class Registered extends Guest {
         return auctionBids;
     }
 
-    public List<CardForRandomDTO> getCardsForRandom() {
-        return cardsForRandom;
+    public List<ParticipationInRandomDTO> getParticipationsOnRandoms() {
+        return participationsOnRandoms;
     }
 
-    public void addCardForRandom(CardForRandomDTO card) {
-        CardForRandomDTO cardToAdd = getCardForRandom(card.randomId);
+    public void addParticipationForRandom(ParticipationInRandomDTO card) {
+        ParticipationInRandomDTO cardToAdd = getCardForRandom(card.randomId);
         if(cardToAdd == null){
-            cardsForRandom.add(card);
+            participationsOnRandoms.add(card);
         }
         else{
-            cardToAdd.addCard();
+            //cardToAdd.addCard();
+
         }
     }
 
-    public CardForRandomDTO getCardForRandom(int randomId) {
-        for(CardForRandomDTO card: cardsForRandom){
+    public ParticipationInRandomDTO getCardForRandom(int randomId) {
+        for(ParticipationInRandomDTO card: participationsOnRandoms){
             if(card.getRandomId() == randomId && !card.ended)
                 return card;
         }
@@ -98,9 +99,9 @@ public class Registered extends Guest {
     }
 
     public void removeCardForRandom(int randomId) {
-        for(CardForRandomDTO card: cardsForRandom){
+        for(ParticipationInRandomDTO card: participationsOnRandoms){
             if(card.getRandomId() == randomId){
-                cardsForRandom.remove(card);
+                participationsOnRandoms.remove(card);
                 return;
             }
         }
@@ -114,9 +115,9 @@ public class Registered extends Guest {
         auctionBids.remove(bid);
     }
 
-    public List<CardForRandomDTO> getWinningCards() {
-        List<CardForRandomDTO> res = new ArrayList<>();
-        for (CardForRandomDTO cardForRandomDTO : res) {
+    public List<ParticipationInRandomDTO> getWinningCards() {
+        List<ParticipationInRandomDTO> res = new ArrayList<>();
+        for (ParticipationInRandomDTO cardForRandomDTO : res) {
             if(cardForRandomDTO.won()) res.add(cardForRandomDTO);
         }
         return res;

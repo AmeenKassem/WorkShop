@@ -10,7 +10,7 @@ public class AuctionDTO {
     public AuctionStatus status;
     public double maxBid;
     // public <DateTime> timer;
-
+    public int auctionId;
     public SingleBid winner;
     public int quantity;
 

@@ -2,7 +2,7 @@ package workshop.demo.DomainLayer.User;
 
 import java.util.List;
 
-import workshop.demo.DTOs.CardForRandomDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.SingleBid;
 
@@ -107,9 +107,9 @@ public interface IUserRepo {
      * this will add the card to user special cart
      * @param card
      */
-    public void addRandomCardToCart(CardForRandomDTO card);
+    public void ParticipateInRandom(ParticipationInRandomDTO card);
 
 
     public List<SingleBid> getWinningBids(int userId);
-    public List<CardForRandomDTO> getWinningCards(int userId);
+    public List<ParticipationInRandomDTO> getWinningCards(int userId);
 }
