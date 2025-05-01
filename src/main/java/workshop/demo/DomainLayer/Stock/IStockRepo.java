@@ -19,5 +19,6 @@ public interface IStockRepo {
     // List<ItemStoreDTO> getItemsByStoreId(int storeId) throws Exception;
     // List<ItemStoreDTO> getItemsByProductId(int productId) throws Exception;
     
+
 }
 
