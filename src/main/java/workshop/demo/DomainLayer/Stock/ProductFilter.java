@@ -7,18 +7,19 @@ import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DomainLayer.Store.IStoreRepo;
 
 
 @Component
 public class ProductFilter {
 
-    private StockRepository stockRepository;
-    private StoreRepository storeRepository;
+    private IStockRepo stockRepository;
+    private IStoreRepo storeRepository;
 
-    public ProductFilter(StockRepository stockRepository, StoreRepository storeRepository) {
-        this.stockRepository = stockRepository;
-        this.storeRepository = storeRepository;
-    }
+    // public ProductFilter( IStoreRepo storeRepository,IStockRepo stockRepository) {
+    //     this.stockRepository = stockRepository;
+    //     this.storeRepository = storeRepository;
+    // }
 
     public ProductDTO[] handleSearch(ProductSearchCriteria entity) throws Exception {
         if (entity.isStoreSpecified()) {
@@ -80,7 +81,7 @@ public class ProductFilter {
     
             for (ItemStoreDTO itemStoreDTO : itemsInStore) {
                 int storeId = itemStoreDTO.getStoreId(); 
-                double storeRating = storeRepository.getStoreRating(storeId); 
+                double storeRating = storeRepository.getFinalRateInStore(storeId); 
                 if (storeRating >= minStoreRating && storeRating <= maxStoreRating) {
                     filteredList.add(productDTO); 
                     break; 

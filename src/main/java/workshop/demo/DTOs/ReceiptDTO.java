@@ -7,9 +7,9 @@ public class ReceiptDTO {
     private String storeName; //-> write get name by ID ->store 
     private String date;
     private List<ReceiptProduct> productsList;
-    private int finalPrice;
+    private double finalPrice;
 
-    public ReceiptDTO(String storeName, String date, List<ReceiptProduct> productsList, int finalPrice) {
+    public ReceiptDTO(String storeName, String date, List<ReceiptProduct> productsList, double finalPrice) {
         this.storeName = storeName;
         this.date = date;
         this.productsList = productsList;
@@ -28,7 +28,7 @@ public class ReceiptDTO {
         return productsList;
     }
 
-    public int getFinalPrice() {
+    public double getFinalPrice() {
         return finalPrice;
     }
 

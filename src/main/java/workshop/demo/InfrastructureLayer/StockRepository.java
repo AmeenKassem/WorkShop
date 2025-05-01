@@ -11,21 +11,18 @@ import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DomainLayer.Exceptions.ProductNotFoundException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
-import workshop.demo.DomainLayer.Exceptions.ProductNotFoundException;
 
 public class StockRepository implements IStockRepo {
 
-    private final StoreRepository storeRepository;
+    private final IStoreRepo IStoreRepo;
     private final Map<Integer, Product> products = new HashMap<>();
     private final Map<Category, List<Product>> categoryProducts = new HashMap<>();
     private static final AtomicInteger counterSId = new AtomicInteger(1);
-    private SuperDataStructure data;
 
-    public StockRepository(StoreRepository storeRepository) {
-        this.data = new SuperDataStructure();
-        this.storeRepository = new StoreRepository(); // Initialize the store repository
+    public StockRepository(IStoreRepo IStoreRepo) {
+        this.IStoreRepo = IStoreRepo; 
     }
 
     public static int generateId() {
@@ -112,8 +109,9 @@ public class StockRepository implements IStockRepo {
                 .toArray(ProductDTO[]::new);
     }
 
+    @Override
     public List<ItemStoreDTO> getItemsByStoreId(int storeId) throws Exception {
-        Store store = storeRepository.findStoreByID(storeId);
+        Store store = IStoreRepo.findStoreByID(storeId);
 
         if (store == null) {
             throw new Exception("Store with ID " + storeId + " does not exist");
@@ -122,7 +120,7 @@ public class StockRepository implements IStockRepo {
     }
 
     public double getStoreRating(int storeId) {
-        Store store = storeRepository.findStoreByID(storeId);
+        Store store = IStoreRepo.findStoreByID(storeId);
         if (store == null) {
             throw new IllegalArgumentException("Store with ID " + storeId + " not found");
         }
@@ -132,7 +130,7 @@ public class StockRepository implements IStockRepo {
     public List<ItemStoreDTO> getItemsByProductId(int productId) throws Exception {
         List<ItemStoreDTO> itemsForProduct = new ArrayList<>();
 
-        for (Store store : storeRepository.getStores()) {
+        for (Store store : IStoreRepo.getStores()) {
 
             List<ItemStoreDTO> itemsInStore = store.getProductsInStore();
 
