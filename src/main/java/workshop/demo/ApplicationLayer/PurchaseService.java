@@ -1,6 +1,7 @@
 package workshop.demo.ApplicationLayer;
 
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +12,7 @@ import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
+import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.Purchase;
 import workshop.demo.DomainLayer.User.IUserRepo;
@@ -19,7 +21,6 @@ import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.OrderRepository;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
-
 
 public class PurchaseService {
 
@@ -32,12 +33,13 @@ public class PurchaseService {
 
     private static final Logger logger = LoggerFactory.getLogger(PurchaseService.class);
 
-    public PurchaseService(IAuthRepo authRepo, IStockRepo stockRepo, IStoreRepo storeRepo, IUserRepo userRepo, IPurchaseRepo purchaseRepo) {
+    public PurchaseService(IAuthRepo authRepo, IStockRepo stockRepo, IStoreRepo storeRepo, IUserRepo userRepo, IPurchaseRepo purchaseRepo, IOrderRepo orderRepo) {
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
         this.storeRepo = storeRepo;
         this.userRepo = userRepo;
         this.purchaseRepo = purchaseRepo;
+        this.orderRepo = orderRepo;
     }
 
     public List<ReceiptDTO> buyGuestCart(String token) throws Exception {
@@ -53,10 +55,10 @@ public class PurchaseService {
         }
 
 
-        Purchase purchase = new Purchase(shoppingCart, stockRepo, storeRepo, orderRepo,userRepo);
+        Purchase purchase = new Purchase(shoppingCart, stockRepo, storeRepo, purchaseRepo, userRepo);
         return purchase.processRegularPurchase(true, userId);
     }
-    
+
     public List<ReceiptDTO> buyRegisteredCart(String token) throws Exception {
         if (!authRepo.validToken(token)) {
             throw new Exception("Invalid token!");
@@ -69,7 +71,7 @@ public class PurchaseService {
             throw new Exception("Shopping cart not found for user.");
         }
 
-        Purchase purchase = new Purchase(shoppingCart, stockRepo, storeRepo, purchaseRepo, userRepo);
+        Purchase purchase = new Purchase(shoppingCart, stockRepo, storeRepo, orderRepo, userRepo);
         return purchase.processRegularPurchase(false, userId);
     }
 
@@ -109,7 +111,7 @@ public class PurchaseService {
 
         logger.info("User {} is processing random winnings", userId);
         ShoppingCart cart = userRepo.getUserCart(userId);
-        Purchase purchase = new Purchase(cart, stockRepo, storeRepo, purchaseRepo, userRepo);
+        Purchase purchase = new Purchase(cart, stockRepo, storeRepo, orderRepo, userRepo);
         purchase.processRandomWinnings(userId);
         logger.info("Random winnings were processed successfully for user {}", userId);
     }
@@ -126,7 +128,7 @@ public class PurchaseService {
 
         logger.info("User {} is finalizing auction wins", userId);
         ShoppingCart cart = userRepo.getUserCart(userId);
-        Purchase purchase = new Purchase(cart, stockRepo, storeRepo, purchaseRepo, userRepo);
+        Purchase purchase = new Purchase(cart, stockRepo, storeRepo, orderRepo, userRepo);
         purchase.processAuctionWinnings(userId);
         logger.info("Auction wins were processed successfully for user {}", userId);
     }
@@ -143,7 +145,7 @@ public class PurchaseService {
 
         logger.info("User {} is finalizing accepted BID offers", userId);
         ShoppingCart cart = userRepo.getUserCart(userId);
-        Purchase purchase = new Purchase(cart, stockRepo, storeRepo, purchaseRepo, userRepo);
+        Purchase purchase = new Purchase(cart, stockRepo, storeRepo, orderRepo, userRepo);
         purchase.processBids(userId);
         logger.info("Accepted bids processed successfully for user {}", userId);
     }
