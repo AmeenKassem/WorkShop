@@ -5,16 +5,19 @@ import java.util.List;
 import org.mockito.Mockito;
 
 import workshop.demo.ApplicationLayer.NotificationService;
+import workshop.demo.ApplicationLayer.PurchaseService;
+import workshop.demo.ApplicationLayer.ShoppingCartRepo;
 import workshop.demo.ApplicationLayer.StockService;
 import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.Category;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.ProductFilter;
+import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
 import workshop.demo.InfrastructureLayer.OrderRepository;
+import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 
@@ -24,16 +27,17 @@ public class Real implements Bridge {
     StoreRepository mockStoreRepo = Mockito.mock(StoreRepository.class);
     NotificationRepository mockNotiRepo = Mockito.mock(NotificationRepository.class);
     OrderRepository mockOrderRepo = Mockito.mock(OrderRepository.class);
-    IStockRepo mockStockRepo = Mockito.mock(IStockRepo.class);
+    StockRepository mockStockRepo = Mockito.mock(StockRepository.class);
     ProductFilter mockProductFilter = Mockito.mock(ProductFilter.class);
+    ShoppingCartRepo mockCartRepo = Mockito.mock(ShoppingCartRepo.class);
 
-
-
-    
     StockService stockService = new StockService(mockStockRepo, mockUserRepo, mockAuthRepo, mockProductFilter);
     UserService userService = new UserService(mockUserRepo, mockAuthRepo);
-    StoreService storeService = new StoreService(mockStoreRepo, mockNotiRepo, mockAuthRepo, mockUserRepo, mockOrderRepo);
+    StoreService storeService = new StoreService(mockStoreRepo, mockNotiRepo, mockAuthRepo, mockUserRepo,
+            mockOrderRepo);
     NotificationService notificationService = new NotificationService(mockNotiRepo, mockUserRepo);
+    PurchaseService purchaseService = new PurchaseService(mockAuthRepo, mockStockRepo, mockStoreRepo, mockCartRepo,
+            mockOrderRepo);
 
     public Real() {
         Mockito.when(mockAuthRepo.validToken(Mockito.anyString())).thenReturn(true);
@@ -93,9 +97,9 @@ public class Real implements Bridge {
     }
 
     @Override
-    public String testGuest_SearchProduct(String token, String productname) throws Exception {
-        // return stockService.searchProduct(productname);
-        return "TODO";
+    public String testGuest_SearchProduct(String token, ProductSearchCriteria criteria) throws Exception {
+        stockService.searchProducts(token, criteria);
+        return "Done";
 
     }
 
@@ -122,9 +126,9 @@ public class Real implements Bridge {
     }
 
     @Override
-    public String testGuest_BuyCart(String token, int cartID) throws Exception {
-        // return purchaseService.buyCart(token, cartID);
-        return "TODO";
+    public String testGuest_BuyCart(String token) throws Exception {
+        purchaseService.buyGuestCart(token);
+        return "Done";
 
     }
 
@@ -241,7 +245,6 @@ public class Real implements Bridge {
     }
 
     @Override
-
     public String testUser_getAllAucationInStore(String token, int storeId) throws Exception {
         storeService.getAllAuctions(token, storeId);
         return "Done";
@@ -252,6 +255,13 @@ public class Real implements Bridge {
     public String testUser_getAllRandomInStore(String token, int storeId) throws Exception {
         storeService.getAllRandomInStore(token, storeId);
         return "Done";
+    }
+
+    @Override
+    public String testUser_BuyCart(String token) throws Exception {
+        purchaseService.buyRegisteredCart(token);
+        return "Done";
+
     }
 
     //////////////////////////// Owner ////////////////////////////
@@ -407,11 +417,11 @@ public class Real implements Bridge {
     }
 
     //////////////////////////// Manager ////////////////////////////
-    // @Override
-    // public String testManager_PerformPermittedActions(String token, int storeID)
-    // throws Exception {
-    // return "TODO";
-    // }
+    @Override
+    public String testManager_PerformPermittedActions(String token, int storeID)
+            throws Exception {
+        return "TODO";
+    }
 
     //////////////////////////// Admin ////////////////////////////
 

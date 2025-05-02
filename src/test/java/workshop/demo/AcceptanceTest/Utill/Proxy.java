@@ -3,6 +3,7 @@ package workshop.demo.AcceptanceTest.Utill;
 import java.util.List;
 
 import workshop.demo.DTOs.Category;
+import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public class Proxy implements Bridge {
@@ -55,8 +56,8 @@ public class Proxy implements Bridge {
     }
 
     @Override
-    public String testGuest_SearchProduct(String token, String productname) throws Exception {
-        return real.testGuest_SearchProduct(token, productname);
+    public String testGuest_SearchProduct(String token, ProductSearchCriteria criteria) throws Exception {
+        return real.testGuest_SearchProduct(token, criteria);
     }
 
     @Override
@@ -75,8 +76,8 @@ public class Proxy implements Bridge {
     }
 
     @Override
-    public String testGuest_BuyCart(String token, int cartID) throws Exception {
-        return real.testGuest_BuyCart(token, cartID);
+    public String testGuest_BuyCart(String token) throws Exception {
+        return real.testGuest_BuyCart(token);
     }
 
     @Override
@@ -170,7 +171,10 @@ public class Proxy implements Bridge {
     public String testUser_getAllRandomInStore(String token, int storeId) throws Exception {
         return real.testUser_getAllRandomInStore(token, storeId);
     }
-
+    @Override
+    public String testUser_BuyCart(String token) throws Exception {
+        return real.testUser_BuyCart(token);
+    }
     // Owner
     @Override
     public String testOwner_ManageInventory_AddProduct(int storeId, String token, int productId, int quantity,
@@ -291,6 +295,13 @@ public class Proxy implements Bridge {
     public String testOwner_addProductToRandom(String token, int storeId, int quantity, int productId,
             int numberOfCards, double priceForCard) throws Exception {
         return real.testOwner_addProductToRandom(token, storeId, quantity, productId, numberOfCards, priceForCard);
+    }
+
+    // manager 
+    @Override
+    public String testManager_PerformPermittedActions(String token, int storeID)
+            throws Exception {
+        return real.testManager_PerformPermittedActions(token, storeID);
     }
 
     // Admin

@@ -3,6 +3,7 @@ package workshop.demo.AcceptanceTest.Utill;
 import java.util.List;
 
 import workshop.demo.DTOs.Category;
+import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public interface Bridge {
@@ -15,11 +16,11 @@ public interface Bridge {
     String testGuest_Register(String token, String username, String password, int age) throws Exception;
     String testGuest_GetStoreProducts(int storeID) throws Exception;
     String testGuest_GetProductInfo(String token, int productID) throws Exception;
-    String testGuest_SearchProduct(String token, String productname) throws Exception;
+    String testGuest_SearchProduct(String token, ProductSearchCriteria criteria) throws Exception;
     String testGuest_SearchProductInStore(String token, int storeID, int productID) throws Exception;
     String testGuest_AddProductToCart(String token, int storeID, int productID, int count) throws Exception;
     String testGuest_ModifyCartAddQToBuy(int storeId, String token, int productId) throws Exception;
-    String testGuest_BuyCart(String token, int cartID) throws Exception;
+    String testGuest_BuyCart(String token) throws Exception;
     String testGuest_GetPurchasePolicy(String token, int storeID) throws Exception;
 
     String testUser_LogIn(String token, String username, String password) throws Exception;
@@ -39,7 +40,7 @@ public interface Bridge {
     String testUser_setAdmin(String token, String newAdminUsername) throws Exception;
     String testUser_getAllAucationInStore(String token, int storeId) throws Exception;
     String testUser_getAllRandomInStore(String token, int storeId) throws Exception;
-
+    String testUser_BuyCart(String token) throws Exception;
     String testOwner_ManageInventory_AddProduct(int storeId, String token, int productId, int quantity, int price, Category category) throws Exception;
     String testOwner_ManageInventory_RemoveProduct(int storeId, String token, int productId) throws Exception;
     String testOwner_ManageInventory_UpdateProductPrice(int storeId, String token, int productId, int newPrice) throws Exception;
@@ -64,6 +65,7 @@ public interface Bridge {
     String testOwner_BidStatus(String token, int storeId) throws Exception;
     String testOwner_addProductToRandom(String token, int storeId, int quantity, int productId, int numberOfCards, double priceForCard) throws Exception;
 
+    String testManager_PerformPermittedActions(String token, int storeID)throws Exception ;
     String testAdmin_CloseStore(int storeID, String token) throws Exception;
     String testAdmin_RemoveUser(String token, String userToRemove) throws Exception;
     String testAdmin_ViewSystemPurchaseHistory(String token) throws Exception;
