@@ -1,6 +1,5 @@
 package workshop.demo.DTOs;
 
-
 public class ProductDTO {
 
     private int productId;
@@ -14,6 +13,13 @@ public class ProductDTO {
         this.category = category;
         this.description = description;
     }
+
+    // store:
+    private boolean initStoreValues = false;
+    private int storeId;
+    private double price;
+    private double rating;
+    private String storeName;
 
     // Getters and setters
     public int getProductId() {
@@ -46,5 +52,10 @@ public class ProductDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public double getRating() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getRating'");
     }
 }

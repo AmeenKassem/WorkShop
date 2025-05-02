@@ -1,128 +1,92 @@
-
-
 package workshop.demo.DomainLayer.Stock;
 
-//doesnt implement searching in specific store yet
+import workshop.demo.DomainLayer.Store.item;
+import workshop.demo.DTOs.Category;
 
 public class ProductSearchCriteria {
-    private String searchType; // keyword, productName, category
     private String productNameFilter;
-    private String categoryFilter;
+    private Category categoryFilter;
     private String keywordFilter;
-
-    // filters
-    private boolean isPriceRangeSpecified;
+    private int storeId;
     private double minPrice;
     private double maxPrice;
-    private boolean isProductRatingSpecified;
-    private boolean isStoreRatingSpecified;
-    private boolean isCategorySpecified;
+    private double minStoreRating;
+    private double maxStoreRating;
 
     public ProductSearchCriteria(
-        String searchType, 
-        String productNameFilter, 
-        String categoryFilter, 
-        String keywordFilter,
-        boolean isPriceRangeSpecified, 
-        double minPrice, 
-        double maxPrice, 
-        boolean isProductRatingSpecified, 
-        boolean isStoreRatingSpecified, 
-        boolean isCategorySpecified) 
-    {
-        this.searchType = searchType;
+            String productNameFilter,
+            Category categoryFilter,
+            String keywordFilter,
+            int storeId,
+            double minPrice,
+            double maxPrice,
+            double minStoreRating,
+            double maxStoreRating) {
         this.productNameFilter = productNameFilter;
         this.categoryFilter = categoryFilter;
         this.keywordFilter = keywordFilter;
-        this.isPriceRangeSpecified = isPriceRangeSpecified;
+        this.storeId = storeId;
         this.minPrice = minPrice;
         this.maxPrice = maxPrice;
-        this.isProductRatingSpecified = isProductRatingSpecified;
-        this.isStoreRatingSpecified = isStoreRatingSpecified;
-        this.isCategorySpecified = isCategorySpecified;
+        this.minStoreRating = minStoreRating;
+        this.maxStoreRating = maxStoreRating;
     }
 
     public ProductSearchCriteria() {}
 
-    // Getters and Setters
-    public String getSearchType() {
-        return searchType;
+    public boolean matchesForStore(item item) {
+        if (item == null) return false;
+
+        // Category match
+        if (categoryFilter != null && !categoryFilter.equals(item.getCategory())) {
+            return false;
+        }
+
+        // Price range check (minPrice ≤ price ≤ maxPrice)
+        if (minPrice > 0 || maxPrice > 0) {
+            int price = item.getPrice();
+            if (minPrice > 0 && price < minPrice) return false;
+            if (maxPrice > 0 && price > maxPrice) return false;
+        }
+
+        // Store rating check
+        if (minStoreRating > 0 || maxStoreRating > 0) {
+            double rank = item.getFinalRank();
+            if (minStoreRating > 0 && rank < minStoreRating) return false;
+            if (maxStoreRating > 0 && rank > maxStoreRating) return false;
+        }
+
+        return true;
     }
 
-    public void setSearchType(String searchType) {
-        this.searchType = searchType;
+    public boolean specificCategory() {
+        return categoryFilter != null;
     }
-
-    public String getProductNameFilter() {
-        return productNameFilter;
+    
+    public boolean productIsMatch(Product product) {
+        if (product == null) return false;
+    
+        // Product name filter (case-insensitive substring match)
+        if (productNameFilter != null && !product.getName().toLowerCase().contains(productNameFilter.toLowerCase())) {
+            return false;
+        }
+    
+        // Category match
+        if (categoryFilter != null && !categoryFilter.equals(product.getCategory())) {
+            return false;
+        }
+    
+        // Keyword match
+        if (keywordFilter != null && (product.getKeywords() == null ||
+            product.getKeywords().stream().noneMatch(k -> k.toLowerCase().contains(keywordFilter.toLowerCase())))) {
+            return false;
+        }
+    
+        return true;
     }
-
-    public void setProductNameFilter(String productNameFilter) {
-        this.productNameFilter = productNameFilter;
+    
+    public Category getCategory() {
+        return this.categoryFilter;
     }
-
-    public String getCategoryFilter() {
-        return categoryFilter;
-    }
-
-    public void setCategoryFilter(String categoryFilter) {
-        this.categoryFilter = categoryFilter;
-    }
-
-    public String getKeywordFilter() {
-        return keywordFilter;
-    }
-
-    public void setKeywordFilter(String keywordFilter) {
-        this.keywordFilter = keywordFilter;
-    }
-
-    public boolean isPriceRangeSpecified() {
-        return isPriceRangeSpecified;
-    }
-
-    public void setPriceRangeSpecified(boolean isPriceRangeSpecified) {
-        this.isPriceRangeSpecified = isPriceRangeSpecified;
-    }
-
-    public double getMinPrice() {
-        return minPrice;
-    }
-
-    public void setMinPrice(double minPrice) {
-        this.minPrice = minPrice;
-    }
-
-    public double getMaxPrice() {
-        return maxPrice;
-    }
-
-    public void setMaxPrice(double maxPrice) {
-        this.maxPrice = maxPrice;
-    }
-
-    public boolean isProductRatingSpecified() {
-        return isProductRatingSpecified;
-    }
-
-    public void setProductRatingSpecified(boolean isProductRatingSpecified) {
-        this.isProductRatingSpecified = isProductRatingSpecified;
-    }
-
-    public boolean isStoreRatingSpecified() {
-        return isStoreRatingSpecified;
-    }
-
-    public void setStoreRatingSpecified(boolean isStoreRatingSpecified) {
-        this.isStoreRatingSpecified = isStoreRatingSpecified;
-    }
-
-    public boolean isCategorySpecified() {
-        return isCategorySpecified;
-    }
-
-    public void setCategorySpecified(boolean isCategorySpecified) {
-        this.isCategorySpecified = isCategorySpecified;
-    }
+    
 }
-
