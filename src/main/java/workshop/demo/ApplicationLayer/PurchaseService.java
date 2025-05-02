@@ -10,6 +10,7 @@ import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.Purchase;
 import workshop.demo.DomainLayer.User.IUserRepo;
@@ -27,6 +28,7 @@ public class PurchaseService {
     private final IStoreRepo storeRepo;
     private final IUserRepo userRepo;
     private final IPurchaseRepo purchaseRepo;
+    private IOrderRepo orderRepo;
 
     private static final Logger logger = LoggerFactory.getLogger(PurchaseService.class);
 
@@ -51,7 +53,7 @@ public class PurchaseService {
         }
 
 
-        Purchase purchase = new Purchase(shoppingCart, stockRepo, storeRepo, purchaseRepo, userRepo);
+        Purchase purchase = new Purchase(shoppingCart, stockRepo, storeRepo, orderRepo,userRepo);
         return purchase.processRegularPurchase(true, userId);
     }
     
