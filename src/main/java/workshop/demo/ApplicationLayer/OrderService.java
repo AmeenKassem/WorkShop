@@ -7,20 +7,27 @@ import org.slf4j.LoggerFactory;
 
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 
 public class OrderService {
 
     private IOrderRepo orderRepo;
     private IStoreRepo storeRepo;
+    private IAuthRepo authRepo;
+    private IUserRepo userRepo;
 
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
-    public OrderService(IOrderRepo orderRepo, IStoreRepo storeRepo) {
+    public OrderService(IOrderRepo orderRepo, IStoreRepo storeRepo, IAuthRepo authoRepo, IUserRepo userRepo) {
         this.orderRepo = orderRepo;
         this.storeRepo = storeRepo;
+        this.authRepo = authoRepo;
+        this.userRepo = userRepo;
         logger.info("created Order/history service");
     }
 
@@ -47,8 +54,15 @@ public class OrderService {
         return this.orderRepo.getAllOrderByStore(storeId);
     }
 
-    public List<ReceiptDTO> getReceiptDTOsByUser(int userId) throws Exception {
+    public List<ReceiptDTO> getReceiptDTOsByUser(String token) throws Exception {
         logger.info("about to get all the recipts for the user!");
+        if (!authRepo.validToken(token)) {
+            throw new Exception("unvalid token!");
+        }
+        int userId = authRepo.getUserId(token);
+        if (!userRepo.isRegistered(userId)) {
+            throw new Exception(String.format("the user:%d is not registered to the system!", userId));
+        }
         return this.orderRepo.getReceiptDTOsByUser(userId);
     }
 }

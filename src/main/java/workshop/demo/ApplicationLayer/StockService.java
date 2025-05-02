@@ -1,5 +1,6 @@
 package workshop.demo.ApplicationLayer;
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import workshop.demo.DTOs.ItemStoreDTO;
@@ -31,6 +32,10 @@ public class StockService {
         
         if (!authRepo.validToken(token)) {
             logger.warn("Invalid token during searchProducts");
+        if (authRepo.validToken(token)) {
+            ProductDTO[] matchesProducts = stockRepo.getMatchesProducts(criteria);
+            return storeRepo.getMatchesItems(criteria, matchesProducts);
+        } else {
             throw new TokenNotFoundException();
         }
 
@@ -93,3 +98,4 @@ public class StockService {
         return dto;
     }
 }
+

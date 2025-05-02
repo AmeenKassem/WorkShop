@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import workshop.demo.DTOs.OrderDTO;
@@ -22,7 +23,7 @@ public class OrderRepository implements IOrderRepo {
     }
 
     public OrderRepository() {
-        this.history = new HashMap<>();
+        this.history = new ConcurrentHashMap<>();
 
     }
 
@@ -67,6 +68,28 @@ public class OrderRepository implements IOrderRepo {
             throw new Exception("user does not have receipts");
         }
         return toReturn;
+    }
+
+    @Override
+    public List<OrderDTO> getAllOrdersInSystem() throws Exception {
+        List<OrderDTO> toReturn = new ArrayList<>();
+
+        for (Integer sid : history.keySet()) {
+            List<Order> orders = history.get(sid);
+            for (Order order : orders) {
+                OrderDTO dto = new OrderDTO(
+                        order.getUserId(),
+                        sid,
+                        order.getDate(),
+                        order.getProductsList(),
+                        order.getFinalPrice()
+                );
+                toReturn.add(dto);
+            }
+        }
+
+        return toReturn;
+
     }
 
 }
