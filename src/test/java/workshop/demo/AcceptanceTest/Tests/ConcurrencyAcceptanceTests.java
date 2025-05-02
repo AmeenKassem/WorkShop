@@ -38,7 +38,7 @@ public class ConcurrencyAcceptanceTests {
         Thread buyer1 = new Thread(() -> {
             try {
                 bridge.testGuest_AddProductToCart(token1, storeId, productId, 1);
-                bridge.testGuest_BuyCart(token1, 1);
+                bridge.testGuest_BuyCart(token1);
             } catch (Exception e) {
                 System.out.println("UserA failed: " + e.getMessage());
             }
@@ -47,7 +47,7 @@ public class ConcurrencyAcceptanceTests {
         Thread buyer2 = new Thread(() -> {
             try {
                 bridge.testGuest_AddProductToCart(token2, storeId, productId, 1);
-                bridge.testGuest_BuyCart(token2, 2);
+                bridge.testGuest_BuyCart(token2);
             } catch (Exception e) {
                 System.out.println("UserB failed: " + e.getMessage());
             }
@@ -80,7 +80,7 @@ public class ConcurrencyAcceptanceTests {
         Thread buyer = new Thread(() -> {
             try {
                 bridge.testGuest_AddProductToCart(buyerToken, storeId, productId, 1);
-                bridge.testGuest_BuyCart(buyerToken, 1);
+                bridge.testGuest_BuyCart(buyerToken);
             } catch (Exception e) {
                 System.out.println("Buyer failed: " + e.getMessage());
             }

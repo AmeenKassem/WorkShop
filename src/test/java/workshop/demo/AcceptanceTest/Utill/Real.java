@@ -2,6 +2,7 @@ package workshop.demo.AcceptanceTest.Utill;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import org.mockito.Mockito;
 
 import workshop.demo.ApplicationLayer.NotificationService;
@@ -41,6 +42,9 @@ public class Real implements Bridge {
 
     public Real() {
         Mockito.when(mockAuthRepo.validToken(Mockito.anyString())).thenReturn(true);
+        Mockito.when(mockUserRepo.isRegistered(anyInt())).thenReturn(true);
+        Mockito.when(mockUserRepo.isOnline(anyInt())).thenReturn(true);
+
     }
 
     /////////////////////// System /////////////////////////////
@@ -91,6 +95,7 @@ public class Real implements Bridge {
         return "Done";
     }
 
+    // stock service
     @Override
     public String testGuest_GetProductInfo(String token, int productID) throws Exception {
         return "TODO";
@@ -103,6 +108,9 @@ public class Real implements Bridge {
 
     }
 
+    // search product
+    // -1 in the system
+    // with store id in the store id
     @Override
     public String testGuest_SearchProductInStore(String token, int storeID, int productID) throws Exception {
         // return stockService.searchProductInStore(storeID, productID);
@@ -110,6 +118,7 @@ public class Real implements Bridge {
 
     }
 
+    // for the user is the same think
     @Override
     public String testGuest_AddProductToCart(String token, int storeID, int productID, int count) throws Exception {
         // return stockService.addProductToCart(token, storeID, productID, count);
@@ -257,6 +266,7 @@ public class Real implements Bridge {
         return "Done";
     }
 
+    // the function that named here is for the guest
     @Override
     public String testUser_BuyCart(String token) throws Exception {
         purchaseService.buyRegisteredCart(token);

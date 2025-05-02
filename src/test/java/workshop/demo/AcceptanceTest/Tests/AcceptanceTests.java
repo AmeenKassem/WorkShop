@@ -64,7 +64,7 @@ public abstract class AcceptanceTests {
     }
 
     String testGuest_BuyCart(String token) throws Exception {
-        return bridge.testGuest_BuyCart(token, cartID);
+        return bridge.testGuest_BuyCart(token);
     }
 
     String testGuest_GetPurchasePolicy(String token, int storeID) throws Exception {
