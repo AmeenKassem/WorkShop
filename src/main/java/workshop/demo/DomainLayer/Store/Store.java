@@ -21,7 +21,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public class Store {
 
-    private int stroeID;
+    private int storeID;
     private String storeName;
     private String category;
     private boolean active;
@@ -33,7 +33,7 @@ public class Store {
 
     public Store(int storeID, String storeName, String category) {
         this.stock = new ConcurrentHashMap<>();
-        this.stroeID = storeID;
+        this.storeID = storeID;
         this.storeName = storeName;
         this.category = category;
         this.active = true;
@@ -45,8 +45,8 @@ public class Store {
         this.activePurchases = new ActivePurcheses(storeID);
     }
 
-    public int getStroeID() {
-        return stroeID;
+    public int getStoreID() {
+        return storeID;
     }
 
     public String getStoreName() {
@@ -74,6 +74,14 @@ public class Store {
             }
         }
         return null; // not found
+    }
+
+    public List<item> getAllItemsInStock() {
+        List<item> allItems = new ArrayList<>();
+        for (List<item> itemList : stock.values()) {
+            allItems.addAll(itemList);
+        }
+        return allItems;
     }
 
     public void addItem(item newItem) {
@@ -196,7 +204,7 @@ public class Store {
             // Synchronize the list of items to ensure thread-safety when accessing the list
             synchronized (items) {//must check if it needed to be synchronized
                 for (item i : items) {
-                    ItemStoreDTO toAdd = new ItemStoreDTO(i.getProductId(), i.getQuantity(), i.getPrice(), i.getCategory(), i.getFinalRank(), stroeID);
+                    ItemStoreDTO toAdd = new ItemStoreDTO(i.getProductId(), i.getQuantity(), i.getPrice(), i.getCategory(), i.getFinalRank(), storeID);
                     itemStoreDTOList.add(toAdd);
                 }
             }
@@ -234,7 +242,7 @@ public class Store {
         return activePurchases.addUserBidToAuction(auctionId, userId, price);
     }
 
-    public int addProductToAuction(int userid,int productId,int quantity,double startPrice , long time) throws Exception{
+    public int addProductToAuction(int userid, int productId, int quantity, double startPrice, long time) throws Exception {
         // checkPermessionForSpecialSell(userid);
         decreaseFromQuantity(quantity, productId);
         return activePurchases.addProductToAuction(productId, quantity, time);
@@ -243,8 +251,7 @@ public class Store {
     // private void checkPermessionForSpecialSell(int userid) {
     //     throw new UnsupportedOperationException("Unimplemented method 'checkPermessionForSpecialSell'");
     // }
-
-    public int addProductToBid(int userid,int productId,int quantity) throws Exception{
+    public int addProductToBid(int userid, int productId, int quantity) throws Exception {
         // checkPermessionForSpecialSell(userid);
         decreaseFromQuantity(quantity, productId);
         return activePurchases.addProductToBid(productId, quantity);
@@ -287,17 +294,16 @@ public class Store {
     }
 
     //====================== random
-
-    public int addProductToRandom(int productId, int quantity, double productPrice,int storeId, long RandomTime) throws Exception {
+    public int addProductToRandom(int productId, int quantity, double productPrice, int storeId, long RandomTime) throws Exception {
         decreaseFromQuantity(quantity, productId);
         return activePurchases.addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
     }
 
-    public ParticipationInRandomDTO participateInRandom(int userId,int randomid,double amountPaid) throws Exception{
+    public ParticipationInRandomDTO participateInRandom(int userId, int randomid, double amountPaid) throws Exception {
         return activePurchases.participateInRandom(userId, randomid, amountPaid);
     }
 
-    public ParticipationInRandomDTO end(int randomId) throws Exception{
+    public ParticipationInRandomDTO end(int randomId) throws Exception {
         return activePurchases.endRandom(randomId);
     }
 
@@ -305,29 +311,24 @@ public class Store {
         return activePurchases.getRandoms();
     }
 
-	// public double getCardPrice(int randomId) throws DevException {
-	// 	return activePurchases.getCardPrice(randomId);
-	// }
-
+    // public double getCardPrice(int randomId) throws DevException {
+    // 	return activePurchases.getCardPrice(randomId);
+    // }
     public double getProductPrice(int randomId) throws DevException {
-		return activePurchases.getProductPrice(randomId);
-	}
-
-    
-
+        return activePurchases.getProductPrice(randomId);
+    }
 
     public boolean rejectBid(int bidId, int userBidId) throws Exception {
-        activePurchases.rejectBid(userBidId,bidId);
+        activePurchases.rejectBid(userBidId, bidId);
         return true;
     }
 
     public double getStoreRating() {
-        return getFinalRateInStore(stroeID);
+        return getFinalRateInStore(storeID);
     }
 
     // public boolean rejectBid(int bidId, int userBidId) throws Exception {
     //     activePurchases.rejectBid(userBidId,bidId);
     //     return true;
     // }
-
 }

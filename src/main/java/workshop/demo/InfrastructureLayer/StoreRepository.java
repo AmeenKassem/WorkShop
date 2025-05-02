@@ -1,5 +1,7 @@
 package workshop.demo.InfrastructureLayer;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,10 +42,11 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public void addStoreToSystem(int bossID, String storeName, String Category) {
+    public int addStoreToSystem(int bossID, String storeName, String Category) {
         int storeId = generateId();
         stores.add(new Store(storeId, storeName, Category));
         data.addNewStore(storeId, bossID);
+        return storeId;
     }
 
     @Override
@@ -176,7 +179,7 @@ public class StoreRepository implements IStoreRepo {
                 throw new Exception("can't be closed store: store does not exist");
             }
             List<Integer> toNotify = this.data.getWorkersInStore(storeId);
-            stores.removeIf(store -> store.getStroeID() == storeId);
+            stores.removeIf(store -> store.getStoreID() == storeId);
             this.data.closeStore(storeId);
             return toNotify;
 
@@ -190,7 +193,7 @@ public class StoreRepository implements IStoreRepo {
     @Override
     public Store findStoreByID(int ID) {
         for (Store store : this.stores) {
-            if (store.getStroeID() == ID) {
+            if (store.getStoreID() == ID) {
                 return store;
             }
         }
@@ -339,15 +342,15 @@ public class StoreRepository implements IStoreRepo {
     @Override
     public int addAuctionToStore(int StoreId, int userId, int productId, int quantity, long tome, double startPrice)
             throws Exception {
-                if (findStoreByID(StoreId) == null) {
-                    throw new Exception("can't delete manager: store does not exist");
-                }
-                if(!manipulateItem(userId,StoreId ,Permission.SpecialType)){
-                    throw new UIException("you have no permession to add auction.");
-                }
-                
-                return findStoreByID(StoreId).addProductToAuction(userId,productId, quantity, startPrice, tome);
-        
+        if (findStoreByID(StoreId) == null) {
+            throw new Exception("can't delete manager: store does not exist");
+        }
+        if (!manipulateItem(userId, StoreId, Permission.SpecialType)) {
+            throw new UIException("you have no permession to add auction.");
+        }
+
+        return findStoreByID(StoreId).addProductToAuction(userId, productId, quantity, startPrice, tome);
+
     }
 
     @Override
@@ -355,7 +358,7 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
+        if (!manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to see auctions info.");
         }
 
@@ -368,7 +371,7 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
+        if (!manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to see auctions info.");
         }
 
@@ -380,8 +383,7 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        
-        
+
         return findStoreByID(storeId).bidOnBid(bidId, userId, price);
     }
 
@@ -390,7 +392,7 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
+        if (!manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to see auctions info.");
         }
 
@@ -402,38 +404,38 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
+        if (!manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to see auctions info.");
         }
 
         return findStoreByID(storeId).acceptBid(bidId, userBidId);
     }
 
-
     @Override
-    public boolean rejectBid(int userId,int storeId, int bidId,int userBidId) throws Exception{
+    public boolean rejectBid(int userId, int storeId, int bidId, int userBidId) throws Exception {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
+        if (!manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to see auctions info.");
         }
-        return findStoreByID(storeId).rejectBid(bidId,userBidId);
+        return findStoreByID(storeId).rejectBid(bidId, userBidId);
     }
+
     //===================Random
     @Override
-    public int addProductToRandom(int userId ,int productId, int quantity, double productPrice,int storeId, long RandomTime) throws Exception {
+    public int addProductToRandom(int userId, int productId, int quantity, double productPrice, int storeId, long RandomTime) throws Exception {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
+        if (!manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to see auctions info.");
         }
-        return findStoreByID(storeId).addProductToRandom(productId,quantity,productPrice,storeId,RandomTime);
+        return findStoreByID(storeId).addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
     }
 
     @Override
-    public ParticipationInRandomDTO participateInRandom(int userId,int randomId,int storeId, double amountPaid) throws Exception{
+    public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid) throws Exception {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
@@ -445,7 +447,7 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
+        if (!manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to see auctions info.");
         }
         return findStoreByID(storeId).end(randomId);
@@ -456,12 +458,11 @@ public class StoreRepository implements IStoreRepo {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
-        if(!manipulateItem(userId,storeId ,Permission.SpecialType)){
+        if (!manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to see auctions info.");
         }
         return findStoreByID(storeId).getRandoms();
     }
-
 
     // public double getPriceForCard(int storeId, int randomId) throws Exception {
     //     if (findStoreByID(storeId) == null) {
@@ -469,7 +470,6 @@ public class StoreRepository implements IStoreRepo {
     //     }
     //     return findStoreByID(storeId).getCardPrice(randomId);
     // }
-
     public double getPriceForCard(int storeId, int randomId) throws Exception {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
@@ -483,10 +483,46 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getMatchesItems'");
+    public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) throws Exception {
+        ItemStoreDTO[] toReturn;
+        List<ItemStoreDTO> itemList = new LinkedList<>();
+        if (criteria.getStoreId() == -1) {//search in all stores
+            for (Store store : stores) {
+                List<item> stock = store.getAllItemsInStock();
+                for (item item1 : stock) {
+                    for (ProductDTO pro : matchesProducts) {
+                        if (item1.getProductId() == pro.getProductId() && criteria.matchesForStore(item1)) {
+                            ItemStoreDTO toAdd = new ItemStoreDTO(
+                                    item1.getProductId(),
+                                    item1.getQuantity(),
+                                    item1.getPrice(),
+                                    item1.getCategory(),
+                                    item1.getFinalRank(),
+                                    store.getStoreID()
+                            );
+                            itemList.add(toAdd);
+                            break; // found matching product -> no need to check other products
+                        }
+                    }
+                }
+            }
+
+        } else {//search in a spicific store 
+            Store store = findStoreByID(criteria.getStoreId());
+            if (store == null) {
+                throw new Exception("store does not exist!");
+            }
+            for (ProductDTO pro : matchesProducts) {
+                item item1 = store.getProductById(pro.getProductId());
+                if (item1 != null && criteria.matchesForStore(item1)) {
+                    ItemStoreDTO toAdd = new ItemStoreDTO(item1.getProductId(), item1.getQuantity(), item1.getPrice(), item1.getCategory(), item1.getFinalRank(), store.getStoreID());
+                    itemList.add(toAdd);
+                }
+            }
+
+        }
+
+        return itemList.toArray(new ItemStoreDTO[0]);
     }
 
-    
 }
