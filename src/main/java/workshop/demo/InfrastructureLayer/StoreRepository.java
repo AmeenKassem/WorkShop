@@ -577,8 +577,6 @@ public class StoreRepository implements IStoreRepo {
             throw new Exception("Store with ID " + storeId + " not found.");
         }
         return store.getItemByProductId(productId);
-    }
-
-    
+    } 
 
 }
