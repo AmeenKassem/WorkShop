@@ -499,6 +499,7 @@ public class StoreRepository implements IStoreRepo {
         throw new UnsupportedOperationException("Unimplemented method 'getMatchesItems'");
     }
 
+    @Override
     public boolean checkAvailability(List<ItemCartDTO> cartItems) {
         for (ItemCartDTO itemDTO : cartItems) {
             Store store = findStoreByID(itemDTO.storeId);
