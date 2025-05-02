@@ -1,6 +1,5 @@
 package workshop.demo.ApplicationLayer;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -24,6 +23,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.item;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
@@ -64,6 +64,7 @@ public class StoreService {
             //get an approval from the new owner then add it
             logger.info("trying to add new sotre to the system for the BOSS:", bossID);
             return storeRepo.addStoreToSystem(bossID, storeName, Category);
+            //logger.info("added the store succsessfully");
         } catch (Exception e) {
             logger.error("failed to add the store for user: {}, Error: {}", bossID, e.getMessage());
         }
@@ -155,6 +156,15 @@ public class StoreService {
         }
     }
 
+    // private void givePermissions(int ownerId, int managerId, int storeId, List<Permission> autorization) {
+    //     try {
+    //         logger.info("the owner: {} is trying to give authoriation to manager: {}", ownerId, managerId);
+    //         storeRepo.changePermissions(ownerId, managerId, storeId, autorization);
+    //         logger.info("authorizations have been added succsesfully!");
+    //     } catch (Exception e) {
+    //         logger.error("failed to give permission:, ERROR:", e.getMessage());
+    //     }
+    // }
     public void changePermissions(String token, int managerId, int storeID, List<Permission> autorization) throws Exception {
         try {
             if (!authRepo.validToken(token)) {
@@ -371,7 +381,8 @@ public class StoreService {
             if (!storeRepo.manipulateItem(adderId, storeId, Permission.AddToStock)) {
                 throw new Exception("this worker is not authorized!");
             }
-            this.storeRepo.addItem(storeId, productId, quantity, price, category);
+            item toAdd = this.storeRepo.addItem(storeId, productId, quantity, price, category);
+            //must be added to stock if not exists
             logger.info("item added sucessfully!");
 
         } catch (Exception e) {
@@ -404,7 +415,6 @@ public class StoreService {
     }
 
     // public void decreaseQtoBuy(int storeId, String token, int productId) throws Exception {
-    //     try {
     //         logger.info("about to to decrease quantity to buy an item from store: {}", storeId);
     //         if (!authRepo.validToken(token)) {//this token is for the buyer
     //             throw new Exception("unvalid token!");
@@ -415,7 +425,6 @@ public class StoreService {
     //         logger.error("could not decreased ", e.getMessage());
     //     }
     // }
-
     public void updateQuantity(int storeId, String token, int productId) throws Exception {
         try {
             logger.info("about to to update quantity from store: {}", storeId);
@@ -504,8 +513,48 @@ public class StoreService {
 
     }
 
-    public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws Exception {
-        return null;
+    public void deactivateteStore(int storeId, String token) throws Exception {
+        try {
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int ownerId = authRepo.getUserId(token);
+            if (!userRepo.isRegistered(ownerId)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", ownerId));
+            }
+            logger.info("trying to deactivate store: {} by: {}", storeId, ownerId);
+            List<Integer> toNotify = storeRepo.deactivateStore(storeId, ownerId);
+            //here must notifu all the workes into the store by notification repo
+            logger.info("the store has been deactivated succesfully!");
+            //here must notify all users using notifiaction Repo and this list
+            logger.info("about to notify all the employees");
 
+        } catch (Exception e) {
+            logger.error("cannot deactivate this store, Error: {}", e.getMessage());
+        }
+    }
+
+    public void closeStore(int storeId, String token) {
+        try {
+            if (!authRepo.validToken(token)) {
+                throw new Exception("unvalid token!");
+            }
+            int adminId = authRepo.getUserId(token);
+            if (!userRepo.isRegistered(adminId) || !userRepo.isAdmin(adminId)) {
+                throw new Exception(String.format("the user:%d is not registered to the system!", adminId));
+            }
+            logger.info("trying to close store: {} by: {}", storeId, adminId);
+            List<Integer> toNotify = storeRepo.closeStore(storeId);
+            logger.info("store removed succesfully!");
+            //here must notify all users using notifiaction Repo and this list
+            logger.info("about to notify all the employees");
+
+        } catch (Exception e) {
+            logger.error("cannot close this store, Error: {}", e.getMessage());
+        }
+    }
+
+    public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws Exception {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 }

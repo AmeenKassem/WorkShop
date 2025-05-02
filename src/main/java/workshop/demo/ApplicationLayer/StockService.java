@@ -1,4 +1,5 @@
 package workshop.demo.ApplicationLayer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import workshop.demo.DTOs.Category;
@@ -31,11 +32,16 @@ public class StockService {
     }
 
     public ItemStoreDTO[] searchProducts(String token, ProductSearchCriteria criteria) throws Exception {
-        if(authRepo.validToken(token)) {
+        if (authRepo.validToken(token)) {
             ProductDTO[] matchesProducts = stockRepo.getMatchesProducts(criteria);
-            return storeRepo.getMatchesItems(criteria,matchesProducts);
+            return storeRepo.getMatchesItems(criteria, matchesProducts);
         } else {
             throw new TokenNotFoundException();
         }
     }
+
+    public ProductDTO GetProductInfo(int productId) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
 }
