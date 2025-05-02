@@ -39,9 +39,8 @@ public interface IStoreRepo {
     List<Integer> deactivateStore(int storeId, int ownerId) throws Exception;
 
     List<Integer> closeStore(int storeId) throws Exception;
-
-    // boolean checkAvilability() throws Exception;
-
+    
+    boolean checkAvailability(List<ItemCartDTO> cartItems);
 
     List<ItemStoreDTO> getProductsInStore(int storeId) throws Exception;
 

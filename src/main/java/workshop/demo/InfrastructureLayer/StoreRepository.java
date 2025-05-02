@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ProductDTO;
@@ -501,5 +502,19 @@ public class StoreRepository implements IStoreRepo {
         throw new UnsupportedOperationException("Unimplemented method 'getMatchesItems'");
     }
 
+    
+    public boolean checkAvailability(List<ItemCartDTO> cartItems) {
+        for (ItemCartDTO itemDTO : cartItems) {
+            Store store = findStoreByID(itemDTO.storeId);
+            if (store == null) {
+                return false;
+            }
+            item storeItem = store.getItemByProductId(itemDTO.productId);
+            if (storeItem == null || storeItem.getQuantity() < itemDTO.quantity) {
+                return false;
+            }
+        }
+        return true;
+    }
     
 }
