@@ -2,30 +2,33 @@ package workshop.demo.AcceptanceTest.Utill;
 
 import java.util.List;
 
+import workshop.demo.DTOs.Category;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public class Proxy implements Bridge {
     private final Real real = new Real();
 
-    /////////////////////// System /////////////////////////////
+    // System
     @Override
     public String testSystem_InitMarket(String admin) throws Exception {
         return real.testSystem_InitMarket(admin);
     }
 
     @Override
+
     public String testSystem_sendDMessageToAll(List<Integer> receiversIds, String message, int senderId)
             throws Exception {
         return real.testSystem_sendDMessageToAll(receiversIds, message, senderId);
     }
 
     @Override
+
     public String testSystem_sendRTMessageToAll(List<Integer> receiversIds, String message, int senderId)
             throws Exception {
         return real.testSystem_sendRTMessageToAll(receiversIds, message, senderId);
     }
 
-    /////////////////////// Guest /////////////////////////////
+    // Guest
     @Override
     public String testGuest_Enter() throws Exception {
         return real.testGuest_Enter();
@@ -42,8 +45,8 @@ public class Proxy implements Bridge {
     }
 
     @Override
-    public String testGuest_GetStoreInfo(String token, int storeID) throws Exception {
-        return real.testGuest_GetStoreInfo(token, storeID);
+    public String testGuest_GetStoreProducts(int storeID) throws Exception {
+        return real.testGuest_GetStoreProducts(storeID);
     }
 
     @Override
@@ -52,8 +55,8 @@ public class Proxy implements Bridge {
     }
 
     @Override
-    public String testGuest_SearchProduct(String token, String productName) throws Exception {
-        return real.testGuest_SearchProduct(token, productName);
+    public String testGuest_SearchProduct(String token, String productname) throws Exception {
+        return real.testGuest_SearchProduct(token, productname);
     }
 
     @Override
@@ -67,21 +70,21 @@ public class Proxy implements Bridge {
     }
 
     @Override
-    public String testGuest_ModifyCart(String token, int cartID) throws Exception {
-        return real.testGuest_ModifyCart(token, cartID);
+    public String testGuest_ModifyCartAddQToBuy(int storeId, String token, int productId) throws Exception {
+        return real.testGuest_ModifyCartAddQToBuy(storeId, token, productId);
     }
 
     @Override
     public String testGuest_BuyCart(String token, int cartID) throws Exception {
         return real.testGuest_BuyCart(token, cartID);
     }
+
     @Override
     public String testGuest_GetPurchasePolicy(String token, int storeID) throws Exception {
         return real.testGuest_GetPurchasePolicy(token, storeID);
     }
 
-
-    //////////////////////////// User ////////////////////////////
+    // User
     @Override
     public String testUser_LogIn(String token, String username, String password) throws Exception {
         return real.testUser_LogIn(token, username, password);
@@ -109,13 +112,13 @@ public class Proxy implements Bridge {
     }
 
     @Override
-    public String testUser_RateProduct(String token, int storeID, int productID, int rate) throws Exception {
-        return real.testUser_RateProduct(token, storeID, productID, rate);
+    public String testUser_RateProduct(int storeId, String token, int productId, int newRank) throws Exception {
+        return real.testUser_RateProduct(storeId, token, productId, newRank);
     }
 
     @Override
-    public String testUser_RateStore(String token, int storeID, int productID, int rate) throws Exception {
-        return real.testUser_RateStore(token, storeID, productID, rate);
+    public String testUser_RateStore(String token, int storeId, int newRank) throws Exception {
+        return real.testUser_RateStore(token, storeId, newRank);
     }
 
     @Override
@@ -139,13 +142,13 @@ public class Proxy implements Bridge {
     }
 
     @Override
-    public String testUser_AddBid(String token, int storeID, int productID, int bid) throws Exception {
-        return real.testUser_AddBid(token, storeID, productID, bid);
+    public String testUser_AddBid(String token, int bitId, int storeId, double price) throws Exception {
+        return real.testUser_AddBid(token, bitId, storeId, price);
     }
 
     @Override
-    public String testUser_JoinAuction(String token, int storeID, int auctionID) throws Exception {
-        return real.testUser_JoinAuction(token, storeID, auctionID);
+    public String testUser_JoinAuction(String token, int auctionId, int storeId, double price) throws Exception {
+        return real.testUser_JoinAuction(token, auctionId, storeId, price);
     }
 
     @Override
@@ -158,27 +161,37 @@ public class Proxy implements Bridge {
         return real.testUser_setAdmin(token, newAdminUsername);
     }
 
-    //////////////////////////// Owner ////////////////////////////
     @Override
-    public String testOwner_ManageInventory_AddProduct(String token, int storeID, int productID, int amount)
+    public String testUser_getAllAucationInStore(String token, int storeId) throws Exception {
+        return real.testUser_getAllAucationInStore(token, storeId);
+    }
+
+    @Override
+    public String testUser_getAllRandomInStore(String token, int storeId) throws Exception {
+        return real.testUser_getAllRandomInStore(token, storeId);
+    }
+
+    // Owner
+    @Override
+    public String testOwner_ManageInventory_AddProduct(int storeId, String token, int productId, int quantity,
+            int price, Category category) throws Exception {
+        return real.testOwner_ManageInventory_AddProduct(storeId, token, productId, quantity, price, category);
+    }
+
+    @Override
+    public String testOwner_ManageInventory_RemoveProduct(int storeId, String token, int productId) throws Exception {
+        return real.testOwner_ManageInventory_RemoveProduct(storeId, token, productId);
+    }
+
+    @Override
+    public String testOwner_ManageInventory_UpdateProductPrice(int storeId, String token, int productId, int newPrice)
             throws Exception {
-        return real.testOwner_ManageInventory_AddProduct(token, storeID, productID, amount);
+        return real.testOwner_ManageInventory_UpdateProductPrice(storeId, token, productId, newPrice);
     }
 
     @Override
-    public String testOwner_ManageInventory_RemoveProduct(String token, int storeID, int productID) throws Exception {
-        return real.testOwner_ManageInventory_RemoveProduct(token, storeID, productID);
-    }
-
-    @Override
-    public String testOwner_ManageInventory_UpdateProductDetails(String token, int storeID, int productID)
-            throws Exception {
-        return real.testOwner_ManageInventory_UpdateProductDetails(token, storeID, productID);
-    }
-
-    @Override
-    public String testOwner_SetPurchasePolicies(String token, int storeID, String newPolicies) throws Exception {
-        return real.testOwner_SetPurchasePolicies(token, storeID, newPolicies);
+    public String testOwner_SetPurchasePolicies(int storeId, String token, int productId) throws Exception {
+        return real.testOwner_SetPurchasePolicies(storeId, token, productId);
     }
 
     @Override
@@ -187,8 +200,8 @@ public class Proxy implements Bridge {
     }
 
     @Override
-    public String testOwner_AssignNewOwner(String token, int storeID, int newOwnerId) throws Exception {
-        return real.testOwner_AssignNewOwner(token, storeID, newOwnerId);
+    public String testOwner_AssignNewOwner(String token, int storeID, int NewOwner) throws Exception {
+        return real.testOwner_AssignNewOwner(token, storeID, NewOwner);
     }
 
     @Override
@@ -197,14 +210,14 @@ public class Proxy implements Bridge {
     }
 
     @Override
-    public String testOwner_AssignManager(String token, int storeID, int managerId) throws Exception {
-        return real.testOwner_AssignManager(token, storeID, managerId);
+    public String testOwner_AssignManager(String token, int storeID, int mangerId) throws Exception {
+        return real.testOwner_AssignManager(token, storeID, mangerId);
     }
 
     @Override
     public String testOwner_EditManagerPermissions(String token, int managerId, int storeID,
-            List<Permission> authorization) throws Exception {
-        return real.testOwner_EditManagerPermissions(token, managerId, storeID, authorization);
+            List<Permission> autorization) throws Exception {
+        return real.testOwner_EditManagerPermissions(token, managerId, storeID, autorization);
     }
 
     @Override
@@ -233,16 +246,54 @@ public class Proxy implements Bridge {
     }
 
     @Override
-    public String testOwner_ReplyToMessages(String msg, int ownerId, int userId) throws Exception {
-        return real.testOwner_ReplyToMessages(msg, ownerId, userId);
+    public String testOwner_ReplyToMessages(String msg, int ownerId, int UserId) throws Exception {
+        return real.testOwner_ReplyToMessages(msg, ownerId, UserId);
     }
 
     @Override
-    public String testOwner_ViewStorePurchaseHistory(String token, int storeID) throws Exception {
-        return real.testOwner_ViewStorePurchaseHistory(token, storeID);
+    public String testOwner_ViewStorePurchaseHistory(int storeId) throws Exception {
+        return real.testOwner_ViewStorePurchaseHistory(storeId);
     }
 
-    //////////////////////////// Admin ////////////////////////////
+    @Override
+    public String testOwner_ViewStoreRanks(int storeId) throws Exception {
+        return real.testOwner_ViewStoreRanks(storeId);
+    }
+
+    @Override
+    public String testOwner_addProductToAucation(String token, int id, int productId, int quantity, long time,
+            double startPrice) throws Exception {
+        return real.testOwner_addProductToAucation(token, id, productId, quantity, time, startPrice);
+    }
+
+    @Override
+    public String testOwner_addProductToBid(String token, int storeid, int productId, int quantity)
+            throws Exception {
+        return real.testOwner_addProductToBid(token, storeid, productId, quantity);
+    }
+
+    @Override
+    public String testOwner_EndBid(String token, int storeId, int randomId) throws Exception {
+        return real.testOwner_EndBid(token, storeId, randomId);
+    }
+
+    @Override
+    public String testOwner_AcceptBid(String token, int storeId, int bidId, int bidToAcceptId) throws Exception {
+        return real.testOwner_AcceptBid(token, storeId, bidId, bidToAcceptId);
+    }
+
+    @Override
+    public String testOwner_BidStatus(String token, int storeId) throws Exception {
+        return real.testOwner_BidStatus(token, storeId);
+    }
+
+    @Override
+    public String testOwner_addProductToRandom(String token, int storeId, int quantity, int productId,
+            int numberOfCards, double priceForCard) throws Exception {
+        return real.testOwner_addProductToRandom(token, storeId, quantity, productId, numberOfCards, priceForCard);
+    }
+
+    // Admin
     @Override
     public String testAdmin_CloseStore(int storeID, String token) throws Exception {
         return real.testAdmin_CloseStore(storeID, token);

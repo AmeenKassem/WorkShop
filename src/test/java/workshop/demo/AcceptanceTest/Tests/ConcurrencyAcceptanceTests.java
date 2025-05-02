@@ -1,13 +1,21 @@
 package workshop.demo.AcceptanceTest.Tests;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.Test;
 
 import workshop.demo.AcceptanceTest.Utill.Bridge;
 import workshop.demo.AcceptanceTest.Utill.Proxy;
+import workshop.demo.DTOs.Category;
 
 public class ConcurrencyAcceptanceTests {
 
     static Bridge bridge = new Proxy();
+    static AtomicInteger idCounter = new AtomicInteger(100);
+
+    private int generateId() {
+        return idCounter.getAndIncrement();
+    }
 
     /////////////////////////////
     @Test
@@ -23,9 +31,10 @@ public class ConcurrencyAcceptanceTests {
 
         bridge.testUser_OpenStore(token1, "SHOP1", "ANIMALS");
         int storeId = 1;
-        int productId = 101;
+        int productId = generateId();
 
-        bridge.testOwner_ManageInventory_AddProduct(token1, storeId, productId, 1);
+        bridge.testOwner_ManageInventory_AddProduct(storeId, token1, productId, 1, 20, Category.ELECTRONICS);
+
         Thread buyer1 = new Thread(() -> {
             try {
                 bridge.testGuest_AddProductToCart(token1, storeId, productId, 1);
@@ -48,7 +57,6 @@ public class ConcurrencyAcceptanceTests {
         buyer2.start();
         buyer1.join();
         buyer2.join();
-
     }
 
     /////////////////////////////
@@ -65,9 +73,9 @@ public class ConcurrencyAcceptanceTests {
 
         bridge.testUser_OpenStore(ownerToken, "SHOP2", "CANDY");
         int storeId = 1;
-        int productId = 256;
+        int productId = generateId();
 
-        bridge.testOwner_ManageInventory_AddProduct(ownerToken, storeId, productId, 5);
+        bridge.testOwner_ManageInventory_AddProduct(storeId, ownerToken, productId, 5, 15, Category.ELECTRONICS);
 
         Thread buyer = new Thread(() -> {
             try {
@@ -81,7 +89,7 @@ public class ConcurrencyAcceptanceTests {
         Thread owner = new Thread(() -> {
             try {
                 Thread.sleep(50);
-                bridge.testOwner_ManageInventory_RemoveProduct(ownerToken, storeId, productId);
+                bridge.testOwner_ManageInventory_RemoveProduct(storeId, ownerToken, productId);
             } catch (Exception e) {
                 System.out.println("Owner failed: " + e.getMessage());
             }
