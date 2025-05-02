@@ -1,7 +1,5 @@
 package workshop.demo.InfrastructureLayer;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,7 +25,6 @@ import workshop.demo.DomainLayer.Store.item;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
-import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 
 public class StoreRepository implements IStoreRepo {
 
@@ -227,13 +224,14 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public void addItem(int storeId, int productId, int quantity, int price, Category category) throws Exception {
+    public item addItem(int storeId, int productId, int quantity, int price, Category category) throws Exception {
         Store store = findStoreByID(storeId);
         if (store == null) {
             throw new Exception("store does not exist");
         }
         item toAdd = new item(productId, quantity, price, category);
         store.addItem(toAdd);
+        return toAdd;
     }
 
     @Override
@@ -487,9 +485,8 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-// <<<<<<< HEAD
     public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) throws Exception {
-        ItemStoreDTO[] toReturn;
+
         List<ItemStoreDTO> itemList = new LinkedList<>();
         if (criteria.getStoreId() == -1) {//search in all stores
             for (Store store : stores) {
@@ -537,7 +534,6 @@ public class StoreRepository implements IStoreRepo {
         return toReturn;
     }
 
-// =======
     public Random getRandomById(int randomId) throws Exception {
         for (Store store : stores) {
             try {
@@ -548,12 +544,6 @@ public class StoreRepository implements IStoreRepo {
         }
         throw new Exception("Random with ID " + randomId + " not found in any store.");
     }
-
-    // @Override
-    // public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) {
-    //     // TODO Auto-generated method stub
-    //     throw new UnsupportedOperationException("Unimplemented method 'getMatchesItems'");
-    // }
 
     @Override
     public boolean checkAvailability(List<ItemCartDTO> cartItems) {
@@ -578,7 +568,5 @@ public class StoreRepository implements IStoreRepo {
         }
         return store.getItemByProductId(productId);
     }
-
-    
 
 }
