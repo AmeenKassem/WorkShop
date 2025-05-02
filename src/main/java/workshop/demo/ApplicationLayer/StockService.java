@@ -33,40 +33,68 @@ public class StockService {
     }
 
     public ItemStoreDTO[] searchProducts(String token, ProductSearchCriteria criteria) throws Exception {
-        if (authRepo.validToken(token)) {
-            ProductDTO[] matchesProducts = stockRepo.getMatchesProducts(criteria);
-            return storeRepo.getMatchesItems(criteria, matchesProducts);
-        } else {
+        logger.info("Starting searchProducts with criteria: {}", criteria);
+
+        if (!authRepo.validToken(token)) {
+            logger.warn("Invalid token during searchProducts");
             throw new TokenNotFoundException();
         }
+
+        ProductDTO[] matchesProducts = stockRepo.getMatchesProducts(criteria);
+        logger.debug("Found {} matching products in stock", matchesProducts.length);
+
+        ItemStoreDTO[] matchedItems = storeRepo.getMatchesItems(criteria, matchesProducts);
+        logger.info("Returning {} matched items to client", matchedItems.length);
+        return matchedItems;
     }
 
+    
     public String searchProductInStore(String token, int storeId, int productId) throws Exception {
+        logger.info("Searching for productId {} in storeId {}", productId, storeId);
         if (!authRepo.validToken(token)) {
+            logger.warn("Unauthorized access to searchProductInStore with token: {}", token);
             throw new TokenNotFoundException();
         }
+
         Product product = stockRepo.findById(productId);
         if (product == null) {
+            logger.error("Product not found with ID: {}", productId);
             throw new Exception("Product not found");
         }
 
         item itemInStore = storeRepo.getItemByStoreAndProductId(storeId, productId);
         if (itemInStore == null) {
+            logger.warn("Product {} not sold in store {}", productId, storeId);
             throw new Exception("Product not sold in this store");
         }
 
         String storeName = storeRepo.getStoreNameById(storeId);
+        logger.info("Product {} found in store {} (ID {})", product.getName(), storeName, storeId);
+
         return "Product: " + product.getName() + ", Price: " + itemInStore.getPrice() + ", Store: " + storeName;
     }
 
-    public String getProductInfo(String token, int productId) throws Exception {
+    public ProductDTO getProductInfo(String token, int productId) throws Exception {
+        logger.info("Fetching product info for ID {}", productId);
         if (!authRepo.validToken(token)) {
+            logger.warn("Invalid token used to get product info for ID {}", productId);
             throw new TokenNotFoundException();
         }
+
         Product product = stockRepo.findById(productId);
         if (product == null) {
+            logger.error("Product not found for ID {}", productId);
             throw new Exception("Product not found.");
         }
-        return "Product ID: " + product.getProductId() + ", Name: " + product.getName() + ", Category: " + product.getCategory() + ", Description: " + product.getDescription();
+
+        ProductDTO dto = new ProductDTO(
+            product.getProductId(),
+            product.getName(),
+            product.getCategory(),
+            product.getDescription()
+        );
+
+        logger.info("Successfully retrieved product info: {}", dto.getName());
+        return dto;
     }
 }
