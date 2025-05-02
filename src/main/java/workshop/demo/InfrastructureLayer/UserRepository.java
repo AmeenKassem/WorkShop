@@ -16,6 +16,7 @@ import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
+import workshop.demo.DomainLayer.User.ShoppingCart;
 
 public class UserRepository implements IUserRepo {
 
@@ -210,5 +211,19 @@ public class UserRepository implements IUserRepo {
     public List<ParticipationInRandomDTO> getWinningCards(int userId) {
         return getRegisteredUser(userId).getWinningCards();
     }
+
+    @Override
+public ShoppingCart getUserCart(int userId) {
+    if (guests.containsKey(userId)) {
+        return guests.get(userId).getCart();
+    }
+
+    Registered registered = getRegisteredUser(userId);
+    if (registered != null) {
+        return registered.getCart();
+    }
+
+    throw new UserIdNotFound("User with ID " + userId + " not found");
+}
 
 }

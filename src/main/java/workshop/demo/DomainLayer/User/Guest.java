@@ -29,5 +29,9 @@ public class Guest {
         throw new UnsupportedOperationException("Unimplemented method 'addToCart'");
     }
 
+    public ShoppingCart getCart() {
+        return cart;
+    }
+
     
 }

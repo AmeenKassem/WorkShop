@@ -112,4 +112,11 @@ public interface IUserRepo {
 
     public List<SingleBid> getWinningBids(int userId);
     public List<ParticipationInRandomDTO> getWinningCards(int userId);
+
+       /**
+     * Returns the shopping cart of the user (guest or registered)
+     * @param userId the id of the user
+     * @return ShoppingCart instance
+     */
+    public ShoppingCart getUserCart(int userId);
 }
