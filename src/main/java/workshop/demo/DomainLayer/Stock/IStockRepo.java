@@ -2,8 +2,6 @@ package workshop.demo.DomainLayer.Stock;
 
 import java.util.List;
 
-import java.util.List;
-
 import workshop.demo.DTOs.*;
 
 

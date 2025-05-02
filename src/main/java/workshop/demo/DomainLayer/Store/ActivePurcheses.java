@@ -1,8 +1,6 @@
 package workshop.demo.DomainLayer.Store;
-
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
@@ -10,7 +8,7 @@ import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.User.bidShoppingCart;
+
 
 public class ActivePurcheses {
 

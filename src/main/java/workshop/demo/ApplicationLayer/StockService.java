@@ -1,7 +1,6 @@
 package workshop.demo.ApplicationLayer;
-
-import java.util.List;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ProductDTO;
@@ -14,6 +13,8 @@ import workshop.demo.DomainLayer.User.IUserRepo;
 // import workshop.demo.DomainLayer.Stock.ProductFilter;
 
 public class StockService {
+
+    private static final Logger logger = LoggerFactory.getLogger(StockService.class);
 
     private IStockRepo stockRepo;
     // private IUserRepo userRepo;

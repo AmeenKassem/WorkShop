@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ProductDTO;
@@ -17,6 +18,7 @@ import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.Random;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.Store.item;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
@@ -239,12 +241,12 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public void decreaseQtoBuy(int storeId, int productId) throws Exception {
+    public void decreaseQtoBuy(int storeId, int productId,int quantity) throws Exception {
         Store store = findStoreByID(storeId);
         if (store == null) {
             throw new Exception("store does not exist");
         }
-        store.decreaseQtoBuy(productId);
+        store.decreaseQtoBuy(productId,quantity);
 
     }
 
@@ -482,11 +484,37 @@ public class StoreRepository implements IStoreRepo {
         throw new UnsupportedOperationException("Unimplemented method 'getProductPrice'");
     }
 
+    public Random getRandomById(int randomId) throws Exception {
+        for (Store store : stores) {
+            try {
+                return store.getRandom(randomId); 
+            } catch (Exception e) {
+                // Ignore the exception
+            }
+        }
+        throw new Exception("Random with ID " + randomId + " not found in any store.");
+    }
+
+    
     @Override
     public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMatchesItems'");
     }
 
+    
+    public boolean checkAvailability(List<ItemCartDTO> cartItems) {
+        for (ItemCartDTO itemDTO : cartItems) {
+            Store store = findStoreByID(itemDTO.storeId);
+            if (store == null) {
+                return false;
+            }
+            item storeItem = store.getItemByProductId(itemDTO.productId);
+            if (storeItem == null || storeItem.getQuantity() < itemDTO.quantity) {
+                return false;
+            }
+        }
+        return true;
+    }
     
 }
