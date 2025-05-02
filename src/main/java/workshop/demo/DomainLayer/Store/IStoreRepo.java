@@ -96,7 +96,7 @@ public interface IStoreRepo {
 
     // ParticipationInRandomDTO endRandom(int storeId, int userId, int randomId) throws Exception; 
 
-    // public ParticipationInRandomDTO endRandom(int storeId,int userId,int randomId) throws Exception;
+    public ParticipationInRandomDTO endRandom(int storeId,int userId,int randomId) throws Exception;
 
     RandomDTO[] getRandomsInStore(int storeId, int userId) throws Exception;
 

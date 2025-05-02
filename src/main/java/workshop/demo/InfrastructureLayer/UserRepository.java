@@ -228,6 +228,12 @@ public class UserRepository implements IUserRepo {
     throw new UserIdNotFound("User with ID " + userId + " not found");
 }
 
+    @Override
+    public List<ItemCartDTO> getCartForUser(int ownerId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCartForUser'");
+    }
+
 
     // @Override
     // public List<ItemCartDTO> getCartForUser(int ownerId) {

@@ -10,6 +10,6 @@ public class StockController {
     private final StockService stockService;
 
     public StockController(Repos repos) {
-        this.stockService = new StockService(repos.stockrepo, repos.userRepo, repos.auth, repos.productFilter);
+        this.stockService = new StockService(repos.stockrepo, repos.storeRepo, repos.auth);
     }
 }
