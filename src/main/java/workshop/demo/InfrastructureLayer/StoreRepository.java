@@ -513,4 +513,15 @@ public class StoreRepository implements IStoreRepo {
         return true;
     }
 
+    @Override
+    public item getItemByStoreAndProductId(int storeId, int productId) throws Exception {
+        Store store = findStoreByID(storeId);
+        if (store == null) {
+            throw new Exception("Store with ID " + storeId + " not found.");
+        }
+        return store.getItemByProductId(productId);
+    }
+
+    
+
 }

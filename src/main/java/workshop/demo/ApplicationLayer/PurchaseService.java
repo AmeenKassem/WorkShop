@@ -10,6 +10,7 @@ import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
+import workshop.demo.DomainLayer.Exceptions.TokenNotFoundException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
@@ -19,7 +20,9 @@ import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.OrderRepository;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.item;
 
 public class PurchaseService {
 
@@ -162,4 +165,25 @@ public class PurchaseService {
         purchaseRepo.saveBid(bid);
         logger.info("BID was saved successfully");
     }
+
+    public String searchProductInStore(String token, int storeId, int productId) throws Exception {
+    if (!authRepo.validToken(token)) {
+        throw new TokenNotFoundException();
+    }
+
+    Product product = stockRepo.findById(productId);
+    if (product == null) {
+        throw new Exception("Product not found.");
+    }
+
+    item itemInStore = storeRepo.getItemByStoreAndProductId(storeId, productId);
+    if (itemInStore == null) {
+        throw new Exception("Product not found in store.");
+    }
+
+    return "Product: " + product.getName() +
+           ", Price: " + itemInStore.getPrice() +
+           ", Store: " + storeRepo.getStoreNameById(storeId);
 }
+}
+

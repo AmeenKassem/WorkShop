@@ -103,4 +103,6 @@ public interface IStoreRepo {
     double getProductPrice(int storeId, int productId) throws Exception;
 
     public Random getRandomById(int randomId) throws Exception;
+
+    item getItemByStoreAndProductId(int storeId, int productId) throws Exception;
 }
