@@ -1,5 +1,6 @@
 package workshop.demo.ApplicationLayer;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -12,6 +13,7 @@ import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.MessageDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
@@ -49,7 +51,7 @@ public class StoreService {
 
     }
 
-    public void addStoreToSystem(String token, String storeName, String Category) throws Exception {
+    public int addStoreToSystem(String token, String storeName, String Category) throws Exception {
         int bossID = 0;
         try {
             if (!authRepo.validToken(token)) {
@@ -61,11 +63,11 @@ public class StoreService {
             }
             //get an approval from the new owner then add it
             logger.info("trying to add new sotre to the system for the BOSS:", bossID);
-            storeRepo.addStoreToSystem(bossID, storeName, Category);
-            logger.info("added the store succsessfully");
+            return storeRepo.addStoreToSystem(bossID, storeName, Category);
         } catch (Exception e) {
             logger.error("failed to add the store for user: {}, Error: {}", bossID, e.getMessage());
         }
+        return -1;
     }
 
     public void AddOwnershipToStore(int storeID, String token, int newOwnerId) {
@@ -153,15 +155,6 @@ public class StoreService {
         }
     }
 
-    // private void givePermissions(int ownerId, int managerId, int storeId, List<Permission> autorization) {
-    //     try {
-    //         logger.info("the owner: {} is trying to give authoriation to manager: {}", ownerId, managerId);
-    //         storeRepo.changePermissions(ownerId, managerId, storeId, autorization);
-    //         logger.info("authorizations have been added succsesfully!");
-    //     } catch (Exception e) {
-    //         logger.error("failed to give permission:, ERROR:", e.getMessage());
-    //     }
-    // }
     public void changePermissions(String token, int managerId, int storeID, List<Permission> autorization) throws Exception {
         try {
             if (!authRepo.validToken(token)) {
@@ -202,6 +195,7 @@ public class StoreService {
             logger.error("failed to delete the manager, Error: {}", e.getMessage());
         }
     }
+
     public boolean addBidOnAucction(String token, int auctionId, int storeId, double price) throws Exception {
         logger.info("User trying to bid on auction: {}, store: {}", auctionId, storeId);
         if (!authRepo.validToken(token)) {
@@ -219,7 +213,7 @@ public class StoreService {
             throw new UIException("you are not logged in !");
         }
     }
-    
+
     public boolean addRegularBid(String token, int bitId, int storeId, double price) throws Exception {
         logger.info("User attempting regular bid on bidId: {}, storeId: {}", bitId, storeId);
         if (!authRepo.validToken(token)) {
@@ -237,7 +231,7 @@ public class StoreService {
             throw new UIException("you are not logged in !");
         }
     }
-    
+
     public AuctionDTO[] getAllAuctions(String token, int storeId) throws Exception {
         logger.info("User requesting all auctions in store: {}", storeId);
         if (!authRepo.validToken(token)) {
@@ -253,7 +247,7 @@ public class StoreService {
             throw new UIException("you are not logged in !");
         }
     }
-    
+
     public int setProductToAuction(String token, int id, int productId, int quantity, long time, double startPrice) throws Exception {
         logger.info("Setting product {} to auction in store {}", productId, id);
         if (!authRepo.validToken(token)) {
@@ -267,7 +261,7 @@ public class StoreService {
         }
         return storeRepo.addAuctionToStore(id, userId, productId, quantity, time, startPrice);
     }
-    
+
     public int setProductToBid(String token, int storeid, int productId, int quantity) throws Exception {
         logger.info("User attempting to set product {} as bid in store {}", productId, storeid);
         if (!authRepo.validToken(token)) {
@@ -281,7 +275,7 @@ public class StoreService {
         }
         return storeRepo.addProductToBid(storeid, userId, productId, quantity);
     }
-    
+
     public BidDTO[] getAllBidsStatus(String token, int storeId) throws Exception {
         logger.info("Fetching bid status for store: {}", storeId);
         if (!authRepo.validToken(token)) {
@@ -295,7 +289,7 @@ public class StoreService {
         }
         return storeRepo.getAllBids(userId, storeId);
     }
-    
+
     public SingleBid acceptBid(String token, int storeId, int bidId, int bidToAcceptId) throws Exception {
         logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidToAcceptId, bidId, storeId);
         if (!authRepo.validToken(token)) {
@@ -312,8 +306,7 @@ public class StoreService {
         return winner;
     }
 
-
-    public int setProductToRandom(String token ,int productId, int quantity, double productPrice,int storeId, long RandomTime) throws Exception{
+    public int setProductToRandom(String token, int productId, int quantity, double productPrice, int storeId, long RandomTime) throws Exception {
         if (!authRepo.validToken(token)) {
             logger.error("Invalid token in setProductToRandom");
             throw new Exception("unvalid token!");
@@ -323,9 +316,9 @@ public class StoreService {
             logger.error("User not logged in for setProductToRandom: {}", userId);
             throw new UIException("you are not logged in !");
         }
-        return storeRepo.addProductToRandom(userId ,productId, quantity ,productPrice ,storeId, RandomTime);
+        return storeRepo.addProductToRandom(userId, productId, quantity, productPrice, storeId, RandomTime);
     }
-    
+
     public ParticipationInRandomDTO endBid(String token, int storeId, int randomId) throws Exception {
         logger.info("Ending random bid {} in store {}", randomId, storeId);
         if (!authRepo.validToken(token)) {
@@ -339,7 +332,7 @@ public class StoreService {
         }
         return storeRepo.endRandom(storeId, userId, randomId);
     }
-    
+
     public RandomDTO[] getAllRandomInStore(String token, int storeId) throws Exception {
         logger.info("Fetching all randoms in store {}", storeId);
         if (!authRepo.validToken(token)) {
@@ -353,9 +346,6 @@ public class StoreService {
         }
         return storeRepo.getRandomsInStore(storeId, userId);
     }
-    
-
-
 
     public List<ItemStoreDTO> getProductsInStore(int storeId) throws Exception {
         try {
@@ -511,6 +501,11 @@ public class StoreService {
     public int getFinalRateInStore(int storeId) throws Exception {
         logger.info("about to get the final rank of the stroe");
         return this.storeRepo.getFinalRateInStore(storeId);
+
+    }
+
+    public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws Exception {
+        return null;
 
     }
 }

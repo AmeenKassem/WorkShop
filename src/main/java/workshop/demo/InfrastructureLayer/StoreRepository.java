@@ -1,5 +1,7 @@
 package workshop.demo.InfrastructureLayer;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,6 +17,7 @@ import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
@@ -24,6 +27,7 @@ import workshop.demo.DomainLayer.Store.item;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
+import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 
 public class StoreRepository implements IStoreRepo {
 
@@ -42,10 +46,11 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public void addStoreToSystem(int bossID, String storeName, String Category) {
+    public int addStoreToSystem(int bossID, String storeName, String Category) {
         int storeId = generateId();
         stores.add(new Store(storeId, storeName, Category));
         data.addNewStore(storeId, bossID);
+        return storeId;
     }
 
     @Override
@@ -178,7 +183,7 @@ public class StoreRepository implements IStoreRepo {
                 throw new Exception("can't be closed store: store does not exist");
             }
             List<Integer> toNotify = this.data.getWorkersInStore(storeId);
-            stores.removeIf(store -> store.getStroeID() == storeId);
+            stores.removeIf(store -> store.getStoreID() == storeId);
             this.data.closeStore(storeId);
             return toNotify;
 
@@ -192,7 +197,7 @@ public class StoreRepository implements IStoreRepo {
     @Override
     public Store findStoreByID(int ID) {
         for (Store store : this.stores) {
-            if (store.getStroeID() == ID) {
+            if (store.getStoreID() == ID) {
                 return store;
             }
         }
@@ -482,6 +487,57 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
+// <<<<<<< HEAD
+    public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) throws Exception {
+        ItemStoreDTO[] toReturn;
+        List<ItemStoreDTO> itemList = new LinkedList<>();
+        if (criteria.getStoreId() == -1) {//search in all stores
+            for (Store store : stores) {
+                List<item> stock = store.getAllItemsInStock();
+                for (item item1 : stock) {
+                    for (ProductDTO pro : matchesProducts) {
+                        if (item1.getProductId() == pro.getProductId() && criteria.matchesForStore(item1)) {
+                            ItemStoreDTO toAdd = new ItemStoreDTO(
+                                    item1.getProductId(),
+                                    item1.getQuantity(),
+                                    item1.getPrice(),
+                                    item1.getCategory(),
+                                    item1.getFinalRank(),
+                                    store.getStoreID()
+                            );
+                            itemList.add(toAdd);
+                            break; // found matching product -> no need to check other products
+                        }
+                    }
+                }
+            }
+
+        } else {//search in a spicific store 
+            Store store = findStoreByID(criteria.getStoreId());
+            if (store == null) {
+                throw new Exception("store does not exist!");
+            }
+            for (ProductDTO pro : matchesProducts) {
+                item item1 = store.getProductById(pro.getProductId());
+                if (item1 != null && criteria.matchesForStore(item1)) {
+                    ItemStoreDTO toAdd = new ItemStoreDTO(item1.getProductId(), item1.getQuantity(), item1.getPrice(), item1.getCategory(), item1.getFinalRank(), store.getStoreID());
+                    itemList.add(toAdd);
+                }
+            }
+
+        }
+
+        return itemList.toArray(new ItemStoreDTO[0]);
+    }
+
+    @Override
+    public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws Exception {
+        List<WorkerDTO> toReturn = new LinkedList<>();
+
+        return toReturn;
+    }
+
+// =======
     public Random getRandomById(int randomId) throws Exception {
         for (Store store : stores) {
             try {
@@ -493,12 +549,13 @@ public class StoreRepository implements IStoreRepo {
         throw new Exception("Random with ID " + randomId + " not found in any store.");
     }
 
-    @Override
-    public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getMatchesItems'");
-    }
+    // @Override
+    // public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) {
+    //     // TODO Auto-generated method stub
+    //     throw new UnsupportedOperationException("Unimplemented method 'getMatchesItems'");
+    // }
 
+    @Override
     public boolean checkAvailability(List<ItemCartDTO> cartItems) {
         for (ItemCartDTO itemDTO : cartItems) {
             Store store = findStoreByID(itemDTO.storeId);

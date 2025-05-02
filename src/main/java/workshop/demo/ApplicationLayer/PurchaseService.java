@@ -13,6 +13,7 @@ import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.TokenNotFoundException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
+import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.Purchase;
 import workshop.demo.DomainLayer.User.IUserRepo;
@@ -31,7 +32,7 @@ public class PurchaseService {
     private final IStoreRepo storeRepo;
     private final IUserRepo userRepo;
     private final IPurchaseRepo purchaseRepo;
-    private final IOrderRepo orderRepo;
+    private IOrderRepo orderRepo;
 
     private static final Logger logger = LoggerFactory.getLogger(PurchaseService.class);
 
@@ -56,7 +57,8 @@ public class PurchaseService {
             throw new Exception("Shopping cart not found for user.");
         }
 
-        Purchase purchase = new Purchase(shoppingCart, stockRepo, storeRepo, orderRepo, userRepo);
+
+        Purchase purchase = new Purchase(shoppingCart, stockRepo, storeRepo,orderRepo, userRepo);
         return purchase.processRegularPurchase(true, userId);
     }
 
