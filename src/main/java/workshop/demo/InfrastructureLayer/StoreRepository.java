@@ -16,6 +16,7 @@ import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
@@ -24,6 +25,7 @@ import workshop.demo.DomainLayer.Store.item;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
+import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 
 public class StoreRepository implements IStoreRepo {
 
@@ -523,6 +525,13 @@ public class StoreRepository implements IStoreRepo {
         }
 
         return itemList.toArray(new ItemStoreDTO[0]);
+    }
+
+    @Override
+    public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws Exception {
+        List<WorkerDTO> toReturn = new LinkedList<>();
+
+        return toReturn;
     }
 
 }

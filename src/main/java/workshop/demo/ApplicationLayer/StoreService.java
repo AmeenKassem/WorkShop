@@ -1,5 +1,6 @@
 package workshop.demo.ApplicationLayer;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -12,6 +13,7 @@ import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.MessageDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
@@ -499,6 +501,11 @@ public class StoreService {
     public int getFinalRateInStore(int storeId) throws Exception {
         logger.info("about to get the final rank of the stroe");
         return this.storeRepo.getFinalRateInStore(storeId);
+
+    }
+
+    public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws Exception {
+        return null;
 
     }
 }

@@ -11,6 +11,7 @@ import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 //import workshop.demo.DomainLayer.Stock.ProductDTO;
@@ -35,7 +36,6 @@ public interface IStoreRepo {
 
     public void AddManagerToStore(int storeID, int ownerId, int managerId) throws Exception;
 
-    //public void givePermissions(int ownerId, int managerId, int storeID, List<Permission> autorization) throws Exception;
     public void changePermissions(int ownerId, int managerId, int storeID, List<Permission> autorization) throws Exception;
 
     public void deleteManager(int storeId, int ownerId, int managerId) throws Exception;
@@ -73,6 +73,8 @@ public interface IStoreRepo {
     public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) throws Exception;
 
     //another: getting info about the owners and manager->4.11
+    public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws Exception;
+
     //another: messages to response->4.12
     //another: getting info about the history of purcheses in a specific store
     //auction:
