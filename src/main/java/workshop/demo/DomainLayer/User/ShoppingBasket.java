@@ -3,9 +3,11 @@ package workshop.demo.DomainLayer.User;
 import java.util.ArrayList;
 import java.util.List;
 
+import workshop.demo.DTOs.ItemCartDTO;
+
 public class ShoppingBasket {
 
-    private List<CartItem> itemsOnCart=new ArrayList<>();
+    private List<ItemCartDTO> itemsOnCart=new ArrayList<>();
     
     private int storeId ;
 
@@ -13,11 +15,11 @@ public class ShoppingBasket {
         storeId= id;
     }
 
-    public void addItem(CartItem item) {
+    public void addItem(ItemCartDTO item) {
         itemsOnCart.add(item);
     }
 
-    public List<CartItem> getItems() {
+    public List<ItemCartDTO> getItems() {
         return itemsOnCart;
     }
 

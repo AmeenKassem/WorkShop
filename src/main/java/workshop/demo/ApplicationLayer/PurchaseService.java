@@ -2,6 +2,7 @@ package workshop.demo.ApplicationLayer;
 
 import java.util.List;
 
+import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
@@ -17,7 +18,7 @@ import workshop.demo.DomainLayer.Store.IStoreRepo;
 
 public class PurchaseService {
     private final IAuthRepo authRepo;
-    private final ShoppingCartRepo shoppingCartRepo;
+    // private final ShoppingCartRepo shoppingCartRepo;
     private final OrderRepository orderRepo;
     private IUserRepo userRepo;
     private IStockRepo stockRepo;
@@ -26,12 +27,12 @@ public class PurchaseService {
     public PurchaseService(IAuthRepo authRepo,
             IStockRepo stockRepo,
             IStoreRepo storeRepo,
-            ShoppingCartRepo shoppingCartRepo,
+            // ShoppingCartRepo shoppingCartRepo,
             OrderRepository orderRepo) {
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
         this.storeRepo = storeRepo;
-        this.shoppingCartRepo = shoppingCartRepo;
+        // this.shoppingCartRepo = shoppingCartRepo;
         this.orderRepo = orderRepo;
     }
 
@@ -42,10 +43,16 @@ public class PurchaseService {
 
         int ownerId = authRepo.getUserId(token);
 
-        ShoppingCart shoppingCart = shoppingCartRepo.getCart(ownerId);
+        // ShoppingCart shoppingCart ;
+        List<ItemCartDTO> cart = userRepo.getCartForUser(ownerId);
 
-        if (shoppingCart == null) {
-            throw new Exception("Shopping cart not found for guest user.");
+        // if (shoppingCart == null) {
+        //     throw new Exception("Shopping cart not found for guest user.");
+        // }
+        if(stockRepo.checkAvilability(cart)){
+            
+        }else if(!authRepo.isRegistered(token)){
+            throw new UIException("");
         }
 
         Purchase purchase = new Purchase(shoppingCart, stockRepo, storeRepo, orderRepo);

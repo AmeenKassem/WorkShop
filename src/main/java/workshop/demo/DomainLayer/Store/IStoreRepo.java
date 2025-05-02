@@ -42,6 +42,8 @@ public interface IStoreRepo {
 
     public List<Integer> closeStore(int storeId) throws Exception;
 
+    public boolean checkAvilability() throws Exception;
+
     //STOCK MANAGMENT:
     public List<ItemStoreDTO> getProductsInStore(int storeId) throws Exception;
 
@@ -51,7 +53,7 @@ public interface IStoreRepo {
 
     public void removeItem(int storeId, int productId) throws Exception;
 
-    public void decreaseQtoBuy(int storeId, int productId) throws Exception;
+    public void decreaseQtoBuy(int storeId, int productId,int quantity) throws Exception;
 
     public void updateQuantity(int storeId, int productId, int newQuantity) throws Exception;
 

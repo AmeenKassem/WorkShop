@@ -112,4 +112,9 @@ public interface IUserRepo {
 
     public List<SingleBid> getWinningBids(int userId);
     public List<ParticipationInRandomDTO> getWinningCards(int userId);
+
+
+
+
+    public List<ItemCartDTO> getCartForUser(int ownerId);
 }

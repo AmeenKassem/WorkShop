@@ -1,4 +1,5 @@
 package workshop.demo.InfrastructureLayer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,6 +14,7 @@ import workshop.demo.DomainLayer.Exceptions.GuestNotFoundException;
 import workshop.demo.DomainLayer.Exceptions.IncorrectLogin;
 import workshop.demo.DomainLayer.Exceptions.UserIdNotFound;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
+import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
@@ -209,6 +211,11 @@ public class UserRepository implements IUserRepo {
     @Override
     public List<ParticipationInRandomDTO> getWinningCards(int userId) {
         return getRegisteredUser(userId).getWinningCards();
+    }
+
+    @Override
+    public List<ItemCartDTO> getCartForUser(int ownerId) {
+       return guests.get(ownerId).getCart();
     }
 
 }

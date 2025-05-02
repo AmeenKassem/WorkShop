@@ -18,5 +18,6 @@ public interface IStockRepo {
     ProductDTO[] searchByKeyword(String keywordFilter);
     List<ItemStoreDTO> getItemsByStoreId(int storeId) throws Exception;
     List<ItemStoreDTO> getItemsByProductId(int productId) throws Exception;
+    boolean checkAvilability(List<ItemCartDTO> cart);
 }
 

@@ -1,7 +1,5 @@
 package workshop.demo.DTOs;
 
-import java.util.List;
-import java.util.Timer;
 
 public class AuctionDTO {
     public SingleBid[] bids;
