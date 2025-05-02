@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DomainLayer.Exceptions.ProductNotFoundException;
@@ -13,6 +14,7 @@ import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.Store.item;
 
 public class StockRepository implements IStockRepo {
 
@@ -146,5 +148,24 @@ public class StockRepository implements IStockRepo {
         }
 
         return itemsForProduct;
+    }
+
+    //check if the product is available in the store and if the quantity is enough , if at least one product is not available return false
+    @Override
+    public boolean checkAvilability(List<ItemCartDTO> cart) {
+        for (ItemCartDTO item : cart) {
+            try {
+                Store store = IStoreRepo.findStoreByID(item.storeId);
+                if (store == null) return false;
+
+                item storeItem = store.getItemByProductId(item.productId);
+                if (storeItem == null || storeItem.getQuantity() < item.quantity) {
+                    return false;
+                }
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        return true;
     }
 }

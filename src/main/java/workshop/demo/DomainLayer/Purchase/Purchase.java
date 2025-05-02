@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.ReceiptProduct;
@@ -13,7 +15,10 @@ import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Random;
+import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.Store.item;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
@@ -38,19 +43,6 @@ public class Purchase {
         this.stockRepository = stockRepository;
     }
 
-
-    private boolean allProductsAvailable() {
-        for (ShoppingBasket basket : shoppingCart.getBaskets().values()) {
-            for (CartItem item : basket.getItems()) {
-                Product product = stockRepository.findById(item.getProductId());
-                if (product == null || product.getTotalAmount() < item.getQuantity()) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
     private void mockPayment(CartItem item) {
         System.out.println("Payment successful for: " + item.getProductId());
     }
@@ -68,23 +60,34 @@ public class Purchase {
         System.out.println("Supply successful for: " + item.getProductId());
     }
 
+
     public List<ReceiptDTO> processRegularPurchase(boolean isGuest, int userId) throws Exception {
         List<ReceiptDTO> receipts = new ArrayList<>();
-
-        if (isGuest && !allProductsAvailable()) {
-            throw new Exception("Guest purchase failed: Not all products are available.");
+    
+        // add all items from shoppingCart into one list of ItemCartDTO
+        if (isGuest) {
+            List<ItemCartDTO> allItems = new ArrayList<>();
+            for (ShoppingBasket basket : shoppingCart.getBaskets().values()) {
+                allItems.addAll(basket.getItems());
+            }
+    // Check availability for all items in the cart
+            if (!stockRepository.checkAvilability(allItems)) {
+                throw new Exception("Guest purchase failed: Not all products are available.");
+            }
         }
-
+    
         for (ShoppingBasket basket : shoppingCart.getBaskets().values()) {
             double totalPrice = 0;
             List<ReceiptProduct> boughtItems = new ArrayList<>();
             String storeName = storeRepository.getStoreNameById(basket.getStoreId());
-
-            for (CartItem item : basket.getItems()) {
+    
+            for (ItemCartDTO dto : basket.getItems()) {
+                CartItem item = new CartItem(dto);
                 Product product = stockRepository.findById(item.getProductId());
-
+    
                 if (product != null && product.getTotalAmount() >= item.getQuantity()) {
                     totalPrice += item.getPrice() * item.getQuantity();
+    
                     boughtItems.add(new ReceiptProduct(
                         item.getName(),
                         item.getCategory(),
@@ -93,33 +96,33 @@ public class Purchase {
                         item.getQuantity(),
                         item.getPrice()
                     ));
-
+    
                     product.setTotalAmount(product.getTotalAmount() - item.getQuantity());
                     mockPayment(item);
                     mockSupply(item);
-
                 } else if (!isGuest) {
                     continue;
                 } else {
                     throw new Exception("Unexpected missing product during Guest purchase.");
                 }
             }
-
+    
             if (!boughtItems.isEmpty()) {
                 String date = LocalDate.now().toString();
                 int finalPrice = (int) totalPrice;
-
+    
                 ReceiptDTO receipt = new ReceiptDTO(storeName, date, boughtItems, finalPrice);
                 receipts.add(receipt);
-
+    
                 orderRepository.setOrderToStore(basket.getStoreId(), userId, receipt, storeName);
             } else {
                 throw new DevException("bought items is empty!");
             }
         }
-
+    
         return receipts;
     }
+    
 
     //buying a random ticket
     public ParticipationInRandomDTO buyRandomTicket(int userId, int randomId, double amountPaid) throws Exception {
@@ -247,8 +250,15 @@ public class Purchase {
             ReceiptDTO receipt = new ReceiptDTO(storeName, date, products, finalPrice);
             orderRepository.setOrderToStore(storeId, userId, receipt, storeName);
         }
-    }
     
     }
+
+
+}
+
+
+
+    
+    
 
 

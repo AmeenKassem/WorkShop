@@ -12,6 +12,7 @@ public class ShoppingCart {
     public HashMap<Integer, ShoppingBasket> getBaskets() {
         return storeBaskets;
     }
+
     
 
     public void addItem(int storeId, ItemCartDTO item) {

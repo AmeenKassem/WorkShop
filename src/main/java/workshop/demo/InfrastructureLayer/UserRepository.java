@@ -214,33 +214,20 @@ public class UserRepository implements IUserRepo {
         return getRegisteredUser(userId).getWinningCards();
     }
 
+
     @Override
-public ShoppingCart getUserCart(int userId) {
+    public ShoppingCart getUserCart(int userId) {
     if (guests.containsKey(userId)) {
-        return guests.get(userId).getCart();
+        return guests.get(userId).geCart(); 
     }
 
     Registered registered = getRegisteredUser(userId);
     if (registered != null) {
-        return registered.getCart();
+        return registered.geCart(); 
     }
-
     throw new UserIdNotFound("User with ID " + userId + " not found");
 }
 
-    @Override
-public ShoppingCart getUserCart(int userId) {
-    if (guests.containsKey(userId)) {
-        return guests.get(userId).getCart();
-    }
-
-    Registered registered = getRegisteredUser(userId);
-    if (registered != null) {
-        return registered.getCart();
-    }
-
-    throw new UserIdNotFound("User with ID " + userId + " not found");
-}
 
     // @Override
     // public List<ItemCartDTO> getCartForUser(int ownerId) {
