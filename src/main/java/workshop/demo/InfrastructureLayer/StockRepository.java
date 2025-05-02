@@ -11,140 +11,66 @@ import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DomainLayer.Exceptions.ProductNotFoundException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
 
 public class StockRepository implements IStockRepo {
 
-    private final IStoreRepo IStoreRepo;
-    private final Map<Integer, Product> products = new HashMap<>();
-    private final Map<Category, List<Product>> categoryProducts = new HashMap<>();
-    private static final AtomicInteger counterSId = new AtomicInteger(1);
+    private HashMap<Category, List<Integer>> categoryToProductId;
+    private HashMap<Integer, Product> idToProduct;
+    private AtomicInteger idGen;
 
-    public StockRepository(IStoreRepo IStoreRepo) {
-        this.IStoreRepo = IStoreRepo; 
+    public StockRepository() {
+        this.categoryToProductId = new HashMap<>();
+        this.idToProduct = new HashMap<>();
+        this.idGen = new AtomicInteger(1); // Start product IDs from 1
     }
 
-    public static int generateId() {
-        return counterSId.getAndIncrement();
-    }
+    @Override
+    public int addProduct(String name, Category category, String description,String[] keywords) throws Exception {
+        int id = idGen.getAndIncrement();
+        Product product = new Product(name, id, category, description,keywords);
+        idToProduct.put(id, product);
 
-    public synchronized int addProduct(String name, Category category, String description) throws Exception {
-        for (Product product : products.values()) {
-            if (product.getName().equals(name)) {
-                throw new Exception("Product already exists in the system");
-            }
-        }
-        int id = generateId();
-        Product newProduct = new Product(name, id, category, description);
-        products.put(newProduct.getProductId(), newProduct);
-
-        categoryProducts.computeIfAbsent(category, k -> new ArrayList<>()).add(newProduct);
+        categoryToProductId.computeIfAbsent(category, k -> new ArrayList<>()).add(id);
 
         return id;
     }
 
     @Override
-    public synchronized String removeProduct(int productID) throws ProductNotFoundException {
-        if (products.containsKey(productID)) {
-            Product removed = products.remove(productID);
-            categoryProducts.getOrDefault(removed.getCategory(), new ArrayList<>()).remove(removed);
-            return "Product " + productID + " removed successfully.";
-        } else {
-            throw new ProductNotFoundException("Product " + productID + " does not exist.");
-        }
-    }
-
-    @Override
     public Product findById(int productId) {
-        return products.get(productId);
+        return idToProduct.get(productId);
     }
 
     @Override
-    public ProductDTO[] getAllProducts() {
-        return products.values().stream()
-                .map(product -> new ProductDTO(
-                product.getProductId(),
-                product.getName(),
-                product.getCategory(),
-                product.getDescription()
-        ))
-                .toArray(ProductDTO[]::new);
-    }
+    public ProductDTO[] getMatchesProducts(ProductSearchCriteria filter) {
+        List<Product> productsToSearch = new ArrayList<>();
+        List<ProductDTO> res = new ArrayList<>();
 
-    public ProductDTO[] searchByName(String name) {
-        return products.values().stream()
-                .filter(product -> product.getName().toLowerCase().contains(name.toLowerCase()))
-                .map(product -> new ProductDTO(
-                product.getProductId(),
-                product.getName(),
-                product.getCategory(),
-                product.getDescription()
-        ))
-                .toArray(ProductDTO[]::new);
-    }
-
-    public ProductDTO[] searchByCategory(Category category) {
-        List<Product> matchingProducts = categoryProducts.getOrDefault(category, new ArrayList<>());
-
-        return matchingProducts.stream()
-                .map(product -> new ProductDTO(
-                product.getProductId(),
-                product.getName(),
-                product.getCategory(),
-                product.getDescription()
-        ))
-                .toArray(ProductDTO[]::new);
-    }
-
-    public ProductDTO[] searchByKeyword(String keyword) {
-        return products.values().stream()
-                .filter(product -> product.getKeywords() != null && product.getKeywords().contains(keyword))
-                .map(product -> new ProductDTO(
-                product.getProductId(),
-                product.getName(),
-                product.getCategory(),
-                product.getDescription()
-        ))
-                .toArray(ProductDTO[]::new);
-    }
-
-    @Override
-    public List<ItemStoreDTO> getItemsByStoreId(int storeId) throws Exception {
-        Store store = IStoreRepo.findStoreByID(storeId);
-
-        if (store == null) {
-            throw new Exception("Store with ID " + storeId + " does not exist");
-        }
-        return store.getProductsInStore();
-    }
-
-    public double getStoreRating(int storeId) {
-        Store store = IStoreRepo.findStoreByID(storeId);
-        if (store == null) {
-            throw new IllegalArgumentException("Store with ID " + storeId + " not found");
-        }
-        return store.getStoreRating(); //not implemented yet
-    }
-
-    public List<ItemStoreDTO> getItemsByProductId(int productId) throws Exception {
-        List<ItemStoreDTO> itemsForProduct = new ArrayList<>();
-
-        for (Store store : IStoreRepo.getStores()) {
-
-            List<ItemStoreDTO> itemsInStore = store.getProductsInStore();
-
-            for (ItemStoreDTO item : itemsInStore) {
-                if (item.getId() == productId) {
-                    itemsForProduct.add(item);
+        if (filter.specificCategory()) {
+            List<Integer> ids = categoryToProductId.getOrDefault(filter.getCategory(), new ArrayList<>());
+            for (int id : ids) {
+                Product p = idToProduct.get(id);
+                if (p != null) {
+                    productsToSearch.add(p);
                 }
+            }
+        } else {
+            productsToSearch.addAll(idToProduct.values());
+        }
+
+        for (Product product : productsToSearch) {
+            if (filter.productIsMatch(product)) {
+                res.add(new ProductDTO(
+                        product.getProductId(),
+                        product.getName(),
+                        product.getCategory(),
+                        product.getDescription()));
             }
         }
 
-        if (itemsForProduct.isEmpty()) {
-            throw new Exception("No items found for product ID: " + productId);
-        }
-
-        return itemsForProduct;
+        return res.toArray(new ProductDTO[0]);
     }
+
 }

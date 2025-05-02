@@ -5,11 +5,13 @@ import java.util.List;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 //import workshop.demo.DomainLayer.Stock.ProductDTO;
 
@@ -58,16 +60,17 @@ public interface IStoreRepo {
     public void updatePrice(int storeId, int productId, int newPrice) throws Exception;
 
     public void rankProduct(int storeId, int productId, int newRank) throws Exception;
-
+    
     //STORE RANK:
     public void rankStore(int storeId, int newRank) throws Exception;
-
+    
     public int getFinalRateInStore(int storeId) throws Exception;
-
+    
     public List<Store> getStores();
-
+    
     String getStoreNameById(int storeId);
-
+    
+    public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts);
     //another: getting info about the owners and manager->4.11
     //another: messages to response->4.12
     //another: getting info about the history of purcheses in a specific store
@@ -101,5 +104,6 @@ public interface IStoreRepo {
     public ParticipationInRandomDTO endRandom(int storeId,int userId,int randomId) throws Exception;
 
     public RandomDTO[] getRandomsInStore(int storeId, int userId) throws Exception;
+
 
 }

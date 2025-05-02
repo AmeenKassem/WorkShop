@@ -9,19 +9,19 @@ public class Product {
 
     private String name;
     private int productId;
-    private int totalAmount;
-    private double rating;
+    // private int totalAmount;
+    // private double rating;
     private String description;
     private Category category;  // Using enum Category
     private List<String> keywords; // List of keywords for the product
 
-    public Product(String name, int id, Category category, String description) {
+    public Product(String name, int id, Category category, String description, String[] keywords) {
         this.name = name;
         this.productId = id;
         this.category = category;
         this.description = description;
-        this.totalAmount = 0;
-        this.rating = 0.0;
+        // this.totalAmount = 0;
+        // this.rating = 0.0;
     }
 
     public String getName() {
@@ -40,27 +40,27 @@ public class Product {
         this.productId = productId;
     }
 
-    public int getTotalAmount() {
-        return totalAmount;
-    }
+    // public int getTotalAmount() {
+    //     return totalAmount;
+    // }
 
-    public synchronized void setTotalAmount(int totalAmount) {
-        if (totalAmount < 0) {
-            throw new IllegalArgumentException("Total amount cannot be negative.");
-        }
-        this.totalAmount = totalAmount;
-    }
+    // public synchronized void setTotalAmount(int totalAmount) {
+    //     if (totalAmount < 0) {
+    //         throw new IllegalArgumentException("Total amount cannot be negative.");
+    //     }
+    //     this.totalAmount = totalAmount;
+    // }
 
-    public double getRating() {
-        return rating;
-    }
+    // public double getRating() {
+    //     return rating;
+    // }
 
-    public synchronized void setRating(double rating) {
-        if (rating < 0 || rating > 5) {
-            throw new IllegalArgumentException("Rating must be between 0 and 5.");
-        }
-        this.rating = rating;
-    }
+    // public synchronized void setRating(double rating) {
+    //     if (rating < 0 || rating > 5) {
+    //         throw new IllegalArgumentException("Rating must be between 0 and 5.");
+    //     }
+    //     this.rating = rating;
+    // }
 
     public String getDescription() {
         return description;

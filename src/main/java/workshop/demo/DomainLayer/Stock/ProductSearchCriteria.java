@@ -34,7 +34,7 @@ public class ProductSearchCriteria {
 
     public ProductSearchCriteria() {}
 
-    public boolean matches(item item) {
+    public boolean matchesForStore(item item) {
         if (item == null) return false;
 
         // Category match
@@ -58,4 +58,35 @@ public class ProductSearchCriteria {
 
         return true;
     }
+
+    public boolean specificCategory() {
+        return categoryFilter != null;
+    }
+    
+    public boolean productIsMatch(Product product) {
+        if (product == null) return false;
+    
+        // Product name filter (case-insensitive substring match)
+        if (productNameFilter != null && !product.getName().toLowerCase().contains(productNameFilter.toLowerCase())) {
+            return false;
+        }
+    
+        // Category match
+        if (categoryFilter != null && !categoryFilter.equals(product.getCategory())) {
+            return false;
+        }
+    
+        // Keyword match
+        if (keywordFilter != null && (product.getKeywords() == null ||
+            product.getKeywords().stream().noneMatch(k -> k.toLowerCase().contains(keywordFilter.toLowerCase())))) {
+            return false;
+        }
+    
+        return true;
+    }
+    
+    public Category getCategory() {
+        return this.categoryFilter;
+    }
+    
 }
