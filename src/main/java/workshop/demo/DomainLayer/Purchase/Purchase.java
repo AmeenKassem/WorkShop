@@ -13,6 +13,7 @@ import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Exceptions.DevException;
+import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
@@ -29,13 +30,13 @@ import workshop.demo.InfrastructureLayer.OrderRepository;
 public class Purchase {
 
     private final ShoppingCart shoppingCart;
-    private final StoreRepository storeRepository;
-    private final OrderRepository orderRepository;
+    private final IStoreRepo storeRepository;
+    private final IOrderRepo orderRepository;
     private final IUserRepo userRepo;
     private final IStockRepo stockRepository;
 
-    public Purchase( ShoppingCart shoppingCart,IStockRepo stockRepository,
-                    StoreRepository storeRepository, OrderRepository orderRepository, IUserRepo userRepo) {
+    public Purchase(ShoppingCart shoppingCart, IStockRepo stockRepository,
+            IStoreRepo storeRepository, IOrderRepo orderRepository, IUserRepo userRepo) {
         this.shoppingCart = shoppingCart;
         this.storeRepository = storeRepository;
         this.orderRepository = orderRepository;
@@ -47,26 +48,25 @@ public class Purchase {
     //         IUserRepo userRepo2) {
     //     //TODO Auto-generated constructor stub
     // }
-
     private void mockPayment(CartItem item) {
         System.out.println("Payment successful for: " + item.getProductId());
     }
 
     private void mockPayment(SingleBid bid) {
-        System.out.println("Payment successful for auction bid: " +
-            "user=" + bid.getUserId() +
-            ", store=" + bid.getStoreId() +
-            ", amount=" + bid.getAmount() +
-            ", price=" + bid.getBidPrice());
+        System.out.println("Payment successful for auction bid: "
+                + "user=" + bid.getUserId()
+                + ", store=" + bid.getStoreId()
+                + ", amount=" + bid.getAmount()
+                + ", price=" + bid.getBidPrice());
     }
-
 
     private void mockSupply(CartItem item) {
         System.out.println("Supply successful for: " + item.getProductId());
     }
+
     public List<ReceiptDTO> processRegularPurchase(boolean isGuest, int userId) throws Exception {
         List<ReceiptDTO> receipts = new ArrayList<>();
-    
+
         // If guest, validate availability for all items
         if (isGuest) {
             List<ItemCartDTO> allItems = new ArrayList<>();
@@ -77,78 +77,74 @@ public class Purchase {
                 throw new Exception("Guest purchase failed: Not all products are available.");
             }
         }
-    
+
         for (ShoppingBasket basket : shoppingCart.getBaskets().values()) {
             double totalPrice = 0;
             List<ReceiptProduct> boughtItems = new ArrayList<>();
             String storeName = storeRepository.getStoreNameById(basket.getStoreId());
-    
+
             Store store = storeRepository.findStoreByID(basket.getStoreId());
             if (store == null) {
                 throw new Exception("Store not found for ID: " + basket.getStoreId());
             }
-    
+
             for (ItemCartDTO dto : basket.getItems()) {
                 CartItem item = new CartItem(dto);
                 item storeItem = store.getItemByProductId(item.getProductId());
-    
+
                 if (storeItem != null && storeItem.getQuantity() >= item.getQuantity()) {
                     totalPrice += item.getPrice() * item.getQuantity();
-    
+
                     boughtItems.add(new ReceiptProduct(
-                        item.getName(),
-                        item.getCategory(),
-                        item.getDescription(),
-                        storeName,
-                        item.getQuantity(),
-                        item.getPrice()
+                            item.getName(),
+                            item.getCategory(),
+                            item.getDescription(),
+                            storeName,
+                            item.getQuantity(),
+                            item.getPrice()
                     ));
-    
+
                     store.decreaseQtoBuy(item.getProductId(), item.getQuantity());
                     mockPayment(item);
                     mockSupply(item);
-    
+
                 } else if (!isGuest) {
                     continue;
                 } else {
                     throw new Exception("Unexpected missing product during Guest purchase.");
                 }
             }
-    
+
             if (!boughtItems.isEmpty()) {
                 String date = LocalDate.now().toString();
                 int finalPrice = (int) totalPrice;
-    
+
                 ReceiptDTO receipt = new ReceiptDTO(storeName, date, boughtItems, finalPrice);
                 receipts.add(receipt);
-    
+
                 orderRepository.setOrderToStore(basket.getStoreId(), userId, receipt, storeName);
             } else {
                 throw new DevException("bought items is empty!");
             }
         }
-    
+
         return receipts;
     }
-    
-    
-    
 
     //buying a random ticket
     public ParticipationInRandomDTO buyRandomTicket(int userId, int randomId, double amountPaid) throws Exception {
-        Random random = storeRepository.getRandomById(randomId); 
+        Random random = storeRepository.getRandomById(randomId);
         ParticipationInRandomDTO participation = random.participateInRandom(userId, amountPaid);
         userRepo.ParticipateInRandom(participation); // Save participation in userRepo
-    
+
         mockPayment(userId, amountPaid, randomId);
         return participation;
     }
-    
+
     private void mockPayment(int userId, double amountPaid, int randomId) {
         System.out.println("Mock payment: user " + userId + " paid " + amountPaid + " for random ID " + randomId);
     }
 
-        
     public void processRandomWinnings(int userId) throws Exception {
         List<ParticipationInRandomDTO> cards = userRepo.getWinningCards(userId);
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
@@ -170,12 +166,12 @@ public class Purchase {
             String storeName = storeRepository.getStoreNameById(card.storeId);
 
             ReceiptProduct receiptProduct = new ReceiptProduct(
-                product.getName(),
-                product.getCategory(),
-                product.getDescription(),
-                storeName,
-                1,
-                0 // already paid when buying the random ticket
+                    product.getName(),
+                    product.getCategory(),
+                    product.getDescription(),
+                    storeName,
+                    1,
+                    0 // already paid when buying the random ticket
             );
             storeToProducts.computeIfAbsent(card.storeId, k -> new ArrayList<>()).add(receiptProduct);
             System.out.println("Supplying random-won product " + product.getName() + " to user " + userId);
@@ -189,7 +185,9 @@ public class Purchase {
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
 
         for (SingleBid bid : winningBids) {
-            if (bid.getType() != SpecialType.Auction) continue;
+            if (bid.getType() != SpecialType.Auction) {
+                continue;
+            }
 
             Store store = storeRepository.findStoreByID(bid.getStoreId());
             if (store == null) {
@@ -207,12 +205,12 @@ public class Purchase {
             String storeName = storeRepository.getStoreNameById(bid.getStoreId());
 
             ReceiptProduct receiptProduct = new ReceiptProduct(
-                product.getName(),
-                product.getCategory(),
-                product.getDescription(),
-                storeName,
-                bid.getAmount(),
-                (int) bid.getBidPrice()
+                    product.getName(),
+                    product.getCategory(),
+                    product.getDescription(),
+                    storeName,
+                    bid.getAmount(),
+                    (int) bid.getBidPrice()
             );
 
             storeToProducts.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
@@ -223,13 +221,15 @@ public class Purchase {
 
         createReceiptsPerStore(storeToProducts, userId);
     }
-        
+
     public void processBids(int userId) throws Exception {
         List<SingleBid> acceptedBids = userRepo.getWinningBids(userId);
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
 
         for (SingleBid bid : acceptedBids) {
-            if (bid.getType() != SpecialType.BID) continue;
+            if (bid.getType() != SpecialType.BID) {
+                continue;
+            }
 
             Store store = storeRepository.findStoreByID(bid.getStoreId());
             if (store == null) {
@@ -247,12 +247,12 @@ public class Purchase {
             String storeName = storeRepository.getStoreNameById(bid.getStoreId());
 
             ReceiptProduct receiptProduct = new ReceiptProduct(
-                product.getName(),
-                product.getCategory(),
-                product.getDescription(),
-                storeName,
-                bid.getAmount(),
-                (int) bid.getBidPrice()
+                    product.getName(),
+                    product.getCategory(),
+                    product.getDescription(),
+                    storeName,
+                    bid.getAmount(),
+                    (int) bid.getBidPrice()
             );
 
             storeToProducts.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
@@ -261,11 +261,9 @@ public class Purchase {
             System.out.println("Bid product " + product.getName() + " supplied to user " + userId);
         }
 
-    createReceiptsPerStore(storeToProducts, userId);
+        createReceiptsPerStore(storeToProducts, userId);
     }
 
-
-    
     private void createReceiptsPerStore(Map<Integer, List<ReceiptProduct>> storeToProducts, int userId) throws Exception {
         for (Map.Entry<Integer, List<ReceiptProduct>> entry : storeToProducts.entrySet()) {
             int storeId = entry.getKey();
@@ -273,19 +271,11 @@ public class Purchase {
             List<ReceiptProduct> products = entry.getValue();
             String date = LocalDate.now().toString();
             double finalPrice = products.stream().mapToInt(ReceiptProduct::getPrice).sum();
-    
+
             ReceiptDTO receipt = new ReceiptDTO(storeName, date, products, finalPrice);
             orderRepository.setOrderToStore(storeId, userId, receipt, storeName);
         }
-    
+
     }
 
-
 }
-
-
-
-    
-    
-
-

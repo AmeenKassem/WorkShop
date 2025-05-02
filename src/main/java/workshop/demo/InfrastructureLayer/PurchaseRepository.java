@@ -7,8 +7,14 @@ import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 
 public class PurchaseRepository implements IPurchaseRepo {
 
-    private final Map<Integer, List<SingleBid>> bidsByUser = new HashMap<>(); //userId -> List of bids
-    private final Map<Integer, List<ParticipationInRandomDTO>> randomParticipationByUser = new HashMap<>(); //userId -> List of random participations
+    private final Map<Integer, List<SingleBid>> bidsByUser;
+    private final Map<Integer, List<ParticipationInRandomDTO>> randomParticipationByUser;
+
+    public PurchaseRepository() {
+        this.bidsByUser = new HashMap<>(); //userId -> List of bids
+        this.randomParticipationByUser = new HashMap<>(); //userId -> List of random participations
+
+    }
 
     @Override
     public void saveBid(SingleBid bid) {
@@ -32,7 +38,7 @@ public class PurchaseRepository implements IPurchaseRepo {
     public List<SingleBid> getWinningBidsByUser(int userId) {
         return bidsByUser.getOrDefault(userId, Collections.emptyList())
                 .stream()
-                .filter(SingleBid::isWinner) 
+                .filter(SingleBid::isWinner)
                 .toList();
     }
 
