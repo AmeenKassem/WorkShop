@@ -55,7 +55,7 @@ public class PurchaseService {
         }
 
 
-        Purchase purchase = new Purchase(shoppingCart, stockRepo, storeRepo, purchaseRepo, userRepo);
+        Purchase purchase = new Purchase(shoppingCart, stockRepo, storeRepo,orderRepo, userRepo);
         return purchase.processRegularPurchase(true, userId);
     }
 
