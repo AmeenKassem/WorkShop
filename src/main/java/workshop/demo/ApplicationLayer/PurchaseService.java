@@ -9,6 +9,7 @@ import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.Purchase;
 import workshop.demo.DomainLayer.User.IUserRepo;
@@ -61,7 +62,7 @@ public class PurchaseService {
             throw new UIException("");
         }
 
-        Purchase purchase = new Purchase(shoppingCart, stockRepo, storeRepo, orderRepo, userRepo);
+        Purchase purchase = new Purchase(cart, stockRepo, storeRepo, orderRepo, userRepo);
         return purchase.processRegularPurchase(true, ownerId);
     }
 

@@ -9,7 +9,7 @@ import workshop.demo.DTOs.SingleBid;
 
 public interface IPurchaseRepo {
 
-    public List<ReceiptProduct> pay(List<ItemCartDTO> items );
+    // public List<ReceiptProduct> pay(List<ItemCartDTO> items );
 
     // public List<ReceiptProduct> pay(List<ItemCartDTO> items );
 
