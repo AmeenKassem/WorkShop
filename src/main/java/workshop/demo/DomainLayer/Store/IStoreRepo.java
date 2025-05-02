@@ -5,12 +5,14 @@ import java.util.List;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public interface IStoreRepo {
@@ -55,17 +57,24 @@ public interface IStoreRepo {
 
     void updatePrice(int storeId, int productId, int newPrice) throws Exception;
 
-    void rankProduct(int storeId, int productId, int newRank) throws Exception;
-
-    void rankStore(int storeId, int newRank) throws Exception;
-
-    int getFinalRateInStore(int storeId) throws Exception;
-
-    List<Store> getStores();
-
+    public void rankProduct(int storeId, int productId, int newRank) throws Exception;
+    
+    //STORE RANK:
+    public void rankStore(int storeId, int newRank) throws Exception;
+    
+    public int getFinalRateInStore(int storeId) throws Exception;
+    
+    public List<Store> getStores();
+    
     String getStoreNameById(int storeId);
-
-    SingleBid bidOnAuction(int StoreId, int userId, int auctionId, double price) throws Exception;
+    
+    public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts);
+    //another: getting info about the owners and manager->4.11
+    //another: messages to response->4.12
+    //another: getting info about the history of purcheses in a specific store
+    //auction:
+    //done
+    public SingleBid bidOnAuction(int StoreId, int userId, int auctionId, double price) throws Exception;
 
     int addAuctionToStore(int StoreId, int userId, int productId, int quantity, long tome, double startPrice) throws Exception;
 
@@ -83,9 +92,11 @@ public interface IStoreRepo {
 
     int addProductToRandom(int userId, int productId, int quantity, double productPrice, int storeId, long RandomTime) throws Exception;
 
-    ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid) throws Exception;
+    ParticipationInRandomDTO participateInRandom(int userId, int randomId,  int storeId, double amountPaid) throws Exception;
 
-    ParticipationInRandomDTO endRandom(int storeId, int userId, int randomId) throws Exception;
+    // ParticipationInRandomDTO endRandom(int storeId, int userId, int randomId) throws Exception; 
+
+    // public ParticipationInRandomDTO endRandom(int storeId,int userId,int randomId) throws Exception;
 
     RandomDTO[] getRandomsInStore(int storeId, int userId) throws Exception;
 

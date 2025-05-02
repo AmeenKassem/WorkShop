@@ -7,15 +7,10 @@ import workshop.demo.DTOs.*;
 
 public interface IStockRepo {
 
-    int addProduct(String name, Category category, String description) throws Exception; // Adds a global product
-    String removeProduct(int productID);
+    int addProduct(String name, Category category, String description,String[] keywords) throws Exception; // Adds a global product
+    // String removeProduct(int productID);
     Product findById(int productId);  
-    ProductDTO[] getAllProducts();
-    ProductDTO[] searchByName(String name);
-    ProductDTO[] searchByCategory(Category category);
-    ProductDTO[] searchByKeyword(String keywordFilter);
-    List<ItemStoreDTO> getItemsByStoreId(int storeId) throws Exception;
-    List<ItemStoreDTO> getItemsByProductId(int productId) throws Exception;
-    boolean checkAvilability(List<ItemCartDTO> cart);
+    public ProductDTO[] getMatchesProducts(ProductSearchCriteria filter);
+
 }
 
