@@ -78,4 +78,12 @@ public class SingleBid {
     public int getStoreId() {
         return this.storeId;
     }
+
+    public boolean isAccepted() {
+        return this.status == Status.BID_ACCEPTED;
+    }
+    
+    public boolean isWinner() {
+        return this.status == Status.AUCTION_WON || this.status == Status.BID_ACCEPTED;
+    }
 }

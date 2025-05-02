@@ -18,6 +18,7 @@ import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
+import workshop.demo.DomainLayer.User.ShoppingCart;
 
 public class UserRepository implements IUserRepo {
 
@@ -214,8 +215,36 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public List<ItemCartDTO> getCartForUser(int ownerId) {
-       return guests.get(ownerId).getCart();
+public ShoppingCart getUserCart(int userId) {
+    if (guests.containsKey(userId)) {
+        return guests.get(userId).getCart();
     }
+
+    Registered registered = getRegisteredUser(userId);
+    if (registered != null) {
+        return registered.getCart();
+    }
+
+    throw new UserIdNotFound("User with ID " + userId + " not found");
+}
+
+    @Override
+public ShoppingCart getUserCart(int userId) {
+    if (guests.containsKey(userId)) {
+        return guests.get(userId).getCart();
+    }
+
+    Registered registered = getRegisteredUser(userId);
+    if (registered != null) {
+        return registered.getCart();
+    }
+
+    throw new UserIdNotFound("User with ID " + userId + " not found");
+}
+
+    // @Override
+    // public List<ItemCartDTO> getCartForUser(int ownerId) {
+    //    return guests.get(ownerId).getCart();
+    // }
 
 }

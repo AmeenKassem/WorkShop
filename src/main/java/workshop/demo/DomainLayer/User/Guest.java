@@ -34,5 +34,9 @@ public class Guest {
         return cart.getAllCart();
     }
 
+    public ShoppingCart getCart() {
+        return cart;
+    }
+
     
 }
