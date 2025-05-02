@@ -47,7 +47,7 @@ public class ParticipationInRandomDTO {
     return ended && isWinner;
    }
 
-<<<<<<< HEAD:src/main/java/workshop/demo/DTOs/CardForRandomDTO.java
+// <<<<<<< HEAD:src/main/java/workshop/demo/DTOs/CardForRandomDTO.java
    public int getProductId() {
       return productId;
   }
@@ -56,10 +56,10 @@ public class ParticipationInRandomDTO {
    return storeId;
 }
 
-=======
+// =======
    public int getUserId() {
       return userId;
    }
->>>>>>> syncBhaa:src/main/java/workshop/demo/DTOs/ParticipationInRandomDTO.java
+// >>>>>>> syncBhaa:src/main/java/workshop/demo/DTOs/ParticipationInRandomDTO.java
    
 }

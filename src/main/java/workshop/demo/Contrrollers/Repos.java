@@ -18,6 +18,6 @@ public class Repos {
     public AuthenticationRepo auth = new AuthenticationRepo();
     public INotificationRepo notificationRepo;
     public IOrderRepo orderRepo;
-    public IStockRepo stockrepo=new StockRepository(storeRepo)  ;
+    public IStockRepo stockrepo=new StockRepository();
 
 }

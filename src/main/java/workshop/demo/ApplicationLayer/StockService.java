@@ -11,7 +11,7 @@ import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.User.IUserRepo;
-import workshop.demo.DomainLayer.Stock.ProductFilter;
+// import workshop.demo.DomainLayer.Stock.ProductFilter;
 
 public class StockService {
 
