@@ -34,7 +34,7 @@ public class Purchase {
     private final IUserRepo userRepo;
     private final IStockRepo stockRepository;
 
-    public Purchase(ShoppingCart shoppingCart, IStockRepo stockRepository,
+    public Purchase( ShoppingCart shoppingCart,IStockRepo stockRepository,
                     StoreRepository storeRepository, OrderRepository orderRepository, IUserRepo userRepo) {
         this.shoppingCart = shoppingCart;
         this.storeRepository = storeRepository;
@@ -42,6 +42,11 @@ public class Purchase {
         this.userRepo = userRepo;
         this.stockRepository = stockRepository;
     }
+
+    // public Purchase(ShoppingCart shoppingCart2, IStockRepo stockRepo, IStoreRepo storeRepo, IPurchaseRepo purchaseRepo,
+    //         IUserRepo userRepo2) {
+    //     //TODO Auto-generated constructor stub
+    // }
 
     private void mockPayment(CartItem item) {
         System.out.println("Payment successful for: " + item.getProductId());

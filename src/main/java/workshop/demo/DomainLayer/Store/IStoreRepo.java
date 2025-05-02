@@ -38,7 +38,7 @@ public interface IStoreRepo {
 
     List<Integer> closeStore(int storeId) throws Exception;
 
-    boolean checkAvilability() throws Exception;
+    // boolean checkAvilability() throws Exception;
 
 
     List<ItemStoreDTO> getProductsInStore(int storeId) throws Exception;

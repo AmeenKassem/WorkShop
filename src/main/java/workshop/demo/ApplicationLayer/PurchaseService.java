@@ -44,13 +44,14 @@ public class PurchaseService {
         }
 
         int userId = authRepo.getUserId(token);
-        List<ItemCartDTO> cart = userRepo.getCartForUser(userId);
+        ShoppingCart shoppingCart = userRepo.getUserCart(userId);
 
-        if (!stockRepo.checkAvilability(cart)) {
-            throw new UIException("Some products in the cart are not available.");
+        if (shoppingCart == null) {
+            throw new Exception("Shopping cart not found for user.");
         }
 
-        Purchase purchase = new Purchase(cart, stockRepo, storeRepo, purchaseRepo, userRepo);
+
+        Purchase purchase = new Purchase(shoppingCart, stockRepo, storeRepo, purchaseRepo, userRepo);
         return purchase.processRegularPurchase(true, userId);
     }
     
