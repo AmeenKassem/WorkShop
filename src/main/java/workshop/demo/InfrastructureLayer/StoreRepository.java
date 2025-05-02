@@ -1,7 +1,5 @@
 package workshop.demo.InfrastructureLayer;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,7 +25,6 @@ import workshop.demo.DomainLayer.Store.item;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
-import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 
 public class StoreRepository implements IStoreRepo {
 
@@ -561,6 +558,15 @@ public class StoreRepository implements IStoreRepo {
             }
         }
         return true;
+    }
+
+    @Override
+    public item getItemByStoreAndProductId(int storeId, int productId) throws Exception {
+        Store store = findStoreByID(storeId);
+        if (store == null) {
+            throw new Exception("Store with ID " + storeId + " not found.");
+        }
+        return store.getItemByProductId(productId);
     }
 
 }
