@@ -2,7 +2,6 @@ package workshop.demo.DomainLayer.Store;
 
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -26,7 +25,6 @@ public class Random {
     private Object lock = new Object();
     private Timer timer;
     private boolean isActive = true;
-
     private static AtomicInteger idGen=new AtomicInteger();
     
     
@@ -152,5 +150,7 @@ public class Random {
     public double getAmountLeft() {
         return amountLeft;
     }
+
+    
     
 }

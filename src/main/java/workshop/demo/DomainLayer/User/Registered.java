@@ -133,6 +133,7 @@ public class Registered extends Guest {
         }
         return bidsResult;
     }
+    
 
 
 

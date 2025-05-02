@@ -1,5 +1,7 @@
 package workshop.demo.ApplicationLayer;
 
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.TokenNotFoundException;
 import workshop.demo.DomainLayer.User.IUserRepo;
@@ -58,5 +60,13 @@ public class UserService {
             return userRepo.setUserAsAdmin(id, adminKey);
         }else 
             throw new TokenNotFoundException();
+    }
+
+    public boolean addToUserCart(String token , ItemStoreDTO itemToAdd) throws Exception {
+        if(!authRepo.validToken(token)) 
+            throw new TokenNotFoundException();
+        ItemCartDTO item = new ItemCartDTO(itemToAdd);
+        userRepo.addItemToGeustCart(authRepo.getUserId(token), item);
+        return true;
     }
 }

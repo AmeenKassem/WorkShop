@@ -403,18 +403,18 @@ public class StoreService {
         }
     }
 
-    public void decreaseQtoBuy(int storeId, String token, int productId) throws Exception {
-        try {
-            logger.info("about to to decrease quantity to buy an item from store: {}", storeId);
-            if (!authRepo.validToken(token)) {//this token is for the buyer
-                throw new Exception("unvalid token!");
-            }
-            this.storeRepo.decreaseQtoBuy(storeId, productId);
-            logger.info("quantity decresed successfully!");
-        } catch (Exception e) {
-            logger.error("could not decreased ", e.getMessage());
-        }
-    }
+    // public void decreaseQtoBuy(int storeId, String token, int productId) throws Exception {
+    //     try {
+    //         logger.info("about to to decrease quantity to buy an item from store: {}", storeId);
+    //         if (!authRepo.validToken(token)) {//this token is for the buyer
+    //             throw new Exception("unvalid token!");
+    //         }
+    //         this.storeRepo.decreaseQtoBuy(storeId, productId, productId);
+    //         logger.info("quantity decresed successfully!");
+    //     } catch (Exception e) {
+    //         logger.error("could not decreased ", e.getMessage());
+    //     }
+    // }
 
     public void updateQuantity(int storeId, String token, int productId) throws Exception {
         try {

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DomainLayer.Exceptions.ProductNotFoundException;
@@ -14,6 +15,7 @@ import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.Store.item;
 
 public class StockRepository implements IStockRepo {
 

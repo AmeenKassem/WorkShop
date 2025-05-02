@@ -1,5 +1,7 @@
 package workshop.demo.DomainLayer.User;
 
+import java.util.List;
+
 import workshop.demo.DTOs.ItemCartDTO;
 
 public class Guest {
@@ -16,7 +18,7 @@ public class Guest {
         return id;
     }
 
-    public void addToCart(int storeId, CartItem item) {
+    public void addToCart(int storeId, ItemCartDTO item) {
         cart.addItem(storeId,item);
     }
 
@@ -25,8 +27,15 @@ public class Guest {
     }
 
     public void addToCart(ItemCartDTO item) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addToCart'");
+        cart.addItem(item.storeId, item);
+    }
+
+    public List<ItemCartDTO> getCart() {
+        return cart.getAllCart();
+    }
+
+    public ShoppingCart geCart() {
+        return cart;
     }
 
     

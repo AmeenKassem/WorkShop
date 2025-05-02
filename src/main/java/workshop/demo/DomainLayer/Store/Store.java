@@ -124,12 +124,12 @@ public class Store {
     }
 
     //decrase quantity to buy: -> check if I need synchronized the item???
-    public void decreaseQtoBuy(int itemId) throws Exception {
+    public void decreaseQtoBuy(int itemId,int quantity) throws Exception {
         item foundItem = getItemByProductId(itemId);
         if (foundItem == null) {
             throw new Exception("Item not fount with ID " + itemId);
         }
-        foundItem.changeQuantity(foundItem.getQuantity() - 1);
+        foundItem.changeQuantity(foundItem.getQuantity() - quantity);
     }
 
     // update price
@@ -331,4 +331,12 @@ public class Store {
     //     activePurchases.rejectBid(userBidId,bidId);
     //     return true;
     // }
+// <<<<<<< HEAD
+// =======
+
+    public Random getRandom(int randomId) throws Exception {
+        return activePurchases.getRandom(randomId);
+    }
+
+// >>>>>>> development
 }
