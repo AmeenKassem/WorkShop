@@ -69,8 +69,6 @@ public class Purchase {
 
     public List<ReceiptDTO> processRegularPurchase(boolean isGuest, int userId) throws Exception {
         List<ReceiptDTO> receipts = new ArrayList<>();
-
-        
         if (isGuest && !allProductsAvailable()) {
             throw new Exception("Guest purchase failed: Not all products are available.");
         }
