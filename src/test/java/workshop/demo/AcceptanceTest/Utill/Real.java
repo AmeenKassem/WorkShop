@@ -15,6 +15,7 @@ import workshop.demo.DTOs.Category;
 import workshop.demo.DomainLayer.Stock.ProductFilter;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
 import workshop.demo.InfrastructureLayer.OrderRepository;
@@ -44,6 +45,7 @@ public class Real implements Bridge {
         Mockito.when(mockAuthRepo.validToken(Mockito.anyString())).thenReturn(true);
         Mockito.when(mockUserRepo.isRegistered(anyInt())).thenReturn(true);
         Mockito.when(mockUserRepo.isOnline(anyInt())).thenReturn(true);
+        Mockito.when(mockCartRepo.getCart(Mockito.anyInt())).thenReturn(new ShoppingCart());
 
     }
 

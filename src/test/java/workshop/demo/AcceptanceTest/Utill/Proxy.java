@@ -324,4 +324,8 @@ public class Proxy implements Bridge {
     public String testAdmin_ViewSystemInfo(String token) throws Exception {
         return real.testAdmin_ViewSystemInfo(token);
     }
+
+    public Real getReal() {
+        return real;
+    }
 }
