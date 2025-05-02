@@ -28,9 +28,12 @@ public class StockService {
 
     public ItemStoreDTO[] searchProducts(String token, ProductSearchCriteria criteria) throws Exception {
         logger.info("Starting searchProducts with criteria: {}", criteria);
-        
         if (!authRepo.validToken(token)) {
             logger.warn("Invalid token during searchProducts");
+        if (authRepo.validToken(token)) {
+            ProductDTO[] matchesProducts = stockRepo.getMatchesProducts(criteria);
+            return storeRepo.getMatchesItems(criteria, matchesProducts);
+        } else {
             throw new TokenNotFoundException();
         }
 
@@ -49,7 +52,6 @@ public class StockService {
             logger.warn("Unauthorized access to searchProductInStore with token: {}", token);
             throw new TokenNotFoundException();
         }
-
         Product product = stockRepo.findById(productId);
         if (product == null) {
             logger.error("Product not found with ID: {}", productId);
@@ -91,5 +93,7 @@ public class StockService {
 
         logger.info("Successfully retrieved product info: {}", dto.getName());
         return dto;
+       
     }
+    
 }

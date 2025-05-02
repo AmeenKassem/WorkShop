@@ -30,9 +30,9 @@ public class StockRepository implements IStockRepo {
     }
 
     @Override
-    public int addProduct(String name, Category category, String description,String[] keywords) throws Exception {
+    public int addProduct(String name, Category category, String description, String[] keywords) throws Exception {
         int id = idGen.getAndIncrement();
-        Product product = new Product(name, id, category, description,keywords);
+        Product product = new Product(name, id, category, description, keywords);
         idToProduct.put(id, product);
 
         categoryToProductId.computeIfAbsent(category, k -> new ArrayList<>()).add(id);
@@ -73,6 +73,12 @@ public class StockRepository implements IStockRepo {
         }
 
         return res.toArray(new ProductDTO[0]);
+    }
+
+    @Override
+    public ProductDTO GetProductInfo(int productId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'GetProductInfo'");
     }
 
 }

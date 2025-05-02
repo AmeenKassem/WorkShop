@@ -12,6 +12,6 @@ public class HistoryController {
     private OrderService orderService;
 
     public HistoryController(Repos repo) {
-        this.orderService = new OrderService(repo.orderRepo, repo.storeRepo);
+        this.orderService = new OrderService(repo.orderRepo, repo.storeRepo, repo.auth, repo.userRepo);
     }
 }
