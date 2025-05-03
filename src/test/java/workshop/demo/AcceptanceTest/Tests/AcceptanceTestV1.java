@@ -370,6 +370,7 @@ public class AcceptanceTestV1 extends AcceptanceTests {
         testUser_LogIn(newAdmin, "newAdmin", "pass456");
 
         String result = testUser_setAdmin(admin, "newAdmin");
+        System.out.println(result);
         //Returns false instead of true, I guess because of the way he is registered, needs checking
         assertTrue(result.equals("Done") || result.equals("TODO"));
     }
@@ -421,7 +422,7 @@ public class AcceptanceTestV1 extends AcceptanceTests {
         testOwner_ManageInventory_AddProduct(1, owner, 10, 10, 300, category);
         String addResult = testGuest_AddProductToCart("789789", 1, 10, 1);
         assertTrue(addResult.equals("Done") || addResult.equals("TODO"));
-        //Shopping cart doesn't exisit, throws an exception...
+        //Shopping cart doesn't exist, throws an exception...
         String buyResult = testUser_BuyCart("789789");
         assertTrue(buyResult.equals("Done") || buyResult.equals("TODO"));
     }
@@ -702,6 +703,7 @@ public class AcceptanceTestV1 extends AcceptanceTests {
         testGuest_Register("1591591", "storeOwner", "pass123", 30);
         testUser_LogIn("1591591", "storeOwner", "pass123");
         testUser_OpenStore("1591591", "BidStore", "Fashion");
+        testOwner_ManageInventory_AddProduct(1,"1591591",1,1,1,Category.ELECTRONICS);
         //The function testOwner_AcceptBid has an exception because in storeService.acceptBid -> winner is null,
         // why? because storeRepo.acceptBid returns null, Bear in mind that it doesn't throw an exception yet still returns null
         String result = testOwner_AcceptBid("1591591", 1, 11, 1);
@@ -801,7 +803,7 @@ public class AcceptanceTestV1 extends AcceptanceTests {
         testUser_LogIn(outsider, "outsider", "outPass");
 
         String result = testOwner_ManageInventory_AddProduct(storeId, outsider, productId, 5, 100, category);
-        //Returns false instead of true , and the message of the exception also isn't the same
+        System.out.println("Hmode is -> "+result);
         assertFalse(result.equals("Done"), "Unauthorized user should not be able to manage inventory");
     }
 }
