@@ -91,5 +91,26 @@ public class OrderRepository implements IOrderRepo {
         return toReturn;
 
     }
+    @Override
+    public List<OrderDTO> getOrderDTOsByUserId(int userId) throws Exception {
+        List<OrderDTO> toReturn = new ArrayList<>();
+
+        for (Integer storeId : history.keySet()) {
+            List<Order> orders = history.get(storeId);
+            for (Order order : orders) {
+                if (order.getUserId() == userId) {
+                    OrderDTO dto = new OrderDTO(
+                            userId,
+                            storeId,
+                            order.getDate(),
+                            order.getProductsList(),
+                            order.getFinalPrice()
+                    );
+                    toReturn.add(dto);
+                }
+            }
+        }
+        return toReturn;
+    }
 
 }

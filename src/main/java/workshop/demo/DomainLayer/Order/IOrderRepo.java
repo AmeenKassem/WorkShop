@@ -15,4 +15,6 @@ public interface IOrderRepo {
 
     public List<OrderDTO> getAllOrdersInSystem() throws Exception;
 
+    public List<OrderDTO> getOrderDTOsByUserId(int userId) throws Exception;
+
 }
