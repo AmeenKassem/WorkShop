@@ -37,6 +37,7 @@ public class StockService {
 
         if (!authRepo.validToken(token)) {
             logger.error("Invalid token during searchProducts");
+            logger.warn("Invalid token during searchProducts");
             throw new TokenNotFoundException();
         }
 
@@ -53,8 +54,10 @@ public class StockService {
         logger.info("Searching for productId {} in storeId {}", productId, storeId);
         if (!authRepo.validToken(token)) {
             logger.error("Unauthorized access to searchProductInStore with token: {}", token);
+            logger.warn("Unauthorized access to searchProductInStore with token: {}", token);
             throw new TokenNotFoundException();
         }
+
         Product product = stockRepo.findById(productId);
         if (product == null) {
             logger.error("Product not found with ID: {}", productId);
