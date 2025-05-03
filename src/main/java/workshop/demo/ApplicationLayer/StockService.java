@@ -36,7 +36,7 @@ public class StockService {
         logger.info("Starting searchProducts with criteria: {}", criteria);
 
         if (!authRepo.validToken(token)) {
-            logger.warn("Invalid token during searchProducts");
+            logger.error("Invalid token during searchProducts");
             throw new TokenNotFoundException();
         }
 
@@ -52,48 +52,39 @@ public class StockService {
     public String searchProductInStore(String token, int storeId, int productId) throws Exception {
         logger.info("Searching for productId {} in storeId {}", productId, storeId);
         if (!authRepo.validToken(token)) {
-            logger.warn("Unauthorized access to searchProductInStore with token: {}", token);
+            logger.error("Unauthorized access to searchProductInStore with token: {}", token);
             throw new TokenNotFoundException();
         }
-
         Product product = stockRepo.findById(productId);
         if (product == null) {
             logger.error("Product not found with ID: {}", productId);
             throw new Exception("Product not found");
         }
-
         item itemInStore = storeRepo.getItemByStoreAndProductId(storeId, productId);
         if (itemInStore == null) {
             logger.warn("Product {} not sold in store {}", productId, storeId);
             throw new Exception("Product not sold in this store");
         }
-
         String storeName = storeRepo.getStoreNameById(storeId);
         logger.info("Product {} found in store {} (ID {})", product.getName(), storeName, storeId);
 
         return "Product: " + product.getName() + ", Price: " + itemInStore.getPrice() + ", Store: " + storeName;
     }
 
+    
     public ProductDTO getProductInfo(String token, int productId) throws Exception {
         logger.info("Fetching product info for ID {}", productId);
+    
         if (!authRepo.validToken(token)) {
-            logger.warn("Invalid token used to get product info for ID {}", productId);
+            logger.error("Invalid token used to get product info for ID {}", productId);
             throw new TokenNotFoundException();
         }
-
-        Product product = stockRepo.findById(productId);
-        if (product == null) {
+    
+        ProductDTO dto = stockRepo.GetProductInfo(productId);
+        if (dto == null) {
             logger.error("Product not found for ID {}", productId);
             throw new Exception("Product not found.");
         }
-
-        ProductDTO dto = new ProductDTO(
-            product.getProductId(),
-            product.getName(),
-            product.getCategory(),
-            product.getDescription()
-        );
-
         logger.info("Successfully retrieved product info: {}", dto.getName());
         return dto;
     }
