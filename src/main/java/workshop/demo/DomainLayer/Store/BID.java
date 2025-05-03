@@ -72,6 +72,7 @@ public class BID {
                 else bids.get(id).rejectBid();
             }
             if(!bids.containsKey(userBidId)||winner==null){
+                System.out.println("Hmoda");
                 throw new DevException("trying to accept bid for unfound id.");
             }
             isAccepted=true;

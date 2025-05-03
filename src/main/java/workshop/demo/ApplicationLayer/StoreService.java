@@ -42,6 +42,7 @@ public class StoreService {
         this.notiRepo = notiRepo;
         this.authRepo = authRepo;
         this.orderRepo = orderRepo;
+        this.userRepo = userRepo;
         logger.info("created the StoreService");
     }
 
