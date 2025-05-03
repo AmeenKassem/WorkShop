@@ -77,8 +77,17 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public ProductDTO GetProductInfo(int productId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'GetProductInfo'");
+        Product product = idToProduct.get(productId); // assuming you have a HashMap<Integer, Product> products;
+        if (product == null) {
+            return null;
+        }
+        return new ProductDTO(
+            product.getProductId(),
+            product.getName(),
+            product.getCategory(),
+            product.getDescription()
+        );
     }
+    
 
 }
