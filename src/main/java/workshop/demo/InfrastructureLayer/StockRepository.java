@@ -77,7 +77,7 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public ProductDTO GetProductInfo(int productId) {
-        Product product = idToProduct.get(productId); // assuming you have a HashMap<Integer, Product> products;
+        Product product = idToProduct.get(productId); 
         if (product == null) {
             return null;
         }
