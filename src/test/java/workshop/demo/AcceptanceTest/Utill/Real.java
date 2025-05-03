@@ -3,25 +3,22 @@ package workshop.demo.AcceptanceTest.Utill;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyInt;
+
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import workshop.demo.ApplicationLayer.NotificationService;
 import workshop.demo.ApplicationLayer.PurchaseService;
-import workshop.demo.ApplicationLayer.ShoppingCartRepo;
+//import workshop.demo.ApplicationLayer.ShoppingCartRepo;
 import workshop.demo.ApplicationLayer.StockService;
 import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.Category;
-import workshop.demo.DomainLayer.Stock.ProductFilter;
+//import workshop.demo.DomainLayer.Stock.ProductFilter;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.ShoppingCart;
-import workshop.demo.InfrastructureLayer.AuthenticationRepo;
-import workshop.demo.InfrastructureLayer.NotificationRepository;
-import workshop.demo.InfrastructureLayer.OrderRepository;
-import workshop.demo.InfrastructureLayer.StockRepository;
-import workshop.demo.InfrastructureLayer.StoreRepository;
-import workshop.demo.InfrastructureLayer.UserRepository;
+import workshop.demo.InfrastructureLayer.*;
 
 public class Real implements Bridge {
     AuthenticationRepo mockAuthRepo = Mockito.mock(AuthenticationRepo.class);
@@ -29,23 +26,31 @@ public class Real implements Bridge {
     StoreRepository mockStoreRepo = Mockito.mock(StoreRepository.class);
     NotificationRepository mockNotiRepo = Mockito.mock(NotificationRepository.class);
     OrderRepository mockOrderRepo = Mockito.mock(OrderRepository.class);
+    //Ameen
+    PurchaseRepository mockPurchaseRepo = Mockito.mock(PurchaseRepository.class);
     StockRepository mockStockRepo = Mockito.mock(StockRepository.class);
-    ProductFilter mockProductFilter = Mockito.mock(ProductFilter.class);
-    ShoppingCartRepo mockCartRepo = Mockito.mock(ShoppingCartRepo.class);
 
-    StockService stockService = new StockService(mockStockRepo, mockUserRepo, mockAuthRepo, mockProductFilter);
+    //ProductFilter mockProductFilter = Mockito.mock(ProductFilter.class);
+    //ShoppingCartRepo mockCartRepo = Mockito.mock(ShoppingCartRepo.class);
+
+    //StockService stockService = new StockService(mockStockRepo, mockUserRepo, mockAuthRepo, mockProductFilter);
+    //Ameen
+    StockService stockService = new StockService(mockStockRepo, mockStoreRepo, mockAuthRepo);
     UserService userService = new UserService(mockUserRepo, mockAuthRepo);
     StoreService storeService = new StoreService(mockStoreRepo, mockNotiRepo, mockAuthRepo, mockUserRepo,
             mockOrderRepo);
     NotificationService notificationService = new NotificationService(mockNotiRepo, mockUserRepo);
-    PurchaseService purchaseService = new PurchaseService(mockAuthRepo, mockStockRepo, mockStoreRepo, mockCartRepo,
-            mockOrderRepo);
+    //PurchaseService purchaseService = new PurchaseService(mockAuthRepo, mockStockRepo, mockStoreRepo, mockCartRepo,
+    //            mockOrderRepo);
+    //Ameen
+    PurchaseService purchaseService = new PurchaseService(mockAuthRepo, mockStockRepo, mockStoreRepo, mockUserRepo,
+            mockPurchaseRepo,mockOrderRepo);
 
     public Real() {
         Mockito.when(mockAuthRepo.validToken(Mockito.anyString())).thenReturn(true);
         Mockito.when(mockUserRepo.isRegistered(anyInt())).thenReturn(true);
         Mockito.when(mockUserRepo.isOnline(anyInt())).thenReturn(true);
-        Mockito.when(mockCartRepo.getCart(Mockito.anyInt())).thenReturn(new ShoppingCart());
+        //Mockito.when(mockCartRepo.getCart(Mockito.anyInt())).thenReturn(new ShoppingCart());
 
     }
 
@@ -131,7 +136,7 @@ public class Real implements Bridge {
     @Override
     public String testGuest_ModifyCartAddQToBuy(int storeId, String token, int productId) throws Exception {
         // return stockService.modifyCart(token, cartID);
-        storeService.decreaseQtoBuy(storeId, token, productId);
+        storeService.updateQuantity(storeId, token, productId);
         return "Done";
 
     }
@@ -279,7 +284,7 @@ public class Real implements Bridge {
     //////////////////////////// Owner ////////////////////////////
     @Override
     public String testOwner_ManageInventory_AddProduct(int storeId, String token, int productId, int quantity,
-            int price, Category category)
+                                                       int price, Category category)
             throws Exception {
         storeService.addItem(storeId, token, productId, quantity, price, category);
         return "Done";
@@ -333,7 +338,7 @@ public class Real implements Bridge {
 
     @Override
     public String testOwner_EditManagerPermissions(String token, int managerId, int storeID,
-            List<Permission> autorization) throws Exception {
+                                                   List<Permission> autorization) throws Exception {
         storeService.changePermissions(token, managerId, storeID, autorization);
         return "Done";
     }
@@ -386,7 +391,7 @@ public class Real implements Bridge {
 
     @Override
     public String testOwner_addProductToAucation(String token, int id, int productId, int quantity, long time,
-            double startPrice)
+                                                 double startPrice)
             throws Exception {
         storeService.setProductToAuction(token, id, productId, quantity, time, startPrice);
         return "Done";
@@ -422,9 +427,9 @@ public class Real implements Bridge {
 
     @Override
     public String testOwner_addProductToRandom(String token, int storeId, int quantity, int productId,
-            int numberOfCards, double priceForCard)
+                                               int numberOfCards, double priceForCard)
             throws Exception {
-        storeService.setProductToRandom(token, storeId, quantity, productId, numberOfCards, priceForCard);
+        storeService.setProductToRandom(token, storeId, quantity, productId, numberOfCards, (long)priceForCard);
         return "Done";
     }
 
