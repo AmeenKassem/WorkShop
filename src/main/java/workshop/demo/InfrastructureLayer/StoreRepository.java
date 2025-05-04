@@ -33,7 +33,7 @@ public class StoreRepository implements IStoreRepo {
 
     private final List<Store> stores;
     private final SuperDataStructure data;
-    //switch it when use database!!
+    // switch it when use database!!
     private static final AtomicInteger counterSId = new AtomicInteger(1);
 
     public static int generateId() {
@@ -54,7 +54,7 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public void checkToAdd(int storeID, int ownerID, int newOwnerId) throws Exception {//for owner
+    public void checkToAdd(int storeID, int ownerID, int newOwnerId) throws Exception {// for owner
         try {
             if (findStoreByID(storeID) == null) {
                 throw new Exception("can't add new ownership/managment: store does not exist");
@@ -122,10 +122,12 @@ public class StoreRepository implements IStoreRepo {
     }
 
     // @Override
-    // public void givePermissions(int ownerId, int managerId, int storeID, List<Permission> autorization) throw Exception {
+    // public void givePermissions(int ownerId, int managerId, int storeID,
+    // List<Permission> autorization) throw Exception {
     // }
     @Override
-    public void changePermissions(int ownerId, int managerId, int storeID, List<Permission> autorization) throws Exception {
+    public void changePermissions(int ownerId, int managerId, int storeID, List<Permission> autorization)
+            throws Exception {
         try {
             if (findStoreByID(storeID) == null) {
                 throw new Exception("can't add/change permission: store does not exist");
@@ -204,18 +206,18 @@ public class StoreRepository implements IStoreRepo {
         return null;
     }
 
-    //for tests
+    // for tests
     public SuperDataStructure getData() {
         return this.data;
     }
 
     @Override
-    public List<StoreDTO> viewAllStores() {//here must check it view it with products??
+    public List<StoreDTO> viewAllStores() {// here must check it view it with products??
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'viewAllStores'");
     }
 
-    //stock managment:
+    // stock managment:
     @Override
     public List<ItemStoreDTO> getProductsInStore(int storeId) throws Exception {
         if (findStoreByID(storeId) == null) {
@@ -292,7 +294,7 @@ public class StoreRepository implements IStoreRepo {
         if (Worker == null) {
             throw new Exception("this user is not a worker in this store");
         }
-        //owner is fully authorized:
+        // owner is fully authorized:
         if (!Worker.getIsManager() || Worker.getMyAuth().hasAutho(permission)) {
             return true;
         } else {
@@ -314,7 +316,7 @@ public class StoreRepository implements IStoreRepo {
         }
     }
 
-    //RANK STORE:
+    // RANK STORE:
     @Override
     public void rankStore(int storeId, int newRank) throws Exception {
         Store store = findStoreByID(storeId);
@@ -334,7 +336,7 @@ public class StoreRepository implements IStoreRepo {
 
     }
 
-    //======================================
+    // ======================================
     @Override
     public SingleBid bidOnAuction(int StoreId, int userId, int auctionId, double price) throws Exception {
         if (findStoreByID(StoreId) == null) {
@@ -369,7 +371,7 @@ public class StoreRepository implements IStoreRepo {
         return findStoreByID(storeId).getAllAuctions();
     }
 
-    //=============Bid
+    // =============Bid
     @Override
     public int addProductToBid(int storeId, int userId, int productId, int quantity) throws Exception {
         if (findStoreByID(storeId) == null) {
@@ -426,9 +428,10 @@ public class StoreRepository implements IStoreRepo {
         return findStoreByID(storeId).rejectBid(bidId, userBidId);
     }
 
-    //===================Random
+    // ===================Random
     @Override
-    public int addProductToRandom(int userId, int productId, int quantity, double productPrice, int storeId, long RandomTime) throws Exception {
+    public int addProductToRandom(int userId, int productId, int quantity, double productPrice, int storeId,
+            long RandomTime) throws Exception {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
@@ -439,7 +442,8 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid) throws Exception {
+    public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
+            throws Exception {
         if (findStoreByID(storeId) == null) {
             throw new Exception("can't delete manager: store does not exist.");
         }
@@ -469,10 +473,10 @@ public class StoreRepository implements IStoreRepo {
     }
 
     // public double getPriceForCard(int storeId, int randomId) throws Exception {
-    //     if (findStoreByID(storeId) == null) {
-    //         throw new Exception("can't delete manager: store does not exist.");
-    //     }
-    //     return findStoreByID(storeId).getCardPrice(randomId);
+    // if (findStoreByID(storeId) == null) {
+    // throw new Exception("can't delete manager: store does not exist.");
+    // }
+    // return findStoreByID(storeId).getCardPrice(randomId);
     // }
     public double getPriceForCard(int storeId, int randomId) throws Exception {
         if (findStoreByID(storeId) == null) {
@@ -487,11 +491,12 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-// <<<<<<< HEAD
-    public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) throws Exception {
+    // <<<<<<< HEAD
+    public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts)
+            throws Exception {
         ItemStoreDTO[] toReturn;
         List<ItemStoreDTO> itemList = new LinkedList<>();
-        if (criteria.getStoreId() == -1) {//search in all stores
+        if (criteria.getStoreId() == -1) {// search in all stores
             for (Store store : stores) {
                 List<item> stock = store.getAllItemsInStock();
                 for (item item1 : stock) {
@@ -503,8 +508,7 @@ public class StoreRepository implements IStoreRepo {
                                     item1.getPrice(),
                                     item1.getCategory(),
                                     item1.getFinalRank(),
-                                    store.getStoreID()
-                            );
+                                    store.getStoreID());
                             itemList.add(toAdd);
                             break; // found matching product -> no need to check other products
                         }
@@ -512,7 +516,7 @@ public class StoreRepository implements IStoreRepo {
                 }
             }
 
-        } else {//search in a spicific store 
+        } else {// search in a spicific store
             Store store = findStoreByID(criteria.getStoreId());
             if (store == null) {
                 throw new Exception("store does not exist!");
@@ -520,7 +524,8 @@ public class StoreRepository implements IStoreRepo {
             for (ProductDTO pro : matchesProducts) {
                 item item1 = store.getProductById(pro.getProductId());
                 if (item1 != null && criteria.matchesForStore(item1)) {
-                    ItemStoreDTO toAdd = new ItemStoreDTO(item1.getProductId(), item1.getQuantity(), item1.getPrice(), item1.getCategory(), item1.getFinalRank(), store.getStoreID());
+                    ItemStoreDTO toAdd = new ItemStoreDTO(item1.getProductId(), item1.getQuantity(), item1.getPrice(),
+                            item1.getCategory(), item1.getFinalRank(), store.getStoreID());
                     itemList.add(toAdd);
                 }
             }
@@ -537,7 +542,7 @@ public class StoreRepository implements IStoreRepo {
         return toReturn;
     }
 
-// =======
+    // =======
     public Random getRandomById(int randomId) throws Exception {
         for (Store store : stores) {
             try {
@@ -550,9 +555,11 @@ public class StoreRepository implements IStoreRepo {
     }
 
     // @Override
-    // public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) {
-    //     // TODO Auto-generated method stub
-    //     throw new UnsupportedOperationException("Unimplemented method 'getMatchesItems'");
+    // public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria,
+    // ProductDTO[] matchesProducts) {
+    // // TODO Auto-generated method stub
+    // throw new UnsupportedOperationException("Unimplemented method
+    // 'getMatchesItems'");
     // }
 
     @Override
@@ -570,5 +577,5 @@ public class StoreRepository implements IStoreRepo {
         return true;
     }
 
-// >>>>>>> development
+    // >>>>>>> development
 }
