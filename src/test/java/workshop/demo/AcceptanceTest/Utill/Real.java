@@ -30,11 +30,12 @@ public class Real implements Bridge {
     PurchaseRepository mockPurchaseRepo = Mockito.mock(PurchaseRepository.class);
     StockRepository mockStockRepo = Mockito.mock(StockRepository.class);
     SingleBid mockSingleBid = Mockito.mock(SingleBid.class);
+    //ItemCartDTO mockItemCartDTO = Mockito.mock(ItemCartDTO.class);
     ShoppingCart mockShoppingCart = Mockito.mock(ShoppingCart.class);
     //userRepo.getUserCart(userId);
     //ProductFilter mockProductFilter = Mockito.mock(ProductFilter.class);
     //ShoppingCartRepo mockCartRepo = Mockito.mock(ShoppingCartRepo.class);
-
+    //!storeRepository.checkAvailability(allItems)
     //StockService stockService = new StockService(mockStockRepo, mockUserRepo, mockAuthRepo, mockProductFilter);
     //Ameen
     StockService stockService = new StockService(mockStockRepo, mockStoreRepo, mockAuthRepo);
@@ -66,6 +67,7 @@ public class Real implements Bridge {
             Mockito.when(mockStoreRepo.acceptBid(Mockito.anyInt(),Mockito.anyInt(),
                     Mockito.anyInt(),Mockito.anyInt())).thenReturn(mockSingleBid);
             Mockito.when(mockUserRepo.getUserCart(Mockito.anyInt())).thenReturn(mockShoppingCart);
+            Mockito.when(mockStoreRepo.checkAvailability(Mockito.anyList())).thenReturn(true);
         } catch (Exception e) {
             System.out.println(e.getMessage()); ; // Or handle it properly (log it, throw RuntimeException, etc.)
         }
