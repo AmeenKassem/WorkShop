@@ -19,7 +19,7 @@ import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.InfrastructureLayer.*;
-
+import workshop.demo.DTOs.*;
 public class Real implements Bridge {
     AuthenticationRepo mockAuthRepo = Mockito.mock(AuthenticationRepo.class);
     UserRepository mockUserRepo = Mockito.mock(UserRepository.class);
@@ -29,10 +29,13 @@ public class Real implements Bridge {
     //Ameen
     PurchaseRepository mockPurchaseRepo = Mockito.mock(PurchaseRepository.class);
     StockRepository mockStockRepo = Mockito.mock(StockRepository.class);
-
+    SingleBid mockSingleBid = Mockito.mock(SingleBid.class);
+    //ItemCartDTO mockItemCartDTO = Mockito.mock(ItemCartDTO.class);
+    ShoppingCart mockShoppingCart = Mockito.mock(ShoppingCart.class);
+    //userRepo.getUserCart(userId);
     //ProductFilter mockProductFilter = Mockito.mock(ProductFilter.class);
     //ShoppingCartRepo mockCartRepo = Mockito.mock(ShoppingCartRepo.class);
-
+    //!storeRepository.checkAvailability(allItems)
     //StockService stockService = new StockService(mockStockRepo, mockUserRepo, mockAuthRepo, mockProductFilter);
     //Ameen
     StockService stockService = new StockService(mockStockRepo, mockStoreRepo, mockAuthRepo);
@@ -48,11 +51,32 @@ public class Real implements Bridge {
 
     public Real() {
         Mockito.when(mockAuthRepo.validToken(Mockito.anyString())).thenReturn(true);
-        Mockito.when(mockUserRepo.isRegistered(anyInt())).thenReturn(true);
-        Mockito.when(mockUserRepo.isOnline(anyInt())).thenReturn(true);
-        //Mockito.when(mockCartRepo.getCart(Mockito.anyInt())).thenReturn(new ShoppingCart());
+        Mockito.when(mockUserRepo.isRegistered(Mockito.anyInt())).thenReturn(true);
+        Mockito.when(mockUserRepo.isOnline(Mockito.anyInt())).thenReturn(true);
+        Mockito.when(mockUserRepo.setUserAsAdmin(Mockito.anyInt(),Mockito.anyString())).thenReturn(true);
+        //Mockito.when(mockSingleBid.getUserId()).thenReturn(0);
+
+        try {
+//            Mockito.when(mockStoreRepo.manipulateItem(Mockito.anyInt(), Mockito.anyInt(), Mockito.eq(Permission.AddToStock)))
+//                    .thenReturn(true);
+            Mockito.when(mockStoreRepo.manipulateItem(
+                            Mockito.anyInt(),
+                            Mockito.anyInt(),
+                            Mockito.any(Permission.class)))
+                    .thenReturn(true);
+            Mockito.when(mockStoreRepo.acceptBid(Mockito.anyInt(),Mockito.anyInt(),
+                    Mockito.anyInt(),Mockito.anyInt())).thenReturn(mockSingleBid);
+            Mockito.when(mockUserRepo.getUserCart(Mockito.anyInt())).thenReturn(mockShoppingCart);
+            Mockito.when(mockStoreRepo.checkAvailability(Mockito.anyList())).thenReturn(true);
+        } catch (Exception e) {
+            System.out.println(e.getMessage()); ; // Or handle it properly (log it, throw RuntimeException, etc.)
+        }
+
 
     }
+
+
+
 
     /////////////////////// System /////////////////////////////
     @Override

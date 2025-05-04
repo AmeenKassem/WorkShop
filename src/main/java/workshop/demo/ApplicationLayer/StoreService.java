@@ -453,21 +453,25 @@ public class StoreService {
         try {
             logger.info("about to to update price from store: {}", storeId);
             if (!authRepo.validToken(token)) {
+                //System.out.println("Hmode1");
                 throw new Exception("unvalid token!");
             }
             int updaterId = authRepo.getUserId(token);
             if (!userRepo.isRegistered(updaterId)) {
+                //System.out.println("Hmode2");
                 throw new Exception(String.format("the user:%d is not registered to the system!", updaterId));
             }
             if (!storeRepo.manipulateItem(updaterId, storeId, Permission.UpdatePrice)) {
+                System.out.println("Hmode3");
                 throw new Exception("this worker is not authorized!");
             }
+            //System.out.println("Hmode4");
             logger.info("this worker is authorized");
             this.storeRepo.updatePrice(storeId, productId, newPrice);
             logger.info("price updated sucessfully!");
 
         } catch (Exception e) {
-            logger.error("could not update quantity ", e.getMessage());
+            logger.error("could not update price", e.getMessage());
         }
     }
 
