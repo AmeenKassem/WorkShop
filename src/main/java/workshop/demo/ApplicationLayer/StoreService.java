@@ -1,7 +1,6 @@
 package workshop.demo.ApplicationLayer;
 
 import java.util.List;
-import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,16 +8,13 @@ import org.slf4j.LoggerFactory;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.MessageDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
-import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
@@ -26,7 +22,6 @@ import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.item;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
-import workshop.demo.DomainLayer.Order.IOrderRepo;
 
 public class StoreService {
 
