@@ -41,8 +41,12 @@ public class StockRepository implements IStockRepo {
     }
 
     @Override
-    public Product findById(int productId) {
-        return idToProduct.get(productId);
+    public Product findById(int productId) throws Exception {
+        Product product = idToProduct.get(productId);
+        if (product == null) {
+            throw new Exception("product not avaliable");
+        }
+        return product;
     }
 
     @Override

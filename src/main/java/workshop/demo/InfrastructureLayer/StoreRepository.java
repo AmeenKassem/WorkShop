@@ -1,5 +1,6 @@
 package workshop.demo.InfrastructureLayer;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,6 +14,7 @@ import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
@@ -25,6 +27,8 @@ import workshop.demo.DomainLayer.Store.item;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
+import workshop.demo.DomainLayer.User.CartItem;
+import workshop.demo.DomainLayer.User.ShoppingBasket;
 
 public class StoreRepository implements IStoreRepo {
 
@@ -568,5 +572,42 @@ public class StoreRepository implements IStoreRepo {
         }
         return store.getItemByProductId(productId);
     } 
+    
+    @Override
+    public void validateAndDecreaseStock(int storeId, int productId, int amount) throws Exception {
+        item storeItem = getItemByStoreAndProductId(storeId, productId);
+        if (storeItem == null || storeItem.getQuantity() < amount) {
+            throw new Exception("unvaliable");
+        }
+        decreaseQtoBuy(storeId, productId, amount);
+    }
+
+    public double calculateTotalPrice(List<ReceiptProduct> items) {
+        double total = 0;
+        for (ReceiptProduct item : items) {
+            total += item.getPrice() * item.getQuantity();
+        }
+        return total;
+    }
+
+    public ParticipationInRandomDTO validatedParticipation(int userId, int randomId, int storeId, double amountPaid) throws Exception {
+        Store store = findStoreByID(storeId);
+        if (store == null) throw new Exception("store not found");
+    
+        double requiredPrice = store.getProductPrice(randomId);
+        if (amountPaid < requiredPrice) {
+            throw new Exception("Insufficient payment");
+        }
+        return store.participateInRandom(userId, randomId, amountPaid);
+    }
+
+    public List<ReceiptProduct> processCartItemsForStore(int storeId, List<ItemCartDTO> cartItems, boolean isGuest) throws Exception {
+        Store store = findStoreByID(storeId);
+        if (store == null) {
+            throw new Exception("Store not found");
+        }
+        String storeName = store.getStoreName();
+        return store.ProcessCartItems(cartItems, isGuest, storeName);
+    }
 
 }

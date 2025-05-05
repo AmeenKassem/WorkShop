@@ -10,6 +10,7 @@ import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
@@ -129,4 +130,12 @@ public interface IStoreRepo {
     public Random getRandomById(int randomId) throws Exception;
 
     item getItemByStoreAndProductId(int storeId, int productId) throws Exception;
+
+    void validateAndDecreaseStock(int storeId, int productId, int amount) throws Exception;
+
+    public double calculateTotalPrice(List<ReceiptProduct> items);
+
+    public ParticipationInRandomDTO validatedParticipation(int userId, int randomId, int storeId, double amountPaid) throws Exception;
+
+    public List<ReceiptProduct> processCartItemsForStore(int storeId, List<ItemCartDTO> cartItems, boolean isGuest) throws Exception ;
 }

@@ -13,11 +13,14 @@ public class ItemCartDTO {
     public String description;
     public String storeName;
 
-    public ItemCartDTO(int storeId, Category category, int productId, int quantity) {
+    public ItemCartDTO(int storeId, Category category, int productId, int quantity , int price , String name, String description, String storeName) {
         this.storeId = storeId;
         this.category = category;
         this.productId = productId;
         this.quantity = quantity;
+        this.price = price;
+        this.name = name;
+        this.description = description;
     }
 
     public ItemCartDTO(ItemStoreDTO itemToAdd) {

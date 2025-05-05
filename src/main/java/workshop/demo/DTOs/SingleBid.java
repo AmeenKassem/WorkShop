@@ -2,7 +2,7 @@ package workshop.demo.DTOs;
 
 public class SingleBid {
     private int amount;
-    private int id;
+    private int id; 
     private double price;
     private SpecialType type;
     private int specialId;

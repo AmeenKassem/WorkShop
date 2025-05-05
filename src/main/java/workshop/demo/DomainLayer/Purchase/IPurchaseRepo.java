@@ -1,7 +1,5 @@
 package workshop.demo.DomainLayer.Purchase;
 
-import workshop.demo.DTOs.ItemCartDTO;
-
 import java.util.*;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.SingleBid;
