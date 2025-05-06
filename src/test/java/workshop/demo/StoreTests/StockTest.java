@@ -43,7 +43,7 @@ public class StockTest {
         }
 
     }
-
+    //Test "functionname" when "something " then "Succes/faliure"
     @Test
     public void testRankProductWithoutConcurrency() {
         item testItem = new item(1, 10, 100, Category.ELECTRONICS);

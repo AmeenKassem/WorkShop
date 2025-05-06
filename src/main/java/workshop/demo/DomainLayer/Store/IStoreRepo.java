@@ -128,5 +128,5 @@ public interface IStoreRepo {
 
     public Random getRandomById(int randomId) throws Exception;
 
-    item getItemByStoreAndProductId(int storeId, int productId) throws Exception;
+    public item getItemByStoreAndProductId(int storeId, int productId) throws Exception ;
 }

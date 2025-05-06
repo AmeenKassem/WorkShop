@@ -64,7 +64,7 @@ public class AcceptanceTestV1 extends AcceptanceTests {
         String result = testGuest_Exit("123123");
         assertEquals("Done", result);
     }
-
+    //Add another test that fails "for example a guest tries to rerg again"
     @Test
     void testGuestRegister() throws Exception {
         testGuest_Enter();
@@ -704,6 +704,9 @@ public class AcceptanceTestV1 extends AcceptanceTests {
         testUser_LogIn("1591591", "storeOwner", "pass123");
         testUser_OpenStore("1591591", "BidStore", "Fashion");
         testOwner_ManageInventory_AddProduct(1,"1591591",1,1,1,Category.ELECTRONICS);
+        //Add Bid
+        //Place Bid
+        
         //The function testOwner_AcceptBid has an exception because in storeService.acceptBid -> winner is null,
         // why? because storeRepo.acceptBid returns null, Bear in mind that it doesn't throw an exception yet still returns null
         String result = testOwner_AcceptBid("1591591", 1, 11, 1);

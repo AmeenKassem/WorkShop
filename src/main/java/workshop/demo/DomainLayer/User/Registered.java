@@ -29,7 +29,7 @@ public class Registered extends Guest {
     }
 
     public boolean check(Encoder encoder, String username, String password) {
-        System.out.println("pass1 : "+password+",pass2:"+encrybtedPassword);
+        System.out.println("pass1 : ******* ,pass2:"+encrybtedPassword);
         return encoder.matches(password,encrybtedPassword) && username.equals(this.username);
     }
 
