@@ -1,4 +1,4 @@
-package workshop.demo.InfrastructureLayer;
+package workshop.demo.ApplicationLayer;
 import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Purchase.ISupplyService;
 

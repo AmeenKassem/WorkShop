@@ -1,6 +1,7 @@
 package workshop.demo.DTOs;
 
 public class SupplyDetails {
+    // public static final SupplyDetails getTestDetails = null;
     public String address;
     public String city;
     public String state;
@@ -11,5 +12,9 @@ public class SupplyDetails {
         this.city = city;
         this.state = state;
         this.zipCode = zipCode;
+    }
+
+    public static SupplyDetails getTestDetails() {
+        return new SupplyDetails("123 Test Street", "Testville", "TS", "00000");
     }
 }

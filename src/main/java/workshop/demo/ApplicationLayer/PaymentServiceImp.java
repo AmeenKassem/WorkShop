@@ -1,4 +1,4 @@
-package workshop.demo.InfrastructureLayer;
+package workshop.demo.ApplicationLayer;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DomainLayer.Purchase.IPaymentService;
 
