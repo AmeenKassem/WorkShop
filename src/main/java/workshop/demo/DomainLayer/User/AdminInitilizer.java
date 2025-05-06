@@ -16,7 +16,5 @@ public class AdminInitilizer {
         if(password==null) throw new IllegalArgumentException("The system has no admin key!!");
         return pass==password;
     }
-    
 
-   
 }

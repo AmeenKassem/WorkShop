@@ -30,7 +30,6 @@ public class StoreSpecialPurchasesTest {
     // // Create a mock of the storeRepo interface
     // storeRepo = new StoreRepository();
     // }
-
     int storeId1;
 
     public void initTestStoreWithProducts1(IStoreRepo storeRepo) throws Exception {
@@ -43,7 +42,7 @@ public class StoreSpecialPurchasesTest {
         // 2. Find the store ID (assuming the last one added is the new one)
         List<Store> stores = storeRepo.getStores();
         Store newStore = stores.get(stores.size() - 1);
-        storeId1 = newStore.getStroeID();
+        storeId1 = newStore.getStoreID();
 
         // 3. Add a product to the store
         int productId = 101; // You should ensure this product exists in your product catalog
@@ -125,14 +124,14 @@ public class StoreSpecialPurchasesTest {
     }
 
     @Test
-    public void testSpecialPurchasePermession() throws Exception{
+    public void testSpecialPurchasePermession() throws Exception {
         initTestStoreWithProducts1(storeRepo);
 
         storeRepo.AddManagerToStore(storeId1, 10, 2);
         List<Permission> perms = new ArrayList<>();
         perms.add(Permission.SpecialType);
-        storeRepo.changePermissions(10,2, storeId1, perms);
+        storeRepo.changePermissions(10, 2, storeId1, perms);
         storeRepo.addProductToBid(storeId1, 2, 101, 1);
         storeRepo.addAuctionToStore(storeId1, 2, 101, 1, 10, 0);
-    } 
+    }
 }

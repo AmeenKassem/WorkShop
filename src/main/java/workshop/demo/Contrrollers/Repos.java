@@ -4,12 +4,12 @@ import org.springframework.stereotype.Component;
 
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
+import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
+import workshop.demo.DomainLayer.Review.IReviewRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
-// import workshop.demo.DomainLayer.Stock.ProductFilter;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
-import workshop.demo.InfrastructureLayer.StockRepository;
 
 @Component
 public class Repos {
@@ -19,7 +19,9 @@ public class Repos {
     public AuthenticationRepo auth = new AuthenticationRepo();
     public INotificationRepo notificationRepo;
     public IOrderRepo orderRepo;
-    public IStockRepo stockrepo=new StockRepository();
+    public IStockRepo stockrepo;
+    public IPurchaseRepo purchaseRepo;
+    public IReviewRepo reviewRepo;
     // public ProductFilter productFilter;
 
 }

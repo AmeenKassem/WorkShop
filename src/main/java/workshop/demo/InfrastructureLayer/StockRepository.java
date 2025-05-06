@@ -30,9 +30,9 @@ public class StockRepository implements IStockRepo {
     }
 
     @Override
-    public int addProduct(String name, Category category, String description,String[] keywords) throws Exception {
+    public int addProduct(String name, Category category, String description, String[] keywords) throws Exception {
         int id = idGen.getAndIncrement();
-        Product product = new Product(name, id, category, description,keywords);
+        Product product = new Product(name, id, category, description, keywords);
         idToProduct.put(id, product);
 
         categoryToProductId.computeIfAbsent(category, k -> new ArrayList<>()).add(id);
@@ -74,5 +74,20 @@ public class StockRepository implements IStockRepo {
 
         return res.toArray(new ProductDTO[0]);
     }
+
+    @Override
+    public ProductDTO GetProductInfo(int productId) {
+        Product product = idToProduct.get(productId); 
+        if (product == null) {
+            return null;
+        }
+        return new ProductDTO(
+            product.getProductId(),
+            product.getName(),
+            product.getCategory(),
+            product.getDescription()
+        );
+    }
+    
 
 }
