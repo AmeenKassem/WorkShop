@@ -9,7 +9,7 @@ public interface IStockRepo {
     int addProduct(String name, Category category, String description, String[] keywords) throws Exception; // Adds a global product
     // String removeProduct(int productID);
 
-    Product findById(int productId);
+    Product findById(int productId) throws Exception; 
 
     public ProductDTO[] getMatchesProducts(ProductSearchCriteria filter);
 

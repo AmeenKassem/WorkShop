@@ -12,8 +12,6 @@ import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.IUserRepo;
-import workshop.demo.InfrastructureLayer.AuthenticationRepo;
-
 public class OrderService {
 
     private IOrderRepo orderRepo;

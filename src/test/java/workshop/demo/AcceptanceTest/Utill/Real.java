@@ -8,11 +8,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import workshop.demo.ApplicationLayer.NotificationService;
+import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
 //import workshop.demo.ApplicationLayer.ShoppingCartRepo;
 import workshop.demo.ApplicationLayer.StockService;
 import workshop.demo.ApplicationLayer.StoreService;
-import workshop.demo.ApplicationLayer.UserService;
+import workshop.demo.ApplicationLayer.*;
 import workshop.demo.DTOs.Category;
 //import workshop.demo.DomainLayer.Stock.ProductFilter;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
@@ -43,11 +44,13 @@ public class Real implements Bridge {
     StoreService storeService = new StoreService(mockStoreRepo, mockNotiRepo, mockAuthRepo, mockUserRepo,
             mockOrderRepo);
     NotificationService notificationService = new NotificationService(mockNotiRepo, mockUserRepo);
+    PaymentServiceImp mockPay = Mockito.mock(PaymentServiceImp.class);
+    SupplyServiceImp mockSupply = Mockito.mock(SupplyServiceImp.class);
     //PurchaseService purchaseService = new PurchaseService(mockAuthRepo, mockStockRepo, mockStoreRepo, mockCartRepo,
     //            mockOrderRepo);
     //Ameen
     PurchaseService purchaseService = new PurchaseService(mockAuthRepo, mockStockRepo, mockStoreRepo, mockUserRepo,
-            mockPurchaseRepo,mockOrderRepo);
+            mockPurchaseRepo,mockOrderRepo,mockPay,mockSupply);
 
     public Real() {
         Mockito.when(mockAuthRepo.validToken(Mockito.anyString())).thenReturn(true);
@@ -167,7 +170,7 @@ public class Real implements Bridge {
 
     @Override
     public String testGuest_BuyCart(String token) throws Exception {
-        purchaseService.buyGuestCart(token);
+        purchaseService.buyGuestCart(token,PaymentDetails.testPayment(),SupplyDetails.getTestDetails());
         return "Done";
 
     }
@@ -300,7 +303,7 @@ public class Real implements Bridge {
     // the function that named here is for the guest
     @Override
     public String testUser_BuyCart(String token) throws Exception {
-        purchaseService.buyRegisteredCart(token);
+        purchaseService.buyRegisteredCart(token,PaymentDetails.testPayment(),SupplyDetails.getTestDetails());
         return "Done";
 
     }
