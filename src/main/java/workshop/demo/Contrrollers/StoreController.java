@@ -1,5 +1,6 @@
 package workshop.demo.Contrrollers;
 
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,4 +16,9 @@ public class StoreController {
         this.storeService = new StoreService(repo.storeRepo, repo.notificationRepo, repo.auth, repo.userRepo, repo.orderRepo);
     }
 
+
+    @GetMapping("/stam")
+    public String stam(){
+        return "aaa";
+    }
 }

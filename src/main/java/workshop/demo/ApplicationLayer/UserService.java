@@ -4,6 +4,7 @@ import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.TokenNotFoundException;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
 public class UserService {
@@ -16,7 +17,7 @@ public class UserService {
         this.authRepo = authRepo;
     }
 
-    public String generateGuest() {
+    public String generateGuest() throws Exception {
         int id = userRepo.generateGuest();
         return authRepo.generateGuestToken(id);
     }

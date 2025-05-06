@@ -6,4 +6,9 @@ public class UIException extends Exception {
         super(message);
     }
 
+    public int getNumber() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getNumber'");
+    }
+
 }
