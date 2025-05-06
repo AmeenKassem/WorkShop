@@ -25,10 +25,10 @@ public class Store {
     private String storeName;
     private String category;
     private boolean active;
-    private Map<Category, List<item>> stock;//map of category -> item
     private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
     //must add something for messages
     private List<MessageDTO> messgesInStore;
+    private Map<Category, List<item>> stock;//map of category -> item
     private ActivePurcheses activePurchases;
 
     public Store(int storeID, String storeName, String category) {

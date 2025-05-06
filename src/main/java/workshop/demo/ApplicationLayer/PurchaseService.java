@@ -45,6 +45,7 @@ public class PurchaseService {
         this.orderRepo = orderRepo;
     }
 
+    //add payment details 
     public List<ReceiptDTO> buyGuestCart(String token) throws Exception {
         if (!authRepo.validToken(token)) {
             throw new Exception("Invalid token!");
