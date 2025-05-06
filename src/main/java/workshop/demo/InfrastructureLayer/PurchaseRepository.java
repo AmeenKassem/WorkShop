@@ -53,4 +53,6 @@ public class PurchaseRepository implements IPurchaseRepo {
     public List<ParticipationInRandomDTO> getAllRandomParticipationsByUser(int userId) {
         return randomParticipationByUser.getOrDefault(userId, Collections.emptyList());
     }
+
+    
 }

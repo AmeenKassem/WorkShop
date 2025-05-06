@@ -11,12 +11,12 @@ public class ParticipationInRandomDTO {
    public int randomId; 
    
 
-   public ParticipationInRandomDTO(int productId, int storeId2, int userId2, int randomId, double amountPaid) {
-    this.amountPaid=amountPaid;
-    userId=userId2 ;
-    this.storeId=storeId2;
-    this.productId= productId;
-   this.randomId=randomId;
+   public ParticipationInRandomDTO(int productId, int storeId, int userId, int randomId, double amountPaid) {
+      this.amountPaid=amountPaid;
+      this.userId=userId ;
+      this.storeId=storeId;
+      this.productId= productId;
+      this.randomId=randomId;
 
    }
 

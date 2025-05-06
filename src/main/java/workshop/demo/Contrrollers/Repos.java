@@ -4,7 +4,9 @@ import org.springframework.stereotype.Component;
 
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
+import workshop.demo.DomainLayer.Purchase.IPaymentService;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
+import workshop.demo.DomainLayer.Purchase.ISupplyService;
 import workshop.demo.DomainLayer.Review.IReviewRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
@@ -22,6 +24,8 @@ public class Repos {
     public IStockRepo stockrepo;
     public IPurchaseRepo purchaseRepo;
     public IReviewRepo reviewRepo;
+    public IPaymentService paymentService;
+    public ISupplyService supplyService;
     // public ProductFilter productFilter;
 
 }
