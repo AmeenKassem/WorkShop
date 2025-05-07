@@ -12,14 +12,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import workshop.demo.DomainLayer.StoreUserConnection.Authorization;
+import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
-import workshop.demo.DomainLayer.StoreUserConnection.*;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 
 public class ManagerTests {
 
-    private StoreRepository repository;
+    private ISUConnectionRepo repository;
     private int storeId = 1;
     private int owner1 = 1;
 
@@ -31,13 +32,13 @@ public class ManagerTests {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        repository = new StoreRepository();
+        repository = new SUConnectionRepository();
 
         storeId = 1;
         owner1 = 1;
+        repository.addNewStoreOwner(storeId, storeId);
 
-        repository.addStoreToSystem(owner1, "TechStore", "Electronics");
-
+        //repository.add(owner1, "TechStore", "Electronics");
     }
     //for regenerating ID and get the same ID ->1
 

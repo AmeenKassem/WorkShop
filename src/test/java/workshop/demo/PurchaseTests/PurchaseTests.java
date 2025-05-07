@@ -1,4 +1,4 @@
-package workshop.demo;
+package workshop.demo.PurchaseTests;
 
 import workshop.demo.InfrastructureLayer.PurchaseRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,7 +71,7 @@ public class PurchaseTests {
         assertEquals(333, result.get(0).userId);
         assertEquals(dto.getStoreId(), result.get(0).getStoreId());
         assertEquals(dto.getProductId(), result.get(0).getProductId());
-        assertEquals(dto.getRandomId(), result.get(0).getRandomId());   
+        assertEquals(dto.getRandomId(), result.get(0).getRandomId());
 
     }
 
@@ -82,7 +82,7 @@ public class PurchaseTests {
         List<ParticipationInRandomDTO> participations = repo.getAllRandomParticipationsByUser(333);
         assertEquals(1, participations.size());
         assertEquals(333, participations.get(0).userId);
-        assertEquals(5, participations.get(0).getProductId());  
+        assertEquals(5, participations.get(0).getProductId());
         assertEquals(3, participations.get(0).getStoreId());
         assertEquals(0000, participations.get(0).getRandomId());
 
