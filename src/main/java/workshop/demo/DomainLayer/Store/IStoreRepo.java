@@ -4,11 +4,11 @@ import java.util.List;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
-import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SingleBid;
@@ -17,48 +17,34 @@ import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public interface IStoreRepo {
 
     List<StoreDTO> viewAllStores();
 
-
-// <<<<<<< HEAD
     public int addStoreToSystem(int bossID, String storeName, String Category);
-// =======
-//     void addStoreToSystem(int bossID, String storeName, String Category);
-// >>>>>>> development
+//------------------
 
-    void checkToAdd(int storeID, int ownerID, int newOwnerId) throws UIException, DevException ;
-
-    void checkToAddManager(int storeID, int ownerID, int newOwnerId) throws UIException, DevException ;
-
+    // void checkToAdd(int storeID, int ownerID, int newOwnerId) throws Exception;
+    // void checkToAddManager(int storeID, int ownerID, int newOwnerId) throws Exception;
+    // void AddOwnershipToStore(int storeID, int ownerID, int newOwnerId) throws Exception;
+    // void DeleteOwnershipFromStore(int storeID, int ownerID, int OwnerToDelete) throws Exception;
+    // void AddManagerToStore(int storeID, int ownerId, int managerId) throws Exception;
+    // public void changePermissions(int ownerId, int managerId, int storeID, List<Permission> autorization) throws Exception;
+    // void deleteManager(int storeId, int ownerId, int managerId) throws Exception;
+    //-----------------------
     Store findStoreByID(int Id);
 
-    void AddOwnershipToStore(int storeID, int ownerID, int newOwnerId) throws UIException, DevException ;
+    boolean StoreExistsByID(int ID);
 
-    void DeleteOwnershipFromStore(int storeID, int ownerID, int OwnerToDelete) throws UIException, DevException ;
+    //-----------------------------
+    void deactivateStore(int storeId, int ownerId) throws Exception;
 
-    void AddManagerToStore(int storeID, int ownerId, int managerId) throws UIException, DevException ;
-
-// <<<<<<< HEAD
-    public void changePermissions(int ownerId, int managerId, int storeID, List<Permission> autorization) throws UIException, DevException ;
-// =======
-//     void changePermissions(int ownerId, int managerId, int storeID, List<Permission> autorization) throws UIException, DevException ;
-// >>>>>>> development
-
-    void deleteManager(int storeId, int ownerId, int managerId) throws UIException, DevException ;
-
-    List<Integer> deactivateStore(int storeId, int ownerId) throws UIException, DevException ;
-
-    List<Integer> closeStore(int storeId) throws UIException, DevException ;
+    void closeStore(int storeId) throws Exception;
 
     boolean checkAvailability(List<ItemCartDTO> cartItems);
 
-    List<ItemStoreDTO> getProductsInStore(int storeId) throws UIException, DevException ;
-
-    boolean manipulateItem(int adderId, int storeId, Permission permission) throws UIException, DevException ;
+    List<ItemStoreDTO> getProductsInStore(int storeId) throws Exception;
 
     item addItem(int storeId, int productId, int quantity, int price, Category category) throws UIException, DevException ;
 
@@ -81,11 +67,7 @@ public interface IStoreRepo {
 
     String getStoreNameById(int storeId) throws UIException;
 
-// <<<<<<< HEAD
-    public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) throws UIException, DevException ;
-// =======
-//     public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts);
-// >>>>>>> development
+    public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) throws Exception;
 
     //another: getting info about the owners and manager->4.11
     public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws UIException, DevException ;
@@ -106,16 +88,7 @@ public interface IStoreRepo {
 
     BidDTO[] getAllBids(int userId, int storeId) throws UIException, DevException ;
 
-// <<<<<<< HEAD
-//     public boolean rejectBid(int userId, int storeId, int bidId, int userBidId) throws UIException, DevException ;
-//     public SingleBid acceptBid(int storeId, int bidId, int userId, int userBidId) throws UIException, DevException ;
-//     //random:
-//     public int addProductToRandom(int userId, int productId, int quantity, double productPrice, int storeId, long RandomTime) throws UIException, DevException ;
-//     public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid) throws UIException, DevException ;
-//     public ParticipationInRandomDTO endRandom(int storeId, int userId, int randomId) throws UIException, DevException ;
-//     public RandomDTO[] getRandomsInStore(int storeId, int userId) throws UIException, DevException ;
-// =======
-    boolean rejectBid(int userId, int storeId, int bidId, int userBidId) throws UIException, DevException ;
+    boolean rejectBid(int userId, int storeId, int bidId, int userBidId) throws Exception;
 
     SingleBid acceptBid(int storeId, int bidId, int userId, int userBidId) throws UIException, DevException ;
 
@@ -123,8 +96,7 @@ public interface IStoreRepo {
 
     ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid) throws UIException, DevException ;
 
-    // ParticipationInRandomDTO endRandom(int storeId, int userId, int randomId) throws UIException, DevException ; 
-    public ParticipationInRandomDTO endRandom(int storeId, int userId, int randomId) throws UIException, DevException ;
+    public ParticipationInRandomDTO endRandom(int storeId, int userId, int randomId) throws Exception;
 
     RandomDTO[] getRandomsInStore(int storeId, int userId) throws UIException, DevException ;
 
@@ -140,5 +112,5 @@ public interface IStoreRepo {
 
     public ParticipationInRandomDTO validatedParticipation(int userId, int randomId, int storeId, double amountPaid) throws UIException, DevException ;
 
-    public List<ReceiptProduct> processCartItemsForStore(int storeId, List<ItemCartDTO> cartItems, boolean isGuest) throws UIException, DevException  ;
+    public List<ReceiptProduct> processCartItemsForStore(int storeId, List<ItemCartDTO> cartItems, boolean isGuest) throws Exception;
 }

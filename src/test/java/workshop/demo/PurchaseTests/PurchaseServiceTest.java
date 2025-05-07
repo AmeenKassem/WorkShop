@@ -1,4 +1,4 @@
-package workshop.demo;
+package workshop.demo.PurchaseTests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,31 +76,29 @@ public class PurchaseServiceTest {
         when(paymentService.processPayment(paymentDetails, amount)).thenReturn(true);
 
         ParticipationInRandomDTO result = purchaseService.participateInRandom(token, randomId, storeId, amount, paymentDetails);
-        
+
         assertNotNull(result);
         assertEquals(randomId, result.randomId);
         assertEquals(userId, result.userId);
     }
 
-    
     @Test
     void testSubmitBid_success() throws Exception {
         String token = "layan";
         int userId = 333;
         SingleBid bid = new SingleBid(1, 1, userId, 100.0, SpecialType.BID, 2, 1001, 2001);
-    
+
         //mock this
-        when(authRepo.validToken(token)).thenReturn(true); 
-        when(authRepo.getUserId(token)).thenReturn(userId); 
-        when(userRepo.isRegistered(userId)).thenReturn(true); 
+        when(authRepo.validToken(token)).thenReturn(true);
         when(authRepo.getUserId(token)).thenReturn(userId);
         when(userRepo.isRegistered(userId)).thenReturn(true);
-    
+        when(authRepo.getUserId(token)).thenReturn(userId);
+        when(userRepo.isRegistered(userId)).thenReturn(true);
+
         assertDoesNotThrow(() -> purchaseService.submitBid(token, bid)); //dont throw exception
         verify(purchaseRepo, times(1)).saveBid(bid); // here im verify that saveBid was called once and already checked it in purchaseTests 
     }
 
-    
     @Test
     public void testSearchProductInStore_success() throws Exception {
         String token = "token";
@@ -121,7 +119,6 @@ public class PurchaseServiceTest {
         assertTrue(result.contains("Store: BestBuy"));
     }
 
-
     ////////test without mock
     @Test
     public void testBuyGuestCart_success() throws Exception {
@@ -135,9 +132,9 @@ public class PurchaseServiceTest {
         PurchaseRepository realPurchaseRepo = new PurchaseRepository();
         paymentService = mock(IPaymentService.class);
         supplyService = mock(ISupplyService.class);
-    
+
         IAuthRepo mockAuthRepo = mock(IAuthRepo.class);
-        when(mockAuthRepo.validToken("token")).thenReturn(true); 
+        when(mockAuthRepo.validToken("token")).thenReturn(true);
         when(mockAuthRepo.getUserId("token")).thenReturn(1);
 
         // Add product to stock and store
@@ -146,10 +143,10 @@ public class PurchaseServiceTest {
         realStoreRepo.addItem(storeId, productId, 10, 50, Category.HOME);
 
         int guestId = realUserRepo.generateGuest(); // will be ID 1
-        realUserRepo.addItemToGeustCart(guestId, new ItemCartDTO(storeId, Category.HOME, productId, 1 , 50 , "Book", "300 page", "max"));
+        realUserRepo.addItemToGeustCart(guestId, new ItemCartDTO(storeId, Category.HOME, productId, 1, 50, "Book", "300 page", "max"));
 
-        PurchaseService realService = new PurchaseService(mockAuthRepo,realStockRepo,realStoreRepo,realUserRepo,realPurchaseRepo,realOrderRepo,
-            paymentService,supplyService);
+        PurchaseService realService = new PurchaseService(mockAuthRepo, realStockRepo, realStoreRepo, realUserRepo, realPurchaseRepo, realOrderRepo,
+                paymentService, supplyService);
 
         // Payment and supply details
         PaymentDetails payment = new PaymentDetails("1234", "layan", "12/24", "123");
@@ -182,36 +179,36 @@ public class PurchaseServiceTest {
         OrderRepository orderRepo = new OrderRepository();
         IPaymentService paymentService = mock(IPaymentService.class);
         ISupplyService supplyService = mock(ISupplyService.class);
-    
+
         IAuthRepo authRepo = mock(IAuthRepo.class);
         when(authRepo.validToken("token")).thenReturn(true);
         when(authRepo.getUserId("token")).thenReturn(1);
-    
+
         // Register user and add product
         int userId = userRepo.registerUser("layan", "333");
         int productId = stockRepo.addProduct("Toy", Category.HOME, "Fun", new String[]{"toy"});
         int storeId = storeRepo.addStoreToSystem(userId, "myBaby", "toys");
 
         storeRepo.addItem(storeId, productId, 10, 50, Category.HOME);
-    
+
         // Add random to store
         long randomTime = System.currentTimeMillis() + 100000;
         int randomId = storeRepo.addProductToRandom(userId, productId, 5, 20.0, storeId, randomTime);
-    
+
         when(paymentService.processPayment(any(), eq(20.0))).thenReturn(true); // Mock payment  
-    
+
         PurchaseService service = new PurchaseService(authRepo, stockRepo, storeRepo, userRepo, purchaseRepo, orderRepo, paymentService, supplyService);
-    
+
         PaymentDetails payment = new PaymentDetails("1234", "User", "12/25", "123");
-    
+
         ParticipationInRandomDTO result = service.participateInRandom("token", randomId, storeId, 20.0, payment);
-    
+
         assertEquals(randomId, result.randomId);
         assertEquals(userId, result.userId);
         assertEquals(20.0, result.amountPaid);
     }
 
-////shopping cart empty
+    ////shopping cart empty
     @Test
     public void testBuyGuestCartcartEmPty() throws Exception {
         when(authRepo.validToken("token")).thenReturn(true);
@@ -219,7 +216,7 @@ public class PurchaseServiceTest {
         when(userRepo.getUserCart(3)).thenReturn(new ShoppingCart());  //the shopping cart empty
 
         PurchaseService service = new PurchaseService(authRepo, stockRepo, storeRepo, userRepo, purchaseRepo, orderRepo, paymentService, supplyService);
-        
+
         PaymentDetails payment = new PaymentDetails("123", "layan", "12/25", "123");
         SupplyDetails supply = new SupplyDetails("Addr", "City", "State", "123");
 
@@ -248,7 +245,6 @@ public class PurchaseServiceTest {
         Exception ex = assertThrows(Exception.class, () -> service.finalizeAuctionWins(token, payment));
         assertEquals("product not avaliable", ex.getMessage());
     }
-
 
     //dont pass 
     @Test
@@ -299,7 +295,7 @@ public class PurchaseServiceTest {
     public void testBuyRegisteredCart_success() throws Exception {
         Encoder encoder = mock(Encoder.class);
         when(encoder.encodePassword(anyString())).thenAnswer(i -> i.getArgument(0));
-        
+
         UserRepository realUserRepo = new UserRepository(encoder, null);
         StoreRepository realStoreRepo = new StoreRepository();
         StockRepository realStockRepo = new StockRepository();
@@ -325,8 +321,8 @@ public class PurchaseServiceTest {
         realUserRepo.getUserCart(userId).addItem(storeId, item);
 
         // Build PurchaseService 
-        PurchaseService service = new PurchaseService(mockAuthRepo,realStockRepo,realStoreRepo,realUserRepo,realPurchaseRepo,realOrderRepo,
-                paymentService,supplyService
+        PurchaseService service = new PurchaseService(mockAuthRepo, realStockRepo, realStoreRepo, realUserRepo, realPurchaseRepo, realOrderRepo,
+                paymentService, supplyService
         );
 
         PaymentDetails payment = new PaymentDetails("4111", "layan", "12/24", "123");
@@ -383,7 +379,8 @@ public class PurchaseServiceTest {
             assertEquals(Category.ELECTRONICS, rp.getCategory());
             assertEquals(1, rp.getQuantity());
             assertEquals(0, rp.getPrice());
-            return true; }), eq("ksp")); 
+            return true;
+        }), eq("ksp"));
     }
 
     @Test

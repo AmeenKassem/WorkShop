@@ -7,13 +7,13 @@ import org.slf4j.LoggerFactory;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.WorkerDTO;
-import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.OrderDTO;
-import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -22,6 +22,7 @@ import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.item;
+import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
@@ -32,14 +33,17 @@ public class StoreService {
     private IAuthRepo authRepo;
     private IUserRepo userRepo;
     private IOrderRepo orderRepo;
+    private ISUConnectionRepo suConnectionRepo;
     private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
 
-    public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, IUserRepo userRepo, IOrderRepo orderRepo) {
+    public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, IUserRepo userRepo, IOrderRepo orderRepo,
+            ISUConnectionRepo sUConnectionRepo) {
         this.storeRepo = storeRepository;
         this.notiRepo = notiRepo;
         this.authRepo = authRepo;
         this.orderRepo = orderRepo;
         this.userRepo = userRepo;
+        this.suConnectionRepo = suConnectionRepo;
         logger.info("created the StoreService");
     }
 
@@ -51,6 +55,7 @@ public class StoreService {
 
     public int addStoreToSystem(String token, String storeName, String Category) throws UIException {
         int bossID = 0;
+        int storeId = -1;
         try {
             if (!authRepo.validToken(token)) {
                 throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
@@ -60,11 +65,13 @@ public class StoreService {
                 throw new UIException(String.format("The user:%d is not registered to the system!", bossID), ErrorCodes.USER_NOT_FOUND);
             }
             logger.info("trying to add new sotre to the system for the BOSS:", bossID);
-            return storeRepo.addStoreToSystem(bossID, storeName, Category);
+            storeId = storeRepo.addStoreToSystem(bossID, storeName, Category);
+            this.suConnectionRepo.addNewStoreOwner(storeId, bossID);
+            logger.info("added the store succsessfully");
         } catch (Exception e) {
             logger.error("failed to add the store for user: {}, Error: {}", bossID, e.getMessage());
         }
-        return -1;
+        return storeId;
     }
     
     public void AddOwnershipToStore(int storeID, String token, int newOwnerId) {
@@ -80,7 +87,13 @@ public class StoreService {
                 throw new UIException(String.format("can't make owner to unregistered user:%d ", newOwnerId), ErrorCodes.USER_NOT_FOUND);
             }
             logger.info("trying to add a new owner to the store");
-            storeRepo.checkToAddManager(storeID, ownerID, newOwnerId);
+            if (!this.storeRepo.StoreExistsByID(storeID)) {
+                throw new Exception("can't add new ownership/managment: store does not exist");
+            }
+            if (!this.storeRepo.findStoreByID(storeID).isActive()) {
+                throw new Exception("can't add new ownership/managment: store IS DEactivated");
+            }
+            this.suConnectionRepo.checkToAddOwner(storeID, ownerID, newOwnerId);
             logger.info("we can add a new owner to the store");
             boolean answer = this.sendMessageToTakeApproval(ownerID, newOwnerId);
             if (answer) {
@@ -89,7 +102,7 @@ public class StoreService {
                 logger.info("failed to add a new owner: the owner did not accept the offer");
                 return;
             }
-            storeRepo.AddOwnershipToStore(storeID, ownerID, newOwnerId);
+            this.suConnectionRepo.AddOwnershipToStore(storeID, ownerID, newOwnerId);
             logger.info("added a new owner: {} by: {}", newOwnerId, ownerID);
         } catch (Exception e) {
             logger.error("failed to add a new owner, Error: {}", e.getMessage());
@@ -109,14 +122,20 @@ public class StoreService {
                 throw new UIException(String.format("can't delete owner:the user:%d is not registered to the system!", OwnerToDelete), ErrorCodes.USER_NOT_FOUND);
             }
             logger.info("trying to delete owner: {} from store: {} by: {}", OwnerToDelete, storeID, ownerID);
-            storeRepo.DeleteOwnershipFromStore(storeID, ownerID, OwnerToDelete);
+            if (!this.storeRepo.StoreExistsByID(storeID)) {
+                throw new Exception("can't delete ownership: store does not exist");
+            }
+            if (!this.storeRepo.findStoreByID(storeID).isActive()) {
+                throw new Exception("can't add new ownership: store IS DEactivated");
+            }
+            this.suConnectionRepo.DeleteOwnershipFromStore(storeID, ownerID, OwnerToDelete);
             logger.info("the owner has been deleted successfly with his workers");
         } catch (Exception e) {
             logger.error("failed to delete the owner, Error: {}", e.getMessage());
         }
     }
-    
-    public void AddManagerToStore(int storeID, String token, int managerId) throws UIException {
+
+    public void AddManagerToStore(int storeID, String token, int managerId, List<Permission> autorization) throws Exception {
         try {
             if (!authRepo.validToken(token)) {
                 throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
@@ -129,7 +148,13 @@ public class StoreService {
                 throw new UIException(String.format("can't add as manager: the user:%d is not registered to the system!", managerId), ErrorCodes.USER_NOT_FOUND);
             }
             logger.info("trying to add manager: {} in store: {} by: {}", managerId, storeID, ownerId);
-            storeRepo.checkToAddManager(storeID, ownerId, managerId);
+            if (!this.storeRepo.StoreExistsByID(storeID)) {
+                throw new Exception("can't add new ownership/managment: store does not exist");
+            }
+            if (!this.storeRepo.findStoreByID(storeID).isActive()) {
+                throw new Exception("can't add new ownership/managment: store IS DEactivated");
+            }
+            this.suConnectionRepo.checkToAddManager(storeID, ownerId, managerId);
             logger.info("we can add a new owner to the store");
             boolean answer = this.sendMessageToTakeApproval(ownerId, managerId);
             if (answer) {
@@ -138,8 +163,11 @@ public class StoreService {
                 logger.info("failed to add a new manager: the manager did not accept the offer");
                 return;
             }
-            storeRepo.AddManagerToStore(storeID, ownerId, managerId);
+            this.suConnectionRepo.AddManagerToStore(storeID, ownerId, managerId);
             logger.info("the manager has been added successfly ");
+            // //then call give per:
+            this.suConnectionRepo.changePermissions(ownerId, managerId, storeID, autorization);
+
         } catch (Exception e) {
             logger.error("failed to add the manager, Error: {}", e.getMessage());
         }
@@ -158,7 +186,13 @@ public class StoreService {
                 throw new UIException(String.format("can't change permssion: the user:%d is not registered to the system!", managerId), ErrorCodes.USER_NOT_FOUND);
             }
             logger.info("the owner: {} is trying to give authoriation to manager: {}", ownerId, managerId);
-            storeRepo.changePermissions(ownerId, managerId, storeID, autorization);
+            if (!this.storeRepo.StoreExistsByID(storeID)) {
+                throw new Exception("can't add/change permission: store does not exist");
+            }
+            if (!storeRepo.findStoreByID(storeID).isActive()) {
+                throw new Exception("can't add/change permission: store IS DEactivated");
+            }
+            suConnectionRepo.changePermissions(ownerId, managerId, storeID, autorization);
             logger.info("authorizations have been added/changed succsesfully!");
         } catch (Exception e) {
             logger.error("failed to give/change permission:, ERROR:", e.getMessage());
@@ -178,7 +212,13 @@ public class StoreService {
                 throw new UIException(String.format("can't delete manager: the user:%d is not registered to the system!", managerId), ErrorCodes.USER_NOT_FOUND);
             }
             logger.info("trying to delete manager: {} from store: {} by: {}", managerId, storeId, ownerId);
-            storeRepo.deleteManager(storeId, ownerId, managerId);
+            if (this.storeRepo.StoreExistsByID(storeId)) {
+                throw new Exception("can't delete manager: store does not exist");
+            }
+            if (!this.storeRepo.findStoreByID(storeId).isActive()) {
+                throw new Exception("can't delete manager: store IS DEactivated");
+            }
+            suConnectionRepo.deleteManager(storeId, ownerId, managerId);
             logger.info("the manager has been deleted successfly with his workers");
         } catch (Exception e) {
             logger.error("failed to delete the manager, Error: {}", e.getMessage());
@@ -230,6 +270,12 @@ public class StoreService {
         int userId = authRepo.getUserId(token);
         if (userRepo.isRegistered(userId) && userRepo.isOnline(userId)) {
             logger.info("Returning auction list to user: {}", userId);
+            if (this.storeRepo.findStoreByID(storeId) == null) {
+                throw new Exception("store does not exist.");
+            }
+            if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+                throw new UIException("you have no permession to see auctions info.");
+            }
             return storeRepo.getAuctionsOnStore(userId, storeId);
         } else {
             logger.error("User not logged in for getAllAuctions: {}", userId);
@@ -237,7 +283,7 @@ public class StoreService {
         }
     }
     
-    public int setProductToAuction(String token, int id, int productId, int quantity, long time, double startPrice) throws UIException, DevException {
+    public int setProductToAuction(String token, int id, int productId, int quantity, long time, double startPrice) throws Exception, DevException {
         logger.info("Setting product {} to auction in store {}", productId, id);
         if (!authRepo.validToken(token)) {
             logger.error("Invalid token for setProductToAuction");
@@ -246,7 +292,14 @@ public class StoreService {
         int userId = authRepo.getUserId(token);
         if (!(userRepo.isRegistered(userId) && userRepo.isOnline(userId))) {
             logger.error("User not logged in for setProductToAuction: {}", userId);
-            throw new UIException("You are not logged in!", ErrorCodes.USER_NOT_LOGGED_IN);
+            throw new UIException("you are not logged in !",ErrorCodes.USER_NOT_LOGGED_IN);
+        }
+        //must add the exceptions here:
+        if (!this.storeRepo.StoreExistsByID(id)) {
+            throw new UIException("store does not exist",ErrorCodes.STORE_NOT_FOUND);
+        }
+        if (!this.suConnectionRepo.manipulateItem(userId, id, Permission.SpecialType)) {
+            throw new UIException("you have no permession to set produt to auction.",ErrorCodes.NO_PERMISSION);
         }
         return storeRepo.addAuctionToStore(id, userId, productId, quantity, time, startPrice);
     }
@@ -262,6 +315,14 @@ public class StoreService {
             logger.error("User not logged in for setProductToBid: {}", userId);
             throw new UIException("You are not logged in!", ErrorCodes.USER_NOT_LOGGED_IN);
         }
+        if (!this.storeRepo.StoreExistsByID(storeid)) {
+            throw new UIException(" store does not exist.",ErrorCodes.STORE_NOT_FOUND);
+        }
+        //Node Worker= this.
+        if (!this.suConnectionRepo.manipulateItem(userId, storeid, Permission.SpecialType)) {
+            throw new UIException("you have no permession to set product to bid.",ErrorCodes.NO_PERMISSION);
+        }
+
         return storeRepo.addProductToBid(storeid, userId, productId, quantity);
     }
     
@@ -275,6 +336,18 @@ public class StoreService {
         if (!(userRepo.isRegistered(userId) && userRepo.isOnline(userId))) {
             logger.error("User not logged in for getAllBidsStatus: {}", userId);
             throw new UIException("You are not logged in!", ErrorCodes.USER_NOT_LOGGED_IN);
+        }
+        if (this.storeRepo.findStoreByID(storeId) == null) {
+            throw new Exception(" store does not exist.");
+        }
+        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+            throw new UIException("you have no permession to see auctions info.");
+        }
+        if (this.storeRepo.findStoreByID(storeId) == null) {
+            throw new Exception(" store does not exist.");
+        }
+        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+            throw new UIException("you have no permession to see auctions info.");
         }
         return storeRepo.getAllBids(userId, storeId);
     }
@@ -290,6 +363,13 @@ public class StoreService {
             logger.error("User not logged in for acceptBid: {}", userId);
             throw new UIException("You are not logged in!", ErrorCodes.USER_NOT_LOGGED_IN);
         }
+        if (this.storeRepo.findStoreByID(storeId) == null) {
+            throw new Exception("store does not exist.");
+        }
+        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+            throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
+        }
+
         SingleBid winner = storeRepo.acceptBid(storeId, bidId, userId, bidToAcceptId);
         logger.info("Bid accepted. User: {} is the winner.", winner.getUserId());
         return winner;
@@ -303,7 +383,7 @@ public class StoreService {
         int userId = authRepo.getUserId(token);
         if (!(userRepo.isRegistered(userId) && userRepo.isOnline(userId))) {
             logger.error("User not logged in for setProductToRandom: {}", userId);
-            throw new UIException("You are not logged in!", ErrorCodes.USER_NOT_LOGGED_IN);
+            throw new UIException("you are not logged in !",ErrorCodes.USER_NOT_LOGGED_IN);
         }
         return storeRepo.addProductToRandom(userId, productId, quantity, productPrice, storeId, RandomTime);
     }
@@ -317,7 +397,7 @@ public class StoreService {
         int userId = authRepo.getUserId(token);
         if (!(userRepo.isRegistered(userId) && userRepo.isOnline(userId))) {
             logger.error("User not logged in for endBid: {}", userId);
-            throw new UIException("You are not logged in!", ErrorCodes.USER_NOT_LOGGED_IN);
+            throw new UIException("you are not logged in !");
         }
         return storeRepo.endRandom(storeId, userId, randomId);
     }
@@ -332,6 +412,18 @@ public class StoreService {
         if (!(userRepo.isRegistered(userId) && userRepo.isOnline(userId))) {
             logger.error("User not logged in for getAllRandomInStore: {}", userId);
             throw new UIException("You are not logged in!", ErrorCodes.USER_NOT_LOGGED_IN);
+        }
+        if (this.storeRepo.findStoreByID(storeId) == null) {
+            throw new Exception(" store does not exist.");
+        }
+        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+            throw new UIException("you have no permession to see random info.");
+        }
+        if (this.storeRepo.findStoreByID(storeId) == null) {
+            throw new Exception(" store does not exist.");
+        }
+        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+            throw new UIException("you have no permession to see random info.");
         }
         return storeRepo.getRandomsInStore(storeId, userId);
     }
@@ -356,7 +448,7 @@ public class StoreService {
             if (!userRepo.isRegistered(adderId)) {
                 throw new UIException(String.format("the user:%d is not registered to the system!", adderId), ErrorCodes.USER_NOT_FOUND);
             }
-            if (!storeRepo.manipulateItem(adderId, storeId, Permission.AddToStock)) {
+            if (!this.suConnectionRepo.manipulateItem(adderId, storeId, Permission.AddToStock)) {
                 throw new UIException("this worker is not authorized!", ErrorCodes.NO_PERMISSION);
             }
             item toAdd = this.storeRepo.addItem(storeId, productId, quantity, price, category);
@@ -376,7 +468,7 @@ public class StoreService {
             if (!userRepo.isRegistered(removerId)) {
                 throw new UIException(String.format("the user:%d is not registered to the system!", removerId), ErrorCodes.USER_NOT_FOUND);
             }
-            if (!storeRepo.manipulateItem(removerId, storeId, Permission.DeleteFromStock)) {
+            if (!this.suConnectionRepo.manipulateItem(removerId, storeId, Permission.DeleteFromStock)) {
                 throw new UIException("this worker is not authorized!", ErrorCodes.NO_PERMISSION);
             }
             logger.info("this worker is authorized");
@@ -397,7 +489,7 @@ public class StoreService {
             if (!userRepo.isRegistered(changerId)) {
                 throw new UIException(String.format("the user:%d is not registered to the system!", changerId), ErrorCodes.USER_NOT_FOUND);
             }
-            if (!storeRepo.manipulateItem(changerId, storeId, Permission.UpdateQuantity)) {
+            if (!this.suConnectionRepo.manipulateItem(changerId, storeId, Permission.UpdateQuantity)) {
                 throw new UIException("this worker is not authorized!", ErrorCodes.NO_PERMISSION);
             }
             logger.info("this worker is authorized");
@@ -418,8 +510,7 @@ public class StoreService {
             if (!userRepo.isRegistered(updaterId)) {
                 throw new UIException(String.format("the user:%d is not registered to the system!", updaterId), ErrorCodes.USER_NOT_FOUND);
             }
-            if (!storeRepo.manipulateItem(updaterId, storeId, Permission.UpdatePrice)) {
-                System.out.println("Hmode3");
+            if (!this.suConnectionRepo.manipulateItem(updaterId, storeId, Permission.UpdatePrice)) {
                 throw new UIException("this worker is not authorized!", ErrorCodes.NO_PERMISSION);
             }
             logger.info("this worker is authorized");
@@ -481,8 +572,13 @@ public class StoreService {
                 throw new UIException(String.format("the user:%d is not registered to the system!", ownerId), ErrorCodes.USER_NOT_FOUND);
             }
             logger.info("trying to deactivate store: {} by: {}", storeId, ownerId);
-            List<Integer> toNotify = storeRepo.deactivateStore(storeId, ownerId);
-            logger.info("the store has been deactivated successfully!");
+            storeRepo.deactivateStore(storeId, ownerId);
+            if (!this.suConnectionRepo.checkDeactivateStore(storeId, ownerId)) {
+                throw new Exception("only the boss/main owner can deactivate the store");
+            }
+            List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
+            logger.info("the store has been deactivated succesfully!");
+            //here must notify all users using notifiaction Repo and this list
             logger.info("about to notify all the employees");
         } catch (Exception e) {
             logger.error("cannot deactivate this store, Error: {}", e.getMessage());
@@ -499,7 +595,12 @@ public class StoreService {
                 throw new UIException(String.format("the user:%d is not registered to the system!", adminId), ErrorCodes.USER_NOT_FOUND);
             }
             logger.info("trying to close store: {} by: {}", storeId, adminId);
-            List<Integer> toNotify = storeRepo.closeStore(storeId);
+            if (!this.storeRepo.StoreExistsByID(storeId)) {
+                throw new Exception("can't be closed store: store does not exist");
+            }
+            List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
+            this.storeRepo.closeStore(storeId);
+            this.suConnectionRepo.closeStore(storeId);
             logger.info("store removed successfully!");
             logger.info("about to notify all the employees");
         } catch (Exception e) {

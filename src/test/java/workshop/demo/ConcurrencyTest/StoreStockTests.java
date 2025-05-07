@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -48,7 +47,7 @@ public class StoreStockTests {
     // }
     //here to adding the quantity:(same item)
     @Test
-    public void testUpdateQuantityConcurrency() throws Exception {
+    public void testUpdateQuantityConcurrency_Success() throws Exception {
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         item newItem = new item(1, 10, 100, Category.ELECTRONICS);
         store.addItem(newItem);  // Add initial item to the store
@@ -75,7 +74,7 @@ public class StoreStockTests {
     }
 
     @Test
-    public void testRemoveItemSuccessfully() throws Exception {
+    public void testRemoveItemSuccessfullyInStockInStoreX() throws Exception {
 
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         item newItem = new item(1, 10, 100, Category.ELECTRONICS);
@@ -101,7 +100,7 @@ public class StoreStockTests {
 
     //I think this is a stuipd test:
     @Test
-    public void testUpdatePriceConcurrency() throws InterruptedException {
+    public void testUpdatePriceForProductInStoreX_Concurrency() throws InterruptedException {
         item newItem = new item(1, 10, 100, Category.ELECTRONICS);
         store.addItem(newItem);
 
@@ -128,7 +127,7 @@ public class StoreStockTests {
     }
 
     @Test
-    public void testRankProductConcurrency() throws InterruptedException {
+    public void testRankProductInStoreX_Concurrency() throws InterruptedException {
         // Create a sample item with rank array of length 5 (for ranks 1 to 5)
         item testItem = new item(1, 10, 100, workshop.demo.DTOs.Category.ELECTRONICS);
         testItem.setRank(new AtomicInteger[5]);  // Assuming ranks from 1 to 5
