@@ -39,7 +39,7 @@ public class SuperDataStructure {
             if (this.employees.get(storeID).getNodeById(ownerId) == null) {
                 throw new UIException("Owner does not exist in this store", ErrorCodes.NO_PERMISSION);
             }
-            Node child = employees.get(storeID).getNodeById(newOwnerId);
+            Node child = employees.get(storeID).getNodeById(newOnwerId);
             if (child != null && !child.getIsManager()) {
                 throw new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION);
             }
@@ -49,12 +49,12 @@ public class SuperDataStructure {
         }
     }
 
-    public boolean checkToAddManager(int storeID, int ownerId, int newOwnerId) throws UIException {
+    public boolean checkToAddManager(int storeID, int ownerId, int newOwnerId) throws UIException, DevException {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeID, k -> new ReentrantLock());
         lock.lock();
         try {
             if (!employees.containsKey(storeID)) {
-                throw new Exception("store does not exist in superDS");
+                throw new DevException("store does not exist in superDS");
             }
             if (this.employees.get(storeID).getNodeById(ownerId) == null) {
                 throw new UIException("Owner does not exist in this store", ErrorCodes.NO_PERMISSION);
@@ -76,18 +76,18 @@ public class SuperDataStructure {
             if (!employees.containsKey(storeID)) {
                 throw new Exception("store does not exist in superDS");
             }
-            this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(newOwnerId, false, ownerId));
+            this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(newOnwerId, false, ownerId));
         } finally {
             lock.unlock();
         }
     }
 
-    public void DeleteOwnershipFromStore(int storeID, int ownerID, int OwnerToDelete) throws UIException {
+    public void DeleteOwnershipFromStore(int storeID, int ownerID, int OwnerToDelete) throws UIException, DevException {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeID, k -> new ReentrantLock());
         lock.lock();
         try {
             if (!employees.containsKey(storeID)) {
-                throw new Exception("store does not exist in superDS");
+                throw new DevException("store does not exist in superDS");
             }
             Node toDelete = this.employees.get(storeID).getNodeById(OwnerToDelete);
             if (this.employees.get(storeID).getNodeById(ownerID) == null) {
@@ -121,12 +121,12 @@ public class SuperDataStructure {
         }
     }
 
-    public void changeAuthoToManager(int storeID, int ownerID, int managerId, List<Permission> per) throws UIException {
+    public void changeAuthoToManager(int storeID, int ownerID, int managerId, List<Permission> per) throws UIException, DevException {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeID, k -> new ReentrantLock());
         lock.lock();
         try {
             if (!employees.containsKey(storeID)) {
-                throw new Exception("store does not exist in superDS");
+                throw new DevException("store does not exist in superDS");
             }
             Node toChange = this.employees.get(storeID).getNodeById(managerId);
             if (toChange == null) {
@@ -144,12 +144,12 @@ public class SuperDataStructure {
         }
     }
 
-    public void deleteManager(int storeID, int ownerID, int managerId) throws UIException {
+    public void deleteManager(int storeID, int ownerID, int managerId) throws UIException, DevException {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeID, k -> new ReentrantLock());
         lock.lock();
         try {
             if (!employees.containsKey(storeID)) {
-                throw new Exception("store does not exist in superDS");
+                throw new DevException("store does not exist in superDS");
             }
             Node toDelete = this.employees.get(storeID).getNodeById(managerId);
             if (toDelete == null) {
@@ -167,12 +167,12 @@ public class SuperDataStructure {
         }
     }
 
-    public boolean checkDeactivateStore(int storeId, int ownerId) {
+    public boolean checkDeactivateStore(int storeId, int ownerId) throws DevException {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeId, k -> new ReentrantLock());
         lock.lock();
         try {
             if (!employees.containsKey(storeId)) {
-                throw new Exception("store does not exist in superDS");
+                throw new DevException("store does not exist in superDS");
             }
             if (this.employees.get(storeId).getRoot().getMyId() != ownerId) {
                 return false;

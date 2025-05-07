@@ -261,7 +261,7 @@ public class StoreService {
         }
     }
     
-    public AuctionDTO[] getAllAuctions(String token, int storeId) throws UIException, DevException {
+    public AuctionDTO[] getAllAuctions(String token, int storeId) throws Exception {
         logger.info("User requesting all auctions in store: {}", storeId);
         if (!authRepo.validToken(token)) {
             logger.error("Invalid token on getAllAuctions");
@@ -274,7 +274,7 @@ public class StoreService {
                 throw new Exception("store does not exist.");
             }
             if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-                throw new UIException("you have no permession to see auctions info.");
+                throw new UIException("you have no permession to see auctions info.",ErrorCodes.NO_PERMISSION);
             }
             return storeRepo.getAuctionsOnStore(userId, storeId);
         } else {
@@ -304,7 +304,7 @@ public class StoreService {
         return storeRepo.addAuctionToStore(id, userId, productId, quantity, time, startPrice);
     }
     
-    public int setProductToBid(String token, int storeid, int productId, int quantity) throws UIException, DevException {
+    public int setProductToBid(String token, int storeid, int productId, int quantity) throws Exception {
         logger.info("User attempting to set product {} as bid in store {}", productId, storeid);
         if (!authRepo.validToken(token)) {
             logger.error("Invalid token in setProductToBid");
@@ -326,7 +326,7 @@ public class StoreService {
         return storeRepo.addProductToBid(storeid, userId, productId, quantity);
     }
     
-    public BidDTO[] getAllBidsStatus(String token, int storeId) throws UIException, DevException {
+    public BidDTO[] getAllBidsStatus(String token, int storeId) throws Exception, DevException {
         logger.info("Fetching bid status for store: {}", storeId);
         if (!authRepo.validToken(token)) {
             logger.error("Invalid token in getAllBidsStatus");
@@ -341,18 +341,18 @@ public class StoreService {
             throw new Exception(" store does not exist.");
         }
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-            throw new UIException("you have no permession to see auctions info.");
+            throw new UIException("you have no permession to see auctions info.",ErrorCodes.NO_PERMISSION);
         }
         if (this.storeRepo.findStoreByID(storeId) == null) {
             throw new Exception(" store does not exist.");
         }
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-            throw new UIException("you have no permession to see auctions info.");
+            throw new UIException("you have no permession to see auctions info.",ErrorCodes.NO_PERMISSION);
         }
         return storeRepo.getAllBids(userId, storeId);
     }
     
-    public SingleBid acceptBid(String token, int storeId, int bidId, int bidToAcceptId) throws UIException, DevException {
+    public SingleBid acceptBid(String token, int storeId, int bidId, int bidToAcceptId) throws Exception, DevException {
         logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidToAcceptId, bidId, storeId);
         if (!authRepo.validToken(token)) {
             logger.error("Invalid token in acceptBid");
@@ -364,7 +364,7 @@ public class StoreService {
             throw new UIException("You are not logged in!", ErrorCodes.USER_NOT_LOGGED_IN);
         }
         if (this.storeRepo.findStoreByID(storeId) == null) {
-            throw new Exception("store does not exist.");
+            throw new UIException("store does not exist.",ErrorCodes.STORE_NOT_FOUND);
         }
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
@@ -388,7 +388,7 @@ public class StoreService {
         return storeRepo.addProductToRandom(userId, productId, quantity, productPrice, storeId, RandomTime);
     }
     
-    public ParticipationInRandomDTO endBid(String token, int storeId, int randomId) throws UIException, DevException {
+    public ParticipationInRandomDTO endBid(String token, int storeId, int randomId) throws Exception, DevException {
         logger.info("Ending random bid {} in store {}", randomId, storeId);
         if (!authRepo.validToken(token)) {
             logger.error("Invalid token in endBid");
@@ -397,12 +397,12 @@ public class StoreService {
         int userId = authRepo.getUserId(token);
         if (!(userRepo.isRegistered(userId) && userRepo.isOnline(userId))) {
             logger.error("User not logged in for endBid: {}", userId);
-            throw new UIException("you are not logged in !");
+            throw new UIException("you are not logged in !",ErrorCodes.USER_NOT_LOGGED_IN);
         }
         return storeRepo.endRandom(storeId, userId, randomId);
     }
     
-    public RandomDTO[] getAllRandomInStore(String token, int storeId) throws UIException, DevException {
+    public RandomDTO[] getAllRandomInStore(String token, int storeId) throws Exception, DevException {
         logger.info("Fetching all randoms in store {}", storeId);
         if (!authRepo.validToken(token)) {
             logger.error("Invalid token in getAllRandomInStore");
@@ -417,13 +417,13 @@ public class StoreService {
             throw new Exception(" store does not exist.");
         }
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-            throw new UIException("you have no permession to see random info.");
+            throw new UIException("you have no permession to see random info.",ErrorCodes.NO_PERMISSION);
         }
         if (this.storeRepo.findStoreByID(storeId) == null) {
             throw new Exception(" store does not exist.");
         }
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-            throw new UIException("you have no permession to see random info.");
+            throw new UIException("you have no permession to see random info.",ErrorCodes.NO_PERMISSION);
         }
         return storeRepo.getRandomsInStore(storeId, userId);
     }
