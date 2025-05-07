@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.IncorrectLogin;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
@@ -35,7 +36,7 @@ public class Suspendtests {
     private IUserRepo userRepo = new UserRepository(enc, a);
     private UserSuspensionService ss = new UserSuspensionService(sss, userRepo, auth);
 
-    private int goodLogin(String username, String password) {
+    private int goodLogin(String username, String password) throws UIException {
         int userIdFromRegister = userRepo.registerUser(username, password);
         int userIdFromLogIn = userRepo.login(username, password);
         return userIdFromLogIn;
@@ -44,7 +45,7 @@ public class Suspendtests {
     
 
     @Test
-    public void test_suspendRegisteredUser() throws InterruptedException {
+    public void test_suspendRegisteredUser() throws InterruptedException, UIException {
         // need to fix admin
         int adminId = goodLogin("adminUser2", "adminPass2");
         int userId = userRepo.registerUser("suspendedUser", "pass123");
@@ -63,7 +64,7 @@ public class Suspendtests {
     }
 
     @Test
-    public void test_suspendGuestUser() throws InterruptedException {
+    public void test_suspendGuestUser() throws InterruptedException, UIException {
         //need to fix admin
         int adminId = goodLogin("adminUser3", "adminPass3");
         int guestId = userRepo.generateGuest();

@@ -19,6 +19,7 @@ import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Exceptions.DevException;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.CartItem;
 
@@ -109,54 +110,54 @@ public class Store {
     }
 
     // remove product -> quantity=0
-    public void removeItem(int itemId) throws Exception {
+    public void removeItem(int itemId) throws UIException {
         item foundItem = getItemByProductId(itemId);
         if (foundItem == null) {
-            throw new Exception("Item not fount with ID " + itemId);
+            throw new UIException("Item not found with ID " + itemId, ErrorCodes.PRODUCT_NOT_FOUND);
         }
-        foundItem.changeQuantity(0); // Set quantity to 0 — and that's it
+        foundItem.changeQuantity(0);
     }
+    
 
     //update quantity
-    public void changeQuantity(int itemId, int quantity) throws Exception {
+    public void changeQuantity(int itemId, int quantity) throws UIException {
         item foundItem = getItemByProductId(itemId);
         if (foundItem == null) {
-            throw new Exception("Item not fount with ID " + itemId);
+            throw new UIException("Item not found with ID " + itemId, ErrorCodes.PRODUCT_NOT_FOUND);
         }
         foundItem.changeQuantity(quantity);
     }
 
     //decrase quantity to buy: -> check if I need synchronized the item???
-    public void decreaseQtoBuy(int itemId,int quantity) throws Exception {
-        item foundItem = getItemByProductId(itemId);
-        if (foundItem == null) {
-            throw new Exception("Item not fount with ID " + itemId);
-        }
-        foundItem.changeQuantity(foundItem.getQuantity() - quantity);
+   
+public void decreaseQtoBuy(int itemId, int quantity) throws UIException {
+    item foundItem = getItemByProductId(itemId);
+    if (foundItem == null) {
+        throw new UIException("Item not found with ID " + itemId, ErrorCodes.PRODUCT_NOT_FOUND);
     }
+    foundItem.changeQuantity(foundItem.getQuantity() - quantity);
+}
 
-    // update price
-    public void updatePrice(int itemId, int newPrice) throws Exception {
-        item foundItem = getItemByProductId(itemId);
-        if (foundItem == null) {
-            throw new Exception("Item not fount with ID " + itemId);
-        } else {
-            foundItem.setPrice(newPrice);
-        }
+public void updatePrice(int itemId, int newPrice) throws UIException {
+    item foundItem = getItemByProductId(itemId);
+    if (foundItem == null) {
+        throw new UIException("Item not found with ID " + itemId, ErrorCodes.PRODUCT_NOT_FOUND);
     }
+    foundItem.setPrice(newPrice);
+}
 
     // rank product 
-    public void rankProduct(int productId, int newRank) {
+    public void rankProduct(int productId, int newRank) throws UIException {
         item currenItem = getItemByProductId(productId);
         if (currenItem != null) {
             AtomicInteger[] ranks = currenItem.getRank();
-            if (newRank >= 0 && newRank < ranks.length) {
+            if (newRank >= 1 && newRank <= ranks.length) {
                 ranks[newRank - 1].incrementAndGet();  // thread-safe increment
             } else {
-                throw new IllegalArgumentException("Invalid rank index: " + newRank);
+                throw new UIException("Invalid rank index: " + newRank, ErrorCodes.INVALID_RANK);
             }
         } else {
-            throw new IllegalArgumentException("Product ID not found: " + productId);
+            throw new UIException("Product ID not found: " + productId, ErrorCodes.PRODUCT_NOT_FOUND);
         }
     }
 
@@ -177,7 +178,7 @@ public class Store {
     }
 
     // //search product by category //no need for it 
-    // public List<ItemStoreDTO> getItemsByCategory(Category category) throws Exception {
+    // public List<ItemStoreDTO> getItemsByCategory(Category category) throws UIException {
     //     List<ItemStoreDTO> itemStoreDTOList = new ArrayList<>();
     //     List<item> items = stock.get(category);
     //     if (items == null) {
@@ -190,7 +191,7 @@ public class Store {
     //     return itemStoreDTOList;
     // }
     //just for testing
-    //public List<item> getItemsByCategoryObject(Category category) throws Exception {
+    //public List<item> getItemsByCategoryObject(Category category) throws UIException {
     public List<item> getItemsByCategoryObject(Category category) {
         // Use computeIfAbsent to safely retrieve or create the list for the category
         return stock.computeIfAbsent(category, k -> new ArrayList<>());
@@ -241,11 +242,11 @@ public class Store {
 
     }
 
-    public SingleBid bidOnAuctionProduct(int auctionId, int userId, double price) throws Exception {
+    public SingleBid bidOnAuctionProduct(int auctionId, int userId, double price) throws DevException ,UIException {
         return activePurchases.addUserBidToAuction(auctionId, userId, price);
     }
 
-    public int addProductToAuction(int userid, int productId, int quantity, double startPrice, long time) throws Exception {
+    public int addProductToAuction(int userid, int productId, int quantity, double startPrice, long time) throws UIException {
         // checkPermessionForSpecialSell(userid);
         decreaseFromQuantity(quantity, productId);
         return activePurchases.addProductToAuction(productId, quantity, time);
@@ -254,13 +255,13 @@ public class Store {
     // private void checkPermessionForSpecialSell(int userid) {
     //     throw new UnsupportedOperationException("Unimplemented method 'checkPermessionForSpecialSell'");
     // }
-    public int addProductToBid(int userid, int productId, int quantity) throws Exception {
+    public int addProductToBid(int userid, int productId, int quantity) throws DevException ,UIException {
         // checkPermessionForSpecialSell(userid);
         decreaseFromQuantity(quantity, productId);
         return activePurchases.addProductToBid(productId, quantity);
     }
 
-    public SingleBid bidOnBid(int bidId, int userid, double price) throws Exception {
+    public SingleBid bidOnBid(int bidId, int userid, double price) throws DevException ,UIException {
         return activePurchases.addUserBidToBid(bidId, userid, price);
     }
 
@@ -268,13 +269,15 @@ public class Store {
         return activePurchases.getBids();
     }
 
-    private void decreaseFromQuantity(int quantity, int id) throws Exception {
+    private void decreaseFromQuantity(int quantity, int id) throws UIException {
         item item = getItemById(id);
+        if (item == null) {
+            throw new UIException("Item not found with ID " + id, ErrorCodes.PRODUCT_NOT_FOUND);
+        }
         if (item.getQuantity() < quantity) {
-            throw new UIException("stock not enought to make this auction .");
+            throw new UIException("Stock not enough to make this auction.", ErrorCodes.INSUFFICIENT_STOCK);
         }
         item.changeQuantity(item.getQuantity() - quantity);
-        // return item;
     }
 
     private item getItemById(int productId) {
@@ -292,21 +295,21 @@ public class Store {
         return activePurchases.getAuctions();
     }
 
-    public SingleBid acceptBid(int bidId, int userBidId) throws Exception {
+    public SingleBid acceptBid(int bidId, int userBidId) throws DevException ,UIException {
         return activePurchases.acceptBid(userBidId, bidId);
     }
 
     //====================== random
-    public int addProductToRandom(int productId, int quantity, double productPrice, int storeId, long RandomTime) throws Exception {
+    public int addProductToRandom(int productId, int quantity, double productPrice, int storeId, long RandomTime) throws UIException {
         decreaseFromQuantity(quantity, productId);
         return activePurchases.addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
     }
 
-    public ParticipationInRandomDTO participateInRandom(int userId, int randomid, double amountPaid) throws Exception {
+    public ParticipationInRandomDTO participateInRandom(int userId, int randomid, double amountPaid) throws UIException {
         return activePurchases.participateInRandom(userId, randomid, amountPaid);
     }
 
-    public ParticipationInRandomDTO end(int randomId) throws Exception {
+    public ParticipationInRandomDTO end(int randomId)  throws DevException ,UIException {
         return activePurchases.endRandom(randomId);
     }
 
@@ -321,7 +324,7 @@ public class Store {
         return activePurchases.getProductPrice(randomId);
     }
 
-    public boolean rejectBid(int bidId, int userBidId) throws Exception {
+    public boolean rejectBid(int bidId, int userBidId) throws DevException ,UIException {
         activePurchases.rejectBid(userBidId, bidId);
         return true;
     }
@@ -330,44 +333,44 @@ public class Store {
         return getFinalRateInStore(storeID);
     }
 
-    // public boolean rejectBid(int bidId, int userBidId) throws Exception {
+    // public boolean rejectBid(int bidId, int userBidId) throws UIException {
     //     activePurchases.rejectBid(userBidId,bidId);
     //     return true;
     // }
 // <<<<<<< HEAD
 // =======
 
-    public Random getRandom(int randomId) throws Exception {
+    public Random getRandom(int randomId) throws DevException ,UIException {
         return activePurchases.getRandom(randomId);
     }
 
 // >>>>>>> development
 
 
-    public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems, boolean isGuest, String storeName) throws Exception {
-        List<ReceiptProduct> boughtItems = new ArrayList<>();
-        for (ItemCartDTO dto : cartItems) {
-            CartItem item = new CartItem(dto);
-            item storeItem = getItemByProductId(item.getProductId());
+public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems, boolean isGuest, String storeName) throws UIException {
+    List<ReceiptProduct> boughtItems = new ArrayList<>();
+    for (ItemCartDTO dto : cartItems) {
+        CartItem item = new CartItem(dto);
+        item storeItem = getItemByProductId(item.getProductId());
 
-            if (storeItem == null || storeItem.getQuantity() < item.getQuantity()) {
-                if (isGuest) {
-                    throw new Exception("insufficient stock during Guest purchase.");
-                } else {
-                    continue;
-                }
+        if (storeItem == null || storeItem.getQuantity() < item.getQuantity()) {
+            if (isGuest) {
+                throw new UIException("Insufficient stock during guest purchase.", ErrorCodes.INSUFFICIENT_STOCK);
+            } else {
+                continue;
             }
-            decreaseQtoBuy(item.getProductId(), item.getQuantity());
-            boughtItems.add(new ReceiptProduct(
-                    item.getName(),
-                    item.getCategory(),
-                    item.getDescription(),
-                    storeName,
-                    item.getQuantity(),
-                    item.getPrice()
-            ));
         }
-        return boughtItems;
+        decreaseQtoBuy(item.getProductId(), item.getQuantity());
+        boughtItems.add(new ReceiptProduct(
+                item.getName(),
+                item.getCategory(),
+                item.getDescription(),
+                storeName,
+                item.getQuantity(),
+                item.getPrice()
+        ));
     }
+    return boughtItems;
+}
 
 }

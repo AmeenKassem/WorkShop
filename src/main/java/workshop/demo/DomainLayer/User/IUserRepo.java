@@ -5,6 +5,7 @@ import java.util.List;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public interface IUserRepo {
 
@@ -18,7 +19,7 @@ public interface IUserRepo {
      * @return the new token of loged user
      * 
      */
-    public int login(String username,String password);
+    public int login(String username,String password)throws UIException;
 
 
 
@@ -29,7 +30,7 @@ public interface IUserRepo {
      * 
      * @return new id for guest
      */
-    public int logoutUser(String username);
+    public int logoutUser(String username)throws UIException;
 
 
     /**
@@ -44,7 +45,7 @@ public interface IUserRepo {
      * @param username
      * @param password
      */
-    public int registerUser( String username, String password);
+    public int registerUser( String username, String password)throws UIException;
 
 
     /**
@@ -56,18 +57,18 @@ public interface IUserRepo {
     
     //===========
 
-    public void addItemToGeustCart(int guestId, ItemCartDTO item);
+    public void addItemToGeustCart(int guestId, ItemCartDTO item)throws UIException;
     
-    public void removeItemFromGeustCart(int guestId, int productId);
+    public void removeItemFromGeustCart(int guestId, int productId)throws UIException;
 
 
 
-    public boolean isAdmin(int id);
+    public boolean isAdmin(int id)throws UIException;
 
-    public boolean isRegistered(int id);
+    public boolean isRegistered(int id)throws UIException;
 
 
-    public boolean isOnline(int id);
+    public boolean isOnline(int id)throws UIException;
     
     //===========
 
@@ -79,7 +80,7 @@ public interface IUserRepo {
      * @param adminKey
      * @return
      */
-    public boolean setUserAsAdmin(int id ,String adminKey);
+    public boolean setUserAsAdmin(int id ,String adminKey)throws UIException;
 
 
 
@@ -94,34 +95,34 @@ public interface IUserRepo {
      * this function must add a bid to user regular cart.
      * @param bid
      */
-    public void addBidToRegularCart(SingleBid bid);
+    public void addBidToRegularCart(SingleBid bid)throws UIException;
 
     /**
      * this function must add a bid to user auction cart.
      * @param bid
      */
-    public void addBidToAuctionCart(SingleBid bid);
+    public void addBidToAuctionCart(SingleBid bid)throws UIException;
 
 
     /**
      * this will add the card to user special cart
      * @param card
      */
-    public void ParticipateInRandom(ParticipationInRandomDTO card);
+    public void ParticipateInRandom(ParticipationInRandomDTO card)throws UIException;
 
 
-    public List<SingleBid> getWinningBids(int userId);
-    public List<ParticipationInRandomDTO> getWinningCards(int userId);
+    public List<SingleBid> getWinningBids(int userId) throws UIException;
+    public List<ParticipationInRandomDTO> getWinningCards(int userId) throws UIException;
 
        /**
      * Returns the shopping cart of the user (guest or registered)
      * @param userId the id of the user
      * @return ShoppingCart instance
      */
-    public ShoppingCart getUserCart(int userId);
+    public ShoppingCart getUserCart(int userId)throws UIException;
 
 
 
 
-    public List<ItemCartDTO> getCartForUser(int ownerId);
+    public List<ItemCartDTO> getCartForUser(int ownerId)throws UIException;
 }

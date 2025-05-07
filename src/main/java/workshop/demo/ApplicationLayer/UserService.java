@@ -3,11 +3,11 @@ package workshop.demo.ApplicationLayer;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
-import workshop.demo.DomainLayer.Exceptions.TokenNotFoundException;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
 public class UserService {
-
     private IUserRepo userRepo;
     private IAuthRepo authRepo;
 
@@ -16,83 +16,63 @@ public class UserService {
         this.authRepo = authRepo;
     }
 
-    public String generateGuest() {
+    public String generateGuest() throws UIException {
         int id = userRepo.generateGuest();
         return authRepo.generateGuestToken(id);
     }
 
-    public void register(String token, String username, String password) {
+    public void register(String token, String username, String password) throws UIException {
         if (authRepo.validToken(token)) {
             userRepo.registerUser(username, password);
         } else {
-            throw new TokenNotFoundException();
+            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
     }
 
-    public String login(String token, String username, String pass) {
+    public String login(String token, String username, String pass) throws UIException {
         if (authRepo.validToken(token)) {
             int id = userRepo.login(username, pass);
             return authRepo.generateUserToken(id, username);
         } else {
-            throw new TokenNotFoundException();
+            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
     }
 
-    public void destroyGuest(String token) {
+    public void destroyGuest(String token) throws UIException {
         if (authRepo.validToken(token)) {
             int id = authRepo.getUserId(token);
             userRepo.destroyGuest(id);
+        } else {
+            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
     }
 
-    public String logoutUser(String token) {
+    public String logoutUser(String token) throws UIException {
         if (authRepo.validToken(token)) {
             String userName = authRepo.getUserName(token);
             int id = userRepo.logoutUser(userName);
             return authRepo.generateGuestToken(id);
         } else {
-            throw new TokenNotFoundException();
+            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
     }
 
-    public boolean setAdmin(String token, String adminKey) {
+    public boolean setAdmin(String token, String adminKey) throws UIException {
         if (authRepo.validToken(token)) {
             String userName = authRepo.getUserName(token);
             int id = userRepo.logoutUser(userName);
             return userRepo.setUserAsAdmin(id, adminKey);
         } else {
-            throw new TokenNotFoundException();
+            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
     }
 
-    //it's for guest must do something else for user
-    public boolean addToUserCart(String token, ItemStoreDTO itemToAdd) throws Exception {
+    public boolean addToUserCart(String token, ItemStoreDTO itemToAdd) throws UIException {
         if (!authRepo.validToken(token)) {
-            throw new TokenNotFoundException();
+            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
         ItemCartDTO item = new ItemCartDTO(itemToAdd);
         userRepo.addItemToGeustCart(authRepo.getUserId(token), item);
         return true;
-    }
-
-    //the signture must be changed
-    public String updateProfile(String token) throws Exception {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    public String RemoveUser(String token, String userToRemove) throws Exception {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    //must user order repo to take all the history
-    //use this ->     public List<OrderDTO> getAllOrdersInSystem()
-    public String ViewSystemPurchaseHistory(String token) throws Exception {
-        throw new UnsupportedOperationException("Not implemented yet");
-
-    }
-
-    //what is that???
-    public String ViewSystemInfo(String token) throws Exception {
-        throw new UnsupportedOperationException("Not implemented yet");
     }
 }

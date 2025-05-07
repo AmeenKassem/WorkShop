@@ -1,29 +1,26 @@
 package workshop.demo.ApplicationLayer;
 
 import java.time.Duration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 
 public class UserSuspensionService {
-
     private final IUserSuspensionRepo repo;
     private final ScheduledExecutorService scheduler;
     private final IUserRepo userRepo;
     private final IAuthRepo authRepo;
-    private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
-
-    
-    
-    
-
+    private static final Logger logger = LoggerFactory.getLogger(UserSuspensionService.class);
 
     public UserSuspensionService(IUserSuspensionRepo repo, IUserRepo userRepo, IAuthRepo authRepo) {
         this.repo = repo;
@@ -33,48 +30,26 @@ public class UserSuspensionService {
         startScheduler();
     }
 
-    public void suspendRegisteredUser(String username, int minutes, String adminToken) {
+    public void suspendRegisteredUser(String username, int minutes, String adminToken) throws UIException {
         validateAdmin(adminToken);
-
         if (repo.getSuspensionByUsername(username) != null) {
-            logger.info("User " + username + " is already suspended."); // change to execption later
-            return;
+            throw new UIException("User " + username + " is already suspended.", ErrorCodes.SUSPENSION_ALREADY_EXISTS);
         }
-
         Duration duration = Duration.ofMinutes(minutes);
         UserSuspension suspension = new UserSuspension(null, username, duration);
         repo.save(suspension);
         logger.info("User " + username + " suspended for " + minutes + " minutes.");
     }
 
-    public void suspendGuestUser(int guestId, int minutes, String adminToken) {
+    public void suspendGuestUser(int guestId, int minutes, String adminToken) throws UIException {
         validateAdmin(adminToken);
-
         if (repo.getSuspensionByUserId(guestId) != null) {
-            logger.info("Guest " + guestId + " is already suspended."); // change later
-            return;
+            throw new UIException("Guest " + guestId + " is already suspended.", ErrorCodes.SUSPENSION_ALREADY_EXISTS);
         }
-
         Duration duration = Duration.ofMinutes(minutes);
         UserSuspension suspension = new UserSuspension(guestId, null, duration);
         repo.save(suspension);
         logger.info("Guest " + guestId + " suspended for " + minutes + " minutes.");
-    }
-
-    public void pauseUser(int userId, String username) {
-        UserSuspension suspension = getSuspension(userId, username);
-        if (suspension != null) {
-            suspension.pause();
-            logger.info("Suspension paused.");
-        }
-    }
-
-    public void resumeUser(int userId, String username) {
-        UserSuspension suspension = getSuspension(userId, username);
-        if (suspension != null) {
-            suspension.resume();
-            logger.info("Suspension resumed.");
-        }
     }
 
     private void startScheduler() {
@@ -88,12 +63,17 @@ public class UserSuspensionService {
         }, 0, 10, TimeUnit.SECONDS);
     }
 
-    private void validateAdmin(String token) {
-        return;
-    //    if (!authRepo.validToken(token)) throw new RuntimeException("Invalid admin token.");
-      //  int adminId = authRepo.getUserId(token);
-       // if (!userRepo.isAdmin(adminId)) throw new RuntimeException("Only admins can suspend.");
+    private void validateAdmin(String token) throws UIException {
+        if (!authRepo.validToken(token)) {
+            throw new UIException("Invalid admin token.", ErrorCodes.INVALID_TOKEN);
+        }
+        int adminId = authRepo.getUserId(token);
+        if (!userRepo.isAdmin(adminId)) {
+            throw new UIException("Only admins can suspend.", ErrorCodes.NO_PERMISSION);
+        }
     }
+
+
 
     private UserSuspension getSuspension(Integer userId, String username) {
         if (username != null) {
@@ -102,8 +82,10 @@ public class UserSuspensionService {
             return repo.getSuspensionByUserId(userId);
         }
     }
+
     public boolean isUserSuspended(Integer userId, String username) {
         UserSuspension suspension = getSuspension(userId, username);
         return suspension != null && !suspension.isExpired();
     }
 }
+

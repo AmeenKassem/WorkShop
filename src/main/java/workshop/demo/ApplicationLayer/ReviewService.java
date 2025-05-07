@@ -7,20 +7,19 @@ import org.slf4j.LoggerFactory;
 
 import workshop.demo.DTOs.MessageDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Review.IReviewRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
 public class ReviewService {
-
-    //public void AddReviewToProduct(String token, int storeId, int productId, String review);
-    //to store also 
     private IReviewRepo reviewRepo;
     private IAuthRepo authRepo;
     private IUserRepo userRepo;
     private IStoreRepo storeRepo;
 
-    private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
 
     public ReviewService(IReviewRepo reviewRepo, IAuthRepo authRepo, IUserRepo userRepo, IStoreRepo storeRepo) {
         this.authRepo = authRepo;
@@ -30,57 +29,41 @@ public class ReviewService {
         logger.info("created review service");
     }
 
-    public void AddReviewToProduct(String token, int storeId, int productId, MessageDTO review) throws Exception {
+    public void AddReviewToProduct(String token, int storeId, int productId, MessageDTO review) throws UIException {
         logger.info("about to add review to product: {} in store: {}", productId, storeId);
-        try {
-            if (!authRepo.validToken(token)) {
-                throw new Exception("unvalid token!");
-            }
-            //who can make the review, the guest or user or both?????
-            if (this.storeRepo.findStoreByID(storeId) == null) {
-                throw new Exception("store not found!");
-            }
-            //also must check if this item exists in this store -> tomorrow!
-            this.reviewRepo.AddReviewToProduct(storeId, productId, review);
-            logger.info("added review succesfully!");
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-
+        if (!authRepo.validToken(token)) {
+            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
-    }
-
-    public void AddReviewToStore(String token, int storeId, MessageDTO review) throws Exception {
-        logger.info("about to add review to store: {}", storeId);
-        try {
-            if (!authRepo.validToken(token)) {
-                throw new Exception("unvalid token!");
-            }
-            //who can make the review, the guest or user or both?????
-            if (this.storeRepo.findStoreByID(storeId) == null) {
-                throw new Exception("store not found!");
-            }
-            //also must check if this item exists in this store -> tomorrow!
-            this.reviewRepo.AddReviewToStore(storeId, review);
-            logger.info("added review succesfully!");
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-
-        }
-
-    }
-
-    public List<MessageDTO> getReviewsForStore(int storeId) throws Exception {
         if (this.storeRepo.findStoreByID(storeId) == null) {
-            throw new Exception("store not found!");
+            throw new UIException("Store not found!", ErrorCodes.STORE_NOT_FOUND);
+        }
+        this.reviewRepo.AddReviewToProduct(storeId, productId, review);
+        logger.info("added review successfully!");
+    }
+
+    public void AddReviewToStore(String token, int storeId, MessageDTO review) throws UIException {
+        logger.info("about to add review to store: {}", storeId);
+        if (!authRepo.validToken(token)) {
+            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
+        }
+        if (this.storeRepo.findStoreByID(storeId) == null) {
+            throw new UIException("Store not found!", ErrorCodes.STORE_NOT_FOUND);
+        }
+        this.reviewRepo.AddReviewToStore(storeId, review);
+        logger.info("added review successfully!");
+    }
+
+    public List<MessageDTO> getReviewsForStore(int storeId) throws UIException {
+        if (this.storeRepo.findStoreByID(storeId) == null) {
+            throw new UIException("Store not found!", ErrorCodes.STORE_NOT_FOUND);
         }
         return this.reviewRepo.getReviewsForStore(storeId);
     }
 
-    public List<MessageDTO> getReviewsForProduct(int storeId, int productId) throws Exception {
+    public List<MessageDTO> getReviewsForProduct(int storeId, int productId) throws UIException {
         if (this.storeRepo.findStoreByID(storeId) == null) {
-            throw new Exception("store not found!");
+            throw new UIException("Store not found!", ErrorCodes.STORE_NOT_FOUND);
         }
         return this.reviewRepo.getReviewsForProduct(storeId, productId);
-
     }
 }

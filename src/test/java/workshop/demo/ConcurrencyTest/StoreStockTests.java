@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import workshop.demo.DTOs.Category;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.Store.item;
 
@@ -144,7 +145,7 @@ public class StoreStockTests {
             executorService.submit(() -> {
                 try {
                     store.rankProduct(1, rank);  // Rank product with productId 1
-                } catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException | UIException e) {
                     fail("Exception occurred during ranking: " + e.getMessage());
                 }
             });
