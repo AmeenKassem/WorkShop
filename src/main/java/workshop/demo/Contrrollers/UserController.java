@@ -1,22 +1,29 @@
 package workshop.demo.Contrrollers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
+import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.Response;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
-    private final UserService userService;
+    private  UserService userService;
+    private OrderService orderService;
 
     @Autowired
     public UserController(Repos repos) {
         this.userService = new UserService(repos.userRepo, repos.auth);
+        this.orderService= new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
+        
     }
 
     @ModelAttribute
@@ -42,10 +49,10 @@ public class UserController {
     public String register(@RequestParam String token,
                            @RequestParam String username,
                            @RequestParam String password) {
-        Response<String> res;
+        Response<Boolean> res;
         try {
             userService.register(token, username, password);
-            res = new Response<>("done", null);
+            res = new Response<>(true, null);
         } catch (UIException ex) {
             res = new Response<>(null, ex.getMessage(), ex.getNumber());
         } catch (Exception e) {
@@ -60,8 +67,8 @@ public class UserController {
                         @RequestParam String password) {
         Response<String> res;
         try {
-            userService.login(token, username, password);
-            res = new Response<>("done", null);
+            String data = userService.login(token, username, password);
+            res = new Response<>(data, null);
         } catch (UIException ex) {
             res = new Response<>(null, ex.getMessage(), ex.getNumber());
         } catch (Exception e) {
@@ -72,10 +79,10 @@ public class UserController {
 
     @DeleteMapping("/destroyGuest")
     public String destroyGuest(@RequestParam String token) {
-        Response<String> res;
+        Response<Boolean> res;
         try {
             userService.destroyGuest(token);
-            res = new Response<>("done", null);
+            res = new Response<>(true, null);
         } catch (UIException ex) {
             res = new Response<>(null, ex.getMessage(), ex.getNumber());
         } catch (Exception e) {
@@ -88,8 +95,8 @@ public class UserController {
     public String logoutUser(@RequestParam String token) {
         Response<String> res;
         try {
-            userService.logoutUser(token);
-            res = new Response<>("done", null);
+            String newToken = userService.logoutUser(token);
+            res = new Response<>(newToken, null);
         } catch (UIException ex) {
             res = new Response<>(null, ex.getMessage(), ex.getNumber());
         } catch (Exception e) {
@@ -101,10 +108,10 @@ public class UserController {
     @PostMapping("/setAdmin")
     public String setAdmin(@RequestParam String token,
                            @RequestParam String adminKey) {
-        Response<String> res;
+        Response<Boolean> res;
         try {
-            userService.setAdmin(token, adminKey);
-            res = new Response<>("done", null);
+            boolean data = userService.setAdmin(token, adminKey);
+            res = new Response<>(data, null);
         } catch (UIException ex) {
             res = new Response<>(null, ex.getMessage(), ex.getNumber());
         } catch (Exception e) {
@@ -116,10 +123,10 @@ public class UserController {
     @PostMapping("/addToCart")
     public String addToUserCart(@RequestParam String token,
                                 @RequestBody ItemStoreDTO itemToAdd) {
-        Response<String> res;
+        Response<Boolean> res;
         try {
-            userService.addToUserCart(token, itemToAdd);
-            res = new Response<>("done", null);
+            
+            res = new Response<>(userService.addToUserCart(token, itemToAdd), null);
         } catch (UIException ex) {
             res = new Response<>(null, ex.getMessage(), ex.getNumber());
         } catch (Exception e) {
@@ -128,41 +135,46 @@ public class UserController {
         return res.toJson();
     }
 
-    @PutMapping("/updateProfile")
-    public String updateProfile(@RequestParam String token) {
-        Response<String> res;
-        try {
-            userService.updateProfile(token);
-            res = new Response<>("done", null);
-        } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
-        } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
-        }
-        return res.toJson();
-    }
+    // @PutMapping("/updateProfile")
+    // public String updateProfile(@RequestParam String token) {
+    //     Response<String> res;
+    //     try {
+    //         userService.updateProfile(token);
+    //         res = new Response<>("done", null);
+    //     } catch (UIException ex) {
+    //         res = new Response<>(null, ex.getMessage(), ex.getNumber());
+    //     } catch (Exception e) {
+    //         res = new Response<>(null, e.getMessage(), -1);
+    //     }
+    //     return res.toJson();
+    // }
 
-    @DeleteMapping("/removeUser")
-    public String removeUser(@RequestParam String token,
-                             @RequestParam String userToRemove) {
-        Response<String> res;
-        try {
-            userService.RemoveUser(token, userToRemove);
-            res = new Response<>("done", null);
-        } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
-        } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
-        }
-        return res.toJson();
-    }
+    // @DeleteMapping("/removeUser")
+    // public String removeUser(@RequestParam String token,
+    //                          @RequestParam String userToRemove) {
+    //     Response<String> res;
+    //     try {
+    //         userService.RemoveUser(token, userToRemove);
+    //         res = new Response<>("done", null);
+    //     } catch (UIException ex) {
+    //         res = new Response<>(null, ex.getMessage(), ex.getNumber());
+    //     } catch (Exception e) {
+    //         res = new Response<>(null, e.getMessage(), -1);
+    //     }
+    //     return res.toJson();
+    // }
 
     @GetMapping("/viewSystemPurchaseHistory")
     public String viewSystemPurchaseHistory(@RequestParam String token) {
-        Response<String> res;
+        Response<ReceiptDTO[]> res;
         try {
-            userService.ViewSystemPurchaseHistory(token);
-            res = new Response<>("done", null);
+            // userService.ViewSystemPurchaseHistory(token);
+            List<ReceiptDTO> listOrders = orderService.getReceiptDTOsByUser(token);
+            ReceiptDTO[] data = new ReceiptDTO[listOrders.size()];
+            for(int i=0;i<data.length;i++){
+                data[i]=listOrders.get(i);
+            }
+            res = new Response<>(data, null);
         } catch (UIException ex) {
             res = new Response<>(null, ex.getMessage(), ex.getNumber());
         } catch (Exception e) {
@@ -171,17 +183,17 @@ public class UserController {
         return res.toJson();
     }
 
-    @GetMapping("/viewSystemInfo")
-    public String viewSystemInfo(@RequestParam String token) {
-        Response<String> res;
-        try {
-            userService.ViewSystemInfo(token);
-            res = new Response<>("done", null);
-        } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
-        } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
-        }
-        return res.toJson();
-    }
+    // @GetMapping("/viewSystemInfo")
+    // public String viewSystemInfo(@RequestParam String token) {
+    //     Response<String> res;
+    //     try {
+    //         userService.ViewSystemInfo(token);
+    //         res = new Response<>("done", null);
+    //     } catch (UIException ex) {
+    //         res = new Response<>(null, ex.getMessage(), ex.getNumber());
+    //     } catch (Exception e) {
+    //         res = new Response<>(null, e.getMessage(), -1);
+    //     }
+    //     return res.toJson();
+    // }
 }
