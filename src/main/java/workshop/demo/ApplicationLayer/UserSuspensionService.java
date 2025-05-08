@@ -57,7 +57,8 @@ public class UserSuspensionService {
             for (UserSuspension s : repo.getAllSuspensions()) {
                 if (s.isExpired()) {
                     repo.removeSuspension(s.getUserId(), s.getUsername());
-                    logger.info("Suspension for " + (s.getUsername() != null ? s.getUsername() : s.getUserId()) + " has expired and was removed.");
+                    logger.info("Suspension for " + (s.getUsername() != null ? s.getUsername() : s.getUserId())
+                            + " has expired and was removed.");
                 }
             }
         }, 0, 10, TimeUnit.SECONDS);
@@ -73,8 +74,6 @@ public class UserSuspensionService {
         }
     }
 
-
-
     private UserSuspension getSuspension(Integer userId, String username) {
         if (username != null) {
             return repo.getSuspensionByUsername(username);
@@ -88,4 +87,3 @@ public class UserSuspensionService {
         return suspension != null && !suspension.isExpired();
     }
 }
-
