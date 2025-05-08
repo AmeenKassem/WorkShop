@@ -17,13 +17,15 @@ public class UserService {
     }
 
     public String generateGuest() throws UIException , Exception {
+
         int id = userRepo.generateGuest();
         return authRepo.generateGuestToken(id);
     }
 
-    public void register(String token, String username, String password) throws UIException {
+    public boolean register(String token, String username, String password) throws UIException {
         if (authRepo.validToken(token)) {
             userRepo.registerUser(username, password);
+            return true;
         } else {
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
@@ -38,10 +40,11 @@ public class UserService {
         }
     }
 
-    public void destroyGuest(String token) throws UIException {
+    public boolean destroyGuest(String token) throws UIException {
         if (authRepo.validToken(token)) {
             int id = authRepo.getUserId(token);
             userRepo.destroyGuest(id);
+            return true;
         } else {
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }

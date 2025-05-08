@@ -49,24 +49,22 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public int registerUser(String username, String password) throws UIException {
-        validPassword(username, password);// ) {
-        String encPass = encoder.encodePassword(password);
-        int id = idGen.getAndIncrement();
-        Registered userToAdd = new Registered(id, username, encPass);
-        users.put(username, userToAdd);
-        idToUsername.put(id, username);
-        logger.info("User " + username + " registered successfully");
-        return id;
-        // }else{
-        // throw
-        // // }
-        // logger.warning("Invalid password for user: " + username);
-        // return -1;
+    public int registerUser(String username, String password) {
+        if (validPassword(username, password)) {
+            String encPass = encoder.encodePassword(password);
+            int id = idGen.getAndIncrement();
+            Registered userToAdd = new Registered(id, username, encPass);
+            users.put(username, userToAdd);
+            idToUsername.put(id, username);
+            logger.info("User " + username + " registered successfully");
+            return id;
+        }
+        logger.warning("Invalid password for user: " + username);
+        return -1;
     }
 
-    private void validPassword(String username, String password) throws UIException {
-        if(userExist(username)) throw new UIException("username is already used ", ErrorCodes.USERNAME_ALREADY_USED);
+    private boolean validPassword(String username, String password) {
+        return !users.containsKey(username);
     }
 
     @Override
@@ -172,8 +170,7 @@ public class UserRepository implements IUserRepo {
             logger.info("Bid added to regular cart for user id: " + bid.getUserId());
         } catch (RuntimeException e) {
             logger.warning("User not found: " + bid.getUserId());
-            throw new RuntimeException(
-                    new UIException("User not found: " + bid.getUserId(), ErrorCodes.USER_NOT_FOUND));
+            throw new RuntimeException(new UIException("User not found: " + bid.getUserId(), ErrorCodes.USER_NOT_FOUND));
         }
     }
 
@@ -184,8 +181,7 @@ public class UserRepository implements IUserRepo {
             logger.info("Bid added to auction cart for user id: " + bid.getUserId());
         } catch (RuntimeException e) {
             logger.warning("User not found: " + bid.getUserId());
-            throw new RuntimeException(
-                    new UIException("User not found: " + bid.getUserId(), ErrorCodes.USER_NOT_FOUND));
+            throw new RuntimeException(new UIException("User not found: " + bid.getUserId(), ErrorCodes.USER_NOT_FOUND));
         }
     }
 

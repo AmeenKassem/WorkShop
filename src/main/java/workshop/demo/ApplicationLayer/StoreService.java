@@ -74,7 +74,7 @@ public class StoreService {
         return storeId;
     }
     
-    public void AddOwnershipToStore(int storeID, String token, int newOwnerId) {
+    public boolean AddOwnershipToStore(int storeID, String token, int newOwnerId) {
         try {
             if (!authRepo.validToken(token)) {
                 throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
@@ -100,16 +100,17 @@ public class StoreService {
                 logger.info("the new owner has approved!");
             } else {
                 logger.info("failed to add a new owner: the owner did not accept the offer");
-                return;
             }
             this.suConnectionRepo.AddOwnershipToStore(storeID, ownerID, newOwnerId);
             logger.info("added a new owner: {} by: {}", newOwnerId, ownerID);
         } catch (Exception e) {
             logger.error("failed to add a new owner, Error: {}", e.getMessage());
+            return false;
         }
+        return true;
     }
     
-    public void DeleteOwnershipFromStore(int storeID, String token, int OwnerToDelete) throws UIException {
+    public boolean DeleteOwnershipFromStore(int storeID, String token, int OwnerToDelete) throws UIException {
         try {
             if (!authRepo.validToken(token)) {
                 throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
@@ -132,10 +133,12 @@ public class StoreService {
             logger.info("the owner has been deleted successfly with his workers");
         } catch (Exception e) {
             logger.error("failed to delete the owner, Error: {}", e.getMessage());
+            return false;
         }
+        return true;
     }
 
-    public void AddManagerToStore(int storeID, String token, int managerId, List<Permission> autorization) throws Exception {
+    public boolean AddManagerToStore(int storeID, String token, int managerId, List<Permission> autorization) throws Exception {
         try {
             if (!authRepo.validToken(token)) {
                 throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
@@ -161,7 +164,6 @@ public class StoreService {
                 logger.info("the new manager has approved!");
             } else {
                 logger.info("failed to add a new manager: the manager did not accept the offer");
-                return;
             }
             this.suConnectionRepo.AddManagerToStore(storeID, ownerId, managerId);
             logger.info("the manager has been added successfly ");
@@ -170,10 +172,12 @@ public class StoreService {
 
         } catch (Exception e) {
             logger.error("failed to add the manager, Error: {}", e.getMessage());
+            return false;
         }
+        return true;
     }
     
-    public void changePermissions(String token, int managerId, int storeID, List<Permission> autorization) throws UIException {
+    public boolean changePermissions(String token, int managerId, int storeID, List<Permission> autorization) throws UIException {
         try {
             if (!authRepo.validToken(token)) {
                 throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
@@ -196,10 +200,12 @@ public class StoreService {
             logger.info("authorizations have been added/changed succsesfully!");
         } catch (Exception e) {
             logger.error("failed to give/change permission:, ERROR:", e.getMessage());
+            return false;
         }
+        return true;
     }
     
-    public void deleteManager(int storeId, String token, int managerId) throws UIException {
+    public boolean deleteManager(int storeId, String token, int managerId) throws UIException {
         try {
             if (!authRepo.validToken(token)) {
                 throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
@@ -222,7 +228,9 @@ public class StoreService {
             logger.info("the manager has been deleted successfly with his workers");
         } catch (Exception e) {
             logger.error("failed to delete the manager, Error: {}", e.getMessage());
+            return false;
         }
+        return true;
     }
     
     public boolean addBidOnAucction(String token, int auctionId, int storeId, double price) throws UIException, DevException {
@@ -438,7 +446,7 @@ public class StoreService {
         return null;
     }
     
-    public void addItem(int storeId, String token, int productId, int quantity, int price, Category category) throws UIException {
+    public boolean  addItem(int storeId, String token, int productId, int quantity, int price, Category category) throws UIException {
         try {
             logger.info("about to to add an item into store: {}", storeId);
             if (!authRepo.validToken(token)) {
@@ -455,10 +463,12 @@ public class StoreService {
             logger.info("item added sucessfully!");
         } catch (Exception e) {
             logger.error("could not add item: {} in store: {}, ERROR:", productId, storeId, e.getMessage());
+            return false;
         }
+        return true;
     }
     
-    public void removeItem(int storeId, String token, int productId) throws UIException {
+    public boolean  removeItem(int storeId, String token, int productId) throws UIException {
         try {
             logger.info("about to to remove(quantity=0) an item into store: {}", storeId);
             if (!authRepo.validToken(token)) {
@@ -476,10 +486,12 @@ public class StoreService {
             logger.info("item removed sucessfully!");
         } catch (Exception e) {
             logger.error("could not add item: {} in store: {}, ERROR:", productId, storeId, e.getMessage());
+            return false;
         }
+        return true;
     }
     
-    public void updateQuantity(int storeId, String token, int productId) throws UIException {
+    public boolean updateQuantity(int storeId, String token, int productId) throws UIException {
         try {
             logger.info("about to to update quantity from store: {}", storeId);
             if (!authRepo.validToken(token)) {
@@ -497,10 +509,12 @@ public class StoreService {
             logger.info("quantity updated sucessfully!");
         } catch (Exception e) {
             logger.error("could not update quantity ", e.getMessage());
+            return false;
         }
+        return true;
     }
     
-    public void updatePrice(int storeId, String token, int productId, int newPrice) throws UIException {
+    public boolean updatePrice(int storeId, String token, int productId, int newPrice) throws UIException {
         try {
             logger.info("about to to update price from store: {}", storeId);
             if (!authRepo.validToken(token)) {
@@ -518,10 +532,12 @@ public class StoreService {
             logger.info("price updated sucessfully!");
         } catch (Exception e) {
             logger.error("could not update price", e.getMessage());
+            return false;
         }
+        return true;
     }
     
-    public void rankProduct(int storeId, String token, int productId, int newRank) throws UIException {
+    public boolean  rankProduct(int storeId, String token, int productId, int newRank) throws UIException {
         try {
             logger.info("about to rank product in store: {}", storeId);
             if (!authRepo.validToken(token)) {
@@ -535,7 +551,9 @@ public class StoreService {
             logger.info("product ranked sucessfully!");
         } catch (Exception e) {
             logger.error("could not rank product", e.getMessage());
+            return false;
         }
+        return true;
     }
     
     // MUST CHECK WHO CAN DO IT???
@@ -562,7 +580,7 @@ public class StoreService {
         return this.storeRepo.getFinalRateInStore(storeId);
     }
     
-    public void deactivateteStore(int storeId, String token) throws UIException {
+    public boolean deactivateteStore(int storeId, String token) throws UIException {
         try {
             if (!authRepo.validToken(token)) {
                 throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
@@ -582,10 +600,12 @@ public class StoreService {
             logger.info("about to notify all the employees");
         } catch (Exception e) {
             logger.error("cannot deactivate this store, Error: {}", e.getMessage());
+            return false;
         }
+        return true;
     }
     
-    public void closeStore(int storeId, String token) {
+    public boolean closeStore(int storeId, String token) {
         try {
             if (!authRepo.validToken(token)) {
                 throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
@@ -605,7 +625,9 @@ public class StoreService {
             logger.info("about to notify all the employees");
         } catch (Exception e) {
             logger.error("cannot close this store, Error: {}", e.getMessage());
+            return false;
         }
+        return true;
     }
     
     public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws Exception {
