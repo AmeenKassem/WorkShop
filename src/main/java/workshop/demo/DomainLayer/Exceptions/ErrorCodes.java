@@ -29,4 +29,5 @@ public class ErrorCodes {
     // ✅ NEW ADDED CODES
     public static final int PRODUCT_NOT_AVAILABLE = 1025;
     public static final int INSUFFICIENT_PAYMENT = 1026;
+    public static final int USERNAME_ALREADY_USED = 1027;
 }

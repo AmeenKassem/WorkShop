@@ -16,7 +16,11 @@ public class UIException extends Exception {
     public String toString() {
         return "Error " + errorCode + ": " + getMessage();
     }
+
+    // }
+
+    public int getNumber() {
+        return this.errorCode;
+    }
+
 }
-/*
- * 
- */

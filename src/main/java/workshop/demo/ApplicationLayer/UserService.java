@@ -22,12 +22,11 @@ public class UserService {
         this.authRepo = authRepo;
     }
 
-    public String generateGuest() throws UIException {
+    public String generateGuest() throws UIException , Exception{
         logger.info("generateGuest called");
         int id = userRepo.generateGuest();
-        String token = authRepo.generateGuestToken(id);
-        logger.info("Generated guest with ID={}, token={}", id, token);
-        return token;
+        logger.info("Generated guest with ID={}", id);
+        return authRepo.generateGuestToken(id);
     }
 
     public void register(String token, String username, String password) throws UIException {
