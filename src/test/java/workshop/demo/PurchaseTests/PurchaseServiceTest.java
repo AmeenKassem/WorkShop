@@ -193,8 +193,11 @@ public class PurchaseServiceTest {
 
         // Add random to store
         long randomTime = System.currentTimeMillis() + 100000;
-        int randomId = storeRepo.addProductToRandom(userId, productId, 5, 20.0, storeId, randomTime);
 
+        int randomId = stockRepo.addProductToRandom( productId, 5, 20.0, storeId, randomTime);
+
+
+        
         when(paymentService.processPayment(any(), eq(20.0))).thenReturn(true); // Mock payment  
 
         PurchaseService service = new PurchaseService(authRepo, stockRepo, storeRepo, userRepo, purchaseRepo, orderRepo, paymentService, supplyService);

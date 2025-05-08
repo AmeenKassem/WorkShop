@@ -76,33 +76,10 @@ public interface IStoreRepo {
     //another: getting info about the history of purcheses in a specific store
     //auction:
     //done
-    public SingleBid bidOnAuction(int StoreId, int userId, int auctionId, double price) throws UIException, DevException ;
-
-    int addAuctionToStore(int StoreId, int userId, int productId, int quantity, long tome, double startPrice) throws UIException, DevException ;
-
-    AuctionDTO[] getAuctionsOnStore(int userId, int storeId) throws UIException, DevException ;
-
-    int addProductToBid(int storeId, int userid, int productId, int quantity) throws UIException, DevException ;
-
-    SingleBid bidOnBid(int bidId, double price, int userId, int storeId) throws UIException, DevException ;
-
-    BidDTO[] getAllBids(int userId, int storeId) throws UIException, DevException ;
-
-    boolean rejectBid(int userId, int storeId, int bidId, int userBidId) throws Exception;
-
-    SingleBid acceptBid(int storeId, int bidId, int userId, int userBidId) throws UIException, DevException ;
-
-    int addProductToRandom(int userId, int productId, int quantity, double productPrice, int storeId, long RandomTime) throws UIException, DevException ;
-
-    ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid) throws UIException, DevException ;
-
-    public ParticipationInRandomDTO endRandom(int storeId, int userId, int randomId) throws Exception;
-
-    RandomDTO[] getRandomsInStore(int storeId, int userId) throws UIException, DevException ;
 
     double getProductPrice(int storeId, int productId) throws UIException, DevException ;
 
-    public Random getRandomById(int randomId) throws UIException, DevException ;
+    
 
     item getItemByStoreAndProductId(int storeId, int productId) throws UIException, DevException ;
 

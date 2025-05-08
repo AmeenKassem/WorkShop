@@ -103,7 +103,7 @@ public class StockService {
         int userId = authRepo.getUserId(token);
         // if (userRepo.isRegistered(userId) && userRepo.isOnline(userId)) {
         userRepo.checkUserRegisterOnline(userId);
-        SingleBid bid = storeRepo.bidOnAuction(storeId, userId, auctionId, price);
+        SingleBid bid = stockRepo.bidOnAuction(storeId, userId, auctionId, price);
         userRepo.addBidToAuctionCart(bid);
         logger.info("Bid placed successfully by user: {} on auction: {}", userId, auctionId);
         return true;
@@ -116,7 +116,7 @@ public class StockService {
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline(userId);
         // if (userRepo.isRegistered(userId) && userRepo.isOnline(userId)) {
-        SingleBid bid = storeRepo.bidOnBid(bitId, price, userId, storeId);
+        SingleBid bid = stockRepo.bidOnBid(bitId, price, userId, storeId);
         userRepo.addBidToRegularCart(bid);
         logger.info("Regular bid successful by user: {}", userId);
         return true;
@@ -133,7 +133,7 @@ public class StockService {
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to see auctions info.", ErrorCodes.NO_PERMISSION);
         }
-        return storeRepo.getAuctionsOnStore(userId, storeId);
+        return stockRepo.getAuctionsOnStore( storeId);
     }
 
     public int setProductToAuction(String token, int storeId, int productId, int quantity, long time, double startPrice)
@@ -147,7 +147,7 @@ public class StockService {
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to set produt to auction.", ErrorCodes.NO_PERMISSION);
         }
-        return storeRepo.addAuctionToStore(storeId, userId, productId, quantity, time, startPrice);
+        return stockRepo.addAuctionToStore(storeId, productId, quantity, time, startPrice);
     }
 
     public int setProductToBid(String token, int storeid, int productId, int quantity) throws Exception {
@@ -162,7 +162,7 @@ public class StockService {
             throw new UIException("you have no permession to set product to bid.", ErrorCodes.NO_PERMISSION);
         }
 
-        return storeRepo.addProductToBid(storeid, userId, productId, quantity);
+        return stockRepo.addProductToBid(storeid, productId, quantity);
     }
 
     public BidDTO[] getAllBidsStatus(String token, int storeId) throws Exception, DevException {
@@ -176,7 +176,7 @@ public class StockService {
         }
         storeRepo.checkStoreExistance(storeId);
 
-        return storeRepo.getAllBids(userId, storeId);
+        return stockRepo.getAllBids( storeId);
     }
 
     public SingleBid acceptBid(String token, int storeId, int bidId, int bidToAcceptId) throws Exception, DevException {
@@ -190,7 +190,7 @@ public class StockService {
             throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
         }
 
-        SingleBid winner = storeRepo.acceptBid(storeId, bidId, userId, bidToAcceptId);
+        SingleBid winner = stockRepo.acceptBid(storeId, bidId,  bidToAcceptId);
         logger.info("Bid accepted. User: {} is the winner.", winner.getUserId());
         return winner;
     }
@@ -200,7 +200,7 @@ public class StockService {
         authRepo.checkAuth(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline(userId);
-        return storeRepo.addProductToRandom(userId, productId, quantity, productPrice, storeId, RandomTime);
+        return stockRepo.addProductToRandom( productId, quantity, productPrice, storeId, RandomTime);
     }
 
     public ParticipationInRandomDTO endBid(String token, int storeId, int randomId) throws Exception, DevException {
@@ -208,7 +208,7 @@ public class StockService {
         authRepo.checkAuth(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline(userId);
-        return storeRepo.endRandom(storeId, userId, randomId);
+        return stockRepo.endRandom(storeId,  randomId);
     }
 
     public RandomDTO[] getAllRandomInStore(String token, int storeId) throws Exception, DevException {
@@ -220,7 +220,7 @@ public class StockService {
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to see random info.", ErrorCodes.NO_PERMISSION);
         }
-        return storeRepo.getRandomsInStore(storeId, userId);
+        return stockRepo.getRandomsInStore(storeId);
     }
 
 }
