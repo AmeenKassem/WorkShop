@@ -44,27 +44,27 @@ public class StockService {
         return matchedItems;
     }
 
-    public String searchProductInStore(String token, int storeId, int productId) throws Exception {
-        logger.info("Searching for productId {} in storeId {}", productId, storeId);
-        if (!authRepo.validToken(token)) {
-            logger.error("Unauthorized access to searchProductInStore with token: {}", token);
-            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-        }
-        Product product = stockRepo.findById(productId);
-        if (product == null) {
-            logger.error("Product not found with ID: {}", productId);
-            throw new UIException("Product not found", ErrorCodes.PRODUCT_NOT_FOUND);
-        }
-        item itemInStore = storeRepo.getItemByStoreAndProductId(storeId, productId);
-        if (itemInStore == null) {
-            logger.warn("Product {} not sold in store {}", productId, storeId);
-            throw new UIException("Product not sold in this store", ErrorCodes.PRODUCT_NOT_FOUND);
-        }
-        String storeName = storeRepo.getStoreNameById(storeId);
-        logger.info("Product {} found in store {} (ID {})", product.getName(), storeName, storeId);
+    // public String searchProductInStore(String token, int storeId, int productId) throws Exception {
+    //     logger.info("Searching for productId {} in storeId {}", productId, storeId);
+    //     if (!authRepo.validToken(token)) {
+    //         logger.error("Unauthorized access to searchProductInStore with token: {}", token);
+    //         throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
+    //     }
+    //     Product product = stockRepo.findById(productId);
+    //     if (product == null) {
+    //         logger.error("Product not found with ID: {}", productId);
+    //         throw new UIException("Product not found", ErrorCodes.PRODUCT_NOT_FOUND);
+    //     }
+    //     item itemInStore = storeRepo.getItemByStoreAndProductId(storeId, productId);
+    //     if (itemInStore == null) {
+    //         logger.warn("Product {} not sold in store {}", productId, storeId);
+    //         throw new UIException("Product not sold in this store", ErrorCodes.PRODUCT_NOT_FOUND);
+    //     }
+    //     String storeName = storeRepo.getStoreNameById(storeId);
+    //     logger.info("Product {} found in store {} (ID {})", product.getName(), storeName, storeId);
 
-        return "Product: " + product.getName() + ", Price: " + itemInStore.getPrice() + ", Store: " + storeName;
-    }
+    //     return "Product: " + product.getName() + ", Price: " + itemInStore.getPrice() + ", Store: " + storeName;
+    // }
 
     public ProductDTO getProductInfo(String token, int productId) throws UIException {
         logger.info("Fetching product info for ID {}", productId);

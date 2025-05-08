@@ -3,15 +3,25 @@ package workshop.demo.InfrastructureLayer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import workshop.demo.DTOs.*;
+import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.*;
+import workshop.demo.DomainLayer.Store.ActivePurcheses;
 
 public class StockRepository implements IStockRepo {
 
     private HashMap<Category, List<Integer>> categoryToProductId = new HashMap<>();
     private HashMap<Integer, Product> idToProduct = new HashMap<>();
     private AtomicInteger idGen = new AtomicInteger(1);
+    private HashMap<Integer,ActivePurcheses> storeId2ActivePurchases = new HashMap<>();
+
+
+    private ActivePurcheses getActivePurchases(int storeId) throws UIException{
+        if(!storeId2ActivePurchases.containsKey(storeId))
+            throw new UIException("store not found on active purchases hashmap", ErrorCodes.STORE_NOT_FOUND);
+        return storeId2ActivePurchases.get(storeId);
+    }
 
     @Override
     public int addProduct(String name, Category category, String description, String[] keywords) {
@@ -54,5 +64,81 @@ public class StockRepository implements IStockRepo {
         if (product == null)
             return null;
         return new ProductDTO(product.getProductId(), product.getName(), product.getCategory(), product.getDescription());
+    }
+
+    @Override
+    public SingleBid bidOnAuction(int StoreId, int userId, int auctionId, double price)
+            throws UIException, DevException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'bidOnAuction'");
+    }
+
+    @Override
+    public int addAuctionToStore(int StoreId, int userId, int productId, int quantity, long tome, double startPrice)
+            throws UIException, DevException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addAuctionToStore'");
+    }
+
+    @Override
+    public AuctionDTO[] getAuctionsOnStore(int userId, int storeId) throws UIException, DevException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAuctionsOnStore'");
+    }
+
+    @Override
+    public int addProductToBid(int storeId, int userid, int productId, int quantity) throws UIException, DevException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addProductToBid'");
+    }
+
+    @Override
+    public SingleBid bidOnBid(int bidId, double price, int userId, int storeId) throws UIException, DevException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'bidOnBid'");
+    }
+
+    @Override
+    public BidDTO[] getAllBids(int userId, int storeId) throws UIException, DevException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAllBids'");
+    }
+
+    @Override
+    public boolean rejectBid(int userId, int storeId, int bidId, int userBidId) throws Exception {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'rejectBid'");
+    }
+
+    @Override
+    public SingleBid acceptBid(int storeId, int bidId, int userId, int userBidId) throws UIException, DevException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'acceptBid'");
+    }
+
+    @Override
+    public int addProductToRandom(int userId, int productId, int quantity, double productPrice, int storeId,
+            long RandomTime) throws UIException, DevException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addProductToRandom'");
+    }
+
+    @Override
+    public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
+            throws UIException, DevException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'participateInRandom'");
+    }
+
+    @Override
+    public ParticipationInRandomDTO endRandom(int storeId, int userId, int randomId) throws Exception {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'endRandom'");
+    }
+
+    @Override
+    public RandomDTO[] getRandomsInStore(int storeId, int userId) throws UIException, DevException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getRandomsInStore'");
     }
 }

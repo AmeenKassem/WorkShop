@@ -33,9 +33,7 @@ public class ProductSearchCriteria {
         this.maxStoreRating = maxStoreRating;
     }
 
-    public ProductSearchCriteria() {
-    }
-
+ 
     public boolean matchesForStore(item item) {
         if (item == null) {
             return false;
