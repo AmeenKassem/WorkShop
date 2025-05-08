@@ -68,4 +68,9 @@ public class ItemStoreDTO {
     public void setStoreId(int storeId) {
         this.storeId = storeId;
     }
+
+    public static ItemStoreDTO fromJSON(String itemToAddJson) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'fromJSON'");
+    }
 }

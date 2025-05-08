@@ -122,10 +122,10 @@ public class UserController {
 
     @PostMapping("/addToCart")
     public String addToUserCart(@RequestParam String token,
-                                @RequestBody ItemStoreDTO itemToAdd) {
+                                @RequestParam String itemToAddJson) {
         Response<Boolean> res;
         try {
-            
+            ItemStoreDTO itemToAdd = ItemStoreDTO.fromJSON(itemToAddJson);
             res = new Response<>(userService.addToUserCart(token, itemToAdd), null);
         } catch (UIException ex) {
             res = new Response<>(null, ex.getMessage(), ex.getNumber());
