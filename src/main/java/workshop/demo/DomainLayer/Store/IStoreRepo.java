@@ -35,7 +35,7 @@ public interface IStoreRepo {
     //-----------------------
     Store findStoreByID(int Id);
 
-    boolean StoreExistsByID(int ID);
+    boolean checkStoreExistance(int ID) throws UIException;
 
     //-----------------------------
     void deactivateStore(int storeId, int ownerId) throws Exception;

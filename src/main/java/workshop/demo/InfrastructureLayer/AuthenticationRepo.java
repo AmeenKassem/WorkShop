@@ -2,6 +2,9 @@ package workshop.demo.InfrastructureLayer;
 
 import java.util.Date;
 import javax.crypto.SecretKey;
+
+import org.slf4j.Logger;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -80,5 +83,13 @@ public class AuthenticationRepo implements IAuthRepo {
     @Override
     public boolean validToken(String token) {
         return validateToken(token);
+    }
+
+    @Override
+    public void checkAuth(String token,Logger logger) throws UIException {
+        if (!validToken(token)) {
+            logger.error("Invalid token on addRegularBid");
+            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
+        }
     }
 }

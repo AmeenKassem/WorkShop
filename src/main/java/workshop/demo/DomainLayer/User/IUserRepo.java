@@ -125,4 +125,9 @@ public interface IUserRepo {
 
 
     public List<ItemCartDTO> getCartForUser(int ownerId)throws UIException;
+
+
+
+
+    public void checkUserRegisterOnline(int userId) throws UIException;
 }

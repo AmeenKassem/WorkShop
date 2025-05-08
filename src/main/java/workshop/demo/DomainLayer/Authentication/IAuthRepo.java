@@ -1,5 +1,7 @@
 package workshop.demo.DomainLayer.Authentication;
 
+import org.slf4j.Logger;
+
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public interface IAuthRepo {
@@ -15,5 +17,7 @@ public interface IAuthRepo {
     public String generateUserToken(int id, String username)throws UIException;
 
     public boolean validToken(String token)throws UIException;
+
+    public void checkAuth(String token,Logger logger)throws UIException;
 
 }

@@ -216,4 +216,12 @@ public class UserRepository implements IUserRepo {
     public List<ItemCartDTO> getCartForUser(int ownerId) {
         throw new UnsupportedOperationException("Unimplemented method 'getCartForUser'");
     }
+
+    @Override
+    public void checkUserRegisterOnline(int userId) throws UIException {
+        if (!(isRegistered(userId) && isOnline(userId))) {
+            // logger.error("User not logged in for setProductToBid: {}", userId);
+            throw new UIException("You are not logged in!", ErrorCodes.USER_NOT_LOGGED_IN);
+        }
+    }
 }

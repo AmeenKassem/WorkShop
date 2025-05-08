@@ -86,13 +86,13 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public boolean StoreExistsByID(int ID) {
+    public boolean checkStoreExistance(int ID) throws UIException {
         for (Store store : this.stores) {
             if (store.getStoreID() == ID) {
                 return true;
             }
         }
-        return false;
+        throw new UIException(" store does not exist.",ErrorCodes.STORE_NOT_FOUND);
     }
 
     @Override

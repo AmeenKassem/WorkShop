@@ -90,11 +90,11 @@ public class ActivePurcheses {
         return activeBid.get(bidId).acceptBid(userBidId);
     }
 
-    public void rejectBid(int userBidId, int bidId) throws DevException ,UIException {
+    public boolean rejectBid(int userBidId, int bidId) throws DevException ,UIException {
         if (!activeBid.containsKey(bidId)) {
             throw new DevException("Bid ID not found in active bids!");
         }
-        activeBid.get(bidId).rejectBid(userBidId);
+        return activeBid.get(bidId).rejectBid(userBidId);
     }
 
     // ========== Random ==========
