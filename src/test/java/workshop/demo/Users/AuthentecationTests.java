@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 
 @SpringBootTest
@@ -13,7 +14,7 @@ public class AuthentecationTests {
     private final IAuthRepo auth = new AuthenticationRepo();
 
     @Test
-    public void testAuth() {
+    public void testAuth() throws UIException {
         int userId = 42;
         String userName = "test_user";
 
@@ -34,7 +35,7 @@ public class AuthentecationTests {
     }
 
     @Test
-    public void testGuestToken() {
+    public void testGuestToken() throws UIException {
         int guestId = 99;
 
         String guestToken = auth.generateGuestToken(guestId);

@@ -10,6 +10,7 @@ import workshop.demo.DomainLayer.Purchase.ISupplyService;
 import workshop.demo.DomainLayer.Review.IReviewRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 
@@ -26,6 +27,7 @@ public class Repos {
     public IReviewRepo reviewRepo;
     public IPaymentService paymentService;
     public ISupplyService supplyService;
+    public ISUConnectionRepo sUConnectionRepo;
     // public ProductFilter productFilter;
 
 }

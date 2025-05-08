@@ -5,13 +5,16 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
+
 public class Node {
 
     private int myId;
-    private Authorization myAuth;//null if owner
-    private boolean isManager;//false->owner
+    private Authorization myAuth; // null if owner
+    private boolean isManager; // false → owner
     private final List<Node> children;
-    private int parentId;//-1 if I'm the boss
+    private int parentId; // -1 if I'm the boss
 
     public Node(int myId, boolean isManager, int parentId) {
         this.myId = myId;
@@ -30,7 +33,6 @@ public class Node {
             this.children.add(child);
             child.parentId = this.myId;
         }
-
     }
 
     public Node getNode(int searchId) {
@@ -47,37 +49,37 @@ public class Node {
                 }
             }
         }
-
         return null; // not found
     }
 
-    //might delete later
-    public void addAuthrization(List<Permission> toAdd, int parentId) throws Exception {
+    public void addAuthrization(List<Permission> toAdd, int parentId) throws UIException {
         synchronized (this) {
             if (!isManager || myAuth == null) {
-                throw new Exception("the owner is fully authorized, can't manipulate the aothrization!");
+                throw new UIException("Owner is fully authorized; cannot manipulate authorization",
+                        ErrorCodes.NO_PERMISSION);
             }
             if (this.parentId != parentId) {
-                throw new Exception("this owner can't manipulate the authorization for this manager");
+                throw new UIException("This owner cannot manipulate authorization for this manager",
+                        ErrorCodes.NO_PERMISSION);
             }
             myAuth.addAuthorization(toAdd);
         }
-
     }
 
-    public void updateAuthorization(List<Permission> toAdd, int parentId) throws Exception {
+    public void updateAuthorization(List<Permission> toAdd, int parentId) throws UIException {
         synchronized (this) {
             if (!isManager || myAuth == null) {
-                throw new Exception("the owner is fully authorized, can't manipulate the aothrization!");
+                throw new UIException("Owner is fully authorized; cannot manipulate authorization",
+                        ErrorCodes.NO_PERMISSION);
             }
             if (this.parentId != parentId) {
-                throw new Exception("this owner can't manipulate the authorization for this manager");
+                throw new UIException("This owner cannot manipulate authorization for this manager",
+                        ErrorCodes.NO_PERMISSION);
             }
             myAuth.updateAuthorixation(toAdd);
         }
     }
 
-    //returns an instance of node and null iff not a child
     public Node getChild(int id) {
         for (Node chiNode : children) {
             if (chiNode.getMyId() == id) {
@@ -87,7 +89,6 @@ public class Node {
         return null;
     }
 
-    //here must check if it really deletes it----------------------
     public boolean deleteNode(int userId) {
         synchronized (this) {
             if (children == null || children.isEmpty()) {
@@ -102,7 +103,6 @@ public class Node {
                     iterator.remove(); // safely remove the child node
                     return true;
                 } else {
-                    // recursively search in child subtree
                     if (child.deleteNode(userId)) {
                         return true;
                     }
@@ -131,5 +131,4 @@ public class Node {
     public Authorization getMyAuth() {
         return myAuth;
     }
-
 }
