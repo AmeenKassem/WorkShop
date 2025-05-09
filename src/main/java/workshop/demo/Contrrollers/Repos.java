@@ -31,7 +31,7 @@ import workshop.demo.InfrastructureLayer.UserRepository;
 public class Repos {
 
     public static final IUserSuspensionRepo UserSuspensionRepo = new workshop.demo.InfrastructureLayer.UserSuspensionRepo();
-    public IUserRepo userRepo= new UserRepository(new Encoder(), new AdminInitilizer());
+    public IUserRepo userRepo= new UserRepository(new Encoder(), new AdminInitilizer("123321"));
     public IStoreRepo storeRepo=new StoreRepository();
     public AuthenticationRepo auth = new AuthenticationRepo();
     public INotificationRepo notificationRepo= new NotificationRepository();

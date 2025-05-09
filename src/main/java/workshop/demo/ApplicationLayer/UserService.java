@@ -90,13 +90,13 @@ public class UserService {
         }
     }
 
-    public boolean setAdmin(String token, String adminKey) throws UIException {
+    public boolean setAdmin(String token, String adminKey,int id) throws UIException {
         logger.info("setAdmin called");
 
         if (authRepo.validToken(token)) {
-            String userName = authRepo.getUserName(token);
-            int id = userRepo.logoutUser(userName);
-            logger.info("User {} set as admin: {}", userName);
+         //   String userName = authRepo.getUserName(token);
+            //int id = userRepo.logoutUser(userName);
+            logger.info("User {} set as admin: {}");
 
             return userRepo.setUserAsAdmin(id, adminKey);
         } else {

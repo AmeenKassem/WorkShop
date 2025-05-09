@@ -2,6 +2,7 @@ package workshop.demo.DomainLayer.User;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,10 @@ public class AdminInitilizer {
     private static final Logger logger = LoggerFactory.getLogger(AdminInitilizer.class);
 
     private String password;
+
+    public AdminInitilizer(String adminKey) {
+        password = adminKey;
+    }
 
     public String getPassword() {
         logger.debug("getPassword called");
@@ -33,5 +38,4 @@ public class AdminInitilizer {
         logger.debug("Password match result: {}", match);
         return match;
     }
-
 }
