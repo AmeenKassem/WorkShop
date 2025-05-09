@@ -14,8 +14,8 @@ import org.junit.jupiter.api.Test;
 
 import workshop.demo.DTOs.Category;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.Store.item;
 
 public class StoreStockTests {
 

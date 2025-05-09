@@ -23,13 +23,13 @@ import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Purchase.IPaymentService;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.ISupplyService;
+import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Stock.item;
+import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Stock.Product;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.item;
 
 public class PurchaseService {
 
@@ -76,14 +76,14 @@ public class PurchaseService {
             throw new UIException("Shopping cart is empty or not found", ErrorCodes.CART_NOT_FOUND);
         }
 
-        if (isGuest && !storeRepo.checkAvailability(cart.getAllCart())) {
+        if (isGuest && !stockRepo.checkAvailability(cart.getAllCart())) {
             throw new UIException("Not all items are available for guest purchase", ErrorCodes.PRODUCT_NOT_FOUND);
         }
 
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
         for (ShoppingBasket basket : cart.getBaskets().values()) {
-            List<ReceiptProduct> boughtItems = storeRepo.processCartItemsForStore(basket.getStoreId(), basket.getItems(), isGuest);
-            double total = storeRepo.calculateTotalPrice(boughtItems);
+            List<ReceiptProduct> boughtItems = stockRepo.processCartItemsForStore(basket.getStoreId(), basket.getItems(), isGuest);
+            double total = stockRepo.calculateTotalPrice(boughtItems);
             paymentService.processPayment(payment, total);
             supplyService.processSupply(supply);
             storeToProducts.put(basket.getStoreId(), boughtItems);
@@ -99,7 +99,7 @@ public class PurchaseService {
         if (!userRepo.isRegistered(userId)) {
             throw new UIException(String.format("User %d is not registered to the system!", userId), ErrorCodes.USER_NOT_FOUND);
         }
-        ParticipationInRandomDTO card = storeRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
+        ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
         userRepo.ParticipateInRandom(card);
         purchaseRepo.saveRandomParticipation(card);
         paymentService.processPayment(paymentDetails, amountPaid);
@@ -119,13 +119,13 @@ public class PurchaseService {
 
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
         for (ParticipationInRandomDTO card : userRepo.getWinningCards(userId)) {
-            storeRepo.validateAndDecreaseStock(card.storeId, card.productId, 1);
-            Product product = stockRepo.findById(card.productId);
+            stockRepo.validateAndDecreaseStock(card.storeId, card.productId, 1);
+            Product product = stockRepo.findByIdInSystem(card.productId);
             String storeName = storeRepo.getStoreNameById(card.storeId);
 
             ReceiptProduct receiptProduct = new ReceiptProduct(
-                product.getName(), product.getCategory(), product.getDescription(),
-                storeName, 1, 0
+                    product.getName(), product.getCategory(), product.getDescription(),
+                    storeName, 1, 0
             );
 
             storeToProducts.computeIfAbsent(card.storeId, k -> new ArrayList<>()).add(receiptProduct);
@@ -147,18 +147,20 @@ public class PurchaseService {
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
 
         for (SingleBid bid : userRepo.getWinningBids(userId)) {
-            if (bid.getType() != SpecialType.Auction) continue;
+            if (bid.getType() != SpecialType.Auction) {
+                continue;
+            }
 
-            Product product = stockRepo.findById(bid.getId());
+            Product product = stockRepo.findByIdInSystem(bid.getId());
             if (product == null) {
                 throw new UIException("Product not available", ErrorCodes.PRODUCT_NOT_FOUND);
             }
             String storeName = storeRepo.getStoreNameById(bid.getStoreId());
-            storeRepo.validateAndDecreaseStock(bid.getStoreId(), bid.getId(), bid.getAmount());
+            stockRepo.validateAndDecreaseStock(bid.getStoreId(), bid.getId(), bid.getAmount());
 
             ReceiptProduct receiptProduct = new ReceiptProduct(
-                product.getName(), product.getCategory(), product.getDescription(),
-                storeName, bid.getAmount(), (int) bid.getBidPrice()
+                    product.getName(), product.getCategory(), product.getDescription(),
+                    storeName, bid.getAmount(), (int) bid.getBidPrice()
             );
 
             storeToProducts.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
@@ -180,15 +182,17 @@ public class PurchaseService {
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
 
         for (SingleBid bid : userRepo.getWinningBids(userId)) {
-            if (bid.getType() != SpecialType.BID) continue;
+            if (bid.getType() != SpecialType.BID) {
+                continue;
+            }
 
-            Product product = stockRepo.findById(bid.getId());
+            Product product = stockRepo.findByIdInSystem(bid.getId());
             String storeName = storeRepo.getStoreNameById(bid.getStoreId());
-            storeRepo.validateAndDecreaseStock(bid.getStoreId(), bid.getId(), bid.getAmount());
+            stockRepo.validateAndDecreaseStock(bid.getStoreId(), bid.getId(), bid.getAmount());
 
             ReceiptProduct receiptProduct = new ReceiptProduct(
-                product.getName(), product.getCategory(), product.getDescription(),
-                storeName, bid.getAmount(), (int) bid.getBidPrice()
+                    product.getName(), product.getCategory(), product.getDescription(),
+                    storeName, bid.getAmount(), (int) bid.getBidPrice()
             );
 
             storeToProducts.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
@@ -214,11 +218,11 @@ public class PurchaseService {
         if (!authRepo.validToken(token)) {
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
-        Product product = stockRepo.findById(productId);
+        Product product = stockRepo.findByIdInSystem(productId);
         if (product == null) {
             throw new UIException("Product not found.", ErrorCodes.PRODUCT_NOT_FOUND);
         }
-        item itemInStore = storeRepo.getItemByStoreAndProductId(storeId, productId);
+        item itemInStore = stockRepo.getItemByStoreAndProductId(storeId, productId);
         if (itemInStore == null) {
             throw new UIException("Product not found in store.", ErrorCodes.PRODUCT_NOT_FOUND);
         }

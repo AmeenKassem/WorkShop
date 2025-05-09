@@ -1,7 +1,6 @@
 package workshop.demo.DomainLayer.Stock;
 
 import workshop.demo.DTOs.Category;
-import workshop.demo.DomainLayer.Store.item;
 
 public class ProductSearchCriteria {
 
@@ -33,7 +32,6 @@ public class ProductSearchCriteria {
         this.maxStoreRating = maxStoreRating;
     }
 
- 
     public boolean matchesForStore(item item) {
         if (item == null) {
             return false;

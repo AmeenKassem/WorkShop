@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface ISUConnectionRepo {
 
-    void addNewStoreOwner(int storeId, int bossID);//->must change it 
+    void addNewStoreOwner(int storeId, int bossID);
 
     void checkToAddOwner(int storeID, int ownerID, int newOwnerId) throws Exception;
 

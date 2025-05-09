@@ -1,4 +1,4 @@
-package workshop.demo.DomainLayer.Store;
+package workshop.demo.DomainLayer.Stock;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

@@ -1,6 +1,7 @@
 package workshop.demo.DomainLayer.Exceptions;
 
 public class ErrorCodes {
+
     public static final int INVALID_TOKEN = 1001;
     public static final int USER_NOT_FOUND = 1002;
     public static final int WRONG_PASSWORD = 1003;
@@ -25,8 +26,8 @@ public class ErrorCodes {
     public static final int DUPLICATE_RANDOM_ENTRY = 1022;
     public static final int INSUFFICIENT_STOCK = 1023;
     public static final int INVALID_RANK = 1024;
-
-    // ✅ NEW ADDED CODES
     public static final int PRODUCT_NOT_AVAILABLE = 1025;
     public static final int INSUFFICIENT_PAYMENT = 1026;
+    public static final int STOCK_NOT_FOUND = 1027;
+    public static final int DEACTIVATED_STORE = 1028;
 }

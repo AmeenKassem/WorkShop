@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import workshop.demo.DTOs.Category;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.Store.item;
 
 public class StockTest {
 
@@ -44,6 +44,7 @@ public class StockTest {
         }
 
     }
+
     //Test "functionname" when "something " then "Succes/faliure"
     @Test
     public void testRankProductWithoutConcurrency() throws UIException {

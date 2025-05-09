@@ -5,27 +5,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import workshop.demo.DTOs.AuctionDTO;
-import workshop.demo.DTOs.BidDTO;
-import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.ProductDTO;
-import workshop.demo.DTOs.RandomDTO;
-import workshop.demo.DTOs.ReceiptProduct;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.Random;
 import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.Store.item;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public class StoreRepository implements IStoreRepo {
 
@@ -51,17 +37,11 @@ public class StoreRepository implements IStoreRepo {
 
     @Override
     public void deactivateStore(int storeId, int ownerId) throws Exception {
-        // try {
-        if (findStoreByID(storeId) == null) {
-            throw new Exception("can't deactivate store: store does not exist");
-        }
         if (!findStoreByID(storeId).isActive()) {
-            throw new Exception("can't deactivate an DEactivated store");
+            throw new UIException("can't deactivate an DEactivated store", ErrorCodes.DEACTIVATED_STORE);
         }
-
         findStoreByID(storeId).setActive(false);
 
-        // }
     }
 
     @Override
@@ -92,86 +72,13 @@ public class StoreRepository implements IStoreRepo {
                 return true;
             }
         }
-        throw new UIException(" store does not exist.",ErrorCodes.STORE_NOT_FOUND);
+        throw new UIException(" store does not exist.", ErrorCodes.STORE_NOT_FOUND);
     }
 
     @Override
     public List<StoreDTO> viewAllStores() {// here must check it view it with products??
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'viewAllStores'");
-    }
-
-    // stock managment:
-    @Override
-    public List<ItemStoreDTO> getProductsInStore(int storeId) throws UIException, DevException {
-        if (findStoreByID(storeId) == null) {
-            throw new UIException("Store does not exist", ErrorCodes.STORE_NOT_FOUND);
-        }
-
-        return findStoreByID(storeId).getProductsInStore();
-
-    }
-
-    @Override
-    public item addItem(int storeId, int productId, int quantity, int price, Category category)
-            throws UIException, DevException {
-        Store store = findStoreByID(storeId);
-        if (store == null) {
-            throw new UIException("Store does not exist", ErrorCodes.STORE_NOT_FOUND);
-        }
-        item toAdd = new item(productId, quantity, price, category);
-        store.addItem(toAdd);
-        return toAdd;
-    }
-
-    @Override
-    public void removeItem(int storeId, int productId) throws UIException, DevException {
-        Store store = findStoreByID(storeId);
-        if (store == null) {
-            throw new UIException("Store does not exist", ErrorCodes.STORE_NOT_FOUND);
-        }
-        store.removeItem(productId);
-    }
-
-    @Override
-    public void decreaseQtoBuy(int storeId, int productId, int quantity) throws UIException, DevException {
-        Store store = findStoreByID(storeId);
-        if (store == null) {
-            throw new UIException("Store does not exist", ErrorCodes.STORE_NOT_FOUND);
-        }
-        store.decreaseQtoBuy(productId, quantity);
-
-    }
-
-    @Override
-    public void updateQuantity(int storeId, int productId, int newQuantity) throws UIException, DevException {
-        Store store = findStoreByID(storeId);
-        if (store == null) {
-            throw new UIException("Store does not exist", ErrorCodes.STORE_NOT_FOUND);
-        }
-        store.changeQuantity(productId, newQuantity);
-    }
-
-    @Override
-    public void updatePrice(int storeId, int productId, int newPrice) throws UIException, DevException {
-        Store store = findStoreByID(storeId);
-        if (store == null) {
-            throw new UIException("Store does not exist", ErrorCodes.STORE_NOT_FOUND);
-        }
-        store.updatePrice(productId, newPrice);
-    }
-
-    @Override
-    public void rankProduct(int storeId, int productId, int newRank) throws DevException, UIException {
-        Store store = findStoreByID(storeId);
-        if (store == null) {
-            throw new DevException("store does not exist");
-        }
-        store.rankProduct(productId, newRank);
-    }
-
-    public List<Store> getStores() {
-        return stores;
     }
 
     public String getStoreNameById(int storeId) throws UIException {
@@ -203,56 +110,6 @@ public class StoreRepository implements IStoreRepo {
 
     }
 
-    
-    public double getProductPrice(int storeId, int randomId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getProductPrice'");
-    }
-
-    @Override
-    public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts)
-            throws UIException, DevException {
-
-        List<ItemStoreDTO> itemList = new LinkedList<>();
-        if (criteria.getStoreId() == -1) {// search in all stores
-            for (Store store : stores) {
-                List<item> stock = store.getAllItemsInStock();
-                for (item item1 : stock) {
-                    for (ProductDTO pro : matchesProducts) {
-                        if (item1.getProductId() == pro.getProductId() && criteria.matchesForStore(item1)) {
-                            ItemStoreDTO toAdd = new ItemStoreDTO(
-                                    item1.getProductId(),
-                                    item1.getQuantity(),
-                                    item1.getPrice(),
-                                    item1.getCategory(),
-                                    item1.getFinalRank(),
-                                    store.getStoreID());
-                            itemList.add(toAdd);
-                            break; // found matching product -> no need to check other products
-                        }
-                    }
-                }
-            }
-
-        } else {// search in a spicific store
-            Store store = findStoreByID(criteria.getStoreId());
-            if (store == null) {
-                throw new UIException("Store does not exist", ErrorCodes.STORE_NOT_FOUND);
-            }
-            for (ProductDTO pro : matchesProducts) {
-                item item1 = store.getProductById(pro.getProductId());
-                if (item1 != null && criteria.matchesForStore(item1)) {
-                    ItemStoreDTO toAdd = new ItemStoreDTO(item1.getProductId(), item1.getQuantity(), item1.getPrice(),
-                            item1.getCategory(), item1.getFinalRank(), store.getStoreID());
-                    itemList.add(toAdd);
-                }
-            }
-
-        }
-
-        return itemList.toArray(new ItemStoreDTO[0]);
-    }
-
     @Override
     public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws UIException, DevException {
         List<WorkerDTO> toReturn = new LinkedList<>();
@@ -260,80 +117,18 @@ public class StoreRepository implements IStoreRepo {
         return toReturn;
     }
 
-    public Random getRandomById(int randomId) throws UIException, DevException {
-        for (Store store : stores) {
-            try {
-                return store.getRandom(randomId);
-            } catch (Exception e) {
-                // Ignore the exception
-            }
-        }
-        throw new UIException("Random with ID " + randomId + " not found in any store.", ErrorCodes.RANDOM_NOT_FOUND);
+    // public Random getRandomById(int randomId) throws UIException, DevException {
+    //     for (Store store : stores) {
+    //         try {
+    //             return store.getRandom(randomId);
+    //         } catch (Exception e) {
+    //             // Ignore the exception
+    //         }
+    //     }
+    //     throw new UIException("Random with ID " + randomId + " not found in any store.", ErrorCodes.RANDOM_NOT_FOUND);
+    // }
+    //for tests:
+    public List<Store> getStores() {
+        return this.stores;
     }
-
-    @Override
-    public boolean checkAvailability(List<ItemCartDTO> cartItems) {
-        for (ItemCartDTO itemDTO : cartItems) {
-            Store store = findStoreByID(itemDTO.storeId);
-            if (store == null) {
-                return false;
-            }
-            item storeItem = store.getItemByProductId(itemDTO.productId);
-            if (storeItem == null || storeItem.getQuantity() < itemDTO.quantity) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public item getItemByStoreAndProductId(int storeId, int productId) throws DevException {
-        Store store = findStoreByID(storeId);
-        if (store == null) {
-            throw new DevException("Store with ID " + storeId + " not found.");
-        }
-        return store.getItemByProductId(productId);
-    }
-
-    @Override
-    public void validateAndDecreaseStock(int storeId, int productId, int amount) throws DevException, UIException {
-        item storeItem = getItemByStoreAndProductId(storeId, productId);
-        if (storeItem == null || storeItem.getQuantity() < amount) {
-            throw new DevException("unvaliable");
-        }
-        decreaseQtoBuy(storeId, productId, amount);
-    }
-
-    public double calculateTotalPrice(List<ReceiptProduct> items) {
-        double total = 0;
-        for (ReceiptProduct item : items) {
-            total += item.getPrice() * item.getQuantity();
-        }
-        return total;
-    }
-
-    public ParticipationInRandomDTO validatedParticipation(int userId, int randomId, int storeId, double amountPaid)
-            throws DevException, UIException {
-        Store store = findStoreByID(storeId);
-        if (store == null) {
-            throw new DevException("store not found");
-        }
-
-        double requiredPrice = store.getProductPrice(randomId);
-        if (amountPaid < requiredPrice) {
-            throw new DevException("Insufficient payment");
-        }
-        return store.participateInRandom(userId, randomId, amountPaid);
-    }
-
-    public List<ReceiptProduct> processCartItemsForStore(int storeId, List<ItemCartDTO> cartItems, boolean isGuest)
-            throws Exception {
-        Store store = findStoreByID(storeId);
-        if (store == null) {
-            throw new Exception("Store not found");
-        }
-        String storeName = store.getStoreName();
-        return store.ProcessCartItems(cartItems, isGuest, storeName);
-    }
-
 }

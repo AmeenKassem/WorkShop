@@ -1,33 +1,51 @@
 package workshop.demo.PurchaseTests;
 
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import workshop.demo.ApplicationLayer.PurchaseService;
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
-import workshop.demo.DomainLayer.Purchase.*;
+import workshop.demo.DomainLayer.Purchase.IPaymentService;
+import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
+import workshop.demo.DomainLayer.Purchase.ISupplyService;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.item;
-import workshop.demo.DomainLayer.User.*;
+import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.OrderRepository;
 import workshop.demo.InfrastructureLayer.PurchaseRepository;
 import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
-
-import java.util.*;
 
 public class PurchaseServiceTest {
 
@@ -108,7 +126,7 @@ public class PurchaseServiceTest {
         item storeItem = new item(333, 5, 1000, Category.ELECTRONICS);
 
         when(authRepo.validToken(token)).thenReturn(true);
-        when(stockRepo.findById(333)).thenReturn(product);
+        when(stockRepo.findByIdInSystem(333)).thenReturn(product);
         when(storeRepo.getItemByStoreAndProductId(storeId, 333)).thenReturn(storeItem);
         when(storeRepo.getStoreNameById(storeId)).thenReturn("BestBuy");
 
@@ -194,10 +212,8 @@ public class PurchaseServiceTest {
         // Add random to store
         long randomTime = System.currentTimeMillis() + 100000;
 
-        int randomId = stockRepo.addProductToRandom( productId, 5, 20.0, storeId, randomTime);
+        int randomId = stockRepo.addProductToRandom(productId, 5, 20.0, storeId, randomTime);
 
-
-        
         when(paymentService.processPayment(any(), eq(20.0))).thenReturn(true); // Mock payment  
 
         PurchaseService service = new PurchaseService(authRepo, stockRepo, storeRepo, userRepo, purchaseRepo, orderRepo, paymentService, supplyService);
@@ -240,7 +256,7 @@ public class PurchaseServiceTest {
         when(userRepo.getWinningBids(userId)).thenReturn(List.of(bid));
 
         // Mock findById to throw exception to check the case when product is not available
-        when(stockRepo.findById(3)).thenThrow(new Exception("product not avaliable"));
+        when(stockRepo.findByIdInSystem(3)).thenThrow(new Exception("product not avaliable"));
 
         PurchaseService service = new PurchaseService(authRepo, stockRepo, storeRepo, userRepo, purchaseRepo, orderRepo, paymentService, supplyService);
         PaymentDetails payment = new PaymentDetails("c", "n", "d", "cvv");
@@ -267,7 +283,7 @@ public class PurchaseServiceTest {
         when(userRepo.getWinningBids(userId)).thenReturn(List.of(bid));
 
         Product product = new Product("Laptop", productId, Category.ELECTRONICS, " laptop", new String[]{"laptop"});
-        when(stockRepo.findById(productId)).thenReturn(product);
+        when(stockRepo.findByIdInSystem(productId)).thenReturn(product);
         when(storeRepo.getStoreNameById(storeId)).thenReturn("kps");
 
         doNothing().when(storeRepo).validateAndDecreaseStock(storeId, productId, quantity);
@@ -361,7 +377,7 @@ public class PurchaseServiceTest {
         when(userRepo.getWinningCards(userId)).thenReturn(winningCards);
 
         Product product = new Product("laptop", productId, Category.ELECTRONICS, "i7", new String[]{"phone"});
-        when(stockRepo.findById(productId)).thenReturn(product);
+        when(stockRepo.findByIdInSystem(productId)).thenReturn(product);
         when(storeRepo.getStoreNameById(storeId)).thenReturn("ksp");
 
         doNothing().when(storeRepo).validateAndDecreaseStock(storeId, productId, 1);
@@ -402,7 +418,7 @@ public class PurchaseServiceTest {
         when(userRepo.isRegistered(userId)).thenReturn(true);
         when(userRepo.getWinningCards(userId)).thenReturn(winningCards);
 
-        when(stockRepo.findById(productId)).thenThrow(new Exception("product not avaliable")); // simulate the product avaliable 
+        when(stockRepo.findByIdInSystem(productId)).thenThrow(new Exception("product not avaliable")); // simulate the product avaliable 
 
         SupplyDetails supply = new SupplyDetails("Street", "City", "State", "000");
 
