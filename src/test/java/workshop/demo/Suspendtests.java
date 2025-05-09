@@ -80,4 +80,6 @@ public class Suspendtests {
         boolean stillSuspended = ss.isUserSuspended(guestId, null);
         Assertions.assertFalse(stillSuspended, "Guest should no longer be suspended");
     }
+
+    
 }

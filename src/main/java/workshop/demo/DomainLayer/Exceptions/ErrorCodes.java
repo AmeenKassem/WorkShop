@@ -30,4 +30,5 @@ public class ErrorCodes {
     public static final int PRODUCT_NOT_AVAILABLE = 1025;
     public static final int INSUFFICIENT_PAYMENT = 1026;
     public static final int  SUSPENSION_NOT_FOUND = 1027;
+    public static final int USERNAME_USED = 1028;
 }
