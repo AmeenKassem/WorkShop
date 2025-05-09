@@ -86,7 +86,7 @@ public class AuthenticationRepo implements IAuthRepo {
     }
 
     @Override
-    public void checkAuth(String token,Logger logger) throws UIException {
+    public void checkAuth_ThrowTimeOutException(String token,Logger logger) throws UIException {
         if (!validToken(token)) {
             logger.error("Invalid token on addRegularBid");
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
