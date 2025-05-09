@@ -31,4 +31,5 @@ public class ErrorCodes {
     public static final int INSUFFICIENT_PAYMENT = 1026;
     public static final int  SUSPENSION_NOT_FOUND = 1027;
     public static final int USERNAME_USED = 1028;
+    public static final int USER_SUSPENDED = 1029;
 }

@@ -26,11 +26,12 @@ import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
+import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 
 @Component
 public class Repos {
 
-    public static final IUserSuspensionRepo UserSuspensionRepo = new workshop.demo.InfrastructureLayer.UserSuspensionRepo();
+    public final IUserSuspensionRepo UserSuspensionRepo = new workshop.demo.InfrastructureLayer.UserSuspensionRepo();
     public IUserRepo userRepo= new UserRepository(new Encoder(), new AdminInitilizer("123321"));
     public IStoreRepo storeRepo=new StoreRepository();
     public AuthenticationRepo auth = new AuthenticationRepo();
@@ -43,5 +44,7 @@ public class Repos {
     public ISupplyService supplyService=new SupplyServiceImp();
     public ISUConnectionRepo sUConnectionRepo=new SUConnectionRepository();
     // public ProductFilter productFilter;
+    // public IUserSuspensionRepo userRusepo;
+    // public IUserSuspensionRepo userSusRepo=new UserSuspensionRepo();
 
 }

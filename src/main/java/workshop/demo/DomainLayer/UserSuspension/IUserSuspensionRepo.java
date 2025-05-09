@@ -17,4 +17,6 @@ public interface IUserSuspensionRepo {
 
     void resumeSuspension(Integer userId) throws UIException;
 
+    public void checkUserSuspensoin_ThrowExceptionIfSuspeneded(int userId) throws UIException;
+
 }

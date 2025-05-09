@@ -18,8 +18,9 @@ public class UserSuspensionRepo implements IUserSuspensionRepo {
         startScheduler();
     }
 
-    public void checkUserSuspensoin_ThrowExceptionIfSuspeneded(int userId){
-        if(isSuspended(userId));
+    public void checkUserSuspensoin_ThrowExceptionIfSuspeneded(int userId) throws UIException{
+        if(isSuspended(userId))
+            throw new UIException("suspended user trying to make something", ErrorCodes.USER_SUSPENDED);
     }
 
     @Override
