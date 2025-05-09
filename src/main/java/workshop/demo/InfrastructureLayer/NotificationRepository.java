@@ -1,7 +1,6 @@
 package workshop.demo.InfrastructureLayer;
 
-
-import workshop.demo.DTOs.MessageDTO;
+import java.util.List;
 import workshop.demo.DomainLayer.Notification.BaseNotifier;
 import workshop.demo.DomainLayer.Notification.DelayedNotificationDecorator;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
@@ -19,18 +18,18 @@ public class NotificationRepository implements INotificationRepo {
         this.delayedNotificationDecorator = new DelayedNotificationDecorator(baseNotifier);
     }
     @Override
-    public void sendRTMessageToUser(String message, int senderId, int receiverId, boolean isReceiverOnline) {
-        realTimeNotificationDecorator.sendRTMessageToUser(senderId, receiverId, message, isReceiverOnline);
+    public void sendImmediateMessage(String user, String message) {
+        realTimeNotificationDecorator.sendRTMessageToUser(user, message);
     }
 
     @Override
-    public void sendDMessageToUser(int senderId, int receiverId, String message, boolean isReceiverOnline) {
-        delayedNotificationDecorator.sendDelayedMessageToUser(senderId, receiverId, message, isReceiverOnline);
+    public void sendDelayedMessageToUser(String username, String message) {
+        delayedNotificationDecorator.sendDelayedMessageToUser(username, message);
     }
 
     @Override
-    public MessageDTO[] getDelayedMessages(int userId) {
-        return delayedNotificationDecorator.getDelayedMessages(userId);
+    public String[] getDelayedMessages(String username) {
+        return delayedNotificationDecorator.getDelayedMessages(username);
     }
     
 }

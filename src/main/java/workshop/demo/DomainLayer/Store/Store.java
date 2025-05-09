@@ -16,8 +16,8 @@ import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.MessageDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
+// import workshop.demo.DTOs.MessageDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SingleBid;
@@ -33,10 +33,10 @@ public class Store {
     private String storeName;
     private String category;
     private boolean active;
-    private AtomicInteger[] rank;// rank[x] is the number of people who ranked i+1
-    // must add something for messages
-    private List<MessageDTO> messgesInStore;
-    private Map<Category, List<item>> stock;// map of category -> item
+    private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
+    //must add something for messages
+    private List<String> messgesInStore;
+    private Map<Category, List<item>> stock;//map of category -> item
     private ActivePurcheses activePurchases;
 
     public Store(int storeID, String storeName, String category) {

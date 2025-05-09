@@ -1,7 +1,11 @@
 package workshop.demo.DomainLayer.Notification;
+// import java.util.List;
+//import java.util.logging.Logger;
+
+import org.slf4j.LoggerFactory;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 
 
@@ -18,20 +22,16 @@ public class RealTimeNotificationDecorator extends BaseNotifier {
 
     }
 
-    public void sendRTMessageToUser(int senderId, int receiverId, String message, boolean isReceiverOnline) {
-        logger.debug("sendRTMessageToUser called: senderId={}, receiverId={}, isReceiverOnline={}",
-                senderId, receiverId, isReceiverOnline);
-
-        if (isReceiverOnline) {
-            logger.debug("Receiver {} is online. Sending real-time message.", receiverId);
-
-            notifier.sendMessageToUser(message, senderId, receiverId); // Send immediately if online
+    public void sendRTMessageToUser(String user, String message) {
+        if (notifier.isUserOnline(user)) {
+            notifier.send(user, message); // Send immediately if online
         } else {
-            logger.debug("Receiver {} is offline. Message not sent in real-time.", receiverId);
+            logger.debug("Receiver "+user+" is offline. Message not sent in real-time.");
 
             // Handle the case when the receiver is offline (e.g., store the message for
             // later delivery)
             // This part can be implemented based on your requirements
+            LOGGER.warning("User " + user + " is offline. Message not sent: " + message);
         }
     }
 }
