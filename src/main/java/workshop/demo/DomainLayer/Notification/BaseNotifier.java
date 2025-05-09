@@ -1,19 +1,30 @@
 package workshop.demo.DomainLayer.Notification;
 
-import java.util.List;
+import workshop.demo.SocketCommunication.SocketHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-//import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
+import java.io.IOException;
+import java.util.logging.Logger;
 
+@Component
 public class BaseNotifier {
+    public static final Logger LOGGER = Logger.getLogger(BaseNotifier.class.getName());
 
-    public BaseNotifier() {
-        // Constructor logic if needed
+
+    @Autowired
+    private SocketHandler socketHandler;
+
+    public void send(String user, String message) {
+        try {
+            LOGGER.info("Sending message to " + user + "- " + message);
+            socketHandler.sendMessage(user, message);
+        } catch (InterruptedException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void sendMessageToUser(String message, int senderId, int receiverId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'sendMessageToUser'");
+    public boolean isUserOnline(String user) {
+        return socketHandler.hasUserSession(user);
     }
-
-    
 }

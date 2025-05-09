@@ -8,7 +8,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import workshop.demo.DTOs.MessageDTO;
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.MessageDTO;/
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DomainLayer.Exceptions.DevException;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
+import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.User.CartItem;
 
 public class Store {
     private static final Logger logger = LoggerFactory.getLogger(Store.class);
@@ -17,9 +30,10 @@ public class Store {
     private String storeName;
     private String category;
     private boolean active;
-    private AtomicInteger[] rank;// rank[x] is the number of people who ranked i+1
-    // must add something for messages
-    private List<MessageDTO> messgesInStore;
+    private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
+    //must add something for messages
+    private List<String> messgesInStore;
+    
 
     public Store(int storeID, String storeName, String category) {
         logger.debug("Creating store: ID={}, Name={}, Category={}", storeID, storeName, category);

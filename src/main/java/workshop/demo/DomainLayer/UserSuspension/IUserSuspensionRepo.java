@@ -5,16 +5,18 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public interface IUserSuspensionRepo {
 
-    void suspendRegisteredUser(String username, int minutes) throws UIException;
+    void suspendRegisteredUser(Integer userId, int minutes) throws UIException;
 
-    void suspendGuestUser(int guestId, int minutes) throws UIException;
+    void suspendGuestUser(int userId, int minutes) throws UIException;
 
-    boolean isSuspended(Integer userId, String username);
+    boolean isSuspended(Integer userId);
 
     List<UserSuspension> getAllSuspensions();
     
-    void pauseSuspension(Integer userId, String username) throws UIException;
+    void pauseSuspension(Integer userId) throws UIException;
 
-    void resumeSuspension(Integer userId, String username) throws UIException;
+    void resumeSuspension(Integer userId) throws UIException;
+
+    public void checkUserSuspensoin_ThrowExceptionIfSuspeneded(int userId) throws UIException;
 
 }

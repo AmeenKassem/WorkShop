@@ -30,6 +30,7 @@ import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
+import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
 public class PurchaseService {
 
@@ -41,11 +42,12 @@ public class PurchaseService {
     private IOrderRepo orderRepo;
     private final IPaymentService paymentService;
     private final ISupplyService supplyService;
+    private IUserSuspensionRepo susRepo;
     private static final Logger logger = LoggerFactory.getLogger(PurchaseService.class);
 
     public PurchaseService(IAuthRepo authRepo, IStockRepo stockRepo, IStoreRepo storeRepo, IUserRepo userRepo,
             IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
-            ISupplyService supplyService) {
+            ISupplyService supplyService, IUserSuspensionRepo susRepo) {
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
         this.storeRepo = storeRepo;
@@ -54,6 +56,7 @@ public class PurchaseService {
         this.orderRepo = orderRepo;
         this.paymentService = paymentService;
         this.supplyService = supplyService;
+        this.susRepo = susRepo;
     }
 
     public ReceiptDTO[] buyGuestCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
@@ -66,6 +69,7 @@ public class PurchaseService {
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
         int userId = authRepo.getUserId(token);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         return processCart(userId, true, paymentdetails, supplydetails);
     }
 
@@ -79,6 +83,7 @@ public class PurchaseService {
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
         int userId = authRepo.getUserId(token);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         return processCart(userId, false, paymentdetails, supplydetails);
     }
 
@@ -129,6 +134,7 @@ public class PurchaseService {
             throw new UIException(String.format("User %d is not registered to the system!", userId),
                     ErrorCodes.USER_NOT_FOUND);
         }
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
         userRepo.ParticipateInRandom(card);
         purchaseRepo.saveRandomParticipation(card);
@@ -152,7 +158,7 @@ public class PurchaseService {
             throw new UIException(String.format("User %d is not registered to the system!", userId),
                     ErrorCodes.USER_NOT_FOUND);
         }
-
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
         for (ParticipationInRandomDTO card : userRepo.getWinningCards(userId)) {
             stockRepo.validateAndDecreaseStock(card.storeId, card.productId, 1);
@@ -187,7 +193,7 @@ public class PurchaseService {
             throw new UIException(String.format("User %d is not registered to the system!", userId),
                     ErrorCodes.USER_NOT_FOUND);
         }
-
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
 
         for (SingleBid bid : userRepo.getWinningBids(userId)) {
@@ -233,7 +239,7 @@ public class PurchaseService {
                     ErrorCodes.USER_NOT_FOUND);
         }
         logger.info("User {} finalizing accepted bids", userId);
-
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
 
         for (SingleBid bid : userRepo.getWinningBids(userId)) {

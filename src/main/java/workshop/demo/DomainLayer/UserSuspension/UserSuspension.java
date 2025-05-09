@@ -2,19 +2,20 @@ package workshop.demo.DomainLayer.UserSuspension;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class UserSuspension {
 
-    private final Integer userId;       // guest id (nullable)
-    private final String username;      // registered username (nullable)
+    private final Integer userId;
     private final Duration totalDuration;
     private Duration remainingDuration;
     private LocalDateTime lastStartTime;
     private boolean paused;
 
-    public UserSuspension(Integer userId, String username, Duration duration) {
+    private final ReentrantLock lock = new ReentrantLock(); // lock for thread-safety
+
+    public UserSuspension(Integer userId, Duration duration) {
         this.userId = userId;
-        this.username = username;
         this.totalDuration = duration;
         this.remainingDuration = duration;
         this.lastStartTime = LocalDateTime.now();
@@ -25,54 +26,79 @@ public class UserSuspension {
         return userId;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
     public LocalDateTime getExpectedEndTime() {
-        if (paused) {
-            return LocalDateTime.now().plus(remainingDuration);
-        } else {
-            Duration elapsed = Duration.between(lastStartTime, LocalDateTime.now());
-            return LocalDateTime.now().plus(remainingDuration.minus(elapsed));
+        lock.lock();
+        try {
+            if (paused) {
+                return LocalDateTime.now().plus(remainingDuration);
+            } else {
+                Duration elapsed = Duration.between(lastStartTime, LocalDateTime.now());
+                return LocalDateTime.now().plus(remainingDuration.minus(elapsed));
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
     public boolean isExpired() {
-        if (paused) {
-            return false;
+        lock.lock();
+        try {
+            if (paused) return false;
+
+            Duration elapsed = Duration.between(lastStartTime, LocalDateTime.now());
+            remainingDuration = remainingDuration.minus(elapsed);
+            lastStartTime = LocalDateTime.now();
+            return remainingDuration.isZero() || remainingDuration.isNegative();
+        } finally {
+            lock.unlock();
         }
-        Duration elapsed = Duration.between(lastStartTime, LocalDateTime.now());
-        remainingDuration = remainingDuration.minus(elapsed);
-        lastStartTime = LocalDateTime.now();
-        return remainingDuration.isZero() || remainingDuration.isNegative();
     }
 
     public void pause() {
-        if (!paused) {
-            Duration elapsed = Duration.between(lastStartTime, LocalDateTime.now());
-            remainingDuration = remainingDuration.minus(elapsed);
-            paused = true;
+        lock.lock();
+        try {
+            if (!paused) {
+                Duration elapsed = Duration.between(lastStartTime, LocalDateTime.now());
+                remainingDuration = remainingDuration.minus(elapsed);
+                paused = true;
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
     public void resume() {
-        if (paused) {
-            lastStartTime = LocalDateTime.now();
-            paused = false;
+        lock.lock();
+        try {
+            if (paused) {
+                lastStartTime = LocalDateTime.now();
+                paused = false;
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
     public Duration getRemainingDuration() {
-        if (paused) {
-            return remainingDuration;
-        } else {
-            Duration elapsed = Duration.between(lastStartTime, LocalDateTime.now());
-            return remainingDuration.minus(elapsed);
+        lock.lock();
+        try {
+            if (paused) {
+                return remainingDuration;
+            } else {
+                Duration elapsed = Duration.between(lastStartTime, LocalDateTime.now());
+                return remainingDuration.minus(elapsed);
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
     public boolean isPaused() {
-        return paused;
+        lock.lock();
+        try {
+            return paused;
+        } finally {
+            lock.unlock();
+        }
     }
 }
