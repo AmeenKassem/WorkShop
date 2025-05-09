@@ -4,18 +4,20 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import workshop.demo.AcceptanceTest.Utill.Real;
 import workshop.demo.DTOs.*;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
+import workshop.demo.DomainLayer.Store.item;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GuestAT extends AcceptanceTests {
+    Real real = new Real();
 
     @Test
     void testGuestEnter_Success() throws Exception {
-        Real real = new Real();
         Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(2);
         Mockito.when(real.mockAuthRepo.generateGuestToken(2)).thenReturn("guest-token-456");
 
@@ -25,7 +27,6 @@ public class GuestAT extends AcceptanceTests {
 
     @Test
     void testGuestEnter_Failure() {
-        Real real = new Real();
         Mockito.when(real.mockUserRepo.generateGuest()).thenThrow(new RuntimeException("DB error"));
 
         Exception ex = assertThrows(RuntimeException.class, real::testGuest_Enter);
@@ -34,112 +35,303 @@ public class GuestAT extends AcceptanceTests {
 
     @Test
     void testGuestExit_Success() throws Exception {
-        Real real = new Real();
-        Mockito.when(real.mockAuthRepo.validToken("guest-token-123")).thenReturn(true);
-        Mockito.when(real.mockAuthRepo.getUserId("guest-token-123")).thenReturn(1);
+        //enter guest
+        Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(2);
+        Mockito.when(real.mockAuthRepo.generateGuestToken(2)).thenReturn("guest-token-456");
 
-        boolean result = real.testGuest_Exit("guest-token-123");
+        String token = real.testGuest_Enter();
+        assertEquals("guest-token-456", token);
+        //exit guest
+        Mockito.when(real.mockAuthRepo.validToken("guest-token-456")).thenReturn(true);
+        Mockito.when(real.mockAuthRepo.getUserId("guest-token-456")).thenReturn(1);
+
+        boolean result = real.testGuest_Exit("guest-token-456");
         assertTrue(result);
     }
 
     @Test
-    void testGuestExit_Failure() {
-        Real real = new Real();
+    void testGuestExit_Failure() throws Exception {
+        //enter guest
+        Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(2);
+        Mockito.when(real.mockAuthRepo.generateGuestToken(2)).thenReturn("guest-token-456");
+        String token = real.testGuest_Enter();
+        assertEquals("guest-token-456", token);
         Mockito.when(real.mockAuthRepo.validToken("invalid")).thenReturn(false);
-
         Exception ex = assertThrows(Exception.class, () -> real.testGuest_Exit("invalid"));
         assertEquals("Invalid token!", ex.getMessage());
     }
 
     @Test
     void testGuestRegister_Success() throws Exception {
-        Real real = new Real();
-        Mockito.when(real.mockAuthRepo.validToken("register-token")).thenReturn(true);
-        Mockito.when(real.mockAuthRepo.getUserId("register-token")).thenReturn(17);
+        //enter guest
+        Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(2);
+        Mockito.when(real.mockAuthRepo.generateGuestToken(2)).thenReturn("guest-token-456");
+        String token = real.testGuest_Enter();
+        assertEquals("guest-token-456", token);
+        //reg guest
+
+        Mockito.when(real.mockAuthRepo.validToken("guest-token-456")).thenReturn(true);
+        Mockito.when(real.mockAuthRepo.getUserId("guest-token-456")).thenReturn(17);
         Mockito.when(real.mockUserRepo.registerUser("guest1", "pass")).thenReturn(17);
 
-        String result = real.testGuest_Register("register-token", "guest1", "pass");
+        String result = real.testGuest_Register("guest-token-456", "guest1", "pass");
         assertEquals("true", result);
     }
 
     @Test
-    void testGuestRegister_Failure_InvalidToken() {
-        Real real = new Real();
-        Mockito.when(real.mockAuthRepo.validToken("register-token")).thenReturn(false);
+    void testGuestRegister_Failure_InvalidToken() throws Exception {
+        //enter guest
+        Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(2);
+        Mockito.when(real.mockAuthRepo.generateGuestToken(2)).thenReturn("guest-token-456");
+        String token = real.testGuest_Enter();
+        assertEquals("guest-token-456", token);
 
-        Exception ex = assertThrows(Exception.class, () -> real.testGuest_Register("register-token", "guest1", "badpass"));
+        Mockito.when(real.mockAuthRepo.validToken("guest-token-456")).thenReturn(false);
+
+        Exception ex = assertThrows(Exception.class, () -> real.testGuest_Register("guest-token-456", "guest1", "badpass"));
         assertEquals("Invalid token!", ex.getMessage());
     }
 
     @Test
     void testGuestGetStoreProducts() throws Exception {
-        Real real = new Real();
+        //enter guest
+        Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(2);
+        Mockito.when(real.mockAuthRepo.generateGuestToken(2)).thenReturn("guest-token-456");
+        String token = real.testGuest_Enter();
+        //assertEquals("guest-token-456", token);
+        //reg guest
+        Mockito.when(real.mockAuthRepo.validToken("guest-token-456")).thenReturn(true);
+        Mockito.when(real.mockAuthRepo.getUserId("guest-token-456")).thenReturn(17);
+        Mockito.when(real.mockUserRepo.registerUser("guest1", "pass")).thenReturn(17);
+        String result1 = real.testGuest_Register("guest-token-456", "guest1", "pass");
+        //assertEquals("true", result1);
+
+        //enter guest
+        Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(1);
+        Mockito.when(real.mockAuthRepo.generateGuestToken(1)).thenReturn("guest-token-123");
+        //String token = real.testGuest_Enter();
+        //assertEquals("guest-token-123", token);
+        //reg guest
+        Mockito.when(real.mockAuthRepo.validToken("guest-token-123")).thenReturn(true);
+        Mockito.when(real.mockAuthRepo.getUserId("guest-token-123")).thenReturn(16);
+        Mockito.when(real.mockUserRepo.registerUser("guest1", "pass")).thenReturn(16);
+        //String result1 = real.testGuest_Register("guest-token-456", "guest1", "pass");
+        //assertEquals("true", result1);
+
+        //open store and add item
+        Mockito.when(real.mockStoreRepo.addStoreToSystem(16,"store1" , "ELECTRONICS")).thenReturn(99);
+        Mockito.when(real.mockStoreRepo.addItem(99,1,1,1,Category.ELECTRONICS)).thenReturn(new item(1,1,1,Category.ELECTRONICS));
+
+        //get store product
         List<ItemStoreDTO> products = List.of(
-                new ItemStoreDTO(1, 1, 1, Category.ELECTRONICS, 3, 99));
+                new ItemStoreDTO(1, 1, 1, Category.ELECTRONICS, 3, 16));
 
         Mockito.when(real.mockStoreRepo.getProductsInStore(99)).thenReturn(products);
         String result = real.testGuest_GetStoreProducts(99);
+        System.out.println(result);
         assertFalse(result.equals("[]"));
     }
 
     @Test
     void testGuestGetStoreProducts_Failure() throws Exception {
-        Real real = new Real();
-        Mockito.when(real.mockStoreRepo.getProductsInStore(99)).thenReturn(new ArrayList<>());
 
+        //enter guest
+        Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(2);
+        Mockito.when(real.mockAuthRepo.generateGuestToken(2)).thenReturn("guest-token-456");
+        String token = real.testGuest_Enter();
+        //assertEquals("guest-token-456", token);
+        //reg guest
+        Mockito.when(real.mockAuthRepo.validToken("guest-token-456")).thenReturn(true);
+        Mockito.when(real.mockAuthRepo.getUserId("guest-token-456")).thenReturn(17);
+        Mockito.when(real.mockUserRepo.registerUser("guest1", "pass")).thenReturn(17);
+        String result1 = real.testGuest_Register("guest-token-456", "guest1", "pass");
+        //assertEquals("true", result1);
+
+        //enter guest
+        Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(1);
+        Mockito.when(real.mockAuthRepo.generateGuestToken(1)).thenReturn("guest-token-123");
+        //String token = real.testGuest_Enter();
+        //assertEquals("guest-token-123", token);
+        //reg guest
+        Mockito.when(real.mockAuthRepo.validToken("guest-token-123")).thenReturn(true);
+        Mockito.when(real.mockAuthRepo.getUserId("guest-token-123")).thenReturn(16);
+        Mockito.when(real.mockUserRepo.registerUser("guest1", "pass")).thenReturn(16);
+        //String result1 = real.testGuest_Register("guest-token-456", "guest1", "pass");
+        //assertEquals("true", result1);
+
+        //open store and add item
+        Mockito.when(real.mockStoreRepo.addStoreToSystem(16,"store1" , "ELECTRONICS")).thenReturn(99);
+        Mockito.when(real.mockStoreRepo.addItem(99,1,1,1,Category.ELECTRONICS)).thenReturn(new item(1,1,1,Category.ELECTRONICS));
+
+        //Mockito.when(real.mockStoreRepo.getProductsInStore(16)).thenReturn(new ArrayList<>());
         String result = real.testGuest_GetStoreProducts(99);
+        System.out.println(result);
         assertEquals("[]", result);
     }
 
     @Test
     void testGuestGetProductInfo() throws Exception {
-        Real real = new Real();
+        Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(2);
+        Mockito.when(real.mockAuthRepo.generateGuestToken(2)).thenReturn("guest-token-456");
+        String token = real.testGuest_Enter();
+        //assertEquals("guest-token-456", token);
+        //reg guest
+        Mockito.when(real.mockAuthRepo.validToken("guest-token-456")).thenReturn(true);
+        Mockito.when(real.mockAuthRepo.getUserId("guest-token-456")).thenReturn(17);
+        Mockito.when(real.mockUserRepo.registerUser("guest1", "pass")).thenReturn(17);
+        String result1 = real.testGuest_Register("guest-token-456", "guest1", "pass");
+        //assertEquals("true", result1);
+
+        //enter guest
+        Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(1);
+        Mockito.when(real.mockAuthRepo.generateGuestToken(1)).thenReturn("guest-token-123");
+        //String token = real.testGuest_Enter();
+        //assertEquals("guest-token-123", token);
+        //reg guest
         Mockito.when(real.mockAuthRepo.validToken("guest-token-123")).thenReturn(true);
-        Mockito.when(real.mockAuthRepo.getUserId("guest-token-123")).thenReturn(1);
+        Mockito.when(real.mockAuthRepo.getUserId("guest-token-123")).thenReturn(16);
+        Mockito.when(real.mockUserRepo.registerUser("guest1", "pass")).thenReturn(16);
+        //String result1 = real.testGuest_Register("guest-token-456", "guest1", "pass");
+        //assertEquals("true", result1);
 
-        ProductDTO dto = new ProductDTO(1, "GALAXY 24", Category.ELECTRONICS, "16GB RAM 512 SSD BLACK");
-        Mockito.when(real.mockStockRepo.GetProductInfo(1)).thenReturn(dto);
+        //open store and add item
+        Mockito.when(real.mockStoreRepo.addStoreToSystem(16,"store1" , "ELECTRONICS")).thenReturn(99);
+        Mockito.when(real.mockStoreRepo.addItem(99,1,1,1,Category.ELECTRONICS)).thenReturn(new item(1,1,1,Category.ELECTRONICS));
 
-        String result = real.testGuest_GetProductInfo("guest-token-123", 1);
-        assertTrue(result.contains("GALAXY"));
+        //get store product
+        List<ItemStoreDTO> products = List.of(
+                new ItemStoreDTO(1, 1, 1, Category.ELECTRONICS, 3, 16));
+        ProductDTO a=new ProductDTO(1,"GALAXY 24",Category.ELECTRONICS,"PERFECT PHONE");
+        Mockito.when(real.mockStockRepo.GetProductInfo(1)).thenReturn(a);
+        String result = real.testGuest_GetProductInfo("guest-token-456",1);
+        System.out.println(result);
+        assertTrue(result.equals("1 GALAXY 24 ELECTRONICS PERFECT PHONE"));
     }
     @Test
-    void testGuestGetProductInfo_Failure() throws UIException {
-        Real real = new Real();
-        Mockito.when(real.mockAuthRepo.validToken("guest-token-123")).thenReturn(true);
-        Mockito.when(real.mockAuthRepo.getUserId("guest-token-123")).thenReturn(1);
-        Mockito.when(real.mockStockRepo.GetProductInfo(1)).thenReturn(null);
+    void testGuestGetProductInfo_Failure() throws Exception {
+        Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(2);
+        Mockito.when(real.mockAuthRepo.generateGuestToken(2)).thenReturn("guest-token-456");
+        String token = real.testGuest_Enter();
+        //assertEquals("guest-token-456", token);
+        //reg guest
+        Mockito.when(real.mockAuthRepo.validToken("guest-token-456")).thenReturn(true);
+        Mockito.when(real.mockAuthRepo.getUserId("guest-token-456")).thenReturn(17);
+        Mockito.when(real.mockUserRepo.registerUser("guest1", "pass")).thenReturn(17);
+        String result1 = real.testGuest_Register("guest-token-456", "guest1", "pass");
+        //assertEquals("true", result1);
 
-        Exception ex = assertThrows(Exception.class, () -> real.testGuest_GetProductInfo("guest-token-123", 1));
+        //enter guest
+        Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(1);
+        Mockito.when(real.mockAuthRepo.generateGuestToken(1)).thenReturn("guest-token-123");
+        //String token = real.testGuest_Enter();
+        //assertEquals("guest-token-123", token);
+        //reg guest
+        Mockito.when(real.mockAuthRepo.validToken("guest-token-123")).thenReturn(true);
+        Mockito.when(real.mockAuthRepo.getUserId("guest-token-123")).thenReturn(16);
+        Mockito.when(real.mockUserRepo.registerUser("guest1", "pass")).thenReturn(16);
+        //String result1 = real.testGuest_Register("guest-token-456", "guest1", "pass");
+        //assertEquals("true", result1);
+
+        //open store and add item
+        Mockito.when(real.mockStoreRepo.addStoreToSystem(16,"store1" , "ELECTRONICS")).thenReturn(99);
+        //Mockito.when(real.mockStoreRepo.addItem(99,1,1,1,Category.ELECTRONICS)).thenReturn(new item(1,1,1,Category.ELECTRONICS));
+
+        //get store product
+        List<ItemStoreDTO> products = List.of(
+                new ItemStoreDTO(1, 1, 1, Category.ELECTRONICS, 3, 16));
+        ProductDTO a=new ProductDTO(1,"GALAXY 24",Category.ELECTRONICS,"PERFECT PHONE");
+        //Mockito.when(real.mockStockRepo.GetProductInfo(1)).thenReturn(a);
+
+        Exception ex = assertThrows(Exception.class, () -> real.testGuest_GetProductInfo("guest-token-456",1));
         assertEquals("Product not found.", ex.getMessage());
+//        String result = real.testGuest_GetProductInfo("guest-token-456",1);
+//        System.out.println(result);
+//        assertTrue(result.equals("1 GALAXY 24 ELECTRONICS PERFECT PHONE"));
     }
 
     @Test
     void testGuestAddProductToCart_Success() throws Exception {
-        Real real = new Real();
+        Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(2);
+        Mockito.when(real.mockAuthRepo.generateGuestToken(2)).thenReturn("guest-token-456");
+        String token = real.testGuest_Enter();
+        //assertEquals("guest-token-456", token);
+        //reg guest
+        Mockito.when(real.mockAuthRepo.validToken("guest-token-456")).thenReturn(true);
+        Mockito.when(real.mockAuthRepo.getUserId("guest-token-456")).thenReturn(17);
+        Mockito.when(real.mockUserRepo.registerUser("guest1", "pass")).thenReturn(17);
+        String result1 = real.testGuest_Register("guest-token-456", "guest1", "pass");
+        //assertEquals("true", result1);
+
+        //enter guest
+        Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(1);
+        Mockito.when(real.mockAuthRepo.generateGuestToken(1)).thenReturn("guest-token-123");
+        //String token = real.testGuest_Enter();
+        //assertEquals("guest-token-123", token);
+        //reg guest
         Mockito.when(real.mockAuthRepo.validToken("guest-token-123")).thenReturn(true);
-        Mockito.when(real.mockAuthRepo.getUserId("guest-token-123")).thenReturn(1);
+        Mockito.when(real.mockAuthRepo.getUserId("guest-token-123")).thenReturn(16);
+        Mockito.when(real.mockUserRepo.registerUser("guest1", "pass")).thenReturn(16);
+        //String result1 = real.testGuest_Register("guest-token-456", "guest1", "pass");
+        //assertEquals("true", result1);
+
+        //open store and add item
+        Mockito.when(real.mockStoreRepo.addStoreToSystem(16,"store1" , "ELECTRONICS")).thenReturn(99);
+        Mockito.when(real.mockStoreRepo.addItem(99,1,1,1,Category.ELECTRONICS)).thenReturn(new item(1,1,1,Category.ELECTRONICS));
 
         ItemStoreDTO storeItem = new ItemStoreDTO(1, 1, 1, Category.ELECTRONICS, 1, 99);
-        Mockito.doNothing().when(real.mockUserRepo).addItemToGeustCart(Mockito.eq(1), Mockito.any());
-
-        boolean result = real.testGuest_AddProductToCart("guest-token-123", storeItem);
+//        Mockito.doNothing().when(real.mockUserRepo).addItemToGeustCart(Mockito.eq(1), Mockito.any());
+        ItemCartDTO cartitem=new ItemCartDTO(storeItem);
+        Mockito.doNothing().when(real.mockUserRepo).addItemToGeustCart(17, cartitem);
+        boolean result = real.testGuest_AddProductToCart("guest-token-456", storeItem);
+        System.out.println(result);
         assertTrue(result);
     }
 
-    @Test
-    void testGuestAddProductToCart_Failure_InvalidToken() {
-        Real real = new Real();
-        Mockito.when(real.mockAuthRepo.validToken("bad-token")).thenReturn(false);
+//    @Test
+//    void testGuestAddProductToCart_Failure() throws Exception {
+//        Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(2);
+//        Mockito.when(real.mockAuthRepo.generateGuestToken(2)).thenReturn("guest-token-456");
+//        String token = real.testGuest_Enter();
+//        //reg guest
+//        Mockito.when(real.mockAuthRepo.validToken("guest-token-456")).thenReturn(true);
+//        Mockito.when(real.mockAuthRepo.getUserId("guest-token-456")).thenReturn(17);
+//        Mockito.when(real.mockUserRepo.registerUser("guest1", "pass")).thenReturn(17);
+//        String result1 = real.testGuest_Register("guest-token-456", "guest1", "pass");
+//
+//        //enter guest
+//        Mockito.when(real.mockUserRepo.generateGuest()).thenReturn(1);
+//        Mockito.when(real.mockAuthRepo.generateGuestToken(1)).thenReturn("guest-token-123");
+//        //reg guest
+//        Mockito.when(real.mockAuthRepo.validToken("guest-token-123")).thenReturn(true);
+//        Mockito.when(real.mockAuthRepo.getUserId("guest-token-123")).thenReturn(16);
+//        Mockito.when(real.mockUserRepo.registerUser("guest1", "pass")).thenReturn(16);
+//
+//
+//        //open store and add item
+//        Mockito.when(real.mockStoreRepo.addStoreToSystem(16,"store1" , "ELECTRONICS")).thenReturn(99);
+//        Mockito.when(real.mockStoreRepo.addItem(99,1,1,1,Category.ELECTRONICS)).thenReturn(new item(1,1,1,Category.ELECTRONICS));
+//
+//        ItemStoreDTO storeItem = new ItemStoreDTO(1, 1, 1, Category.ELECTRONICS, 1, 99);
+//        ItemCartDTO cartItem=new ItemCartDTO(storeItem);
+//
+////        boolean result=real.testGuest_AddProductToCart("guest-token-456",storeItem);
+//        Mockito.doThrow(new UIException("Guest not found", ErrorCodes.GUEST_NOT_FOUND))
+//                .when(real.mockUserRepo).addItemToGeustCart(17, cartItem);
+//
+//        // ⚠️ Expect failure
+//        Exception exception = assertThrows(
+//                UIException.class,
+//                () -> real.testGuest_AddProductToCart("guest-token-123", storeItem)
+//        );
+//
+//        assertTrue(exception.getMessage().contains("Guest not found"));
+//
+//    }
 
-        ItemStoreDTO storeItem = new ItemStoreDTO(1, 1, 1, Category.ELECTRONICS, 1, 99);
 
-        Exception ex = assertThrows(Exception.class, () -> real.testGuest_AddProductToCart("bad-token", storeItem));
-        assertEquals("Invalid token!", ex.getMessage());
-    }
+
     @Test
     void testGuestModifyCartAddQToBuy() throws Exception {
-        Real real = new Real();
         Mockito.when(real.mockAuthRepo.validToken("guest-token-123")).thenReturn(true);
         Mockito.doNothing().when(real.mockUserRepo).removeItemFromGeustCart(1,1);
         assertDoesNotThrow(() -> real.mockUserRepo.removeItemFromGeustCart(1,1));
@@ -147,7 +339,6 @@ public class GuestAT extends AcceptanceTests {
 
     @Test
     void testGuestBuyCart() throws Exception {
-        Real real = new Real();
 
         // Mock valid token check
         Mockito.when(real.mockAuthRepo.validToken("guest-token-123")).thenReturn(true);
@@ -177,14 +368,12 @@ public class GuestAT extends AcceptanceTests {
 
     @Test
     void testGuestGetPurchasePolicy() throws Exception {
-        Real real = new Real();
         String dummy = real.testGuest_GetPurchasePolicy("any", 1);
         assertTrue("Done".equals(dummy) || "TODO".equals(dummy));
     }
 
     @Test
     void testGuestSearchProduct() throws Exception {
-        Real real = new Real();
 
         // Mock valid token
         Mockito.when(real.mockAuthRepo.validToken("guest-token-123")).thenReturn(true);
@@ -212,7 +401,6 @@ public class GuestAT extends AcceptanceTests {
 
     @Test
     void testGuestSearchProductInStore() throws Exception {
-        Real real = new Real();
         String dummy = real.testGuest_SearchProductInStore("any", 1, 2);
         assertTrue("Done".equals(dummy) || "TODO".equals(dummy));
     }

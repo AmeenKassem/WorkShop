@@ -101,7 +101,7 @@ public class Real implements Bridge {
     @Override
     public String testGuest_GetProductInfo(String token, int productID) throws Exception {
         ProductDTO a= stockService.getProductInfo(token,productID);
-        return ""+a.getProductId()+a.getName()+a.getCategory()+a.getDescription();
+        return ""+a.getProductId()+" "+a.getName()+" "+a.getCategory()+" "+a.getDescription();
     }
 
     @Override
