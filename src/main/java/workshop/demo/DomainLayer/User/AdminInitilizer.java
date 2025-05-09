@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-@Component
-@ConfigurationProperties(prefix = "app.admin")
+// @Component
+// @ConfigurationProperties(prefix = "app.admin")
 public class AdminInitilizer {
     private static final Logger logger = LoggerFactory.getLogger(AdminInitilizer.class);
 
