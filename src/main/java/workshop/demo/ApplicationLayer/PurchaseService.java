@@ -56,6 +56,7 @@ public class PurchaseService {
         this.supplyService = supplyService;
     }
 
+    //  buy the cart by the guest 
     public ReceiptDTO[] buyGuestCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
             throws Exception {
         logger.info("buyGuestCart called with token");
@@ -222,6 +223,7 @@ public class PurchaseService {
 
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
+
         int userId = authRepo.getUserId(token);
         if (!userRepo.isRegistered(userId)) {
             logger.error("Unregistered user {} in finalizeAcceptedBids", userId);
