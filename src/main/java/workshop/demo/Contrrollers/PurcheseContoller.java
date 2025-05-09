@@ -12,6 +12,6 @@ public class PurcheseContoller {
     private PurchaseService purchaseService;
 
     public PurcheseContoller(Repos repo) {
-        this.purchaseService = new PurchaseService(repo.auth, repo.stockrepo, repo.storeRepo, repo.userRepo, repo.purchaseRepo, repo.orderRepo,repo.paymentService, repo.supplyService);
+        this.purchaseService = new PurchaseService(repo.auth, repo.stockrepo, repo.storeRepo, repo.userRepo, repo.purchaseRepo, repo.orderRepo,repo.paymentService, repo.supplyService,repo.UserSuspensionRepo);
     }
 }
