@@ -123,7 +123,7 @@ public class ActivePurcheses {
         return activeBid.get(bidId).acceptBid(userBidId);
     }
 
-    public void rejectBid(int userBidId, int bidId) throws DevException, UIException {
+    public boolean rejectBid(int userBidId, int bidId) throws DevException, UIException {
         logger.debug("rejectBid called with userBidId={}, bidId={}", userBidId, bidId);
 
         if (!activeBid.containsKey(bidId)) {
