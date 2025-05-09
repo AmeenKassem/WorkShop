@@ -1,6 +1,5 @@
 package workshop.demo.InfrastructureLayer;
 
-import java.util.List;
 
 import workshop.demo.DTOs.MessageDTO;
 import workshop.demo.DomainLayer.Notification.BaseNotifier;

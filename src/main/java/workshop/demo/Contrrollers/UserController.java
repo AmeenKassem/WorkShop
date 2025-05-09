@@ -147,53 +147,7 @@ public class UserController {
     //         res = new Response<>(null, e.getMessage(), -1);
     //     }
     //     return res.toJson();
-    // }
+    // }''
 
-    // @DeleteMapping("/removeUser")
-    // public String removeUser(@RequestParam String token,
-    //                          @RequestParam String userToRemove) {
-    //     Response<String> res;
-    //     try {
-    //         userService.RemoveUser(token, userToRemove);
-    //         res = new Response<>("done", null);
-    //     } catch (UIException ex) {
-    //         res = new Response<>(null, ex.getMessage(), ex.getNumber());
-    //     } catch (Exception e) {
-    //         res = new Response<>(null, e.getMessage(), -1);
-    //     }
-    //     return res.toJson();
-    // }
-
-    @GetMapping("/viewSystemPurchaseHistory")
-    public String viewSystemPurchaseHistory(@RequestParam String token) {
-        Response<ReceiptDTO[]> res;
-        try {
-            // userService.ViewSystemPurchaseHistory(token);
-            List<ReceiptDTO> listOrders = orderService.getReceiptDTOsByUser(token);
-            ReceiptDTO[] data = new ReceiptDTO[listOrders.size()];
-            for(int i=0;i<data.length;i++){
-                data[i]=listOrders.get(i);
-            }
-            res = new Response<>(data, null);
-        } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
-        } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
-        }
-        return res.toJson();
-    }
-
-    // @GetMapping("/viewSystemInfo")
-    // public String viewSystemInfo(@RequestParam String token) {
-    //     Response<String> res;
-    //     try {
-    //         userService.ViewSystemInfo(token);
-    //         res = new Response<>("done", null);
-    //     } catch (UIException ex) {
-    //         res = new Response<>(null, ex.getMessage(), ex.getNumber());
-    //     } catch (Exception e) {
-    //         res = new Response<>(null, e.getMessage(), -1);
-    //     }
-    //     return res.toJson();
-    // }
+    
 }

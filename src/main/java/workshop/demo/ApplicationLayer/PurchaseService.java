@@ -43,7 +43,9 @@ public class PurchaseService {
     private final ISupplyService supplyService;
     private static final Logger logger = LoggerFactory.getLogger(PurchaseService.class);
 
-    public PurchaseService(IAuthRepo authRepo, IStockRepo stockRepo, IStoreRepo storeRepo, IUserRepo userRepo, IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService, ISupplyService supplyService) {
+    public PurchaseService(IAuthRepo authRepo, IStockRepo stockRepo, IStoreRepo storeRepo, IUserRepo userRepo,
+            IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
+            ISupplyService supplyService) {
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
         this.storeRepo = storeRepo;
@@ -54,35 +56,55 @@ public class PurchaseService {
         this.supplyService = supplyService;
     }
 
-    public ReceiptDTO[] buyGuestCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails) throws Exception {
+    public ReceiptDTO[] buyGuestCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
+            throws Exception {
+        logger.info("buyGuestCart called with token");
+
         if (!authRepo.validToken(token)) {
+            logger.error("Invalid token in buyGuestCart");
+
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
         int userId = authRepo.getUserId(token);
         return processCart(userId, true, paymentdetails, supplydetails);
     }
 
-    public ReceiptDTO[] buyRegisteredCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails) throws Exception {
+    public ReceiptDTO[] buyRegisteredCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
+            throws Exception {
+        logger.info("buyRegisteredCart called with token");
+
         if (!authRepo.validToken(token)) {
+            logger.error("Invalid token in buyRegisteredCart");
+
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
         int userId = authRepo.getUserId(token);
         return processCart(userId, false, paymentdetails, supplydetails);
     }
 
-    private ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails payment, SupplyDetails supply) throws Exception {
+    private ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails payment, SupplyDetails supply)
+            throws Exception {
+        logger.info("processCart called for userId={}, isGuest={}", userId, isGuest);
+
         ShoppingCart cart = userRepo.getUserCart(userId);
         if (cart == null || cart.getAllCart().isEmpty()) {
+            logger.warn("Cart is empty for userId={}", userId);
+
             throw new UIException("Shopping cart is empty or not found", ErrorCodes.CART_NOT_FOUND);
         }
 
         if (isGuest && !stockRepo.checkAvailability(cart.getAllCart())) {
+            logger.warn("Product availability check failed for guest userId={}", userId);
+
             throw new UIException("Not all items are available for guest purchase", ErrorCodes.PRODUCT_NOT_FOUND);
         }
 
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
         for (ShoppingBasket basket : cart.getBaskets().values()) {
-            List<ReceiptProduct> boughtItems = stockRepo.processCartItemsForStore(basket.getStoreId(), basket.getItems(), isGuest);
+            logger.info("Processing basket for storeId={}", basket.getStoreId());
+
+            List<ReceiptProduct> boughtItems = stockRepo.processCartItemsForStore(basket.getStoreId(),
+                    basket.getItems(), isGuest);
             double total = stockRepo.calculateTotalPrice(boughtItems);
             paymentService.processPayment(payment, total);
             supplyService.processSupply(supply);
@@ -91,31 +113,45 @@ public class PurchaseService {
         return saveReceipts(userId, storeToProducts);
     }
 
-    public ParticipationInRandomDTO participateInRandom(String token, int randomId, int storeId, double amountPaid, PaymentDetails paymentDetails) throws Exception {
+    public ParticipationInRandomDTO participateInRandom(String token, int randomId, int storeId, double amountPaid,
+            PaymentDetails paymentDetails) throws Exception {
+        logger.info("participateInRandom called with randomId={}, storeId={}", randomId, storeId);
+
         if (!authRepo.validToken(token)) {
+            logger.error("Invalid token in participateInRandom");
+
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
         int userId = authRepo.getUserId(token);
         if (!userRepo.isRegistered(userId)) {
-            throw new UIException(String.format("User %d is not registered to the system!", userId), ErrorCodes.USER_NOT_FOUND);
+            logger.error("Unregistered user {} in participateInRandom", userId);
+
+            throw new UIException(String.format("User %d is not registered to the system!", userId),
+                    ErrorCodes.USER_NOT_FOUND);
         }
         ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
         userRepo.ParticipateInRandom(card);
         purchaseRepo.saveRandomParticipation(card);
         paymentService.processPayment(paymentDetails, amountPaid);
-        logger.info("User {} successfully participated in random draw {}", userId, randomId);
+        logger.info("User {} participated in random draw {}", userId, randomId);
         return card;
     }
 
     public void finalizeRandomWinnings(String token, SupplyDetails supply) throws Exception {
+        logger.info("finalizeRandomWinnings called");
+
         if (!authRepo.validToken(token)) {
+            logger.error("Invalid token in finalizeRandomWinnings");
+
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
         int userId = authRepo.getUserId(token);
         if (!userRepo.isRegistered(userId)) {
-            throw new UIException(String.format("User %d is not registered to the system!", userId), ErrorCodes.USER_NOT_FOUND);
+            logger.error("Unregistered user {} in finalizeRandomWinnings", userId);
+
+            throw new UIException(String.format("User %d is not registered to the system!", userId),
+                    ErrorCodes.USER_NOT_FOUND);
         }
-        logger.info("User {} finalizing random winnings", userId);
 
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
         for (ParticipationInRandomDTO card : userRepo.getWinningCards(userId)) {
@@ -132,82 +168,108 @@ public class PurchaseService {
             supplyService.processSupply(supply);
         }
         saveReceipts(userId, storeToProducts);
+        logger.info("finalizeRandomWinnings completed for user {}", userId);
+
     }
 
     public void finalizeAuctionWins(String token, PaymentDetails payment) throws Exception {
+        logger.info("finalizeAuctionWins called");
+
         if (!authRepo.validToken(token)) {
+            logger.error("Invalid token in finalizeAuctionWins");
+
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
         int userId = authRepo.getUserId(token);
         if (!userRepo.isRegistered(userId)) {
-            throw new UIException(String.format("User %d is not registered to the system!", userId), ErrorCodes.USER_NOT_FOUND);
+            logger.error("Unregistered user {} in finalizeAuctionWins", userId);
+
+            throw new UIException(String.format("User %d is not registered to the system!", userId),
+                    ErrorCodes.USER_NOT_FOUND);
         }
-        logger.info("User {} finalizing auction wins", userId);
 
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
 
         for (SingleBid bid : userRepo.getWinningBids(userId)) {
-            if (bid.getType() != SpecialType.Auction) {
+            if (bid.getType() != SpecialType.Auction)
+                {
                 continue;
             }
 
             Product product = stockRepo.findByIdInSystem(bid.getId());
             if (product == null) {
+                logger.warn("Product not found in finalizeAuctionWins for productId={}", bid.getId());
+
                 throw new UIException("Product not available", ErrorCodes.PRODUCT_NOT_FOUND);
             }
             String storeName = storeRepo.getStoreNameById(bid.getStoreId());
             stockRepo.validateAndDecreaseStock(bid.getStoreId(), bid.getId(), bid.getAmount());
 
             ReceiptProduct receiptProduct = new ReceiptProduct(
-                    product.getName(), product.getCategory(), product.getDescription(),
-                    storeName, bid.getAmount(), (int) bid.getBidPrice()
-            );
+                        product.getName(), product.getCategory(), product.getDescription(),
+                        storeName, bid.getAmount(), (int) bid.getBidPrice());
 
             storeToProducts.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
             paymentService.processPayment(payment, (int) bid.getBidPrice());
         }
         saveReceipts(userId, storeToProducts);
+        logger.info("finalizeAuctionWins completed for user {}", userId);
+
     }
 
     public void finalizeAcceptedBids(String token, PaymentDetails payment) throws Exception {
+        logger.info("finalizeAcceptedBids called");
+
         if (!authRepo.validToken(token)) {
+            logger.error("Invalid token in finalizeAcceptedBids");
+
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
         int userId = authRepo.getUserId(token);
         if (!userRepo.isRegistered(userId)) {
-            throw new UIException(String.format("User %d is not registered to the system!", userId), ErrorCodes.USER_NOT_FOUND);
+            logger.error("Unregistered user {} in finalizeAcceptedBids", userId);
+
+            throw new UIException(String.format("User %d is not registered to the system!", userId),
+                    ErrorCodes.USER_NOT_FOUND);
         }
         logger.info("User {} finalizing accepted bids", userId);
 
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
 
         for (SingleBid bid : userRepo.getWinningBids(userId)) {
-            if (bid.getType() != SpecialType.BID) {
+            if (bid.getType() != SpecialType.BID)
                 continue;
-            }
 
             Product product = stockRepo.findByIdInSystem(bid.getId());
             String storeName = storeRepo.getStoreNameById(bid.getStoreId());
             stockRepo.validateAndDecreaseStock(bid.getStoreId(), bid.getId(), bid.getAmount());
 
             ReceiptProduct receiptProduct = new ReceiptProduct(
-                    product.getName(), product.getCategory(), product.getDescription(),
-                    storeName, bid.getAmount(), (int) bid.getBidPrice()
-            );
+                        product.getName(), product.getCategory(), product.getDescription(),
+                        storeName, bid.getAmount(), (int) bid.getBidPrice());
 
             storeToProducts.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
             paymentService.processPayment(payment, (int) bid.getBidPrice());
         }
         saveReceipts(userId, storeToProducts);
+        logger.info("finalizeAcceptedBids completed for user {}", userId);
+
     }
 
     public void submitBid(String token, SingleBid bid) throws UIException {
+        logger.info("submitBid called");
+
         if (!authRepo.validToken(token)) {
+            logger.error("Invalid token in submitBid");
+
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
         int userId = authRepo.getUserId(token);
         if (!userRepo.isRegistered(userId)) {
-            throw new UIException(String.format("User %d is not registered to the system!", userId), ErrorCodes.USER_NOT_FOUND);
+            logger.error("Unregistered user {} in submitBid", userId);
+
+            throw new UIException(String.format("User %d is not registered to the system!", userId),
+                    ErrorCodes.USER_NOT_FOUND);
         }
         logger.info("User {} is submitting a BID: {}", userId, bid);
         purchaseRepo.saveBid(bid);
@@ -215,21 +277,35 @@ public class PurchaseService {
     }
 
     public String searchProductInStore(String token, int storeId, int productId) throws Exception {
+        logger.info("searchProductInStore called for storeId={}, productId={}", storeId, productId);
+
         if (!authRepo.validToken(token)) {
+            logger.error("Invalid token in searchProductInStore");
+
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
         Product product = stockRepo.findByIdInSystem(productId);
         if (product == null) {
+            logger.warn("Product not found: {}", productId);
+
             throw new UIException("Product not found.", ErrorCodes.PRODUCT_NOT_FOUND);
         }
         item itemInStore = stockRepo.getItemByStoreAndProductId(storeId, productId);
         if (itemInStore == null) {
+            logger.warn("Product not found in store: {}", storeId);
+
             throw new UIException("Product not found in store.", ErrorCodes.PRODUCT_NOT_FOUND);
         }
-        return "Product: " + product.getName() + ", Price: " + itemInStore.getPrice() + ", Store: " + storeRepo.getStoreNameById(storeId);
+        logger.info("Product found successfully in store {}", storeId);
+
+        return "Product: " + product.getName() + ", Price: " + itemInStore.getPrice() + ", Store: "
+                + storeRepo.getStoreNameById(storeId);
     }
 
-    private ReceiptDTO[] saveReceipts(int userId, Map<Integer, List<ReceiptProduct>> storeToProducts) throws UIException {
+    private ReceiptDTO[] saveReceipts(int userId, Map<Integer, List<ReceiptProduct>> storeToProducts)
+            throws UIException {
+        logger.info("saveReceipts called for userId={}", userId);
+
         List<ReceiptDTO> receipts = new ArrayList<>();
         for (Map.Entry<Integer, List<ReceiptProduct>> entry : storeToProducts.entrySet()) {
             int storeId = entry.getKey();
@@ -240,6 +316,8 @@ public class PurchaseService {
             ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, total);
             receipts.add(receipt);
             orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
+            logger.info("Saved receipt for storeId={}, total={}", storeId, total);
+
         }
         return receipts.toArray(new ReceiptDTO[0]);
     }

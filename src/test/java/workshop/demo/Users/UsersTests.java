@@ -51,7 +51,7 @@ public class UsersTests {
         try {
             userRepo.login("bhaa", "11111");
             Assertions.assertTrue(false);
-        } catch (IncorrectLogin ex) {
+        } catch (UIException ex) {
             Assertions.assertTrue(true);
         } catch (Exception ex) {
             Assertions.assertTrue(false);

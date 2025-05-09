@@ -5,19 +5,25 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import workshop.demo.DTOs.MessageDTO;
 
 public class Store {
+    private static final Logger logger = LoggerFactory.getLogger(Store.class);
 
     private int storeID;
     private String storeName;
     private String category;
     private boolean active;
-    private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
-    //must add something for messages
+    private AtomicInteger[] rank;// rank[x] is the number of people who ranked i+1
+    // must add something for messages
     private List<MessageDTO> messgesInStore;
 
     public Store(int storeID, String storeName, String category) {
+        logger.debug("Creating store: ID={}, Name={}, Category={}", storeID, storeName, category);
+
         this.storeID = storeID;
         this.storeName = storeName;
         this.category = category;
@@ -46,19 +52,27 @@ public class Store {
     }
 
     public synchronized void setActive(boolean active) {
+        logger.debug("Setting active status for store {} to {}", storeID, active);
+
         this.active = active;
     }
 
-    //rank store:
+    // rank store:
     public boolean rankStore(int i) {
         if (i < 1 || i > 5) {
+            logger.error("Invalid store rank: {}", i);
+
             return false;
         }
         rank[i - 1].incrementAndGet();
+        logger.debug("Ranking store {} with {}", storeID, i);
+
         return true;
     }
 
     public int getFinalRateInStore(int storeId) {
+        logger.debug("Calculating final rank for store {}", storeId);
+
         int totalVotes = 0;
         int WRank = 0;
         for (int i = 0; i < rank.length; i++) {
@@ -67,11 +81,11 @@ public class Store {
             WRank += (i + 1) * count;
         }
         if (totalVotes == 0) {
-            return 3;//defult rank
+            return 3;// defult rank
 
         }
         int avgRank = (int) Math.round((double) WRank / totalVotes);
-        return Math.max(1, Math.min(5, avgRank));//to make surre the result is between 1 and 5
+        return Math.max(1, Math.min(5, avgRank));// to make surre the result is between 1 and 5
 
     }
 

@@ -31,6 +31,7 @@ public interface IStoreRepo {
     public void rankStore(int storeId, int newRank) throws UIException, DevException;
 
     public int getFinalRateInStore(int storeId) throws UIException, DevException;
+    public int getFinalRateInStore(int storeId) throws UIException, DevException;
 
     public List<Store> getStores();
 

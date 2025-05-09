@@ -129,5 +129,5 @@ public interface IUserRepo {
 
 
 
-    public void checkUserRegisterOnline(int userId) throws UIException;
+    public void checkUserRegisterOnline_ThrowException(int userId) throws UIException;
 }

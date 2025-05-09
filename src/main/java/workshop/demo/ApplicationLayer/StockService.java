@@ -47,7 +47,7 @@ public class StockService {
     public ItemStoreDTO[] searchProducts(String token, ProductSearchCriteria criteria) throws Exception {
         logger.info("Starting searchProducts with criteria: {}", criteria);
 
-        authRepo.checkAuth(token, logger);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         ProductDTO[] matchesProducts = stockRepo.getMatchesProducts(criteria);
         logger.debug("Found {} matching products in stock", matchesProducts.length);
 
@@ -56,34 +56,12 @@ public class StockService {
         return matchedItems;
     }
 
-    // public String searchProductInStore(String token, int storeId, int productId)
-    // throws Exception {
-    // logger.info("Searching for productId {} in storeId {}", productId, storeId);
-    // if (!authRepo.validToken(token)) {
-    // logger.error("Unauthorized access to searchProductInStore with token: {}",
-    // token);
-    // throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-    // }
-    // Product product = stockRepo.findById(productId);
-    // if (product == null) {
-    // logger.error("Product not found with ID: {}", productId);
-    // throw new UIException("Product not found", ErrorCodes.PRODUCT_NOT_FOUND);
-    // }
-    // item itemInStore = storeRepo.getItemByStoreAndProductId(storeId, productId);
-    // if (itemInStore == null) {
-    // logger.warn("Product {} not sold in store {}", productId, storeId);
-    // throw new UIException("Product not sold in this store",
-    // ErrorCodes.PRODUCT_NOT_FOUND);
-    // }
-    // String storeName = storeRepo.getStoreNameById(storeId);
-    // logger.info("Product {} found in store {} (ID {})", product.getName(),
-    // storeName, storeId);
-    // return "Product: " + product.getName() + ", Price: " + itemInStore.getPrice()
-    // + ", Store: " + storeName;
-    // }
+    
     public ProductDTO getProductInfo(String token, int productId) throws UIException {
         logger.info("Fetching product info for ID {}", productId);
-        authRepo.checkAuth(token, logger);
+
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+
         ProductDTO dto = stockRepo.GetProductInfo(productId);
         if (dto == null) {
             logger.error("Product not found for ID {}", productId);
@@ -96,10 +74,9 @@ public class StockService {
     public boolean addBidOnAucction(String token, int auctionId, int storeId, double price)
             throws UIException, DevException {
         logger.info("User trying to bid on auction: {}, store: {}", auctionId, storeId);
-        authRepo.checkAuth(token, logger);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        // if (userRepo.isRegistered(userId) && userRepo.isOnline(userId)) {
-        userRepo.checkUserRegisterOnline(userId);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
         SingleBid bid = stockRepo.bidOnAuction(storeId, userId, auctionId, price);
         userRepo.addBidToAuctionCart(bid);
         logger.info("Bid placed successfully by user: {} on auction: {}", userId, auctionId);
@@ -109,10 +86,9 @@ public class StockService {
 
     public boolean addRegularBid(String token, int bitId, int storeId, double price) throws UIException, DevException {
         logger.info("User attempting regular bid on bidId: {}, storeId: {}", bitId, storeId);
-        authRepo.checkAuth(token, logger);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline(userId);
-        // if (userRepo.isRegistered(userId) && userRepo.isOnline(userId)) {
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
         SingleBid bid = stockRepo.bidOnBid(bitId, price, userId, storeId);
         userRepo.addBidToRegularCart(bid);
         logger.info("Regular bid successful by user: {}", userId);
@@ -122,9 +98,9 @@ public class StockService {
 
     public AuctionDTO[] getAllAuctions(String token, int storeId) throws Exception {
         logger.info("User requesting all auctions in store: {}", storeId);
-        authRepo.checkAuth(token, logger);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline(userId);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
         logger.info("Returning auction list to user: {}", userId);
         storeRepo.checkStoreExistance(storeId);
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
@@ -136,9 +112,9 @@ public class StockService {
     public int setProductToAuction(String token, int storeId, int productId, int quantity, long time, double startPrice)
             throws Exception, DevException {
         logger.info("Setting product {} to auction in store {}", productId, storeId);
-        authRepo.checkAuth(token, logger);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline(userId);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
         // must add the exceptions here:
         storeRepo.checkStoreExistance(storeId);
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
@@ -149,9 +125,9 @@ public class StockService {
 
     public int setProductToBid(String token, int storeid, int productId, int quantity) throws Exception {
         logger.info("User attempting to set product {} as bid in store {}", productId, storeid);
-        authRepo.checkAuth(token, logger);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline(userId);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
 
         storeRepo.checkStoreExistance(storeid);
         // Node Worker= this.
@@ -164,9 +140,9 @@ public class StockService {
 
     public BidDTO[] getAllBidsStatus(String token, int storeId) throws Exception, DevException {
         logger.info("Fetching bid status for store: {}", storeId);
-        authRepo.checkAuth(token, logger);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline(userId);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
 
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to see auctions info.", ErrorCodes.NO_PERMISSION);
@@ -178,9 +154,9 @@ public class StockService {
 
     public SingleBid acceptBid(String token, int storeId, int bidId, int bidToAcceptId) throws Exception, DevException {
         logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidToAcceptId, bidId, storeId);
-        authRepo.checkAuth(token, logger);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline(userId);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
         storeRepo.checkStoreExistance(storeId);
 
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
@@ -194,25 +170,25 @@ public class StockService {
 
     public int setProductToRandom(String token, int productId, int quantity, double productPrice, int storeId,
             long RandomTime) throws UIException, DevException {
-        authRepo.checkAuth(token, logger);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline(userId);
-        return stockRepo.addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        return stockRepo.addProductToRandom( productId, quantity, productPrice, storeId, RandomTime);
     }
 
     public ParticipationInRandomDTO endBid(String token, int storeId, int randomId) throws Exception, DevException {
         logger.info("Ending random bid {} in store {}", randomId, storeId);
-        authRepo.checkAuth(token, logger);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline(userId);
-        return stockRepo.endRandom(storeId, randomId);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        return stockRepo.endRandom(storeId,  randomId);
     }
 
     public RandomDTO[] getAllRandomInStore(String token, int storeId) throws Exception, DevException {
         logger.info("Fetching all randoms in store {}", storeId);
-        authRepo.checkAuth(token, logger);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline(userId);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
         storeRepo.checkStoreExistance(storeId);
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to see random info.", ErrorCodes.NO_PERMISSION);
