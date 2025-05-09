@@ -57,10 +57,10 @@ public class UserService {
         }
     }
 
-    public boolean setAdmin(String token, String adminKey) throws UIException {
+    public boolean setAdmin(String token, String adminKey,int id) throws UIException {
         if (authRepo.validToken(token)) {
-            String userName = authRepo.getUserName(token);
-            int id = userRepo.logoutUser(userName);
+         //   String userName = authRepo.getUserName(token);
+            //int id = userRepo.logoutUser(userName);
             return userRepo.setUserAsAdmin(id, adminKey);
         } else {
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);

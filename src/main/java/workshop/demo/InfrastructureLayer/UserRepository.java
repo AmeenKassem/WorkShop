@@ -1,6 +1,7 @@
 package workshop.demo.InfrastructureLayer;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
@@ -22,7 +23,7 @@ public class UserRepository implements IUserRepo {
     private ConcurrentHashMap<String, Registered> users;
     private ConcurrentHashMap<Integer, String> idToUsername;
     private Encoder encoder;
-    private AdminInitilizer adminInit;
+    private AdminInitilizer adminInit ;
 
     private static final Logger logger = Logger.getLogger(UserRepository.class.getName());
 
@@ -134,6 +135,9 @@ public class UserRepository implements IUserRepo {
     }
 
     private Registered getRegisteredUser(int id) {
+        for (Map.Entry<String, Registered> entry : users.entrySet()) {
+    Registered user = entry.getValue();
+}
         if (idToUsername.containsKey(id)) {
             String username = idToUsername.get(id);
             if (users.containsKey(username)) {

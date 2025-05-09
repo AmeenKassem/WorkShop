@@ -1,20 +1,24 @@
 package workshop.demo.DomainLayer.User;
 
-
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
-
-@Component
-@ConfigurationProperties(prefix = "app.admin")
 public class AdminInitilizer {
-    private String password;
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    private final String password;
 
-    public boolean matchPassword(String pass){
-        if(password==null) throw new IllegalArgumentException("The system has no admin key!!");
-        return pass==password;
+    public AdminInitilizer(String password) {
+        if (password == null || password.isBlank()) {
+            throw new IllegalArgumentException("Admin password cannot be null or blank.");
+        }
+        this.password = password;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
+    public boolean matchPassword(String pass) {
+        if (password == null) {
+            throw new IllegalArgumentException("The system has no admin key!!");
+        }
+        return password.equals(pass);
+    }
 }
