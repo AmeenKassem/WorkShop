@@ -1,21 +1,22 @@
 package workshop.demo.StoreTests;
 
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
+import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 
 public class ExistenceTests {
 
-    private StoreRepository repository;
+    private ISUConnectionRepo repository;
+    private IStoreRepo storeRepo;
     private int storeId = 1;
     private int owner1 = 1;
 
@@ -27,9 +28,10 @@ public class ExistenceTests {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        repository = new StoreRepository();
-
-        repository.addStoreToSystem(owner1, "TechStore", "Electronics");
+        repository = new SUConnectionRepository();
+        storeRepo = new StoreRepository();
+        storeRepo.addStoreToSystem(owner1, "TechStore", "Electronics");
+        repository.addNewStoreOwner(storeId, storeId);
 
     }
     //for regenerating ID and get the same ID ->1
@@ -45,11 +47,11 @@ public class ExistenceTests {
     void testDeactivateStoreByMainOwner() throws Exception {
         int storeId = 1;
         // Assert that the store is active before deactivation
-        assertTrue(repository.findStoreByID(storeId).isActive());
-        List<Integer> workerIds = repository.deactivateStore(storeId, owner1);
+        assertTrue(storeRepo.findStoreByID(storeId).isActive());
+        storeRepo.deactivateStore(storeId, owner1);
         // Assert store is now inactive
-        assertFalse(repository.findStoreByID(storeId).isActive());
-        assertEquals(1, workerIds.size());
+        assertFalse(storeRepo.findStoreByID(storeId).isActive());
+        //assertEquals(1, workerIds.size());
         //after notfiing must check it I got notfied 
     }
 
@@ -59,16 +61,10 @@ public class ExistenceTests {
         int owner2 = 2;
         repository.AddOwnershipToStore(storeId, owner1, owner2);
         // Assert that the store is active before deactivation
-        assertTrue(repository.findStoreByID(storeId).isActive());
-        // Expect an exception when a non-root owner tries to deactivate the store
-        Exception exception = assertThrows(Exception.class, ()
-                -> repository.deactivateStore(storeId, owner2)
-        );
-
-        assertEquals("only the boss/main owner can deactivate the store", exception.getMessage());
-
+        assertTrue(storeRepo.findStoreByID(storeId).isActive());
+        assertFalse(repository.checkDeactivateStore(storeId, owner2));
         // Assert that the store is still active
-        assertTrue(repository.findStoreByID(storeId).isActive());
+        assertTrue(storeRepo.findStoreByID(storeId).isActive());
     }
 
 }

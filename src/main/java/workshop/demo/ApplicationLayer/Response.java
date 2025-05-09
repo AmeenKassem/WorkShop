@@ -1,22 +1,47 @@
 package workshop.demo.ApplicationLayer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class Response<T> {
 
-    public T data;
-    public String errorMsg;
+    private T data;
+    private String errorMsg;
+    private int errNumber;
 
     public Response(T data, String errorMsg) {
         this.data = data;
         this.errorMsg = errorMsg;
     }
-    // Getter for data
 
+    public Response(T data, String errorMsg, int errNumber) {
+        this.data = data;
+        this.errorMsg = errorMsg;
+        this.errNumber = errNumber;
+    }
+
+    // Getters
     public T getData() {
         return data;
     }
 
-    // Getter for errorMsg
     public String getErrorMsg() {
         return errorMsg;
     }
+
+    public int getErrNumber() {
+        return errNumber;
+    }
+
+    // Convert this Response object to a JSON string
+    public String toJson() {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            return "{\"error\": \"Failed to serialize response\"}";
+        }
+    }
+
+    
 }

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import workshop.demo.DTOs.Category;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.Store.item;
 
@@ -45,7 +46,7 @@ public class StockTest {
     }
     //Test "functionname" when "something " then "Succes/faliure"
     @Test
-    public void testRankProductWithoutConcurrency() {
+    public void testRankProductWithoutConcurrency() throws UIException {
         item testItem = new item(1, 10, 100, Category.ELECTRONICS);
         testItem.setRank(new AtomicInteger[5]);
         for (int i = 0; i < 5; i++) {

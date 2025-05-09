@@ -1,29 +1,28 @@
 package workshop.demo.StoreTests;
 
-import org.junit.jupiter.api.BeforeEach;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
-import workshop.demo.DTOs.AuctionDTO;
-import workshop.demo.DTOs.BidDTO;
+
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-// import java.security.Permission;
-import java.util.ArrayList;
-import java.util.List;
 
 @SpringBootTest
 public class StoreSpecialPurchasesTest {
 
     private IStoreRepo storeRepo = new StoreRepository();
+    private ISUConnectionRepo sUConnectionRepo = new SUConnectionRepository();
 
     // @BeforeEach
     // public void setup() {
@@ -37,7 +36,8 @@ public class StoreSpecialPurchasesTest {
         int bossId = 10;
         String storeName = "Test Store";
         String storeCategory = "Electronics";
-        storeRepo.addStoreToSystem(bossId, storeName, storeCategory);
+        int id = storeRepo.addStoreToSystem(bossId, storeName, storeCategory);
+        this.sUConnectionRepo.addNewStoreOwner(id, bossId);
 
         // 2. Find the store ID (assuming the last one added is the new one)
         List<Store> stores = storeRepo.getStores();
@@ -85,25 +85,22 @@ public class StoreSpecialPurchasesTest {
         assertFalse(second.isWon());
     }
 
-    @Test
-    public void testAddAuctionByUnauthorizedUser_Failure() throws Exception {
-        initTestStoreWithProducts1(storeRepo);
-
-        int unauthorizedUserId = 999; // not the boss (boss is 1)
-        int productId = 101;
-        int quantity = 1;
-        long time = 1000;
-        double startPrice = 50.0;
-
-        assertThrows(Exception.class, () -> {
-            storeRepo.addAuctionToStore(storeId1, unauthorizedUserId, productId, quantity, time, startPrice);
-        });
-
-        assertThrows(Exception.class, () -> {
-            storeRepo.addProductToBid(storeId1, unauthorizedUserId, productId, quantity);
-        });
-    }
-
+    // @Test
+    // public void testAddAuctionByUnauthorizedUser_Failure() throws Exception { //-> it will fail 
+    //     //becuse we change the checking og authorized to the service layer
+    //     initTestStoreWithProducts1(storeRepo);
+    //     int unauthorizedUserId = 999; // not the boss (boss is 1)
+    //     int productId = 101;
+    //     int quantity = 1;
+    //     long time = 1000;
+    //     double startPrice = 50.0;
+    //     assertThrows(Exception.class, () -> {
+    //         storeRepo.addAuctionToStore(storeId1, unauthorizedUserId, productId, quantity, time, startPrice);
+    //     });
+    //     assertThrows(Exception.class, () -> {
+    //         storeRepo.addProductToBid(storeId1, unauthorizedUserId, productId, quantity);
+    //     });
+    // }
     @Test
     public void testAddAuctionWithInsufficientQuantity_Failure() throws Exception {
         initTestStoreWithProducts1(storeRepo);
@@ -126,11 +123,10 @@ public class StoreSpecialPurchasesTest {
     @Test
     public void testSpecialPurchasePermession() throws Exception {
         initTestStoreWithProducts1(storeRepo);
-
-        storeRepo.AddManagerToStore(storeId1, 10, 2);
+        this.sUConnectionRepo.AddManagerToStore(storeId1, 10, 2);
         List<Permission> perms = new ArrayList<>();
         perms.add(Permission.SpecialType);
-        storeRepo.changePermissions(10, 2, storeId1, perms);
+        this.sUConnectionRepo.changePermissions(10, 2, storeId1, perms);
         storeRepo.addProductToBid(storeId1, 2, 101, 1);
         storeRepo.addAuctionToStore(storeId1, 2, 101, 1, 10, 0);
     }

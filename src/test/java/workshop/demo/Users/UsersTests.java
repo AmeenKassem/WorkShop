@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.IncorrectLogin;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
@@ -30,7 +31,7 @@ public class UsersTests {
 
     private IUserRepo userRepo = new UserRepository(enc, a);
 
-    private int goodLogin(String username, String password) {
+    private int goodLogin(String username, String password) throws UIException {
         int userIdFromRegister = userRepo.registerUser(username, password);
 
         int userIdFromLogIn = userRepo.login(username, password);
@@ -38,7 +39,7 @@ public class UsersTests {
     }
 
     @Test
-    public void test_register_and_login() {
+    public void test_register_and_login() throws UIException {
         int guestId = userRepo.generateGuest();
         int userIdFromRegister = userRepo.registerUser("bhaa", "123123");
 
@@ -50,7 +51,7 @@ public class UsersTests {
         try {
             userRepo.login("bhaa", "11111");
             Assertions.assertTrue(false);
-        } catch (IncorrectLogin ex) {
+        } catch (UIException ex) {
             Assertions.assertTrue(true);
         } catch (Exception ex) {
             Assertions.assertTrue(false);
@@ -75,7 +76,7 @@ public class UsersTests {
     //     Assertions.assertFalse((userRepo.isAdmin(userId2)));
     // }
     @Test
-    public void onlineTest() {
+    public void onlineTest() throws UIException {
         userRepo.registerUser("ghanem2", "123321");
 
     }
