@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class AdminInitilizer {
     private static final Logger logger = LoggerFactory.getLogger(AdminInitilizer.class);
 
-    private String password;
+    private String password = "123321";
 
     public String getPassword() {
         logger.debug("getPassword called");
