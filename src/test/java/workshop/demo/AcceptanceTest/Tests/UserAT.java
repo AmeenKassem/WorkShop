@@ -35,11 +35,18 @@ public class UserAT extends AcceptanceTests {
         Mockito.when(real.mockAuthRepo.getUserName("user-token")).thenReturn("user1");
         Mockito.when(real.mockUserRepo.registerUser("user1", "pass")).thenReturn(1);
         Mockito.when(real.mockUserRepo.login("user1", "pass")).thenReturn(1);
+        Mockito.when(real.mockUserRepo.logoutUser("user1")).thenReturn(1);
+
+        Mockito.when(real.mockAuthRepo.validToken("user2-token")).thenReturn(true);
+        Mockito.when(real.mockAuthRepo.getUserId("user2-token")).thenReturn(2);
+        Mockito.when(real.mockAuthRepo.getUserName("user2-token")).thenReturn("user2");
+        Mockito.when(real.mockUserRepo.registerUser("user2", "pass2")).thenReturn(2);
+        Mockito.when(real.mockUserRepo.login("user2", "pass2")).thenReturn(2);
     }
 
     @Test
     void testUser_LogIn_Success() throws Exception {
-        Mockito.when(real.mockAuthRepo.generateUserToken(1, "user1")).thenReturn("user-token");
+        //Mockito.when(real.mockAuthRepo.generateUserToken(1, "user1")).thenReturn("user-token");
         String result = real.testUser_LogIn("user-token", "user1", "pass");
         assertEquals("Done", result);
     }
@@ -49,7 +56,7 @@ public class UserAT extends AcceptanceTests {
         Mockito.when(real.mockUserRepo.login("user1", "wrongpass"))
                 .thenThrow(new IllegalArgumentException("Incorrect password"));
 
-        Exception ex = assertThrows(
+        IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> real.testUser_LogIn("user-token", "user1", "wrongpass")
         );

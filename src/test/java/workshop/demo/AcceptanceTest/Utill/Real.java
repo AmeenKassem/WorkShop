@@ -13,6 +13,7 @@ import workshop.demo.DTOs.Category;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.InfrastructureLayer.*;
 import workshop.demo.DTOs.*;
@@ -24,8 +25,10 @@ public class Real implements Bridge {
     public OrderRepository mockOrderRepo = Mockito.mock(OrderRepository.class);
     public PurchaseRepository mockPurchaseRepo = Mockito.mock(PurchaseRepository.class);
     public StockRepository mockStockRepo = Mockito.mock(StockRepository.class);
-    public ISUConnectionRepo mockIOSrepo=Mockito.mock(ISUConnectionRepo.class);
+    //public ISUConnectionRepo mockIOSrepo=Mockito.mock(ISUConnectionRepo.class);
 
+    public ISUConnectionRepo mockIOSrepo=new SUConnectionRepository();
+    public SuperDataStructure mockserviceios=new SuperDataStructure();
     public SingleBid mockSingleBid = Mockito.mock(SingleBid.class);
     public ShoppingCart mockShoppingCart = Mockito.mock(ShoppingCart.class);
     public PaymentServiceImp mockPay = Mockito.mock(PaymentServiceImp.class);
@@ -51,6 +54,7 @@ public class Real implements Bridge {
         notificationService = new NotificationService(mockNotiRepo, mockUserRepo);
         purchaseService = new PurchaseService(mockAuthRepo, mockStockRepo, mockStoreRepo, mockUserRepo,
                 mockPurchaseRepo, mockOrderRepo, mockPay, mockSupply);
+
     }
     /////////////////////// System /////////////////////////////
     @Override
