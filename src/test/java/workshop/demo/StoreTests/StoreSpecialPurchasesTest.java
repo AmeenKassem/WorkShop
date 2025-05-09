@@ -1,6 +1,5 @@
 package workshop.demo.StoreTests;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -15,7 +14,6 @@ import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
@@ -52,7 +50,7 @@ public class StoreSpecialPurchasesTest {
         int price = 150;
         Category category = Category.ELECTRONICS; // Adjust this to match your enum or object
 
-        storeRepo.addItem(storeId1, productId, quantity, price, category);
+        stockRepo.addItem(storeId1, productId, quantity, price, category);
 
     }
 
@@ -78,7 +76,7 @@ public class StoreSpecialPurchasesTest {
         assertFalse(first.isWon());
         assertTrue(second.isWon());
 
-        int bidId = stockRepo.addProductToBid(storeId1,  productId, 1);
+        int bidId = stockRepo.addProductToBid(storeId1, productId, 1);
         first = stockRepo.bidOnBid(bidId, 10, 2, storeId1);
         second = stockRepo.bidOnBid(bidId, 10, 1, storeId1);
         stockRepo.rejectBid(storeId1, bidId, second.getId());
@@ -114,7 +112,7 @@ public class StoreSpecialPurchasesTest {
         double startPrice = 100.0;
 
         assertThrows(Exception.class, () -> {
-            stockRepo.addAuctionToStore(storeId1,  productId, quantityTooHigh, time, startPrice);
+            stockRepo.addAuctionToStore(storeId1, productId, quantityTooHigh, time, startPrice);
         });
 
         assertThrows(Exception.class, () -> {

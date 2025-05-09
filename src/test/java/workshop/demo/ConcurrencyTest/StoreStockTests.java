@@ -14,16 +14,16 @@ import org.junit.jupiter.api.Test;
 
 import workshop.demo.DTOs.Category;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
-import workshop.demo.DomainLayer.Store.Store;
 
 public class StoreStockTests {
 
-    private Store store;
+    private StoreStock store;
 
     @BeforeEach
     public void setUp() {
-        store = new Store(1, "aa", "bb");
+        store = new StoreStock(1);
     }
 
     // @Test
