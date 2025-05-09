@@ -15,6 +15,7 @@ import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
@@ -29,6 +30,7 @@ import workshop.demo.InfrastructureLayer.UserRepository;
 @Component
 public class Repos {
 
+    public static final IUserSuspensionRepo UserSuspensionRepo = new workshop.demo.InfrastructureLayer.UserSuspensionRepo();
     public IUserRepo userRepo= new UserRepository(new Encoder(), new AdminInitilizer());
     public IStoreRepo storeRepo=new StoreRepository();
     public AuthenticationRepo auth = new AuthenticationRepo();

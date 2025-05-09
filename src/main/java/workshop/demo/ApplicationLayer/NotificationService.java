@@ -2,6 +2,10 @@ package workshop.demo.ApplicationLayer;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+//import ch.qos.logback.classic.Logger;
 // import workshop.demo.DTOs.MessageDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
@@ -11,6 +15,8 @@ public class NotificationService {
 
     INotificationRepo notificationRepo;
     IUserRepo userRepo;
+
+    private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
 
     public NotificationService(INotificationRepo notificationRepo, IUserRepo userRepo) {
         this.notificationRepo = notificationRepo;

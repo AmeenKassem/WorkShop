@@ -1,16 +1,20 @@
 package workshop.demo.DomainLayer.UserSuspension;
 
 import java.util.List;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public interface IUserSuspensionRepo {
 
-    void save(UserSuspension suspension);
+    void suspendRegisteredUser(String username, int minutes) throws UIException;
 
-    UserSuspension getSuspensionByUserId(int userId);
+    void suspendGuestUser(int guestId, int minutes) throws UIException;
 
-    UserSuspension getSuspensionByUsername(String username);
-
-    void removeSuspension(Integer userId, String username);
+    boolean isSuspended(Integer userId, String username);
 
     List<UserSuspension> getAllSuspensions();
+    
+    void pauseSuspension(Integer userId, String username) throws UIException;
+
+    void resumeSuspension(Integer userId, String username) throws UIException;
+
 }

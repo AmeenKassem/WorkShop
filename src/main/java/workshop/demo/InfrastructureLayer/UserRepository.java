@@ -50,7 +50,8 @@ public class UserRepository implements IUserRepo {
 
     @Override
     public int registerUser(String username, String password) throws UIException {
-        validPassword(username, password);// ) {
+        if (userExist(username))
+            throw new UIException("another user try to register with used username", ErrorCodes.USERNAME_USED);
         String encPass = encoder.encodePassword(password);
         int id = idGen.getAndIncrement();
         Registered userToAdd = new Registered(id, username, encPass);
@@ -58,15 +59,11 @@ public class UserRepository implements IUserRepo {
         idToUsername.put(id, username);
         logger.info("User " + username + " registered successfully");
         return id;
-        // }else{
-        // throw
-        // // }
-        // logger.warning("Invalid password for user: " + username);
-        // return -1;
+
     }
 
-    private void validPassword(String username, String password) throws UIException {
-        if(userExist(username)) throw new UIException("username is already used ", ErrorCodes.USERNAME_ALREADY_USED);
+    private boolean validPassword(String username, String password) {
+        return !users.containsKey(username);
     }
 
     @Override
