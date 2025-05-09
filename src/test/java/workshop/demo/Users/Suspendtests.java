@@ -1,4 +1,4 @@
-package workshop.demo;
+package workshop.demo.Users;
 
 
 

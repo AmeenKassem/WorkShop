@@ -25,7 +25,7 @@ import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.ActivePurcheses;
-import workshop.demo.DomainLayer.Store.Store;
+
 
 public class StockRepository implements IStockRepo {
 
@@ -50,9 +50,10 @@ public class StockRepository implements IStockRepo {
         return storeId2ActivePurchases.get(storeId);
     }
 
-    private void checkQuantity(int productId, int quantity) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'checkQuantity'");
+    private void checkQuantity(int productId, int quantity,int storeId) throws UIException {
+        if(storeStocks.get(storeId).getItemByProductId(productId).getQuantity()<quantity){
+            throw new UIException("there is no quantity to move it to special purchases", ErrorCodes.INSUFFICIENT_ITEM_QUANTITY_TO_RANDOM);
+        }
     }
 
     @Override
@@ -139,8 +140,10 @@ public class StockRepository implements IStockRepo {
     @Override
     public int addAuctionToStore(int StoreId, int productId, int quantity, long tome, double startPrice)
             throws UIException, DevException {
-        checkQuantity(productId, quantity);
-        return getActivePurchases(StoreId).addProductToAuction(productId, quantity, tome);
+        checkQuantity(productId, quantity,StoreId);
+        int res = getActivePurchases(StoreId).addProductToAuction(productId, quantity, tome);
+        decreaseQuantitytoBuy(StoreId, productId, quantity);
+        return res;
     }
 
     @Override
@@ -150,8 +153,10 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public int addProductToBid(int storeId, int productId, int quantity) throws UIException, DevException {
-        checkQuantity(productId, quantity);
-        return getActivePurchases(storeId).addProductToBid(productId, quantity);
+        checkQuantity(productId, quantity,storeId);
+        int res = getActivePurchases(storeId).addProductToBid(productId, quantity);
+        decreaseQuantitytoBuy(storeId, productId, quantity);
+        return res;
     }
 
     @Override
@@ -166,7 +171,7 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public boolean rejectBid(int storeId, int bidId, int userBidId) throws UIException, Exception {
-        return getActivePurchases(storeId).rejectBid(bidId, userBidId);
+        return getActivePurchases(storeId).rejectBid( userBidId,bidId);
     }
 
     @Override
@@ -177,8 +182,10 @@ public class StockRepository implements IStockRepo {
     @Override
     public int addProductToRandom(int productId, int quantity, double productPrice, int storeId,
             long RandomTime) throws UIException, DevException {
-        checkQuantity(productId, quantity);
-        return getActivePurchases(storeId).addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
+        checkQuantity(productId, quantity,storeId);
+        int res = getActivePurchases(storeId).addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
+        this.decreaseQuantitytoBuy(storeId, productId, quantity);
+        return res;
     }
 
     @Override

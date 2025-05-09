@@ -49,7 +49,7 @@ public class StoreSpecialPurchasesTest {
         int quantity = 3;
         int price = 150;
         Category category = Category.ELECTRONICS; // Adjust this to match your enum or object
-
+        stockRepo.addStore(id);
         stockRepo.addItem(storeId1, productId, quantity, price, category);
 
     }
@@ -79,6 +79,7 @@ public class StoreSpecialPurchasesTest {
         int bidId = stockRepo.addProductToBid(storeId1, productId, 1);
         first = stockRepo.bidOnBid(bidId, 10, 2, storeId1);
         second = stockRepo.bidOnBid(bidId, 10, 1, storeId1);
+        System.out.println(bidId);
         stockRepo.rejectBid(storeId1, bidId, second.getId());
         stockRepo.acceptBid(storeId1, bidId, first.getId());
         assertTrue(first.isWon());

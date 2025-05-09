@@ -26,25 +26,25 @@ public class StoreStockTests {
         store = new StoreStock(1);
     }
 
-    // @Test
-    // public void testAddItemConcurrency() throws InterruptedException, Exception {
-    //     ExecutorService executorService = Executors.newFixedThreadPool(10);
-    //     // Create an item to add
-    //     item newItem = new item(1, 10, 100, Category.ELECTRONICS);  // Set category
-    //     store.addItem(newItem);  // Add the item to the store initially
-    //     int numberOfThreads = 100;
-    //     for (int i = 0; i < numberOfThreads; i++) {
-    //         executorService.submit(() -> store.addItem(newItem));
-    //     }
-    //     executorService.shutdown();
-    //     executorService.awaitTermination(1, TimeUnit.MINUTES);
-    //     // Verify that the quantity has been correctly updated
-    //     List<item> items = store.getItemsByCategoryObject(Category.ELECTRONICS);
-    //     assertNotNull(items, "Items list should not be null");
-    //     assertEquals(1, items.size(), "There should be exactly one item with productId 1");
-    //     item storedItem = items.get(0);
-    //     assertEquals(10 + numberOfThreads, storedItem.getQuantity(), "The quantity should match the expected value after concurrent additions.");
-    // }
+    @Test
+    public void testAddItemConcurrency() throws InterruptedException, Exception {
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        // Create an item to add
+        item newItem = new item(1, 10, 100, Category.ELECTRONICS);  // Set category
+        store.addItem(newItem);  // Add the item to the store initially
+        int numberOfThreads = 100;
+        for (int i = 0; i < numberOfThreads; i++) {
+            executorService.submit(() -> store.addItem(newItem));
+        }
+        executorService.shutdown();
+        executorService.awaitTermination(1, TimeUnit.MINUTES);
+        // Verify that the quantity has been correctly updated
+        List<item> items = store.getItemsByCategoryObject(Category.ELECTRONICS);
+        assertNotNull(items, "Items list should not be null");
+        assertEquals(1, items.size(), "There should be exactly one item with productId 1");
+        item storedItem = items.get(0);
+        assertEquals(10 + numberOfThreads, storedItem.getQuantity(), "The quantity should match the expected value after concurrent additions.");
+    }
     //here to adding the quantity:(same item)
     @Test
     public void testUpdateQuantityConcurrency_Success() throws Exception {
