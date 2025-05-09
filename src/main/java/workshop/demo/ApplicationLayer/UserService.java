@@ -96,7 +96,7 @@ public class UserService {
         if (authRepo.validToken(token)) {
          //   String userName = authRepo.getUserName(token);
             //int id = userRepo.logoutUser(userName);
-            logger.info("User {} set as admin: {}", userName);
+            logger.info("User {} set as admin: {}");
 
             return userRepo.setUserAsAdmin(id, adminKey);
         } else {

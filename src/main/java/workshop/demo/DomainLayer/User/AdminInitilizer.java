@@ -13,6 +13,10 @@ public class AdminInitilizer {
 
     private String password;
 
+    public AdminInitilizer(String adminKey) {
+        password = adminKey;
+    }
+
     public String getPassword() {
         logger.debug("getPassword called");
         return password;
