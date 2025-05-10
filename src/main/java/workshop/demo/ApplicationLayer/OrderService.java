@@ -12,6 +12,9 @@ import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
+import workshop.demo.DomainLayer.Exceptions.UIException;
+
 public class OrderService {
 
     private IOrderRepo orderRepo;
@@ -29,16 +32,15 @@ public class OrderService {
         logger.info("created Order/history service");
     }
 
-    public void setOrderToStore(int storeId, int userId, ReceiptDTO receiptDTO) throws Exception {
+    public void setOrderToStore(int storeId, int userId, ReceiptDTO receiptDTO) throws UIException {
         logger.info("about to set an order to the history");
         Store store = this.storeRepo.findStoreByID(storeId);
         if (store == null) {
             logger.error("store not found!");
-            throw new Exception("store not found");
+            throw new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND);
         }
         this.orderRepo.setOrderToStore(storeId, userId, receiptDTO, store.getStoreName());
         logger.info("added the order to the history succeesfully!");
-
     }
 
     public List<OrderDTO> getAllOrderByStore(int storeId) throws Exception {
@@ -46,7 +48,7 @@ public class OrderService {
         Store store = this.storeRepo.findStoreByID(storeId);
         if (store == null) {
             logger.error("store not found!");
-            throw new Exception("store not found");
+            throw new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND);
         }
         logger.info("about to get all the orders succsesfully!");
         return this.orderRepo.getAllOrderByStore(storeId);
@@ -55,11 +57,11 @@ public class OrderService {
     public List<ReceiptDTO> getReceiptDTOsByUser(String token) throws Exception {
         logger.info("about to get all the recipts for the user!");
         if (!authRepo.validToken(token)) {
-            throw new Exception("unvalid token!");
+            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
         int userId = authRepo.getUserId(token);
         if (!userRepo.isRegistered(userId)) {
-            throw new Exception(String.format("the user:%d is not registered to the system!", userId));
+            throw new UIException(String.format("The user:%d is not registered to the system!", userId), ErrorCodes.USER_NOT_FOUND);
         }
         return this.orderRepo.getReceiptDTOsByUser(userId);
     }

@@ -2,18 +2,18 @@ package workshop.demo.DomainLayer.Authentication;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class AuthoResponse  {
+public class AuthoResponse {
 
     public String userName;
     public int id;
 
-   
-    public AuthoResponse(String userName,int id) {
+    public AuthoResponse(String userName, int id) {
         this.userName = userName;
-        this.id=id;
+        this.id = id;
     }
 
-    public AuthoResponse() {} // Needed for deserialization
+    public AuthoResponse() {
+    } // Needed for deserialization
 
     // Convert to JSON
     public String toJson() {

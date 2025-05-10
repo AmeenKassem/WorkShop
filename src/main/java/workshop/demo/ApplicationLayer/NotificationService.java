@@ -2,7 +2,12 @@ package workshop.demo.ApplicationLayer;
 
 import java.util.List;
 
-import workshop.demo.DTOs.MessageDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+//import ch.qos.logback.classic.Logger;
+// import workshop.demo.DTOs.MessageDTO;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
@@ -11,37 +16,37 @@ public class NotificationService {
     INotificationRepo notificationRepo;
     IUserRepo userRepo;
 
+    private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
+
     public NotificationService(INotificationRepo notificationRepo, IUserRepo userRepo) {
         this.notificationRepo = notificationRepo;
         this.userRepo = userRepo;
     }
 
-    public void sendRTMessageToUser(String message, int senderId, int receiverId) {
-        boolean isReceiverOnline = userRepo.isOnline(receiverId);
-        notificationRepo.sendRTMessageToUser(message, senderId, receiverId, isReceiverOnline);
+    public void sendRTMessageToUser(String username,String message) throws UIException {
+        notificationRepo.sendImmediateMessage(username,message);
     }
 
-    public void sendDMessageToUser(int senderId, int receiverId, String message) {
-        boolean isReceiverOnline = userRepo.isOnline(receiverId);
-        notificationRepo.sendDMessageToUser(senderId, receiverId, message, isReceiverOnline);
+    public void sendDMessageToUser(String username, String message) throws UIException {
+        notificationRepo.sendDelayedMessageToUser(username, message);
     }
 
-    public void sendRTMessageToAll(List<Integer> receiversIds ,String message, int senderId) {
-        for (int receiverId : receiversIds) {
-            boolean isReceiverOnline = userRepo.isOnline(receiverId);
-            notificationRepo.sendRTMessageToUser(message, senderId, receiverId, isReceiverOnline);
-        }
-    }
+    // public void sendRTMessageToAll(List<Integer> receiversIds ,String message, int senderId) throws UIException {
+    //     for (int receiverId : receiversIds) {
+    //         boolean isReceiverOnline = userRepo.isOnline(receiverId);
+    //         notificationRepo.sendRTMessageToUser(message, senderId, receiverId, isReceiverOnline);
+    //     }
+    // }
 
-    public void sendDMessageToAll(List<Integer> receiversIds ,String message, int senderId) {
-        for (int receiverId : receiversIds) {
-            boolean isReceiverOnline = userRepo.isOnline(receiverId);
-            notificationRepo.sendDMessageToUser(senderId, receiverId, message, isReceiverOnline);
-        }
-    }
+    // public void sendDMessageToAll(List<Integer> receiversIds ,String message, int senderId) throws UIException {
+    //     for (int receiverId : receiversIds) {
+    //         boolean isReceiverOnline = userRepo.isOnline(receiverId);
+    //         notificationRepo.sendDMessageToUser(senderId, receiverId, message, isReceiverOnline);
+    //     }
+    // }
 
-    public MessageDTO[] getDelayedMessages(int userId) {
-        return notificationRepo.getDelayedMessages(userId);
+    public String[] getDelayedMessages(String username) {
+        return notificationRepo.getDelayedMessages(username);
     }
 
 }
