@@ -1,16 +1,20 @@
 package workshop.demo.DomainLayer.Store;
 
-public class HiddenDiscount implements Discount {
+import workshop.demo.DomainLayer.User.ShoppingCart;
 
-    @Override
-    public double apply(double price) {
-        return 0.0;
-        //Implement this!
+import java.util.function.Predicate;
+
+public class HiddenDiscount extends Discount {
+    private final Predicate<ShoppingCart> condition;
+    public HiddenDiscount(Predicate<ShoppingCart> condition){
+        super("Hidden");
+        this.condition = condition;
     }
-
     @Override
-    public String getDescription() {
-        return null;
-        //Implement this!
+    public double apply(ShoppingCart shoppingCart){
+        return condition.test(shoppingCart) ? 0.0 : 0.0;
+    }
+    public boolean conditionFails(ShoppingCart shoppingCart){
+        return !condition.test(shoppingCart);
     }
 }
