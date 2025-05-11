@@ -31,10 +31,14 @@ public class Registered extends Guest {
         participationsOnRandoms = new ArrayList<ParticipationInRandomDTO>();
     }
 
+    
     public boolean check(Encoder encoder, String username, String password) {
         logger.debug("Registered user created:username={}", username);
         boolean res = encoder.matches(password, encrybtedPassword) && username.equals(this.username);
         logger.debug("Password match result: {}", res);
+        if (res) {
+            login();
+        }
 
         return res;
     }
@@ -49,7 +53,7 @@ public class Registered extends Guest {
         return systemRole == RoleOnSystem.Admin;
     }
 
-    public boolean isOnlien() {
+    public boolean isOnline() {
         return isOnline;
     }
 

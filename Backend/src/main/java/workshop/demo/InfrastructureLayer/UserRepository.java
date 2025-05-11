@@ -137,13 +137,10 @@ public class UserRepository implements IUserRepo {
     @Override
     public boolean isOnline(int id) {
         Registered registered = getRegisteredUser(id);
-        return registered != null && registered.isOnlien();
+        return registered != null && registered.isOnline();
     }
 
     private Registered getRegisteredUser(int id) {
-        for (Map.Entry<String, Registered> entry : users.entrySet()) {
-            Registered user = entry.getValue();
-        }
         if (idToUsername.containsKey(id)) {
             String username = idToUsername.get(id);
             if (users.containsKey(username)) {

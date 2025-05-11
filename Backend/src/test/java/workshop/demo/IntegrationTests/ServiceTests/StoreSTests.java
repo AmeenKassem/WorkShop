@@ -93,3 +93,4 @@ class StoreSTests {
         assertEquals(newOwnerId, returnedId);
         assertTrue(suConnectionRepo.getData().getWorkersInStore(storeId).contains(newOwnerId));
     }
+}

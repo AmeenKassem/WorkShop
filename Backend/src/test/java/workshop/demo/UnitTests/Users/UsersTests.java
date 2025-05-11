@@ -55,6 +55,15 @@ public class UsersTests {
 
     }
 
+    @Test
+    public void testOnlineAafterLogin() throws UIException {
+        int registeredId = userRepo.registerUser("layan", "123");
+        int loggedInId = userRepo.login("layan", "123");
+        Assertions.assertEquals(registeredId, loggedInId);
+        boolean isOnline = userRepo.isOnline(loggedInId);
+        Assertions.assertTrue(isOnline, "should be online after login");
+    }
+
     // @Test
     // public void adminTest(){
     //     int userId = goodLogin("bhaa2", "123321");
