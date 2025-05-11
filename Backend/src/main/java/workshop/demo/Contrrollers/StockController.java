@@ -15,11 +15,11 @@ import java.util.List;
 @RequestMapping("/stock")
 public class StockController {
 
-    private final StockService stockService;
+    private  StockService stockService;
 
     @Autowired
-    public StockController(StockService stockService) {
-        this.stockService = stockService;
+    public StockController(Repos repos) {
+        this.stockService = new StockService(repos.stockrepo,repos.storeRepo,repos.auth,repos.userRepo,repos.sUConnectionRepo,repos.UserSuspensionRepo);
     }
 
     @GetMapping("/getProductInfo")
@@ -107,10 +107,11 @@ public class StockController {
     @PostMapping("/updateQuantity")
     public String updateQuantity(@RequestParam int storeId,
                                  @RequestParam String token,
-                                 @RequestParam int productId) {
+                                 @RequestParam int productId,
+                                 @RequestParam int newQuantity) {
         Response<String> res;
         try {
-            stockService.updateQuantity(storeId, token, productId);
+            stockService.updateQuantity(storeId, token, productId, newQuantity);
             res = new Response<>("Quantity updated successfully", null);
         } catch (UIException ex) {
             res = new Response<>(null, ex.getMessage(), ex.getNumber());

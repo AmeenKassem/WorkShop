@@ -2,6 +2,8 @@ package workshop.demo.DomainLayer.StoreUserConnection;
 
 import java.util.List;
 
+import workshop.demo.DomainLayer.Exceptions.DevException;
+
 public interface ISUConnectionRepo {
 
     void addNewStoreOwner(int storeId, int bossID);
@@ -29,6 +31,8 @@ public interface ISUConnectionRepo {
     void closeStore(int storeId) throws Exception;
 
     boolean manipulateItem(int userId, int storeId, Permission permission) throws Exception;
+
+    void checkMainOwner_ThrowException(int storeId, int userId) throws DevException;
 
     // for tests
     SuperDataStructure getData();
