@@ -45,7 +45,7 @@ public interface IUserRepo {
      * @param username
      * @param password
      */
-    public int registerUser( String username, String password)throws UIException;
+    public int registerUser( String username, String password,int age)throws UIException;
 
 
     /**

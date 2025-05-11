@@ -15,13 +15,14 @@ public class Registered extends Guest {
     private String username;
     private String encrybtedPassword;
     private boolean isOnline;
+    private int age;
     private RoleOnSystem systemRole = RoleOnSystem.Regular;
 
     private List<SingleBid> regularBids;
     private List<SingleBid> auctionBids;
     private List<ParticipationInRandomDTO> participationsOnRandoms;
 
-    public Registered(int id2, String username, String encrybtedPassword) {
+    public Registered(int id2, String username, String encrybtedPassword, int age) {
 
         super(id2);
         this.username = username;
@@ -29,6 +30,7 @@ public class Registered extends Guest {
         regularBids = new ArrayList<SingleBid>();
         auctionBids = new ArrayList<SingleBid>();
         participationsOnRandoms = new ArrayList<ParticipationInRandomDTO>();
+        this.age = age;
     }
 
     public boolean check(Encoder encoder, String username, String password) {
