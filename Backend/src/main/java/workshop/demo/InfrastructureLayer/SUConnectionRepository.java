@@ -2,16 +2,21 @@ package workshop.demo.InfrastructureLayer;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 
+@Repository
 public class SUConnectionRepository implements ISUConnectionRepo {
 
     private final SuperDataStructure data;
 
+    @Autowired
     public SUConnectionRepository() {
         data = new SuperDataStructure();
     }

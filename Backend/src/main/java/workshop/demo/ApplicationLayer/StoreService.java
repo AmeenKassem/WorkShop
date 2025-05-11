@@ -4,12 +4,13 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
-import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
@@ -20,6 +21,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
+@Service
 public class StoreService {
 
     private IStoreRepo storeRepo;
@@ -32,8 +34,9 @@ public class StoreService {
     private IUserSuspensionRepo susRepo;
     private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
 
+    @Autowired
     public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, IUserRepo userRepo, IOrderRepo orderRepo,
-            ISUConnectionRepo sUConnectionRepo, IStockRepo stock,IUserSuspensionRepo susRepo) {
+            ISUConnectionRepo sUConnectionRepo, IStockRepo stock, IUserSuspensionRepo susRepo) {
         this.storeRepo = storeRepository;
         this.notiRepo = notiRepo;
         this.authRepo = authRepo;
@@ -41,7 +44,7 @@ public class StoreService {
         this.userRepo = userRepo;
         this.suConnectionRepo = sUConnectionRepo;
         this.stockRepo = stock;
-        this.susRepo=susRepo;
+        this.susRepo = susRepo;
         logger.info("created the StoreService");
     }
 
@@ -72,13 +75,13 @@ public class StoreService {
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
         userRepo.checkUserRegisterOnline_ThrowException(newOwnerId);
         storeRepo.checkStoreExistance(storeId);
-        storeRepo.checkStoreIsActive(storeId); 
+        storeRepo.checkStoreIsActive(storeId);
         suConnectionRepo.checkToAddOwner(storeId, ownerId, newOwnerId);
         logger.info("Sending ownership approval request from {} to {}", ownerId, newOwnerId);
         boolean approved = sendMessageToTakeApproval(ownerId, newOwnerId);
         if (!approved) {
             logger.info("Ownership addition declined by user {}", newOwnerId);
-            
+
         }
         suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
         logger.info("Successfully added user {} as owner to store {} by user {}", newOwnerId, storeId, ownerId);
@@ -98,7 +101,7 @@ public class StoreService {
         logger.info("Successfully removed owner {} from store {} by {}", ownerToDelete, storeId, ownerId);
     }
 
-   public int AddManagerToStore(int storeId, String token, int managerId, List<Permission> authorization) throws Exception, DevException {
+    public int AddManagerToStore(int storeId, String token, int managerId, List<Permission> authorization) throws Exception, DevException {
         logger.info("User attempting to add manager {} to store {}", managerId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
@@ -130,7 +133,7 @@ public class StoreService {
         logger.info("permissions updated successfully for manager {} in store {} by owner {}", managerId, storeId, ownerId);
     }
 
-   public void deleteManager(int storeId, String token, int managerId) throws Exception, DevException {
+    public void deleteManager(int storeId, String token, int managerId) throws Exception, DevException {
         logger.info("user attempting to delete manager {} from store {}", managerId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
@@ -153,7 +156,7 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId); 
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         this.storeRepo.checkStoreExistance(storeId);
         this.storeRepo.rankStore(storeId, newRank);
         logger.info("store ranked sucessfully!");
@@ -176,7 +179,7 @@ public class StoreService {
         storeRepo.deactivateStore(storeId, ownerId);
         List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
         logger.info("Store {} successfully deactivated by owner {}", storeId, ownerId);
-        logger.info("About to notify all employees: {}", toNotify); 
+        logger.info("About to notify all employees: {}", toNotify);
         ///we have to notify the employees here
         return storeId;
     }

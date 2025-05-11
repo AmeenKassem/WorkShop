@@ -5,8 +5,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-import workshop.demo.DTOs.ParticipationInRandomDTO;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
 import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -16,6 +20,7 @@ import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
+@Repository
 public class UserRepository implements IUserRepo {
 
     private AtomicInteger idGen;
@@ -23,10 +28,11 @@ public class UserRepository implements IUserRepo {
     private ConcurrentHashMap<String, Registered> users;
     private ConcurrentHashMap<Integer, String> idToUsername;
     private Encoder encoder;
-    private AdminInitilizer adminInit ;
+    private AdminInitilizer adminInit;
 
     private static final Logger logger = Logger.getLogger(UserRepository.class.getName());
 
+    @Autowired
     public UserRepository(Encoder encoder, AdminInitilizer adminInit) {
         this.encoder = encoder;
         this.idGen = new AtomicInteger(1);
@@ -51,8 +57,9 @@ public class UserRepository implements IUserRepo {
 
     @Override
     public int registerUser(String username, String password) throws UIException {
-        if (userExist(username))
+        if (userExist(username)) {
             throw new UIException("another user try to register with used username", ErrorCodes.USERNAME_USED);
+        }
         String encPass = encoder.encodePassword(password);
         int id = idGen.getAndIncrement();
         Registered userToAdd = new Registered(id, username, encPass);
@@ -135,8 +142,8 @@ public class UserRepository implements IUserRepo {
 
     private Registered getRegisteredUser(int id) {
         for (Map.Entry<String, Registered> entry : users.entrySet()) {
-    Registered user = entry.getValue();
-}
+            Registered user = entry.getValue();
+        }
         if (idToUsername.containsKey(id)) {
             String username = idToUsername.get(id);
             if (users.containsKey(username)) {
@@ -231,9 +238,9 @@ public class UserRepository implements IUserRepo {
     }
 
     public void checkAdmin_ThrowException(int userId) throws UIException {
-    checkUserRegisterOnline_ThrowException(userId);  
-    if (!isAdmin(userId)) {
-        throw new UIException("User is not an admin", ErrorCodes.NO_PERMISSION);
+        checkUserRegisterOnline_ThrowException(userId);
+        if (!isAdmin(userId)) {
+            throw new UIException("User is not an admin", ErrorCodes.NO_PERMISSION);
+        }
     }
-}
 }

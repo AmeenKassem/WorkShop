@@ -2,6 +2,8 @@ package workshop.demo.ApplicationLayer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
@@ -10,19 +12,20 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
+@Service
 public class UserService {
-     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private IUserRepo userRepo;
     private IAuthRepo authRepo;
-
+    @Autowired
     public UserService(IUserRepo userRepo, IAuthRepo authRepo) {
         this.userRepo = userRepo;
         this.authRepo = authRepo;
     }
 
-    public String generateGuest() throws UIException , Exception{
+    public String generateGuest() throws UIException, Exception {
         logger.info("generateGuest called");
         int id = userRepo.generateGuest();
         logger.info("Generated guest with ID={}", id);
@@ -66,7 +69,7 @@ public class UserService {
             logger.info("Destroyed guest with ID={}", id);
 
             userRepo.destroyGuest(id);
-            
+
         } else {
             logger.error("Invalid token in destroyGuest");
 
@@ -90,11 +93,11 @@ public class UserService {
         }
     }
 
-    public boolean setAdmin(String token, String adminKey,int id) throws UIException {
+    public boolean setAdmin(String token, String adminKey, int id) throws UIException {
         logger.info("setAdmin called");
 
         if (authRepo.validToken(token)) {
-         //   String userName = authRepo.getUserName(token);
+            //   String userName = authRepo.getUserName(token);
             //int id = userRepo.logoutUser(userName);
             logger.info("User {} set as admin: {}");
 
