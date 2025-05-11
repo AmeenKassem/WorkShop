@@ -73,7 +73,7 @@ public class StoreService {
         int ownerId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(ownerId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
-        userRepo.checkUserRegisterOnline_ThrowException(newOwnerId);
+        userRepo.checkUserRegister_ThrowException(newOwnerId);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         suConnectionRepo.checkToAddOwner(storeId, ownerId, newOwnerId);
@@ -81,6 +81,7 @@ public class StoreService {
         boolean approved = sendMessageToTakeApproval(ownerId, newOwnerId);
         if (!approved) {
             logger.info("Ownership addition declined by user {}", newOwnerId);
+            return -1;
 
         }
         suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
@@ -94,7 +95,7 @@ public class StoreService {
         int ownerId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(ownerId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
-        userRepo.checkUserRegisterOnline_ThrowException(ownerToDelete);
+        userRepo.checkUserRegister_ThrowException(ownerToDelete);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         suConnectionRepo.DeleteOwnershipFromStore(storeId, ownerId, ownerToDelete);
@@ -107,12 +108,13 @@ public class StoreService {
         int ownerId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(ownerId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
-        userRepo.checkUserRegisterOnline_ThrowException(managerId);
+        userRepo.checkUserRegister_ThrowException(managerId);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         boolean approved = sendMessageToTakeApproval(ownerId, managerId);
         if (!approved) {
             logger.info("Manager addition declined by user {}", managerId);
+            return -1;
         }
         suConnectionRepo.AddManagerToStore(storeId, ownerId, managerId);
         logger.info("manager {} successfully added to store {} by {}", managerId, storeId, ownerId);
@@ -126,7 +128,7 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(ownerId);
-        userRepo.checkUserRegisterOnline_ThrowException(managerId);
+        userRepo.checkUserRegister_ThrowException(managerId);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         suConnectionRepo.changePermissions(ownerId, managerId, storeId, authorization);
@@ -139,7 +141,7 @@ public class StoreService {
         int ownerId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(ownerId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
-        userRepo.checkUserRegisterOnline_ThrowException(managerId);
+        userRepo.checkUserRegister_ThrowException(managerId);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         suConnectionRepo.deleteManager(storeId, ownerId, managerId);
@@ -175,7 +177,7 @@ public class StoreService {
         int ownerId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(ownerId);
         storeRepo.checkStoreExistance(storeId);
-        suConnectionRepo.checkMainOwner_ThrowException(storeId, ownerId);
+        suConnectionRepo.checkMainOwnerToDeactivateStore_ThrowException(storeId, ownerId);
         storeRepo.deactivateStore(storeId, ownerId);
         List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
         logger.info("Store {} successfully deactivated by owner {}", storeId, ownerId);

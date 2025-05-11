@@ -243,4 +243,12 @@ public class UserRepository implements IUserRepo {
             throw new UIException("User is not an admin", ErrorCodes.NO_PERMISSION);
         }
     }
+
+    @Override
+    public void checkUserRegister_ThrowException(int userId) throws UIException {
+        if (!(isRegistered(userId))) {
+            // logger.error("User not logged in for setProductToBid: {}", userId);
+            throw new UIException("You are not regestered user!", ErrorCodes.USER_NOT_LOGGED_IN);
+        }
+    }
 }

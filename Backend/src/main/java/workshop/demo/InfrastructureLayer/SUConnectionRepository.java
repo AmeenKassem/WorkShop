@@ -144,7 +144,7 @@ public class SUConnectionRepository implements ISUConnectionRepo {
         return this.data;
     }
 
-    public void checkMainOwner_ThrowException(int storeId, int userId) throws DevException {
+    public void checkMainOwnerToDeactivateStore_ThrowException(int storeId, int userId) throws DevException {
         try {
             if (!checkDeactivateStore(storeId, userId)) {
                 throw new DevException("Only the boss/main owner can perform this action on store " + storeId);
@@ -153,5 +153,4 @@ public class SUConnectionRepository implements ISUConnectionRepo {
             throw new DevException("failed to check ownership for this userid: " + e.getMessage());
         }
     }
-
 }

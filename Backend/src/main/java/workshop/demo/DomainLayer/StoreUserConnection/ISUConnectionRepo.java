@@ -32,7 +32,7 @@ public interface ISUConnectionRepo {
 
     boolean manipulateItem(int userId, int storeId, Permission permission) throws Exception;
 
-    void checkMainOwner_ThrowException(int storeId, int userId) throws DevException;
+    void checkMainOwnerToDeactivateStore_ThrowException(int storeId, int userId) throws DevException;
 
     // for tests
     SuperDataStructure getData();
