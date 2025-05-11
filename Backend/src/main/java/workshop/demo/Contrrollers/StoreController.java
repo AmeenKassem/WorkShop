@@ -18,8 +18,8 @@ public class StoreController {
     private final StoreService storeService;
 
     @Autowired
-    public StoreController(StoreService storeService) {
-        this.storeService = storeService;
+    public StoreController(Repos repos) {
+        this.storeService = new StoreService(repos.storeRepo, repos.notificationRepo    , repos.auth, repos.userRepo, repos.orderRepo, repos.sUConnectionRepo, repos.stockrepo, repos.UserSuspensionRepo);
     }
 
     @PostMapping("/addStore")

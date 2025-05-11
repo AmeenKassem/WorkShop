@@ -2,6 +2,7 @@ package workshop.demo.InfrastructureLayer;
 
 import java.util.List;
 
+import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
@@ -136,6 +137,16 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     // for tests
     public SuperDataStructure getData() {
         return this.data;
+    }
+
+    public void checkMainOwner_ThrowException(int storeId, int userId) throws DevException {
+        try {
+            if (!checkDeactivateStore(storeId, userId)) {
+                throw new DevException("Only the boss/main owner can perform this action on store " + storeId);
+            }
+        } catch (Exception e) {
+            throw new DevException("failed to check ownership for this userid: " + e.getMessage());
+        }
     }
 
 }

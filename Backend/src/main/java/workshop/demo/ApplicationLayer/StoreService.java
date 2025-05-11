@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
+import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
@@ -17,6 +18,7 @@ import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
 public class StoreService {
 
@@ -49,170 +51,96 @@ public class StoreService {
 
     }
 
-    public int addStoreToSystem(String token, String storeName, String Category) throws UIException {
-        int bossID = 0;
-        int storeId = -1;
-        try {
-            if (!authRepo.validToken(token)) {
-                throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-            }
-            bossID = authRepo.getUserId(token);
-            userRepo.checkUserRegisterOnline_ThrowException(bossID);
-            susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(bossID);
-            logger.info("trying to add new sotre to the system for the BOSS:", bossID);
-            storeId = storeRepo.addStoreToSystem(bossID, storeName, Category);
-            this.suConnectionRepo.addNewStoreOwner(storeId, bossID);
-            stockRepo.addStore(storeId);
-            logger.info("added the store succsessfully");
-        } catch (Exception e) {
-            logger.error("failed to add the store for user: {}, Error: {}", bossID, e.getMessage());
-        }
+    public int addStoreToSystem(String token, String storeName, String category) throws UIException, DevException {
+        logger.info("User attempting to add a new store: '{}', category: {}", storeName, category);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int bossId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(bossId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(bossId);
+        int storeId = storeRepo.addStoreToSystem(bossId, storeName, category);
+        suConnectionRepo.addNewStoreOwner(storeId, bossId);
+        stockRepo.addStore(storeId);
+        logger.info("Store '{}' added successfully with ID {} by boss {}", storeName, storeId, bossId);
         return storeId;
     }
 
-    public void AddOwnershipToStore(int storeID, String token, int newOwnerId) {
-        try {
-            if (!authRepo.validToken(token)) {
-                throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-            }
-            int ownerID = authRepo.getUserId(token);
-            if (!userRepo.isRegistered(ownerID)) {
-                throw new UIException(String.format("The user:%d is not registered to the system!", ownerID), ErrorCodes.USER_NOT_FOUND);
-            }
-           susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerID);
-            if (!userRepo.isRegistered(newOwnerId)) {
-                throw new UIException(String.format("can't make owner to unregistered user:%d ", newOwnerId), ErrorCodes.USER_NOT_FOUND);
-            }
-            logger.info("trying to add a new owner to the store");
-            this.storeRepo.checkStoreExistance(storeID);
-            if (!this.storeRepo.findStoreByID(storeID).isActive()) {
-                throw new Exception("can't add new ownership/managment: store IS DEactivated");
-            }
-            this.suConnectionRepo.checkToAddOwner(storeID, ownerID, newOwnerId);
-            logger.info("we can add a new owner to the store");
-            boolean answer = this.sendMessageToTakeApproval(ownerID, newOwnerId);
-            if (answer) {
-                logger.info("the new owner has approved!");
-            } else {
-                logger.info("failed to add a new owner: the owner did not accept the offer");
-                return;
-            }
-            this.suConnectionRepo.AddOwnershipToStore(storeID, ownerID, newOwnerId);
-            logger.info("added a new owner: {} by: {}", newOwnerId, ownerID);
-        } catch (Exception e) {
-            logger.error("failed to add a new owner, Error: {}", e.getMessage());
+    public int AddOwnershipToStore(int storeId, String token, int newOwnerId) throws Exception, DevException {
+        logger.info("User attempting to add a new owner (userId: {}) to store {}", newOwnerId, storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int ownerId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(ownerId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
+        userRepo.checkUserRegisterOnline_ThrowException(newOwnerId);
+        storeRepo.checkStoreExistance(storeId);
+        storeRepo.checkStoreIsActive(storeId); 
+        suConnectionRepo.checkToAddOwner(storeId, ownerId, newOwnerId);
+        logger.info("Sending ownership approval request from {} to {}", ownerId, newOwnerId);
+        boolean approved = sendMessageToTakeApproval(ownerId, newOwnerId);
+        if (!approved) {
+            logger.info("Ownership addition declined by user {}", newOwnerId);
+            
         }
+        suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
+        logger.info("Successfully added user {} as owner to store {} by user {}", newOwnerId, storeId, ownerId);
+        return newOwnerId;
     }
 
-    public void DeleteOwnershipFromStore(int storeID, String token, int OwnerToDelete) throws UIException {
-        try {
-            if (!authRepo.validToken(token)) {
-                throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-            }
-            int ownerID = authRepo.getUserId(token);
-            if (!userRepo.isRegistered(ownerID)) {
-                throw new UIException(String.format("The user:%d is not registered to the system!", ownerID), ErrorCodes.USER_NOT_FOUND);
-            }
-            susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(bossID);
-            if (!userRepo.isRegistered(OwnerToDelete)) {
-                throw new UIException(String.format("can't delete owner:the user:%d is not registered to the system!", OwnerToDelete), ErrorCodes.USER_NOT_FOUND);
-            }
-            logger.info("trying to delete owner: {} from store: {} by: {}", OwnerToDelete, storeID, ownerID);
-            this.storeRepo.checkStoreExistance(storeID);
-            if (!this.storeRepo.findStoreByID(storeID).isActive()) {
-                throw new Exception("can't add new ownership: store IS DEactivated");
-            }
-            this.suConnectionRepo.DeleteOwnershipFromStore(storeID, ownerID, OwnerToDelete);
-            logger.info("the owner has been deleted successfly with his workers");
-        } catch (Exception e) {
-            logger.error("failed to delete the owner, Error: {}", e.getMessage());
-        }
+    public void DeleteOwnershipFromStore(int storeId, String token, int ownerToDelete) throws Exception, DevException {
+        logger.info("user attempting to delete ownership of user {} from store {}", ownerToDelete, storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int ownerId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(ownerId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
+        userRepo.checkUserRegisterOnline_ThrowException(ownerToDelete);
+        storeRepo.checkStoreExistance(storeId);
+        storeRepo.checkStoreIsActive(storeId);
+        suConnectionRepo.DeleteOwnershipFromStore(storeId, ownerId, ownerToDelete);
+        logger.info("Successfully removed owner {} from store {} by {}", ownerToDelete, storeId, ownerId);
     }
 
-    public void AddManagerToStore(int storeID, String token, int managerId, List<Permission> autorization) throws Exception {
-        try {
-            if (!authRepo.validToken(token)) {
-                throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-            }
-            int ownerId = authRepo.getUserId(token);
-            if (!userRepo.isRegistered(ownerId)) {
-                throw new UIException(String.format("The user:%d is not registered to the system!", ownerId), ErrorCodes.USER_NOT_FOUND);
-            }
-           susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(bossID);
-            if (!userRepo.isRegistered(managerId)) {
-                throw new UIException(String.format("can't add as manager: the user:%d is not registered to the system!", managerId), ErrorCodes.USER_NOT_FOUND);
-            }
-            logger.info("trying to add manager: {} in store: {} by: {}", managerId, storeID, ownerId);
-            this.storeRepo.checkStoreExistance(storeID);
-            if (!this.storeRepo.findStoreByID(storeID).isActive()) {
-                throw new Exception("can't add new ownership/managment: store IS DEactivated");
-            }
-            this.suConnectionRepo.checkToAddManager(storeID, ownerId, managerId);
-            logger.info("we can add a new owner to the store");
-            boolean answer = this.sendMessageToTakeApproval(ownerId, managerId);
-            if (answer) {
-                logger.info("the new manager has approved!");
-            } else {
-                logger.info("failed to add a new manager: the manager did not accept the offer");
-                return;
-            }
-            this.suConnectionRepo.AddManagerToStore(storeID, ownerId, managerId);
-            logger.info("the manager has been added successfly ");
-            // //then call give per:
-            this.suConnectionRepo.changePermissions(ownerId, managerId, storeID, autorization);
-
-        } catch (Exception e) {
-            logger.error("failed to add the manager, Error: {}", e.getMessage());
+   public int AddManagerToStore(int storeId, String token, int managerId, List<Permission> authorization) throws Exception, DevException {
+        logger.info("User attempting to add manager {} to store {}", managerId, storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int ownerId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(ownerId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
+        userRepo.checkUserRegisterOnline_ThrowException(managerId);
+        storeRepo.checkStoreExistance(storeId);
+        storeRepo.checkStoreIsActive(storeId);
+        boolean approved = sendMessageToTakeApproval(ownerId, managerId);
+        if (!approved) {
+            logger.info("Manager addition declined by user {}", managerId);
         }
+        suConnectionRepo.AddManagerToStore(storeId, ownerId, managerId);
+        logger.info("manager {} successfully added to store {} by {}", managerId, storeId, ownerId);
+        suConnectionRepo.changePermissions(ownerId, managerId, storeId, authorization);
+        logger.info("permissions updated for manager {} in store {}", managerId, storeId);
+        return managerId;
     }
 
-    public void changePermissions(String token, int managerId, int storeID, List<Permission> autorization) throws UIException {
-        try {
-            if (!authRepo.validToken(token)) {
-                throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-            }
-            int ownerId = authRepo.getUserId(token);
-            if (!userRepo.isRegistered(ownerId)) {
-                throw new UIException(String.format("The user:%d is not registered to the system!", ownerId), ErrorCodes.USER_NOT_FOUND);
-            }
-            if (!userRepo.isRegistered(managerId)) {
-                throw new UIException(String.format("can't change permssion: the user:%d is not registered to the system!", managerId), ErrorCodes.USER_NOT_FOUND);
-            }
-            logger.info("the owner: {} is trying to give authoriation to manager: {}", ownerId, managerId);
-            this.storeRepo.checkStoreExistance(storeID);
-            if (!storeRepo.findStoreByID(storeID).isActive()) {
-                throw new Exception("can't add/change permission: store IS DEactivated");
-            }
-            suConnectionRepo.changePermissions(ownerId, managerId, storeID, autorization);
-            logger.info("authorizations have been added/changed succsesfully!");
-        } catch (Exception e) {
-            logger.error("failed to give/change permission:, ERROR:", e.getMessage());
-        }
+    public void changePermissions(String token, int managerId, int storeId, List<Permission> authorization) throws Exception, DevException {
+        logger.info("user attempting to update permissions for manager {} in store {}", managerId, storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int ownerId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(ownerId);
+        userRepo.checkUserRegisterOnline_ThrowException(managerId);
+        storeRepo.checkStoreExistance(storeId);
+        storeRepo.checkStoreIsActive(storeId);
+        suConnectionRepo.changePermissions(ownerId, managerId, storeId, authorization);
+        logger.info("permissions updated successfully for manager {} in store {} by owner {}", managerId, storeId, ownerId);
     }
 
-    public void deleteManager(int storeId, String token, int managerId) throws UIException {
-        try {
-            if (!authRepo.validToken(token)) {
-                throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-            }
-            int ownerId = authRepo.getUserId(token);
-            if (!userRepo.isRegistered(ownerId)) {
-                throw new UIException(String.format("The user:%d is not registered to the system!", ownerId), ErrorCodes.USER_NOT_FOUND);
-            }
-            susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(bossID);
-            if (!userRepo.isRegistered(managerId)) {
-                throw new UIException(String.format("can't delete manager: the user:%d is not registered to the system!", managerId), ErrorCodes.USER_NOT_FOUND);
-            }
-            logger.info("trying to delete manager: {} from store: {} by: {}", managerId, storeId, ownerId);
-            this.storeRepo.checkStoreExistance(storeId);
-            if (!this.storeRepo.findStoreByID(storeId).isActive()) {
-                throw new Exception("can't delete manager: store IS DEactivated");
-            }
-            suConnectionRepo.deleteManager(storeId, ownerId, managerId);
-            logger.info("the manager has been deleted successfly with his workers");
-        } catch (Exception e) {
-            logger.error("failed to delete the manager, Error: {}", e.getMessage());
-        }
+   public void deleteManager(int storeId, String token, int managerId) throws Exception, DevException {
+        logger.info("user attempting to delete manager {} from store {}", managerId, storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int ownerId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(ownerId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
+        userRepo.checkUserRegisterOnline_ThrowException(managerId);
+        storeRepo.checkStoreExistance(storeId);
+        storeRepo.checkStoreIsActive(storeId);
+        suConnectionRepo.deleteManager(storeId, ownerId, managerId);
+        logger.info("manager {} successfully deleted from store {} by owner {}", managerId, storeId, ownerId);
     }
 
     // MUST CHECK WHO CAN DO IT???
@@ -220,20 +148,16 @@ public class StoreService {
         return this.orderRepo.getAllOrderByStore(storeId);
     }
 
-    public void rankStore(String token, int storeId, int newRank) throws UIException {
-        try {
-            logger.info("about to rank store: {}", storeId);
-            if (!authRepo.validToken(token)) {
-                throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-            }
-            int userId = authRepo.getUserId(token);
-            susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId); 
-            this.storeRepo.checkStoreExistance(storeId);
-            this.storeRepo.rankStore(storeId, newRank);
-            logger.info("store ranked sucessfully!");
-        } catch (Exception e) {
-            logger.error("could not rank store", e.getMessage());
-        }
+    public void rankStore(String token, int storeId, int newRank) throws Exception {
+        logger.info("about to rank store: {}", storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId); 
+        this.storeRepo.checkStoreExistance(storeId);
+        this.storeRepo.rankStore(storeId, newRank);
+        logger.info("store ranked sucessfully!");
+
     }
 
     // who can do it??? -> might be just in repo
@@ -242,50 +166,35 @@ public class StoreService {
         return this.storeRepo.getFinalRateInStore(storeId);
     }
 
-    public void deactivateteStore(int storeId, String token) throws UIException {
-        try {
-            if (!authRepo.validToken(token)) {
-                throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-            }
-            int ownerId = authRepo.getUserId(token);
-            if (!userRepo.isRegistered(ownerId)) {
-                throw new UIException(String.format("the user:%d is not registered to the system!", ownerId), ErrorCodes.USER_NOT_FOUND);
-            }
-            logger.info("trying to deactivate store: {} by: {}", storeId, ownerId);
-            this.storeRepo.checkStoreExistance(storeId);
-            storeRepo.deactivateStore(storeId, ownerId);
-            if (!this.suConnectionRepo.checkDeactivateStore(storeId, ownerId)) {
-                throw new Exception("only the boss/main owner can deactivate the store");
-            }
-            List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
-            logger.info("the store has been deactivated succesfully!");
-            //here must notify all users using notifiaction Repo and this list
-            logger.info("about to notify all the employees");
-        } catch (Exception e) {
-            logger.error("cannot deactivate this store, Error: {}", e.getMessage());
-        }
+    public int deactivateteStore(int storeId, String token) throws Exception {
+        logger.info("user attempting to deactivate store {}", storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int ownerId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(ownerId);
+        storeRepo.checkStoreExistance(storeId);
+        suConnectionRepo.checkMainOwner_ThrowException(storeId, ownerId);
+        storeRepo.deactivateStore(storeId, ownerId);
+        List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
+        logger.info("Store {} successfully deactivated by owner {}", storeId, ownerId);
+        logger.info("About to notify all employees: {}", toNotify); 
+        ///we have to notify the employees here
+        return storeId;
     }
 
-    public void closeStore(int storeId, String token) {
-        try {
-            if (!authRepo.validToken(token)) {
-                throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-            }
-            int adminId = authRepo.getUserId(token);
-            if (!userRepo.isRegistered(adminId) || !userRepo.isAdmin(adminId)) {
-                throw new UIException(String.format("the user:%d is not registered to the system!", adminId), ErrorCodes.USER_NOT_FOUND);
-            }
-
-            logger.info("trying to close store: {} by: {}", storeId, adminId);
-            this.storeRepo.checkStoreExistance(storeId);
-            List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
-            this.storeRepo.closeStore(storeId);
-            this.suConnectionRepo.closeStore(storeId);
-            logger.info("store removed successfully!");
-            logger.info("about to notify all the employees");
-        } catch (Exception e) {
-            logger.error("cannot close this store, Error: {}", e.getMessage());
-        }
+    public int closeStore(int storeId, String token) throws Exception {
+        logger.info("Admin attempting to close store {}", storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int adminId = authRepo.getUserId(token);
+        userRepo.checkAdmin_ThrowException(adminId);
+        logger.info("trying to close store: {} by: {}", storeId, adminId);
+        this.storeRepo.checkStoreExistance(storeId);
+        List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
+        this.storeRepo.closeStore(storeId);
+        this.suConnectionRepo.closeStore(storeId);
+        logger.info("store removed successfully!");
+        //also notify the employees
+        logger.info("About to notify all employees: {}", toNotify);
+        return storeId;
     }
 
     public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws Exception {

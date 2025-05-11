@@ -61,7 +61,8 @@ public interface IStockRepo {
     //stock management
     void addStore(int storeId);
 
-    List<ItemStoreDTO> getProductsInStore(int storeId) throws Exception;
+     List<ItemStoreDTO> getProductsInStore(int storeId) throws UIException, DevException;
+     
 
     item addItem(int storeId, int productId, int quantity, int price, Category category) throws UIException, DevException;
 
@@ -90,4 +91,6 @@ public interface IStockRepo {
     List<ReceiptProduct> processCartItemsForStore(int storeId, List<ItemCartDTO> cartItems, boolean isGuest) throws Exception;
 
     ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) throws Exception;
+
+void checkProductExists_ThrowException(int productId) throws UIException ; 
 }
