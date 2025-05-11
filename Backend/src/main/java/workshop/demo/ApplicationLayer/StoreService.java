@@ -27,10 +27,11 @@ public class StoreService {
     private IOrderRepo orderRepo;
     private ISUConnectionRepo suConnectionRepo;
     private IStockRepo stockRepo;
+    private IUserSuspensionRepo susRepo;
     private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
 
     public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, IUserRepo userRepo, IOrderRepo orderRepo,
-            ISUConnectionRepo sUConnectionRepo, IStockRepo stock) {
+            ISUConnectionRepo sUConnectionRepo, IStockRepo stock,IUserSuspensionRepo susRepo) {
         this.storeRepo = storeRepository;
         this.notiRepo = notiRepo;
         this.authRepo = authRepo;
@@ -38,6 +39,7 @@ public class StoreService {
         this.userRepo = userRepo;
         this.suConnectionRepo = sUConnectionRepo;
         this.stockRepo = stock;
+        this.susRepo=susRepo;
         logger.info("created the StoreService");
     }
 
@@ -55,9 +57,8 @@ public class StoreService {
                 throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
             }
             bossID = authRepo.getUserId(token);
-            if (!userRepo.isRegistered(bossID)) {
-                throw new UIException(String.format("The user:%d is not registered to the system!", bossID), ErrorCodes.USER_NOT_FOUND);
-            }
+            userRepo.checkUserRegisterOnline_ThrowException(bossID);
+            susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(bossID);
             logger.info("trying to add new sotre to the system for the BOSS:", bossID);
             storeId = storeRepo.addStoreToSystem(bossID, storeName, Category);
             this.suConnectionRepo.addNewStoreOwner(storeId, bossID);
@@ -78,6 +79,7 @@ public class StoreService {
             if (!userRepo.isRegistered(ownerID)) {
                 throw new UIException(String.format("The user:%d is not registered to the system!", ownerID), ErrorCodes.USER_NOT_FOUND);
             }
+           susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerID);
             if (!userRepo.isRegistered(newOwnerId)) {
                 throw new UIException(String.format("can't make owner to unregistered user:%d ", newOwnerId), ErrorCodes.USER_NOT_FOUND);
             }
@@ -111,6 +113,7 @@ public class StoreService {
             if (!userRepo.isRegistered(ownerID)) {
                 throw new UIException(String.format("The user:%d is not registered to the system!", ownerID), ErrorCodes.USER_NOT_FOUND);
             }
+            susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(bossID);
             if (!userRepo.isRegistered(OwnerToDelete)) {
                 throw new UIException(String.format("can't delete owner:the user:%d is not registered to the system!", OwnerToDelete), ErrorCodes.USER_NOT_FOUND);
             }
@@ -135,6 +138,7 @@ public class StoreService {
             if (!userRepo.isRegistered(ownerId)) {
                 throw new UIException(String.format("The user:%d is not registered to the system!", ownerId), ErrorCodes.USER_NOT_FOUND);
             }
+           susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(bossID);
             if (!userRepo.isRegistered(managerId)) {
                 throw new UIException(String.format("can't add as manager: the user:%d is not registered to the system!", managerId), ErrorCodes.USER_NOT_FOUND);
             }
@@ -195,6 +199,7 @@ public class StoreService {
             if (!userRepo.isRegistered(ownerId)) {
                 throw new UIException(String.format("The user:%d is not registered to the system!", ownerId), ErrorCodes.USER_NOT_FOUND);
             }
+            susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(bossID);
             if (!userRepo.isRegistered(managerId)) {
                 throw new UIException(String.format("can't delete manager: the user:%d is not registered to the system!", managerId), ErrorCodes.USER_NOT_FOUND);
             }
@@ -221,6 +226,8 @@ public class StoreService {
             if (!authRepo.validToken(token)) {
                 throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
             }
+            int userId = authRepo.getUserId(token);
+            susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId); 
             this.storeRepo.checkStoreExistance(storeId);
             this.storeRepo.rankStore(storeId, newRank);
             logger.info("store ranked sucessfully!");
@@ -268,6 +275,7 @@ public class StoreService {
             if (!userRepo.isRegistered(adminId) || !userRepo.isAdmin(adminId)) {
                 throw new UIException(String.format("the user:%d is not registered to the system!", adminId), ErrorCodes.USER_NOT_FOUND);
             }
+
             logger.info("trying to close store: {} by: {}", storeId, adminId);
             this.storeRepo.checkStoreExistance(storeId);
             List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);

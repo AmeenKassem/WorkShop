@@ -34,14 +34,16 @@ public class StockService {
     private IStoreRepo storeRepo;
     private ISUConnectionRepo suConnectionRepo;
     private IUserRepo userRepo;
+    private IUserSuspensionRepo susRepo;
 
     public StockService(IStockRepo stockRepo, IStoreRepo storeRepo, IAuthRepo authRepo, IUserRepo userRepo,
-            ISUConnectionRepo cons) {
+            ISUConnectionRepo cons,IUserSuspensionRepo susRepo) {
         this.stockRepo = stockRepo;
         this.authRepo = authRepo;
         this.storeRepo = storeRepo;
         this.userRepo = userRepo;
         this.suConnectionRepo = cons;
+        this.susRepo = susRepo;
     }
 
     public ItemStoreDTO[] searchProducts(String token, ProductSearchCriteria criteria) throws Exception {
@@ -77,6 +79,7 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         SingleBid bid = stockRepo.bidOnAuction(storeId, userId, auctionId, price);
         userRepo.addBidToAuctionCart(bid);
         logger.info("Bid placed successfully by user: {} on auction: {}", userId, auctionId);
@@ -89,6 +92,7 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         SingleBid bid = stockRepo.bidOnBid(bitId, price, userId, storeId);
         userRepo.addBidToRegularCart(bid);
         logger.info("Regular bid successful by user: {}", userId);
@@ -115,6 +119,7 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         // must add the exceptions here:
         storeRepo.checkStoreExistance(storeId);
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
@@ -128,7 +133,7 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
-
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         storeRepo.checkStoreExistance(storeid);
         // Node Worker= this.
         if (!this.suConnectionRepo.manipulateItem(userId, storeid, Permission.SpecialType)) {
@@ -158,7 +163,7 @@ public class StockService {
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         storeRepo.checkStoreExistance(storeId);
-
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
         }
@@ -173,6 +178,7 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         return stockRepo.addProductToRandom( productId, quantity, productPrice, storeId, RandomTime);
     }
 
@@ -180,7 +186,9 @@ public class StockService {
         logger.info("Ending random bid {} in store {}", randomId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
+
         userRepo.checkUserRegisterOnline_ThrowException(userId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         return stockRepo.endRandom(storeId,  randomId);
     }
 
@@ -218,6 +226,7 @@ public class StockService {
             if (!userRepo.isRegistered(adderId)) {
                 throw new UIException(String.format("the user:%d is not registered to the system!", adderId), ErrorCodes.USER_NOT_FOUND);
             }
+            susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(adderId);
             this.storeRepo.checkStoreExistance(storeId);
             if (!this.suConnectionRepo.manipulateItem(adderId, storeId, Permission.AddToStock)) {
                 throw new UIException("this worker is not authorized!", ErrorCodes.NO_PERMISSION);
@@ -246,6 +255,7 @@ public class StockService {
                 throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
             }
             int adderId = authRepo.getUserId(token);
+            susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(adderId);
             if (!userRepo.isRegistered(adderId)) {
                 throw new UIException(String.format("the user:%d is not registered to the system!", adderId), ErrorCodes.USER_NOT_FOUND);
             }
@@ -268,6 +278,7 @@ public class StockService {
             if (!userRepo.isRegistered(removerId)) {
                 throw new UIException(String.format("the user:%d is not registered to the system!", removerId), ErrorCodes.USER_NOT_FOUND);
             }
+            susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(removerId);
             this.storeRepo.checkStoreExistance(storeId);
             if (!this.suConnectionRepo.manipulateItem(removerId, storeId, Permission.DeleteFromStock)) {
                 throw new UIException("this worker is not authorized!", ErrorCodes.NO_PERMISSION);
@@ -287,6 +298,7 @@ public class StockService {
                 throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
             }
             int changerId = authRepo.getUserId(token);
+            susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(changerId);
             if (!userRepo.isRegistered(changerId)) {
                 throw new UIException(String.format("the user:%d is not registered to the system!", changerId), ErrorCodes.USER_NOT_FOUND);
             }
@@ -309,6 +321,7 @@ public class StockService {
                 throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
             }
             int updaterId = authRepo.getUserId(token);
+            susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(updaterId);
             if (!userRepo.isRegistered(updaterId)) {
                 throw new UIException(String.format("the user:%d is not registered to the system!", updaterId), ErrorCodes.USER_NOT_FOUND);
             }
@@ -334,6 +347,7 @@ public class StockService {
             if (!userRepo.isRegistered(updaterId)) {
                 throw new UIException(String.format("the user:%d is not registered to the system!", updaterId), ErrorCodes.USER_NOT_FOUND);
             }
+            susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(updaterId);
             this.storeRepo.checkStoreExistance(storeId);
             this.stockRepo.rankProduct(storeId, productId, newRank);
             logger.info("product ranked sucessfully!");
