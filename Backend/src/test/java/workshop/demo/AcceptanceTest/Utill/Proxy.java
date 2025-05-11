@@ -58,7 +58,7 @@ public class Proxy implements Bridge {
     }
 
     @Override
-    public String testGuest_SearchProduct(String token, ProductSearchCriteria criteria) throws Exception {
+    public  ItemStoreDTO[] testGuest_SearchProduct(String token, ProductSearchCriteria criteria) throws Exception {
         return real.testGuest_SearchProduct(token, criteria);
     }
 

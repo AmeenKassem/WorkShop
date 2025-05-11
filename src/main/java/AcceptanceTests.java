@@ -7,7 +7,6 @@ import workshop.demo.AcceptanceTest.Utill.Proxy;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
@@ -50,7 +49,7 @@ public abstract class AcceptanceTests {
         return bridge.testGuest_GetProductInfo(token, productID);
     }
 
-    ItemStoreDTO[] testGuest_SearchProduct(String token, ProductSearchCriteria criteria) throws Exception {
+    String testGuest_SearchProduct(String token, ProductSearchCriteria criteria) throws Exception {
         return bridge.testGuest_SearchProduct(token, criteria);
     }
 
@@ -111,8 +110,7 @@ public abstract class AcceptanceTests {
         return bridge.testUser_SendMessageToAdmin(msg, userId, adminId);
     }
 
-
-    List<ReceiptDTO> testUser_CheckPurchaseHistory(String token) throws Exception {
+    String testUser_CheckPurchaseHistory(String token) throws Exception {
         return bridge.testUser_CheckPurchaseHistory(token);
     }
 

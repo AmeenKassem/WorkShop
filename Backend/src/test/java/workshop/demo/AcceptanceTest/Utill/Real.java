@@ -109,8 +109,8 @@ public class Real implements Bridge {
     }
 
     @Override
-    public String testGuest_SearchProduct(String token, ProductSearchCriteria criteria) throws Exception {
-        return  stockService.searchProducts(token, criteria).toString();
+    public  ItemStoreDTO[] testGuest_SearchProduct(String token, ProductSearchCriteria criteria) throws Exception {
+        return  stockService.searchProducts(token, criteria);
 
     }
 

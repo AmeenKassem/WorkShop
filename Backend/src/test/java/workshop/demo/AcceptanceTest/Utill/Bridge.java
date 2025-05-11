@@ -18,7 +18,7 @@ public interface Bridge {
     String testGuest_Register(String token, String username, String password) throws Exception;
     String testGuest_GetStoreProducts(int storeID) throws Exception;
     String testGuest_GetProductInfo(String token, int productID) throws Exception;
-    String testGuest_SearchProduct(String token, ProductSearchCriteria criteria) throws Exception;
+    ItemStoreDTO[] testGuest_SearchProduct(String token, ProductSearchCriteria criteria) throws Exception;
     String testGuest_SearchProductInStore(String token, int storeID, int productID) throws Exception;
     boolean testGuest_AddProductToCart(String token, ItemStoreDTO a) throws Exception;
     String testGuest_ModifyCartAddQToBuy(int storeId, String token, int productId) throws Exception;
