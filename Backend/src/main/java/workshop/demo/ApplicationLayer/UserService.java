@@ -29,7 +29,7 @@ public class UserService {
         return authRepo.generateGuestToken(id);
     }
 
-    public void register(String token, String username, String password) throws UIException {
+    public void register(String token, String username, String password,int age) throws UIException {
         logger.info("register called for username={}", username);
 
         if (authRepo.validToken(token)) {

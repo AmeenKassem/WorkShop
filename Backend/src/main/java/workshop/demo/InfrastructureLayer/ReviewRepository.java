@@ -15,7 +15,7 @@ import workshop.demo.DomainLayer.Review.IReviewRepo;
 public class ReviewRepository implements IReviewRepo {
 
     private Map<Integer, List<String>> storeReviews;
-    private Map<Pair<Integer, Integer>, List<String>> productReviews;//1.storeId 2.productId
+    private Map<Pair<Integer, Integer>, List<String>> productReviews; //1.storeId 2.productId -> List of reviews
 
     public ReviewRepository() {
         this.storeReviews = new ConcurrentHashMap<>();

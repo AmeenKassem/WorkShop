@@ -2,17 +2,10 @@ package workshop.demo.DomainLayer.Store;
 
 import java.util.List;
 
-import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.ProductDTO;
-import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-import workshop.demo.DomainLayer.Stock.item;
 
 public interface IStoreRepo {
 

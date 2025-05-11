@@ -318,7 +318,7 @@ public class StockRepository implements IStockRepo {
         return total;
     }
 
-     public ParticipationInRandomDTO validatedParticipation(int userId, int randomId, int storeId, double amountPaid)
+    public ParticipationInRandomDTO validatedParticipation(int userId, int randomId, int storeId, double amountPaid)
             throws DevException, UIException {
          if (storeStocks.get(storeId) == null) {
             throw new DevException("Store stock not initialized for storeId in repo: " + storeId);

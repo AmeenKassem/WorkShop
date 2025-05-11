@@ -48,10 +48,10 @@ public class UserController {
     @PostMapping("/register")
     public String register(@RequestParam String token,
                            @RequestParam String username,
-                           @RequestParam String password) {
+                           @RequestParam String password,int age) {
         Response<Boolean> res;
         try {
-            userService.register(token, username, password);
+            userService.register(token, username, password,age);
             res = new Response<>(true, null);
         } catch (UIException ex) {
             res = new Response<>(null, ex.getMessage(), ex.getNumber());
