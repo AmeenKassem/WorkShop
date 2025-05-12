@@ -1,4 +1,4 @@
-package workshop.demo.StoreTests;
+package workshop.demo.UnitTests.StoreTests;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -111,7 +111,7 @@ public class OwnershipTests {
                 -> repository.checkToAddOwner(storeId, notAnOwnerId, newOwnerId)
         );
 
-        assertEquals("can't manupulate ownership/managment: this is not the owner of this store!", exception.getMessage());
+        assertEquals("Owner does not exist in this store", exception.getMessage());
     }
 
     @Test
@@ -127,7 +127,7 @@ public class OwnershipTests {
                 -> repository.checkToAddOwner(storeId, owner1, newOwnerId)
         );
 
-        assertEquals("this worker is already an owner/manager", exception.getMessage());
+        assertEquals("This worker is already an owner/manager", exception.getMessage());
     }
 
     //delete ownership-------------------------------------------------------------
@@ -172,7 +172,7 @@ public class OwnershipTests {
             repository.DeleteOwnershipFromStore(storeId, owner1, owner2);
         });
 
-        assertEquals("can't delete this owner: does not own this store", exception.getMessage());
+        assertEquals("Cannot delete: user is not an owner", exception.getMessage());
     }
 
     @Test
@@ -193,7 +193,7 @@ public class OwnershipTests {
             repository.DeleteOwnershipFromStore(storeId, owner1, owner3);
         });
 
-        assertEquals(String.format("this owner: %d does own the ownership of: %d ", owner1, owner3),
+        assertEquals(String.format("You do not own this ownership", owner1, owner3),
                 exception.getMessage());
     }
 

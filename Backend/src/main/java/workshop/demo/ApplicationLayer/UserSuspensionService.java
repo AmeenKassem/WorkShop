@@ -2,18 +2,21 @@ package workshop.demo.ApplicationLayer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
-
+@Service
 public class UserSuspensionService {
     private final IUserSuspensionRepo repo;
     private final IUserRepo userRepo;
     private final IAuthRepo authRepo;
     private static final Logger logger = LoggerFactory.getLogger(UserSuspensionService.class);
-
+    @Autowired
     public UserSuspensionService(IUserSuspensionRepo repo, IUserRepo userRepo, IAuthRepo authRepo) {
         this.repo = repo;
         this.userRepo = userRepo;

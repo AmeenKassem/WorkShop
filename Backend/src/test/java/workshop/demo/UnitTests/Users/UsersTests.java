@@ -1,16 +1,12 @@
-package workshop.demo.Users;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
+package workshop.demo.UnitTests.Users;
 
 import org.junit.jupiter.api.Assertions;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.stereotype.Service;
 
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
-import workshop.demo.DomainLayer.Exceptions.IncorrectLogin;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.IUserRepo;
@@ -57,6 +53,15 @@ public class UsersTests {
             Assertions.assertTrue(false);
         }
 
+    }
+
+    @Test
+    public void testOnlineAafterLogin() throws UIException {
+        int registeredId = userRepo.registerUser("layan", "123");
+        int loggedInId = userRepo.login("layan", "123");
+        Assertions.assertEquals(registeredId, loggedInId);
+        boolean isOnline = userRepo.isOnline(loggedInId);
+        Assertions.assertTrue(isOnline, "should be online after login");
     }
 
     // @Test
