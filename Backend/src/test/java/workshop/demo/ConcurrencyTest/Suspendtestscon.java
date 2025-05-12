@@ -16,12 +16,6 @@ import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 
 import java.util.concurrent.atomic.AtomicInteger;
-
-<<<<<<< HEAD:Backend/src/test/java/workshop/demo/ConcurrencyTest/Suspendtestscon.java
-// @Service
-=======
-@Service
->>>>>>> a5d20fe39422f9af1fbf9b58efcc0388f6605f11:src/test/java/workshop/demo/ConcurrencyTest/Suspendtestscon.java
 @SpringBootTest
 public class Suspendtestscon {
 
@@ -32,7 +26,7 @@ public class Suspendtestscon {
 
     private final AdminInitilizer adminInitilizer = new AdminInitilizer(adminKey);
     private final IUserRepo userRepo = new UserRepository(encoder, adminInitilizer);
-<<<<<<< HEAD:Backend/src/test/java/workshop/demo/ConcurrencyTest/Suspendtestscon.java
+
     private final UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo,
             authRepo);
     private final UserService userService = new UserService(userRepo, authRepo);

@@ -131,4 +131,17 @@ public class StoreRepository implements IStoreRepo {
     public List<Store> getStores() {
         return this.stores;
     }
+
+    public void checkStoreIsActive(int storeId) throws DevException {
+        Store store = findStoreByID(storeId);
+        if (store == null) {
+            throw new DevException("Store not found with ID: " + storeId);
+        }
+        if (!store.isActive()) {
+            throw new DevException(" store is not active");
+        }
+    }
+
+    
+    
 }

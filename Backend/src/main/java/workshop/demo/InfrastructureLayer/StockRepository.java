@@ -210,7 +210,6 @@ public class StockRepository implements IStockRepo {
         storeId2ActivePurchases.put(storeId, new ActivePurcheses(storeId));
         this.storeStocks.put(storeId, new StoreStock(storeId));
     }
-
     @Override
     public List<ItemStoreDTO> getProductsInStore(int storeId) throws UIException, DevException {
         StoreStock stock = storeStocks.get(storeId);
@@ -218,8 +217,8 @@ public class StockRepository implements IStockRepo {
             throw new DevException("stock not found/null");
         }
         return stock.getProductsInStore();
-
     }
+
 
     @Override
     public item addItem(int storeId, int productId, int quantity, int price, Category category)
@@ -386,6 +385,13 @@ public class StockRepository implements IStockRepo {
         }
 
         return itemList.toArray(new ItemStoreDTO[0]);
+    }
+
+    @Override
+    public void checkProductExists_ThrowException(int productId) throws UIException {
+        if (findByIdInSystem(productId) == null) {
+            throw new UIException("Product not found", ErrorCodes.PRODUCT_NOT_FOUND);
+        }
     }
 
 }

@@ -1,4 +1,3 @@
-<<<<<<< HEAD:Backend/src/main/java/workshop/demo/DomainLayer/Store/Auction.java
 package workshop.demo.DomainLayer.Store;
 
 import java.util.ArrayList;
@@ -91,7 +90,7 @@ public class Auction {
         return res;
     }
 }
-=======
+=========
 package workshop.demo.DomainLayer.Store;
 
 import java.util.ArrayList;
@@ -184,4 +183,4 @@ public class Auction {
         return res;
     }
 }
->>>>>>> a5d20fe39422f9af1fbf9b58efcc0388f6605f11:src/main/java/workshop/demo/DomainLayer/Store/Auction.java
+>>>>>>>>> Temporary merge branch 2:Backend/src/main/java/workshop/demo/DomainLayer/Store/Auction.java
