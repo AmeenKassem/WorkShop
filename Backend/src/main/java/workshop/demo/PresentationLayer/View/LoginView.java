@@ -11,8 +11,8 @@ import com.vaadin.flow.router.Route;
 
 import workshop.demo.PresentationLayer.Presenter.LoginPresenter;
 
-@Route("Login")
-@CssImport("./theme/loginTheme.css")
+@Route(value = "login", layout = MainLayout.class)
+@CssImport("./Theme/loginTheme.css")
 public class LoginView extends VerticalLayout {
 
     private final TextField usernameField = new TextField("Username");

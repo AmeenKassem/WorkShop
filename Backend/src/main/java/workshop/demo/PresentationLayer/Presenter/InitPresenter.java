@@ -57,6 +57,10 @@ public class InitPresenter {
         String role = (String) VaadinSession.getCurrent().getAttribute("auth-role");
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
 
+        System.out.println("📌 MainLayout attached");
+        System.out.println("   ➤ Role: " + role);
+        System.out.println("   ➤ Token: " + token);
+
         // If you plan to use a WebSocket notification system later, this is where you'd connect:
         // notificationHandler.connect(endpoint, user.toString());
         // Optional: redirect logic

@@ -39,7 +39,6 @@ public class UserController {
 
     @GetMapping("/generateGuest")
     public ResponseEntity<ApiResponse<String>> generateGuest() {
-        ApiResponse<String> res;
         try {
             String token = userService.generateGuest();
             return ResponseEntity.ok(new ApiResponse<>(token, null));

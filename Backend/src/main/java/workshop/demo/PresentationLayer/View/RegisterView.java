@@ -11,7 +11,7 @@ import com.vaadin.flow.router.Route;
 import workshop.demo.PresentationLayer.Presenter.RegisterPresenter;
 
 @Route("register")
-@CssImport("./theme/registerTheme.css")  //this links the CSS file
+@CssImport("./Theme/registerTheme.css")  //this links the CSS file
 public class RegisterView extends VerticalLayout {
 
     private final TextField usernameField = new TextField("Username");

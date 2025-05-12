@@ -12,7 +12,7 @@ import com.vaadin.flow.server.VaadinSession;
 import workshop.demo.PresentationLayer.Presenter.InitPresenter;
 
 @Route
-@CssImport("./theme/main-layout.css")
+@CssImport("./Theme/main-layout.css")
 public class MainLayout extends AppLayout {
 
     private InitPresenter presenter;
@@ -20,13 +20,9 @@ public class MainLayout extends AppLayout {
     public MainLayout() {
         addClassName("main-layout");
 
-        H1 title = new H1("🛒 MarketApp");
-        HorizontalLayout header = new HorizontalLayout(title);
-        header.addClassName("app-header");
-
-        addToNavbar(header);
-
+        createHeader();
         this.presenter = new InitPresenter(this);
+
     }
 
     @Override
@@ -40,11 +36,12 @@ public class MainLayout extends AppLayout {
     //     presenter.handleOnDetach();
     // }
     private void createHeader() {
-        H1 logo = new H1("Market App");
+        H1 logo = new H1("🛒 MarketAppMarket App");
         RouterLink login = new RouterLink("Login", LoginView.class);
         RouterLink register = new RouterLink("Register", RegisterView.class);
 
         HorizontalLayout header = new HorizontalLayout(logo, login, register);
+        header.addClassName("app-header");
         addToNavbar(header);
     }
 
