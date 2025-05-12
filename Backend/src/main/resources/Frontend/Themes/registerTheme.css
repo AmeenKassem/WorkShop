@@ -1,0 +1,29 @@
+/* registerTheme.css */
+
+.register-view {
+  max-width: 400px;
+  margin: 60px auto;
+  padding: 2rem;
+  border-radius: 12px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.register-view h1 {
+  color: #3f51b5;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.register-view vaadin-text-field,
+.register-view vaadin-password-field {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.register-view vaadin-button {
+  width: 100%;
+  background-color: #3f51b5;
+  color: white;
+  font-weight: bold;
+}

@@ -69,12 +69,12 @@
         </dependency>
         
         <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-websocket</artifactId>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-websocket</artifactId>
         </dependency>
         <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-messaging</artifactId>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-messaging</artifactId>
         </dependency>
 
         <dependency>
@@ -85,6 +85,11 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-spring-boot-starter</artifactId>
+            <version>24.3.9</version> <!-- Latest stable for Java 21 & Spring Boot 3.4.x -->
         </dependency>
     </dependencies>
 

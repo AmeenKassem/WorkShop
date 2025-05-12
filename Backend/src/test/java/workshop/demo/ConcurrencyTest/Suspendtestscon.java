@@ -16,6 +16,7 @@ import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
+
 @SpringBootTest
 public class Suspendtestscon {
 
@@ -35,12 +36,12 @@ public class Suspendtestscon {
     public void test_twoAdminsSuspend_twoUsers() throws Exception {
         // Admin A setup
         String tokenA = userService.generateGuest();
-        userService.register(tokenA, "adminA2", "passA2");
+        userService.register(tokenA, "adminA2", "passA2", 20);
         String adminTokenA = userService.login(tokenA, "adminA2", "passA2");
 
         // Admin B setup
         String tokenB = userService.generateGuest();
-        userService.register(tokenB, "adminB2", "passB2");
+        userService.register(tokenB, "adminB2", "passB2", 20);
         String adminTokenB = userService.login(tokenB, "adminB2", "passB2");
 
         // Set both as admin with error checks
@@ -63,8 +64,8 @@ public class Suspendtestscon {
         }
 
         // Register two users
-        int userA = userRepo.registerUser("userA", "pass");
-        int userB = userRepo.registerUser("userB", "pass");
+        int userA = userRepo.registerUser("userA", "pass", 20);
+        int userB = userRepo.registerUser("userB", "pass", 20);
 
         // Atomic counter for success tracking
         AtomicInteger successCount = new AtomicInteger(0);
@@ -116,17 +117,17 @@ public class Suspendtestscon {
     @Test
     public void test_twoAdminsTryToSuspendSameUser() throws Exception {
         String tokenA = userService.generateGuest();
-        userService.register(tokenA, "adminA2", "passA2");
+        userService.register(tokenA, "adminA2", "passA2", 20);
         String adminTokenA = userService.login(tokenA, "adminA2", "passA2");
 
         String tokenB = userService.generateGuest();
-        userService.register(tokenB, "adminB2", "passB2");
+        userService.register(tokenB, "adminB2", "passB2", 20);
         String adminTokenB = userService.login(tokenB, "adminB2", "passB2");
 
         userService.setAdmin(adminTokenA, adminKey, 2);
         userService.setAdmin(adminTokenB, adminKey, 4);
 
-        int user = userRepo.registerUser("sharedUser", "pass");
+        int user = userRepo.registerUser("sharedUser", "pass", 20);
 
         final AtomicInteger successCount = new AtomicInteger(0);
         final AtomicInteger failureCount = new AtomicInteger(0);

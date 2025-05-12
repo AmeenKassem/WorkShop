@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import workshop.demo.ApplicationLayer.Response;
 import workshop.demo.ApplicationLayer.ReviewService;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
@@ -22,65 +21,64 @@ public class ReviewController {
         this.reviewService = new ReviewService(repo.reviewRepo, repo.auth, repo.userRepo, repo.storeRepo);
     }
 
-
     @PostMapping("/addToProduct")
     public String addReviewToProduct(@RequestParam String token,
-                                     @RequestParam int storeId,
-                                     @RequestParam int productId,
-                                     @RequestParam String review) {
-        Response<String> res;
+            @RequestParam int storeId,
+            @RequestParam int productId,
+            @RequestParam String review) {
+        ApiResponse<String> res;
         try {
             reviewService.AddReviewToProduct(token, storeId, productId, review);
-            res = new Response<>("review added to product successfully", null);
+            res = new ApiResponse<>("review added to product successfully", null);
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            res = new ApiResponse<>(null, e.getMessage(), -1);
         }
         return res.toJson();
     }
-       
+
     @PostMapping("/addToStore")
     public String addReviewToStore(@RequestParam String token,
-                                   @RequestParam int storeId,
-                                   @RequestParam String review) {
-        Response<String> res;
+            @RequestParam int storeId,
+            @RequestParam String review) {
+        ApiResponse<String> res;
         try {
             reviewService.AddReviewToStore(token, storeId, review);
-            res = new Response<>("review added to store successfully", null);
+            res = new ApiResponse<>("review added to store successfully", null);
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            res = new ApiResponse<>(null, e.getMessage(), -1);
         }
         return res.toJson();
     }
 
     @GetMapping("/getProductReviews")
     public String getProductReviews(@RequestParam int storeId,
-                                    @RequestParam int productId) {
-        Response<List<String>> res;
+            @RequestParam int productId) {
+        ApiResponse<List<String>> res;
         try {
             List<String> reviews = reviewService.getReviewsForProduct(storeId, productId);
-            res = new Response<>(reviews, null);
+            res = new ApiResponse<>(reviews, null);
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            res = new ApiResponse<>(null, e.getMessage(), -1);
         }
         return res.toJson();
     }
 
     @GetMapping("/getStoreReviews")
     public String getStoreReviews(@RequestParam int storeId) {
-        Response<List<String>> res;
+        ApiResponse<List<String>> res;
         try {
             List<String> reviews = reviewService.getReviewsForStore(storeId);
-            res = new Response<>(reviews, null);
+            res = new ApiResponse<>(reviews, null);
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            res = new ApiResponse<>(null, e.getMessage(), -1);
         }
         return res.toJson();
     }
