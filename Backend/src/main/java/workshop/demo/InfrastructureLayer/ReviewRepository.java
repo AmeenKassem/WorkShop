@@ -8,15 +8,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
-// import workshop.demo.DTOs.MessageDTO;
 import workshop.demo.DomainLayer.Review.IReviewRepo;
 
+@Repository
 public class ReviewRepository implements IReviewRepo {
 
     private Map<Integer, List<String>> storeReviews;
     private Map<Pair<Integer, Integer>, List<String>> productReviews; //1.storeId 2.productId -> List of reviews
 
+    @Autowired
     public ReviewRepository() {
         this.storeReviews = new ConcurrentHashMap<>();
         this.productReviews = new ConcurrentHashMap<>();

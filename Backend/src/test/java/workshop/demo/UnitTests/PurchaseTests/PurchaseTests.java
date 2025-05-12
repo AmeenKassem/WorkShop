@@ -1,15 +1,15 @@
-package workshop.demo.PurchaseTests;
-
-import workshop.demo.InfrastructureLayer.PurchaseRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.SingleBid;
-import workshop.demo.DTOs.SpecialType;
+package workshop.demo.UnitTests.PurchaseTests;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.InfrastructureLayer.PurchaseRepository;
 
 public class PurchaseTests {
 

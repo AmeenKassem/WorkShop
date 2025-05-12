@@ -1,8 +1,7 @@
-package workshop.demo.Users;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
+package workshop.demo.UnitTests.Users;
 
 import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.stereotype.Service;
@@ -117,7 +116,7 @@ public class Suspendtests {
         suspensionService.suspendRegisteredUser(10, 1, token1);
 
         Assertions.assertFalse(suspensionService.isUserSuspended(userId),
-            "FAIL: User was never suspended but expected to be suspended.");
+                "FAIL: User was never suspended but expected to be suspended.");
     }
 
     // using wrong admin key
@@ -133,10 +132,9 @@ public class Suspendtests {
         // Attempting with wrong token (simulated as "WRONG_TOKEN")
         assertThrows(UIException.class, () -> {
             suspensionService.suspendRegisteredUser(userId, 5, "WRONG_TOKEN");
-        }, "Expected UIException to be thrown due to invalid admin token");        Assertions.assertFalse(suspensionService.isUserSuspended(userId),
-            "FAIL: Suspension should not occur with wrong admin token.");
+        }, "Expected UIException to be thrown due to invalid admin token");
+        Assertions.assertFalse(suspensionService.isUserSuspended(userId),
+                "FAIL: Suspension should not occur with wrong admin token.");
     }
-
-    
 
 }

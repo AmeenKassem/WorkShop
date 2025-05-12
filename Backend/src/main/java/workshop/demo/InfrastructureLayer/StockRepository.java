@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
@@ -26,7 +29,7 @@ import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.ActivePurcheses;
 
-
+@Repository
 public class StockRepository implements IStockRepo {
 
     //private HashMap<Category, List<Integer>> categoryToProductId = new HashMap<>();
@@ -36,6 +39,7 @@ public class StockRepository implements IStockRepo {
     private ConcurrentHashMap<Category, List<Product>> allProducts;
     private ConcurrentHashMap<Integer, StoreStock> storeStocks;//storeId, stock of store    
 
+    @Autowired
     public StockRepository() {
         this.storeId2ActivePurchases = new ConcurrentHashMap<>();//must be thread safe
         this.allProducts = new ConcurrentHashMap<>();
@@ -50,8 +54,8 @@ public class StockRepository implements IStockRepo {
         return storeId2ActivePurchases.get(storeId);
     }
 
-    private void checkQuantity(int productId, int quantity,int storeId) throws UIException {
-        if(storeStocks.get(storeId).getItemByProductId(productId).getQuantity()<quantity){
+    private void checkQuantity(int productId, int quantity, int storeId) throws UIException {
+        if (storeStocks.get(storeId).getItemByProductId(productId).getQuantity() < quantity) {
             throw new UIException("there is no quantity to move it to special purchases", ErrorCodes.INSUFFICIENT_ITEM_QUANTITY_TO_RANDOM);
         }
     }
@@ -140,7 +144,7 @@ public class StockRepository implements IStockRepo {
     @Override
     public int addAuctionToStore(int StoreId, int productId, int quantity, long tome, double startPrice)
             throws UIException, DevException {
-        checkQuantity(productId, quantity,StoreId);
+        checkQuantity(productId, quantity, StoreId);
         int res = getActivePurchases(StoreId).addProductToAuction(productId, quantity, tome);
         decreaseQuantitytoBuy(StoreId, productId, quantity);
         return res;
@@ -153,7 +157,7 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public int addProductToBid(int storeId, int productId, int quantity) throws UIException, DevException {
-        checkQuantity(productId, quantity,storeId);
+        checkQuantity(productId, quantity, storeId);
         int res = getActivePurchases(storeId).addProductToBid(productId, quantity);
         decreaseQuantitytoBuy(storeId, productId, quantity);
         return res;
@@ -171,7 +175,7 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public boolean rejectBid(int storeId, int bidId, int userBidId) throws UIException, Exception {
-        return getActivePurchases(storeId).rejectBid( userBidId,bidId);
+        return getActivePurchases(storeId).rejectBid(userBidId, bidId);
     }
 
     @Override
@@ -182,7 +186,7 @@ public class StockRepository implements IStockRepo {
     @Override
     public int addProductToRandom(int productId, int quantity, double productPrice, int storeId,
             long RandomTime) throws UIException, DevException {
-        checkQuantity(productId, quantity,storeId);
+        checkQuantity(productId, quantity, storeId);
         int res = getActivePurchases(storeId).addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
         this.decreaseQuantitytoBuy(storeId, productId, quantity);
         return res;
@@ -210,6 +214,7 @@ public class StockRepository implements IStockRepo {
         storeId2ActivePurchases.put(storeId, new ActivePurcheses(storeId));
         this.storeStocks.put(storeId, new StoreStock(storeId));
     }
+
     @Override
     public List<ItemStoreDTO> getProductsInStore(int storeId) throws UIException, DevException {
         StoreStock stock = storeStocks.get(storeId);
@@ -218,7 +223,6 @@ public class StockRepository implements IStockRepo {
         }
         return stock.getProductsInStore();
     }
-
 
     @Override
     public item addItem(int storeId, int productId, int quantity, int price, Category category)
@@ -272,13 +276,14 @@ public class StockRepository implements IStockRepo {
         }
         this.storeStocks.get(storeId).rankProduct(productId, newRank);
     }
+
     @Override
     public boolean checkAvailability(List<ItemCartDTO> cartItems) {
         for (ItemCartDTO itemDTO : cartItems) {
-        StoreStock stock = storeStocks.get(itemDTO.storeId);
-        if (stock == null) {
-            return false;
-        }
+            StoreStock stock = storeStocks.get(itemDTO.storeId);
+            if (stock == null) {
+                return false;
+            }
             item storeItem = stock.getItemByProductId(itemDTO.productId);
             if (storeItem == null || storeItem.getQuantity() < itemDTO.quantity) {
                 return false;
@@ -300,7 +305,6 @@ public class StockRepository implements IStockRepo {
     //     // TODO Auto-generated method stub
     //     throw new UnsupportedOperationException("Unimplemented method 'getProductPrice'");
     // }
-
     @Override
     public void validateAndDecreaseStock(int storeId, int productId, int amount) throws DevException, UIException {
         item storeItem = getItemByStoreAndProductId(storeId, productId);
@@ -320,19 +324,20 @@ public class StockRepository implements IStockRepo {
 
     public ParticipationInRandomDTO validatedParticipation(int userId, int randomId, int storeId, double amountPaid)
             throws DevException, UIException {
-         if (storeStocks.get(storeId) == null) {
+        if (storeStocks.get(storeId) == null) {
             throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
         }
-        double requiredPrice = getProductPrice(storeId,randomId);
+        double requiredPrice = getProductPrice(storeId, randomId);
         if (amountPaid < requiredPrice) {
             throw new DevException("Insufficient payment");
         }
         return this.storeId2ActivePurchases.get(storeId).participateInRandom(userId, randomId, amountPaid);
     }
 
-    public double getProductPrice(int storeId,int randomId) throws DevException {
+    public double getProductPrice(int storeId, int randomId) throws DevException {
         return this.storeId2ActivePurchases.get(storeId).getProductPrice(randomId);
     }
+
     public List<ReceiptProduct> processCartItemsForStore(int storeId, List<ItemCartDTO> cartItems, boolean isGuest)
             throws Exception {
         //  if (storeStocks.get(storeId) == null) {

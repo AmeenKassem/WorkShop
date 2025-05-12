@@ -5,6 +5,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -13,6 +16,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
 
+@Repository
 public class StoreRepository implements IStoreRepo {
 
     private final List<Store> stores;
@@ -24,6 +28,7 @@ public class StoreRepository implements IStoreRepo {
         return counterSId.getAndIncrement();
     }
 
+    @Autowired
     public StoreRepository() {
         this.stores = Collections.synchronizedList(new LinkedList<>());
     }
@@ -142,6 +147,4 @@ public class StoreRepository implements IStoreRepo {
         }
     }
 
-    
-    
 }

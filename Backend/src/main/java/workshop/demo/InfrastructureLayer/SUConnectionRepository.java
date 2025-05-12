@@ -2,16 +2,21 @@ package workshop.demo.InfrastructureLayer;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 
+@Repository
 public class SUConnectionRepository implements ISUConnectionRepo {
 
     private final SuperDataStructure data;
 
+    @Autowired
     public SUConnectionRepository() {
         data = new SuperDataStructure();
     }
@@ -139,7 +144,7 @@ public class SUConnectionRepository implements ISUConnectionRepo {
         return this.data;
     }
 
-    public void checkMainOwner_ThrowException(int storeId, int userId) throws DevException {
+    public void checkMainOwnerToDeactivateStore_ThrowException(int storeId, int userId) throws DevException {
         try {
             if (!checkDeactivateStore(storeId, userId)) {
                 throw new DevException("Only the boss/main owner can perform this action on store " + storeId);
@@ -148,5 +153,4 @@ public class SUConnectionRepository implements ISUConnectionRepo {
             throw new DevException("failed to check ownership for this userid: " + e.getMessage());
         }
     }
-
 }

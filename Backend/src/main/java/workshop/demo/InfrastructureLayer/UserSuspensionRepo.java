@@ -1,26 +1,38 @@
 package workshop.demo.InfrastructureLayer;
 
 import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.*;
-import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
-import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
+import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 
+@Repository
 public class UserSuspensionRepo implements IUserSuspensionRepo {
 
     private final Map<Integer, UserSuspension> Suspensions = new ConcurrentHashMap<>();
     private final ScheduledExecutorService scheduler;
 
+    @Autowired
     public UserSuspensionRepo() {
         scheduler = Executors.newSingleThreadScheduledExecutor();
         startScheduler();
     }
 
-    public void checkUserSuspensoin_ThrowExceptionIfSuspeneded(int userId) throws UIException{
-        if(isSuspended(userId))
+    public void checkUserSuspensoin_ThrowExceptionIfSuspeneded(int userId) throws UIException {
+        if (isSuspended(userId)) {
             throw new UIException("suspended user trying to make something", ErrorCodes.USER_SUSPENDED);
+        }
     }
 
     @Override
@@ -49,7 +61,7 @@ public class UserSuspensionRepo implements IUserSuspensionRepo {
 
     private void startScheduler() {
         scheduler.scheduleAtFixedRate(() -> {
-        Suspensions.entrySet().removeIf(entry -> entry.getValue().isExpired());
+            Suspensions.entrySet().removeIf(entry -> entry.getValue().isExpired());
         }, 0, 10, TimeUnit.SECONDS);
     }
 
@@ -72,9 +84,8 @@ public class UserSuspensionRepo implements IUserSuspensionRepo {
     }
 
     private UserSuspension getSuspension(Integer userId) {
-            return Suspensions.get(userId);
-        } 
-    
+        return Suspensions.get(userId);
+    }
 
     @Override
     public List<UserSuspension> getAllSuspensions() {

@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
@@ -25,7 +27,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
-
+@Service
 public class StockService {
 
     private static final Logger logger = LoggerFactory.getLogger(StockService.class);
@@ -36,7 +38,7 @@ public class StockService {
     private ISUConnectionRepo suConnectionRepo;
     private IUserRepo userRepo;
     private IUserSuspensionRepo susRepo;
-
+    @Autowired
     public StockService(IStockRepo stockRepo, IStoreRepo storeRepo, IAuthRepo authRepo, IUserRepo userRepo,
             ISUConnectionRepo cons,IUserSuspensionRepo susRepo) {
         this.stockRepo = stockRepo;

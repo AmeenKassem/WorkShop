@@ -1,17 +1,21 @@
 package workshop.demo.InfrastructureLayer;
 
 import java.util.Date;
+
 import javax.crypto.SecretKey;
 
 import org.slf4j.Logger;
+import org.springframework.stereotype.Repository;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import workshop.demo.DomainLayer.Authentication.*;
+import workshop.demo.DomainLayer.Authentication.AuthoResponse;
+import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
+@Repository
 public class AuthenticationRepo implements IAuthRepo {
 
     private SecretKey SECRET = Keys.secretKeyFor(SignatureAlgorithm.HS256);
@@ -49,22 +53,25 @@ public class AuthenticationRepo implements IAuthRepo {
 
     @Override
     public String getUserName(String token) throws UIException {
-        if (!validateToken(token))
+        if (!validateToken(token)) {
             throw new UIException("Invalid or expired token!", ErrorCodes.INVALID_TOKEN);
+        }
         return new AuthoResponse(extractTokenValue(token)).userName;
     }
 
     @Override
     public int getUserId(String token) throws UIException {
-        if (!validateToken(token))
+        if (!validateToken(token)) {
             throw new UIException("Invalid or expired token!", ErrorCodes.INVALID_TOKEN);
+        }
         return new AuthoResponse(extractTokenValue(token)).id;
     }
 
     @Override
     public boolean isRegistered(String token) throws UIException {
-        if (!validateToken(token))
+        if (!validateToken(token)) {
             throw new UIException("Invalid or expired token!", ErrorCodes.INVALID_TOKEN);
+        }
         return new AuthoResponse(extractTokenValue(token)).userName != null;
     }
 
@@ -86,7 +93,7 @@ public class AuthenticationRepo implements IAuthRepo {
     }
 
     @Override
-    public void checkAuth_ThrowTimeOutException(String token,Logger logger) throws UIException {
+    public void checkAuth_ThrowTimeOutException(String token, Logger logger) throws UIException {
         if (!validToken(token)) {
             logger.error("Invalid token on addRegularBid");
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);

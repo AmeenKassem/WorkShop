@@ -27,7 +27,7 @@ public class StoreStockTests {
     }
 
     @Test
-    public void testAddItemConcurrency() throws InterruptedException, Exception {
+    public void testAddItemConcurrency_addingSameItemOnceThenIncreaseQuantity_Sucess() throws InterruptedException, Exception {
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         // Create an item to add
         item newItem = new item(1, 10, 100, Category.ELECTRONICS);  // Set category
@@ -45,6 +45,7 @@ public class StoreStockTests {
         item storedItem = items.get(0);
         assertEquals(10 + numberOfThreads, storedItem.getQuantity(), "The quantity should match the expected value after concurrent additions.");
     }
+
     //here to adding the quantity:(same item)
     @Test
     public void testUpdateQuantityConcurrency_Success() throws Exception {

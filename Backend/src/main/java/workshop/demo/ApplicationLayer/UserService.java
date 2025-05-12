@@ -2,6 +2,8 @@ package workshop.demo.ApplicationLayer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
@@ -9,17 +11,20 @@ import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
+@Service
 public class UserService {
+
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
     private IUserRepo userRepo;
     private IAuthRepo authRepo;
-
+    @Autowired
     public UserService(IUserRepo userRepo, IAuthRepo authRepo) {
         this.userRepo = userRepo;
         this.authRepo = authRepo;
     }
 
-    public String generateGuest() throws UIException , Exception{
+    public String generateGuest() throws UIException, Exception {
         logger.info("generateGuest called");
         int id = userRepo.generateGuest();
         logger.info("Generated guest with ID={}", id);
@@ -48,6 +53,7 @@ public class UserService {
         int id = authRepo.getUserId(token);
         logger.info("Destroyed guest with ID={}", id);
         userRepo.destroyGuest(id);
+
     }
 
     public String logoutUser(String token) throws UIException {
@@ -59,11 +65,12 @@ public class UserService {
         return authRepo.generateGuestToken(id);
     }
 
-    public boolean setAdmin(String token, String adminKey,int id) throws UIException {
+    public boolean setAdmin(String token, String adminKey, int id) throws UIException {
         logger.info("setAdmin called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         logger.info("User {} set as admin: {}");
         return userRepo.setUserAsAdmin(id, adminKey);
+
     }
 
     public boolean addToUserCart(String token, ItemStoreDTO itemToAdd) throws UIException {

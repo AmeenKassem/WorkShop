@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.PaymentDetails;
@@ -32,6 +34,7 @@ import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
+@Service
 public class PurchaseService {
 
     private final IAuthRepo authRepo;
@@ -44,7 +47,7 @@ public class PurchaseService {
     private final ISupplyService supplyService;
     private IUserSuspensionRepo susRepo;
     private static final Logger logger = LoggerFactory.getLogger(PurchaseService.class);
-
+    @Autowired
     public PurchaseService(IAuthRepo authRepo, IStockRepo stockRepo, IStoreRepo storeRepo, IUserRepo userRepo,
             IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
             ISupplyService supplyService, IUserSuspensionRepo susRepo) {
