@@ -1,9 +1,11 @@
 package workshop.demo.ConcurrencyTest;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.stereotype.Service;
+
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
@@ -14,8 +16,6 @@ import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
-
-import java.util.concurrent.atomic.AtomicInteger;
 @SpringBootTest
 public class Suspendtestscon {
 

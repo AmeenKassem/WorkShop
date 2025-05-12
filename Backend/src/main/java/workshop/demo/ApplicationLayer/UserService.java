@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
-import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
@@ -32,93 +31,54 @@ public class UserService {
         return authRepo.generateGuestToken(id);
     }
 
-    public void register(String token, String username, String password) throws UIException {
+    public void register(String token, String username, String password,int age) throws UIException {
         logger.info("register called for username={}", username);
-
-        if (authRepo.validToken(token)) {
-            logger.info("User {} registered", username);
-
-            userRepo.registerUser(username, password);
-        } else {
-            logger.error("Invalid token in register");
-
-            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-        }
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        userRepo.registerUser(username, password,age);
+  
     }
 
     public String login(String token, String username, String pass) throws UIException {
         logger.info("login called for username={}", username);
-
-        if (authRepo.validToken(token)) {
-            int id = userRepo.login(username, pass);
-            logger.info("User {} logged in .", username);
-
-            return authRepo.generateUserToken(id, username);
-        } else {
-            logger.error("Invalid token in login");
-
-            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-        }
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int id = userRepo.login(username, pass);
+        logger.info("User {} logged in .", username);
+        return authRepo.generateUserToken(id, username);
+      
     }
 
     public void destroyGuest(String token) throws UIException {
         logger.info("destroyGuest called");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int id = authRepo.getUserId(token);
+        logger.info("Destroyed guest with ID={}", id);
+        userRepo.destroyGuest(id);
 
-        if (authRepo.validToken(token)) {
-            int id = authRepo.getUserId(token);
-            logger.info("Destroyed guest with ID={}", id);
-
-            userRepo.destroyGuest(id);
-
-        } else {
-            logger.error("Invalid token in destroyGuest");
-
-            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-        }
     }
 
     public String logoutUser(String token) throws UIException {
         logger.info("logoutUser called");
-
-        if (authRepo.validToken(token)) {
-            String userName = authRepo.getUserName(token);
-            int id = userRepo.logoutUser(userName);
-            logger.info("User {} logged out", userName);
-
-            return authRepo.generateGuestToken(id);
-        } else {
-            logger.error("Invalid token in logoutUser");
-
-            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-        }
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        String userName = authRepo.getUserName(token);
+        int id = userRepo.logoutUser(userName);
+        logger.info("User {} logged out", userName);
+        return authRepo.generateGuestToken(id);
     }
 
     public boolean setAdmin(String token, String adminKey, int id) throws UIException {
         logger.info("setAdmin called");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        logger.info("User {} set as admin: {}");
+        return userRepo.setUserAsAdmin(id, adminKey);
 
-        if (authRepo.validToken(token)) {
-            //   String userName = authRepo.getUserName(token);
-            //int id = userRepo.logoutUser(userName);
-            logger.info("User {} set as admin: {}");
-
-            return userRepo.setUserAsAdmin(id, adminKey);
-        } else {
-            logger.error("Invalid token in setAdmin");
-
-            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-        }
     }
 
     public boolean addToUserCart(String token, ItemStoreDTO itemToAdd) throws UIException {
         logger.info("addToUserCart called");
-
-        if (!authRepo.validToken(token)) {
-            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-        }
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         ItemCartDTO item = new ItemCartDTO(itemToAdd);
         userRepo.addItemToGeustCart(authRepo.getUserId(token), item);
         logger.info("Item added to user cart");
-
         return true;
     }
 }

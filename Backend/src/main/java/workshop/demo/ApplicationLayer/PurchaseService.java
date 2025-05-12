@@ -62,8 +62,7 @@ public class PurchaseService {
         this.susRepo = susRepo;
     }
 
-    public ReceiptDTO[] buyGuestCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
-            throws Exception {
+    public ReceiptDTO[] buyGuestCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)throws Exception {
         logger.info("buyGuestCart called with token");
 
         if (!authRepo.validToken(token)) {
