@@ -147,4 +147,12 @@ public class StoreRepository implements IStoreRepo {
         }
     }
 
+    public StoreDTO getStoreDTO(int storeId) throws UIException {
+        Store store = findStoreByID(storeId);
+        if (store == null) {
+            throw new UIException("Store not found for ID: " + storeId, ErrorCodes.STORE_NOT_FOUND); 
+        } 
+        return store.getStoreDTO();
+    }
+
 }

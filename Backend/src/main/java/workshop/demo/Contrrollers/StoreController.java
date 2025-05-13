@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import workshop.demo.ApplicationLayer.Response;
 import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.DTOs.OrderDTO;
+import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
@@ -205,6 +206,18 @@ public class StoreController {
             res = new Response<>(orders, null);
         } catch (UIException ex) {
             res = new Response<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new Response<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
+    }
+
+    @GetMapping("/getstreDTO")
+    public String getStoreDTO(@RequestParam String token,@RequestParam int storeId) {
+        Response<StoreDTO> res;
+        try {
+            StoreDTO dto = storeService.getStoreDTO(token , storeId);
+            res = new Response<>(dto, null);
         } catch (Exception e) {
             res = new Response<>(null, e.getMessage(), -1);
         }

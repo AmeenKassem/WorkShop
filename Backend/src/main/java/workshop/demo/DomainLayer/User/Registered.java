@@ -183,7 +183,7 @@ public class Registered extends Guest {
 
     @Override
     public UserDTO getUserDTO() {
-        return new UserDTO(this.getId(), this.username, encrybtedPassword, this.age, this.isOnline, this.isAdmin());
+        return new UserDTO(this.getId(), this.username, this.age, this.isOnline, this.isAdmin());
     }
 
 }

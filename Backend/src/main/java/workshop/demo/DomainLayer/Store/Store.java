@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import workshop.demo.DTOs.StoreDTO;
 
 public class Store {
     private static final Logger logger = LoggerFactory.getLogger(Store.class);
@@ -86,6 +87,10 @@ public class Store {
         int avgRank = (int) Math.round((double) WRank / totalVotes);
         return Math.max(1, Math.min(5, avgRank));// to make surre the result is between 1 and 5
 
+    }
+
+    public StoreDTO getStoreDTO() {
+        return new StoreDTO(storeID, storeName, category, active, getFinalRateInStore(storeID));
     }
 
     // //must be deleted ALL OF THAT:
