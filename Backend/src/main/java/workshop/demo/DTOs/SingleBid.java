@@ -86,4 +86,9 @@ public class SingleBid {
     public boolean isWinner() {
         return this.status == Status.AUCTION_WON || this.status == Status.BID_ACCEPTED;
     }
+
+    public boolean isEnded() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isEnded'");
+    }
 }

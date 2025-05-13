@@ -12,6 +12,8 @@ import org.springframework.stereotype.Repository;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.UserSpecialItemCart;
+import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
@@ -171,44 +173,6 @@ public class UserRepository implements IUserRepo {
         throw new UnsupportedOperationException("Unimplemented method 'removeItemFromGeustCart'");
     }
 
-    @Override
-    public void addBidToRegularCart(SingleBid bid) {
-        try {
-            getRegisteredUser(bid.getUserId()).addRegularBid(bid);
-            logger.info("Bid added to regular cart for user id: " + bid.getUserId());
-        } catch (RuntimeException e) {
-            logger.warning("User not found: " + bid.getUserId());
-            throw new RuntimeException(
-                    new UIException("User not found: " + bid.getUserId(), ErrorCodes.USER_NOT_FOUND));
-        }
-    }
-
-    @Override
-    public void addBidToAuctionCart(SingleBid bid) {
-        try {
-            getRegisteredUser(bid.getUserId()).addAuctionBid(bid);
-            logger.info("Bid added to auction cart for user id: " + bid.getUserId());
-        } catch (RuntimeException e) {
-            logger.warning("User not found: " + bid.getUserId());
-            throw new RuntimeException(
-                    new UIException("User not found: " + bid.getUserId(), ErrorCodes.USER_NOT_FOUND));
-        }
-    }
-
-    @Override
-    public void ParticipateInRandom(ParticipationInRandomDTO card) {
-        getRegisteredUser(card.userId).addParticipationForRandom(card);
-    }
-
-    @Override
-    public List<SingleBid> getWinningBids(int userId) {
-        return getRegisteredUser(userId).getWinningBids();
-    }
-
-    @Override
-    public List<ParticipationInRandomDTO> getWinningCards(int userId) {
-        return getRegisteredUser(userId).getWinningCards();
-    }
 
     @Override
     public ShoppingCart getUserCart(int userId) {
@@ -248,5 +212,15 @@ public class UserRepository implements IUserRepo {
             // logger.error("User not logged in for setProductToBid: {}", userId);
             throw new UIException("You are not regestered user!", ErrorCodes.USER_NOT_LOGGED_IN);
         }
+    }
+
+    @Override
+    public void addSpecialItemToCart(UserSpecialItemCart item, int userId) throws DevException {
+        getRegisteredUser(userId).addSpecialItemToCart(item);
+    }
+
+    @Override
+    public List<UserSpecialItemCart> getAllSpecialItems(int userId) {
+        return getRegisteredUser(userId).getSpecialCart();
     }
 }

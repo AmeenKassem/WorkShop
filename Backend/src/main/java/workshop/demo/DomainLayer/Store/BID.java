@@ -107,4 +107,18 @@ public class BID {
     public SingleBid getWinner() {
         return winner;
     }
+
+    public boolean bidIsWinner(int bidId2) {
+        
+        return getBid(bidId2).isAccepted();
+    }
+
+   
+    public SingleBid getBid(int bidId) {
+        return getBid(bidId);
+    }
+
+    public int getProductId() {
+        return productId;
+    }
 }
