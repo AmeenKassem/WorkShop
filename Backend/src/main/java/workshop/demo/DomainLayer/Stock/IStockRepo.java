@@ -21,7 +21,7 @@ public interface IStockRepo {
     // global
     // product
 
-    Product findByIdInSystem(int productId) throws Exception;
+    Product findByIdInSystem_throwException(int productId) throws Exception;
 
     public ProductDTO[] getMatchesProducts(ProductSearchCriteria filter);
 
@@ -92,5 +92,9 @@ public interface IStockRepo {
 
     ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) throws Exception;
 
-void checkProductExists_ThrowException(int productId) throws UIException ; 
+void checkProductExists_ThrowException(int productId) throws UIException ;
+
+List<SingleBid> getWiningBids(int userId);
+
+List<ParticipationInRandomDTO> getWiningRandoms(int userId); 
 }
