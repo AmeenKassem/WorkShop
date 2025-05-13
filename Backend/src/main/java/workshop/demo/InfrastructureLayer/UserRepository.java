@@ -1,7 +1,6 @@
 package workshop.demo.InfrastructureLayer;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
@@ -56,14 +55,14 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public int registerUser(String username, String password,int age) throws UIException {
-        if (userExist(username))
+    public int registerUser(String username, String password, int age) throws UIException {
+        if (userExist(username)) {
 
             throw new UIException("another user try to register with used username", ErrorCodes.USERNAME_USED);
         
         String encPass = encoder.encodePassword(password);
         int id = idGen.getAndIncrement();
-        Registered userToAdd = new Registered(id, username, encPass,age);
+        Registered userToAdd = new Registered(id, username, encPass, age);
         users.put(username, userToAdd);
         idToUsername.put(id, username);
         logger.info("User " + username + " registered successfully");

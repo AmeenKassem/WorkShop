@@ -38,7 +38,6 @@ public class UsersTests {
     public void test_register_and_login() throws UIException {
         int guestId = userRepo.generateGuest();
         int userIdFromRegister = userRepo.registerUser("bhaa", "123123",30);
-
         int userIdFromLogIn = userRepo.login("bhaa", "123123");
 
         Assertions.assertEquals(userIdFromRegister, userIdFromLogIn);
