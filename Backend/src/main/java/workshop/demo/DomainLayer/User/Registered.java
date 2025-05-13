@@ -5,6 +5,7 @@ import java.util.List;
 
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.UserDTO;
 import workshop.demo.InfrastructureLayer.Encoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -178,6 +179,11 @@ public class Registered extends Guest {
             }
         }
         return bidsResult;
+    }
+
+    @Override
+    public UserDTO getUserDTO() {
+        return new UserDTO(this.getId(), this.username, encrybtedPassword, this.age, this.isOnline, this.isAdmin());
     }
 
 }

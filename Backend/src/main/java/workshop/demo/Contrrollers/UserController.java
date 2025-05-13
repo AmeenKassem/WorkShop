@@ -1,15 +1,21 @@
 package workshop.demo.Contrrollers;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.Response;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 @RestController
@@ -48,7 +54,8 @@ public class UserController {
     @PostMapping("/register")
     public String register(@RequestParam String token,
                            @RequestParam String username,
-                           @RequestParam String password,int age) {
+                           @RequestParam String password,
+                           @RequestParam int age) {
         Response<Boolean> res;
         try {
             userService.register(token, username, password,age);
@@ -149,5 +156,16 @@ public class UserController {
     //     return res.toJson();
     // }''
 
+    @GetMapping("/getUserDTO")
+    public String getUserDTO(@RequestParam String token) {
+        Response<UserDTO> res;
+        try {
+            UserDTO dto = userService.getUserDTO(token);
+            res = new Response<>(dto, null);
+        }catch (UIException e) {
+            res = new Response<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
+    }
     
 }

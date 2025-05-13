@@ -5,6 +5,7 @@ import java.util.List;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public interface IUserRepo {
@@ -113,6 +114,8 @@ public interface IUserRepo {
      * @param userId the id of the user
      * @return ShoppingCart instance
      */
+    public Registered getRegisteredUser(int id) ;
+
     public ShoppingCart getUserCart(int userId) throws UIException;
 
     public List<ItemCartDTO> getCartForUser(int ownerId) throws UIException;
@@ -122,4 +125,6 @@ public interface IUserRepo {
     public void checkUserRegister_ThrowException(int userId) throws UIException;
 
     public void checkAdmin_ThrowException(int userId) throws UIException;
+
+    public UserDTO getUserDTO(int userId);
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.IUserRepo;
@@ -81,4 +82,12 @@ public class UserService {
         logger.info("Item added to user cart");
         return true;
     }
+
+    public UserDTO getUserDTO(String token) throws UIException {
+        logger.info("getUserDTO");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        return userRepo.getUserDTO(userId);
+    }
+
 }
