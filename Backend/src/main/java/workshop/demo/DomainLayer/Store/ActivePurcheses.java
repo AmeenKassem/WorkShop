@@ -1,6 +1,9 @@
 package workshop.demo.DomainLayer.Store;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -230,5 +233,25 @@ public class ActivePurcheses {
             throw new DevException("Random ID not found in active randoms!");
         }
         return activeRandom.get(randomId).getProductPrice();
+    }
+
+    public List<SingleBid> getWiningSingleBidsForUser(int userId) {
+        List<SingleBid> res = new ArrayList<>();
+        for (BID bid : activeBid.values()) {
+            if(bid.userIsWinner(userId)) res.add(bid.getWinner());
+        }
+        for(Auction auction : activeAuction.values()){
+            if(auction.userIsWinner(userId)) res.add(auction.getWinner());
+        }
+        return res;
+
+    }
+
+    public List<ParticipationInRandomDTO> getWinningInRandoms(int userId){
+        List<ParticipationInRandomDTO> res = new ArrayList<>();
+        for(Random random:activeRandom.values()){
+            if(random.userIsWinner(userId))res.add(random.getWinner());
+        }
+        return res;
     }
 }

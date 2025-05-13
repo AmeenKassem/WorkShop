@@ -1,5 +1,5 @@
-package workshop.demo.UnitTests.PurchaseTests;
-// package workshop.demo.PurchaseTests;
+// package workshop.demo.UnitTests.PurchaseTests;
+// // package workshop.demo.PurchaseTests;
 
 // import java.util.List;
 // import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -39,12 +39,14 @@ package workshop.demo.UnitTests.PurchaseTests;
 // import workshop.demo.DomainLayer.Store.IStoreRepo;
 // import workshop.demo.DomainLayer.User.IUserRepo;
 // import workshop.demo.DomainLayer.User.ShoppingCart;
+// import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 // import workshop.demo.InfrastructureLayer.Encoder;
 // import workshop.demo.InfrastructureLayer.OrderRepository;
 // import workshop.demo.InfrastructureLayer.PurchaseRepository;
 // import workshop.demo.InfrastructureLayer.StockRepository;
 // import workshop.demo.InfrastructureLayer.StoreRepository;
 // import workshop.demo.InfrastructureLayer.UserRepository;
+// import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 // public class PurchaseServiceTest {
 //     private IAuthRepo authRepo;
 //     private IStockRepo stockRepo;
@@ -65,7 +67,7 @@ package workshop.demo.UnitTests.PurchaseTests;
 //         orderRepo = mock(IOrderRepo.class);
 //         paymentService = mock(IPaymentService.class);
 //         supplyService = mock(ISupplyService.class);
-//         purchaseService = new PurchaseService(authRepo, stockRepo, storeRepo, userRepo, purchaseRepo, orderRepo, paymentService, supplyService);
+//         purchaseService = new PurchaseService(authRepo, stockRepo, storeRepo, userRepo, purchaseRepo, orderRepo, paymentService, supplyService, new UserSuspensionRepo());
 //     }
 //     @Test
 //     void testParticipateInRandom_success() throws Exception {
