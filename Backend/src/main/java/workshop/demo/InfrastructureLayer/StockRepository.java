@@ -1,6 +1,7 @@
 package workshop.demo.InfrastructureLayer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,6 +39,7 @@ public class StockRepository implements IStockRepo {
     private ConcurrentHashMap<Integer, ActivePurcheses> storeId2ActivePurchases;//must be thread safe
     private ConcurrentHashMap<Category, List<Product>> allProducts;
     private ConcurrentHashMap<Integer, StoreStock> storeStocks;//storeId, stock of store    
+    
 
     @Autowired
     public StockRepository() {
@@ -70,7 +72,7 @@ public class StockRepository implements IStockRepo {
     }
 
     @Override
-    public Product findByIdInSystem(int productId) throws UIException {
+    public Product findByIdInSystem_throwException(int productId) throws UIException {
         for (List<Product> productList : allProducts.values()) {
             for (Product product : productList) {
                 if (product.getProductId() == productId) {
@@ -128,7 +130,7 @@ public class StockRepository implements IStockRepo {
     //why do we need that? if it's for review it to user -> it's wrong
     @Override
     public ProductDTO GetProductInfo(int productId) throws UIException {
-        Product product = findByIdInSystem(productId);
+        Product product = findByIdInSystem_throwException(productId);
         if (product == null) {
             return null;
         }
@@ -394,9 +396,27 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public void checkProductExists_ThrowException(int productId) throws UIException {
-        if (findByIdInSystem(productId) == null) {
+        if (findByIdInSystem_throwException(productId) == null) {
             throw new UIException("Product not found", ErrorCodes.PRODUCT_NOT_FOUND);
         }
+    }
+
+    @Override
+    public List<SingleBid> getWiningBids(int userId) {
+        List<SingleBid> res = new ArrayList<>();
+        for (ActivePurcheses active : storeId2ActivePurchases.values()) {
+            res.addAll(active.getWiningSingleBidsForUser(userId));
+        }   
+        return res;
+    }
+
+    @Override
+    public List<ParticipationInRandomDTO> getWiningRandoms(int userId) {
+        List<ParticipationInRandomDTO> res = new ArrayList<>();
+        for (ActivePurcheses active : storeId2ActivePurchases.values()) {
+            res.addAll(active.getWinningInRandoms(userId));
+        }   
+        return res;
     }
 
 }
