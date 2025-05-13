@@ -20,6 +20,7 @@ import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -401,22 +402,40 @@ public class StockRepository implements IStockRepo {
         }
     }
 
+  
+
     @Override
-    public List<SingleBid> getWiningBids(int userId) {
-        List<SingleBid> res = new ArrayList<>();
-        for (ActivePurcheses active : storeId2ActivePurchases.values()) {
-            res.addAll(active.getWiningSingleBidsForUser(userId));
-        }   
-        return res;
+    public ParticipationInRandomDTO getRandomCardIfWinner(int storeId, int specialId, int userId)  {
+        try{
+            return getActivePurchases(storeId).getRandomCardIfWinner(specialId, userId);
+        }catch(UIException ex){
+            return null;
+        }
     }
 
     @Override
-    public List<ParticipationInRandomDTO> getWiningRandoms(int userId) {
-        List<ParticipationInRandomDTO> res = new ArrayList<>();
-        for (ActivePurcheses active : storeId2ActivePurchases.values()) {
-            res.addAll(active.getWinningInRandoms(userId));
-        }   
-        return res;
+    public SingleBid getBidIfWinner(int storeId, int specialId, int bidId, SpecialType type) {
+        try{
+            return getActivePurchases(storeId).getBidIfWinner(specialId, bidId,type);
+        }catch(UIException ex){
+            return null;
+        }
+    }
+
+    @Override
+    public SingleBid getBid(int storeId, int specialId, int bidId, SpecialType type) throws UIException {
+       return  getActivePurchases(storeId).getBidWithId(specialId,bidId,type);
+    }
+
+    @Override
+    public String GetProductNameForBid(int storeId, int specialId, SpecialType type) throws UIException  {
+        int productId = getActivePurchases(storeId).getProductIdForSpecial(specialId, type);
+        return GetProductInfo(productId).getName();
+    }
+
+    @Override
+    public ParticipationInRandomDTO getRandomCard(int storeId, int specialId, int randomId)throws UIException  {
+       return  getActivePurchases(storeId).getCardWithId(specialId,randomId);
     }
 
 }

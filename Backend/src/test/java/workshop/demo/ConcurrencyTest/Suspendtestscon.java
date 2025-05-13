@@ -14,6 +14,7 @@ import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
+import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 @SpringBootTest
@@ -29,7 +30,7 @@ public class Suspendtestscon {
 
     private final UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo,
             authRepo);
-    private final UserService userService = new UserService(userRepo, authRepo);
+    private final UserService userService = new UserService(userRepo, authRepo,new StockRepository());
 
     @Test
     public void test_twoAdminsSuspend_twoUsers() throws Exception {
