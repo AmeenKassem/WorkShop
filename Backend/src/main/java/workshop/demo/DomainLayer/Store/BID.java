@@ -99,4 +99,12 @@ public class BID {
             return !isAccepted;
         }
     }
+
+    public boolean userIsWinner(int userId) {
+        return winner!=null && winner.getUserId()==userId;
+    }
+
+    public SingleBid getWinner() {
+        return winner;
+    }
 }

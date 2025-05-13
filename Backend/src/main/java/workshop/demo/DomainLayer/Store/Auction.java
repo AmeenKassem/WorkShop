@@ -89,5 +89,15 @@ public class Auction {
         res.auctionId = this.auctionId;
         return res;
     }
+
+    public boolean userIsWinner(int userId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'userIsWinner'");
+    }
+
+    public SingleBid getWinner() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWinner'");
+    }
 }
 // >>>>>>> main:Backend/src/main/java/workshop/demo/DomainLayer/Store/Auction.java
