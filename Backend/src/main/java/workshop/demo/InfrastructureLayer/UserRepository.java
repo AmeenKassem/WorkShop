@@ -261,5 +261,21 @@ public class UserRepository implements IUserRepo {
             throw new RuntimeException(new UIException("User not found with ID: " + userId, ErrorCodes.USER_NOT_FOUND));
         }
     }
+
+    @Override
+    public void MoveGuestToRegistered(int guestId, String username, String password, int age) throws UIException {
+        if (!guests.containsKey(guestId)) {
+            throw new UIException("Guest not found for upgrade", ErrorCodes.GUEST_NOT_FOUND);
+        }
+        if (users.containsKey(username)) {
+            throw new UIException("Username already taken", ErrorCodes.USERNAME_USED);
+        }
+        String encPass = encoder.encodePassword(password);
+        Registered registeredUser = new Registered(guestId, username, encPass, age);
+        guests.put(guestId, registeredUser); 
+        users.put(username, registeredUser);
+        idToUsername.put(guestId, username);
+        
+    }
 }
 

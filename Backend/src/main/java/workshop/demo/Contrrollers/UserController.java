@@ -117,7 +117,7 @@ public class UserController {
                            @RequestParam String adminKey) {
         Response<Boolean> res;
         try {
-            boolean data = userService.setAdmin(token, adminKey,2);
+            boolean data = userService.setAdmin(token, adminKey);
             res = new Response<>(data, null);
         } catch (UIException ex) {
             res = new Response<>(null, ex.getMessage(), ex.getNumber());

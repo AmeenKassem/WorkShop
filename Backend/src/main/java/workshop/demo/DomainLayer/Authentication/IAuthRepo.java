@@ -6,7 +6,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public interface IAuthRepo {
 
-    public String getUserName(String token) throws UIException;
+  //  public String getUserName(String token) throws UIException;
 
     public int getUserId(String token)throws UIException;
 

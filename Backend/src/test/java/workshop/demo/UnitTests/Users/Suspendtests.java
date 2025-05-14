@@ -34,7 +34,7 @@ public class Suspendtests {
         String token = userService.generateGuest();
         userService.register(token, "adminUser2", "adminPass2",22);
         String token1 = userService.login(token, "adminUser2", "adminPass2");
-        userService.setAdmin(token1, "123321", 2);
+        userService.setAdmin(token1, "123321");
 
         int userId = userRepo.registerUser("suspendedUser", "pass123",22);
 
@@ -49,7 +49,7 @@ public class Suspendtests {
         String token = userService.generateGuest();
         userService.register(token, "adminUser3", "adminPass3",22);
         String token1 = userService.login(token, "adminUser3", "adminPass3");
-        userService.setAdmin(token1, "123321", 2);
+        userService.setAdmin(token1, "123321");
 
         int guestId = userRepo.generateGuest();
 
@@ -64,7 +64,7 @@ public class Suspendtests {
         String token = userService.generateGuest();
         userService.register(token, "adminUser7", "adminPass7",22);
         String token1 = userService.login(token, "adminUser7", "adminPass7");
-        userService.setAdmin(token1, "123321", 2);
+        userService.setAdmin(token1, "123321");
 
         int userId = userRepo.registerUser("basicPauseUser", "pass123",22);
 
@@ -83,7 +83,7 @@ public class Suspendtests {
         String token = userService.generateGuest();
         userService.register(token, "adminUser10", "adminPass10",22);
         String token1 = userService.login(token, "adminUser10", "adminPass10");
-        userService.setAdmin(token1, "123321", 2);
+        userService.setAdmin(token1, "123321");
 
         int userId = userRepo.registerUser("pausePreventExpireUser", "pass123",22);
 
@@ -110,7 +110,7 @@ public class Suspendtests {
         String token = userService.generateGuest();
         userService.register(token, "adminFail1", "failPass1",22);
         String token1 = userService.login(token, "adminFail1", "failPass1");
-        userService.setAdmin(token1, "123321", 2);
+        userService.setAdmin(token1, "123321");
 
         int userId = userRepo.registerUser("failUser1", "failPass1",22);
         suspensionService.suspendRegisteredUser(10, 1, token1);
@@ -125,7 +125,7 @@ public class Suspendtests {
         String token = userService.generateGuest();
         userService.register(token, "adminFail2", "failPass2",22);
         String token1 = userService.login(token, "adminFail2", "failPass2");
-        userService.setAdmin(token1, "1233321", 2);
+        userService.setAdmin(token1, "1233321");
 
         int userId = userRepo.registerUser("failUser2", "failPass2",22);
 

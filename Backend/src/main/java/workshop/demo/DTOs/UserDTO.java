@@ -5,8 +5,8 @@ public class UserDTO {
     //null for guest
     public String username;
     public int age;
-    private Boolean isOnline; 
-    private Boolean isAdmin; 
+    public Boolean isOnline; 
+    public Boolean isAdmin; 
 
     public UserDTO(int id){
         this.id = id;

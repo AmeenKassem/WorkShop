@@ -147,6 +147,7 @@ public class StoreRepository implements IStoreRepo {
         }
     }
 
+    @Override
     public StoreDTO getStoreDTO(int storeId) throws UIException {
         Store store = findStoreByID(storeId);
         if (store == null) {

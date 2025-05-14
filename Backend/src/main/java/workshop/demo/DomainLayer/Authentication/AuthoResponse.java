@@ -37,6 +37,15 @@ public class AuthoResponse {
             throw new RuntimeException("Failed to parse from JSON", e);
         }
     }
+
+    public static AuthoResponse fromJson(String json) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(json, AuthoResponse.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse from JSON", e);
+        }
+    }
 }
 // // =======
 // package workshop.demo.DomainLayer.Authentication;

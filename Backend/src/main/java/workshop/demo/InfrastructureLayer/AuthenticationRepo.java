@@ -50,14 +50,18 @@ public class AuthenticationRepo implements IAuthRepo {
             return false;
         }
     }
-
+/* 
     @Override
     public String getUserName(String token) throws UIException {
         if (!validateToken(token)) {
             throw new UIException("Invalid or expired token!", ErrorCodes.INVALID_TOKEN);
         }
-        return new AuthoResponse(extractTokenValue(token)).userName;
-    }
+        String userName = AuthoResponse.fromJson(extractTokenValue(token)).userName;
+        if (userName == null) {
+            throw new UIException("Guest users have no username!", ErrorCodes.INVALID_TOKEN);
+        }
+        return userName;
+    }*/
 
     @Override
     public int getUserId(String token) throws UIException {

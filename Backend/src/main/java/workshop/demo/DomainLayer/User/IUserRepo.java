@@ -127,4 +127,6 @@ public interface IUserRepo {
     public void checkAdmin_ThrowException(int userId) throws UIException;
 
     public UserDTO getUserDTO(int userId);
+
+    public void MoveGuestToRegistered(int guestId, String username, String password, int age) throws UIException;
 }

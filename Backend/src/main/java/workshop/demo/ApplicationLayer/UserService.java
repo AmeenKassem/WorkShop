@@ -35,7 +35,8 @@ public class UserService {
     public void register(String token, String username, String password,int age) throws UIException {
         logger.info("register called for username={}", username);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        userRepo.registerUser(username, password,age);
+        int guestId = authRepo.getUserId(token);
+        userRepo.MoveGuestToRegistered(guestId, username, password, age);
   
     }
 
@@ -66,10 +67,11 @@ public class UserService {
         return authRepo.generateGuestToken(id);
     }
 
-    public boolean setAdmin(String token, String adminKey, int id) throws UIException {
+    public boolean setAdmin(String token, String adminKey) throws UIException {
         logger.info("setAdmin called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         logger.info("User {} set as admin: {}");
+        int id = authRepo.getUserId(token); 
         return userRepo.setUserAsAdmin(id, adminKey);
 
     }

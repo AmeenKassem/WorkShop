@@ -45,7 +45,7 @@ public class Suspendtestscon {
 
         // Set both as admin with error checks
         try {
-            boolean successA = userService.setAdmin(adminTokenA, adminKey, 4);
+            boolean successA = userService.setAdmin(adminTokenA, adminKey);
             System.out.println("Admin A setAdmin result: " + successA);
             Assertions.assertTrue(successA, "Admin A failed to become admin!");
         } catch (Exception e) {
@@ -54,7 +54,7 @@ public class Suspendtestscon {
         }
 
         try {
-            boolean successB = userService.setAdmin(adminTokenB, adminKey, 2);
+            boolean successB = userService.setAdmin(adminTokenB, adminKey);
             System.out.println("Admin B setAdmin result: " + successB);
             Assertions.assertTrue(successB, "Admin B failed to become admin!");
         } catch (Exception e) {
@@ -123,8 +123,8 @@ public class Suspendtestscon {
         userService.register(tokenB, "adminB2", "passB2",30);
         String adminTokenB = userService.login(tokenB, "adminB2", "passB2");
 
-        userService.setAdmin(adminTokenA, adminKey, 2);
-        userService.setAdmin(adminTokenB, adminKey, 4);
+        userService.setAdmin(adminTokenA, adminKey);
+        userService.setAdmin(adminTokenB, adminKey);
 
         int user = userRepo.registerUser("sharedUser", "pass",30);
 
