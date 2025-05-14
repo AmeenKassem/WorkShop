@@ -53,7 +53,7 @@ class StoreSTests {
         testUserPassword = "999";
         userName = "rahaf@example.com";
 
-        userId = userRepo.registerUser(userName, testUserPassword,20); // Add this method to IUserRepo fake
+        userId = userRepo.registerUser(userName, testUserPassword,22); // Add this method to IUserRepo fake
         testToken = authRepo.generateUserToken(userId, testUserPassword);// Add to IAuthRepo fake
         userRepo.login(userName, testUserPassword);
         assertTrue(userRepo.isOnline(userId), "User should be logged in but is not!");

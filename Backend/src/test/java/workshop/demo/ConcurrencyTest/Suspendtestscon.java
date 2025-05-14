@@ -14,6 +14,7 @@ import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
+import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 
@@ -30,7 +31,7 @@ public class Suspendtestscon {
 
     private final UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo,
             authRepo);
-    private final UserService userService = new UserService(userRepo, authRepo);
+    private final UserService userService = new UserService(userRepo, authRepo,new StockRepository());
 
     @Test
     public void test_twoAdminsSuspend_twoUsers() throws Exception {
@@ -41,7 +42,7 @@ public class Suspendtestscon {
 
         // Admin B setup
         String tokenB = userService.generateGuest();
-        userService.register(tokenB, "adminB2", "passB2",30);
+        userService.register(tokenB, "adminB2", "passB2",22);
         String adminTokenB = userService.login(tokenB, "adminB2", "passB2");
 
         // Set both as admin with error checks

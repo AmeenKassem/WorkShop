@@ -28,7 +28,7 @@ public class UsersTests {
     private IUserRepo userRepo = new UserRepository(enc, a);
 
     private int goodLogin(String username, String password) throws UIException {
-        int userIdFromRegister = userRepo.registerUser(username, password,30);
+        int userIdFromRegister = userRepo.registerUser(username, password,22);
 
         int userIdFromLogIn = userRepo.login(username, password);
         return userIdFromLogIn;
@@ -37,7 +37,8 @@ public class UsersTests {
     @Test
     public void test_register_and_login() throws UIException {
         int guestId = userRepo.generateGuest();
-        int userIdFromRegister = userRepo.registerUser("bhaa", "123123",30);
+        int userIdFromRegister = userRepo.registerUser("bhaa", "123123",22);
+
         int userIdFromLogIn = userRepo.login("bhaa", "123123");
 
         Assertions.assertEquals(userIdFromRegister, userIdFromLogIn);
@@ -56,7 +57,7 @@ public class UsersTests {
 
     @Test
     public void testOnlineAafterLogin() throws UIException {
-        int registeredId = userRepo.registerUser("layan", "123",30);
+        int registeredId = userRepo.registerUser("layan", "123",22);
         int loggedInId = userRepo.login("layan", "123");
         Assertions.assertEquals(registeredId, loggedInId);
         boolean isOnline = userRepo.isOnline(loggedInId);
@@ -81,7 +82,7 @@ public class UsersTests {
     // }
     @Test
     public void onlineTest() throws UIException {
-        userRepo.registerUser("ghanem2", "123321",30);
+        userRepo.registerUser("ghanem2", "123321",22);
 
     }
 

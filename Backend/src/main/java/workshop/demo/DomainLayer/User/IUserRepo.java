@@ -5,6 +5,9 @@ import java.util.List;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DTOs.UserSpecialItemCart;
+import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public interface IUserRepo {
@@ -77,35 +80,10 @@ public interface IUserRepo {
      */
     public boolean setUserAsAdmin(int id, String adminKey) throws UIException;
 
-    // /**
-    //  * this function must add a bid to user special cart.
-    //  * @param bid
-    //  */
-    // public void addBidToSpecialCart(SingleBid bid);
+    
+    public void addSpecialItemToCart(UserSpecialItemCart item, int userId) throws DevException;
 
-    /*
-     * this function must add a bid to user regular cart.
-     * @param bid
-     */
-    public void addBidToRegularCart(SingleBid bid) throws UIException;
-
-    /**
-     * this function must add a bid to user auction cart.
-     *
-     * @param bid
-     */
-    public void addBidToAuctionCart(SingleBid bid) throws UIException;
-
-    /**
-     * this will add the card to user special cart
-     *
-     * @param card
-     */
-    public void ParticipateInRandom(ParticipationInRandomDTO card) throws UIException;
-
-    public List<SingleBid> getWinningBids(int userId) throws UIException;
-
-    public List<ParticipationInRandomDTO> getWinningCards(int userId) throws UIException;
+    public List<UserSpecialItemCart> getAllSpecialItems(int userId) ;
 
     /**
      * Returns the shopping cart of the user (guest or registered)
@@ -113,6 +91,8 @@ public interface IUserRepo {
      * @param userId the id of the user
      * @return ShoppingCart instance
      */
+    public Registered getRegisteredUser(int id) ;
+
     public ShoppingCart getUserCart(int userId) throws UIException;
 
     public List<ItemCartDTO> getCartForUser(int ownerId) throws UIException;
@@ -122,4 +102,6 @@ public interface IUserRepo {
     public void checkUserRegister_ThrowException(int userId) throws UIException;
 
     public void checkAdmin_ThrowException(int userId) throws UIException;
+
+    public UserDTO getUserDTO(int userId);
 }

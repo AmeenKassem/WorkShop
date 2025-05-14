@@ -1,8 +1,6 @@
 package workshop.demo.Contrrollers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -16,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 @RestController
@@ -27,9 +26,9 @@ public class UserController {
 
     @Autowired
     public UserController(Repos repos) {
-        this.userService = new UserService(repos.userRepo, repos.auth);
-        this.orderService = new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
-
+        this.userService = new UserService(repos.userRepo, repos.auth,repos.stockrepo);
+        this.orderService= new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
+        
     }
 
     @ModelAttribute
@@ -54,9 +53,11 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<Boolean>> register(@RequestParam String token,
-            @RequestParam String username,
-            @RequestParam String password, @RequestParam int age) {
+    public String register(@RequestParam String token,
+                           @RequestParam String username,
+                           @RequestParam String password,
+                           @RequestParam int age) {
+        Response<Boolean> res;
         try {
             userService.register(token, username, password, age);
             return ResponseEntity
@@ -169,4 +170,17 @@ public class UserController {
     //     }
     //     return res.toJson();
     // }''
+
+    @GetMapping("/getuserdto")
+    public String getUserDTO(@RequestParam String token) {
+        Response<UserDTO> res;
+        try {
+            UserDTO dto = userService.getUserDTO(token);
+            res = new Response<>(dto, null);
+        }catch (UIException e) {
+            res = new Response<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
+    }
+    
 }

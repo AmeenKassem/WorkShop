@@ -90,14 +90,23 @@ public class Auction {
         return res;
     }
 
-    public boolean userIsWinner(int userId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'userIsWinner'");
+    public SingleBid getWinner() {
+        return winner;
     }
 
-    public SingleBid getWinner() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getWinner'");
+    public boolean bidIsWinner(int bidId) {
+       return winner!=null && winner.getId()==bidId;
+    }
+
+    public SingleBid getBid(int bidId) {
+        for (SingleBid singleBid : bids) {
+            if(singleBid.getId()==bidId)return singleBid;
+        }
+        return null;
+    }
+
+    public int getProductId() {
+        return productId;
     }
 }
 // >>>>>>> main:Backend/src/main/java/workshop/demo/DomainLayer/Store/Auction.java
