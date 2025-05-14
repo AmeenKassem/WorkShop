@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.PurchaseService;
-import workshop.demo.ApplicationLayer.Response;
+import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ReceiptDTO;
@@ -44,15 +44,15 @@ public class PurcheseContoller {
             @RequestParam String state,
             @RequestParam String zipCode,
             @RequestBody PaymentDetails payment) {
-        Response<ReceiptDTO[]> res;
+        ApiResponse<ReceiptDTO[]> res;
         try {
             SupplyDetails supply = new SupplyDetails(address, city, state, zipCode);
             ReceiptDTO[] receipts = purchaseService.buyGuestCart(token, payment, supply);
-            res = new Response<>(receipts, null);
+            res = new ApiResponse<>(receipts, null);
         } catch (UIException e) {
-            res = new Response<>(null, e.getMessage(), e.getNumber());
+            res = new ApiResponse<>(null, e.getMessage(), e.getNumber());
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            res = new ApiResponse<>(null, e.getMessage(), -1);
         }
         return res.toJson();
     }
@@ -64,15 +64,15 @@ public class PurcheseContoller {
             @RequestParam String state,
             @RequestParam String zipCode,
             @RequestBody PaymentDetails payment) {
-        Response<ReceiptDTO[]> res;
+        ApiResponse<ReceiptDTO[]> res;
         try {
             SupplyDetails supply = new SupplyDetails(address, city, state, zipCode);
             ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(token, payment, supply);
-            res = new Response<>(receipts, null);
+            res = new ApiResponse<>(receipts, null);
         } catch (UIException e) {
-            res = new Response<>(null, e.getMessage(), e.getNumber());
+            res = new ApiResponse<>(null, e.getMessage(), e.getNumber());
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            res = new ApiResponse<>(null, e.getMessage(), -1);
         }
         return res.toJson();
     }
@@ -83,15 +83,15 @@ public class PurcheseContoller {
             @RequestParam int storeId,
             @RequestParam double amountPaid,
             @RequestBody PaymentDetails payment) {
-        Response<ParticipationInRandomDTO> res;
+        ApiResponse<ParticipationInRandomDTO> res;
         try {
             ParticipationInRandomDTO result = purchaseService.participateInRandom(token, randomId, storeId, amountPaid,
                     payment);
-            res = new Response<>(result, null);
+            res = new ApiResponse<>(result, null);
         } catch (UIException e) {
-            res = new Response<>(null, e.getMessage(), e.getNumber());
+            res = new ApiResponse<>(null, e.getMessage(), e.getNumber());
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            res = new ApiResponse<>(null, e.getMessage(), -1);
         }
         return res.toJson();
     }
@@ -102,16 +102,16 @@ public class PurcheseContoller {
             @RequestParam String city,
             @RequestParam String state,
             @RequestParam String zipCode) {
-        Response<String> res;
+        ApiResponse<String> res;
         try {
             SupplyDetails supply = new SupplyDetails(address, city, state, zipCode);
             //TODO change the test payment and the supply
             purchaseService.finalizeSpecialCart(token, PaymentDetails.testPayment(),supply);
-            res = new Response<>("Done", null);
+            res = new ApiResponse<>("Done", null);
         } catch (UIException e) {
-            res = new Response<>(null, e.getMessage(), e.getNumber());
+            res = new ApiResponse<>(null, e.getMessage(), e.getNumber());
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            res = new ApiResponse<>(null, e.getMessage(), -1);
         }
         return res.toJson();
     }
