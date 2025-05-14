@@ -1,42 +1,104 @@
 package workshop.demo.PresentationLayer.View;
 
-import com.vaadin.flow.component.Text;
+import java.util.List;
+
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.VaadinSession;
+
+import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.PresentationLayer.Presenter.HomePagePresenter;
 
 @Route(value = "", layout = MainLayout.class)
 @CssImport("./Theme/homePageTheme.css")
 public class HomePage extends VerticalLayout {
 
+    private final HomePagePresenter homePagePresenter;
+
     public HomePage() {
+        this.homePagePresenter = new HomePagePresenter(this);
         setSizeFull();
         setSpacing(false);
         setPadding(true);
-        setAlignItems(Alignment.START);
+        setAlignItems(Alignment.STRETCH);
         addClassName("home-view");
 
-        RouterLink login = new RouterLink("Login", LoginView.class);
-        RouterLink register = new RouterLink("Register", RegisterView.class);
-        //change it when making the cart page
+        showButtonsAsGorU();
+        Span title = new Span("🔥 Featured Stores");
+        title.getStyle().set("font-size", "24px").set("font-weight", "bold");
+
+        // Fetch stores
+        List<StoreDTO> stores = this.homePagePresenter.fetchStores();
+
+        // Container for store cards
+        Div storeContainer = new Div();
+        storeContainer.addClassName("store-container");
+
+        for (StoreDTO store : stores) {
+            storeContainer.add(this.homePagePresenter.createStoreCard(store));
+        }
+
+        add(title, storeContainer);
+    }
+
+    private void showButtonsAsGorU() {
+        //Determine user type
+        String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
+        if (userType == null) {
+            userType = "guest";
+        }
+
+        //Create a right-aligned vertical layout for buttons
+        VerticalLayout buttonColumn = new VerticalLayout();
+        buttonColumn.setSpacing(true);
+        buttonColumn.setPadding(false);
+        buttonColumn.setAlignItems(Alignment.END);
+        buttonColumn.addClassName("right-button-column");
+
+        //Shared: My Cart
         RouterLink myCart = new RouterLink("My Cart", MyCartView.class);
-        login.addClassName("home-button");
-        register.addClassName("home-button");
-        myCart.addClassName("home-button");
+        myCart.addClassName("right-button");
+        buttonColumn.add(myCart);
 
-        HorizontalLayout buttonRow = new HorizontalLayout(login, register, myCart);
-        buttonRow.setWidthFull(); // take full width
-        buttonRow.setJustifyContentMode(JustifyContentMode.START); // force align left
-        buttonRow.addClassName("button-row");
+        if (userType.equals("guest")) {
+            //Guest buttons: sign up and login -> might mix it 
+            RouterLink login = new RouterLink("Login", LoginView.class);
+            RouterLink signUp = new RouterLink("Sign Up", RegisterView.class);
+            login.addClassName("right-button");
+            signUp.addClassName("right-button");
+            buttonColumn.add(login, signUp);
+        } else if (userType.equals("user")) {
+            //Logged-in user buttons: myStores and log out
+            RouterLink myStore = new RouterLink("My Stores", MyStoresView.class);
+            myStore.addClassName("right-button");
+            buttonColumn.add(myStore);
 
-        // === Placeholder for featured stores ===
-        Div storeArea = new Div(new Text("🔥 Featured Stores will be displayed here soon..."));
-        storeArea.addClassName("store-area");
+            // logout: Logout as a clickable Div (since RouterLink is for navigation)
+            Div logout = new Div();
+            logout.setText("Logout");
+            logout.addClassName("right-button");
+            logout.getStyle().set("cursor", "pointer");
+            logout.addClickListener(e -> homePagePresenter.handleLogout());
 
-        add(buttonRow, storeArea);
+            buttonColumn.add(logout);
+
+        }
+
+        add(buttonColumn);
+
+    }
+
+    public void showSuccess(String msg) {
+        Notification.show("✅ " + msg, 3000, Notification.Position.MIDDLE);
+    }
+
+    public void showError(String msg) {
+        Notification.show("❌ " + msg, 5000, Notification.Position.MIDDLE);
     }
 
 }
