@@ -18,7 +18,6 @@ import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.SupplyDetails;
-import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -128,8 +127,8 @@ public class PurchaseService {
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
-        UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, -1, SpecialType.Random);
-        userRepo.addSpecialItemToCart(item, userId);
+        // userRepo.ParticipateInRandom(card);
+        // purchaseRepo.saveRandomParticipation(card);
         paymentService.processPayment(paymentDetails, amountPaid);
         logger.info("User {} participated in random draw {}", userId, randomId);
         return card;
@@ -141,18 +140,11 @@ public class PurchaseService {
         int userId = authRepo.getUserId(token);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         logger.info("The user " + userId + " finalizing the special cart.");
-        List<SingleBid> winningBids =new ArrayList<>(); // Auction wins and Bid wins
-        List<ParticipationInRandomDTO> winingRandoms =new ArrayList<>();
+        List<SingleBid> winningBids = stockRepo.getWiningBids(userId); // Auction wins and Bid wins
+        List<ParticipationInRandomDTO> winingRandoms = stockRepo.getWiningRandoms(userId);
+        // make here the same functionality of other finalizes
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
-        for (UserSpecialItemCart specialItem : userRepo.getAllSpecialItems(userId)) {
-            if(specialItem.type==SpecialType.Random){
-                ParticipationInRandomDTO card = stockRepo.getRandomCardIfWinner(specialItem.storeId,specialItem.specialId,userId);
-                if(card != null) winingRandoms.add(card);
-            }else{
-                SingleBid bid = stockRepo.getBidIfWinner(specialItem.storeId,specialItem.specialId,specialItem.bidId,specialItem.type);
-                if(bid!=null) winningBids.add(bid);
-            }
-        }
+        
         double sumToPay = setRecieptMapForBids(winningBids, storeToProducts);
         setRecieptMapForRandoms(storeToProducts, winingRandoms);
         if(supplyService.processSupply(supply) && paymentService.processPayment(payment,sumToPay )){
@@ -162,9 +154,6 @@ public class PurchaseService {
 
         
     }
-
-
-   
 
     private double setRecieptMapForBids(List<SingleBid> winningBids,Map<Integer, List<ReceiptProduct>>  res) throws Exception{
        double price=0;
