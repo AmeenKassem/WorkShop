@@ -1,16 +1,20 @@
 package workshop.demo.PresentationLayer.Presenter;
 
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriUtils;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
-import workshop.demo.PresentationLayer.Requests.LoginRequest;
 import workshop.demo.PresentationLayer.View.LoginView;
 
 public class LoginPresenter {
@@ -32,17 +36,23 @@ public class LoginPresenter {
             view.showError(ExceptionHandlers.getErrorMessage(1001));
             return;
         }
-
-        LoginRequest request = new LoginRequest(guestToken, username, password);
+        // Build the URL with query parameters
+        String url = String.format(
+                "http://localhost:8080/api/users/login?token=%s&username=%s&password=%s",
+                UriUtils.encodeQueryParam(guestToken, StandardCharsets.UTF_8),
+                UriUtils.encodeQueryParam(username, StandardCharsets.UTF_8),
+                UriUtils.encodeQueryParam(password, StandardCharsets.UTF_8)
+        );
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED); // Optional here, since no body is sent
 
-        HttpEntity<LoginRequest> entity = new HttpEntity<>(request, headers);
+        HttpEntity<?> entity = new HttpEntity<>(headers);
 
         try {
-            ResponseEntity<ApiResponse> response = restTemplate.postForEntity(
-                    "http://localhost:8080/api/users/login",
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
                     entity,
                     ApiResponse.class
             );
@@ -53,6 +63,7 @@ public class LoginPresenter {
 
                 VaadinSession.getCurrent().setAttribute("auth-token", newUserToken);
                 view.showSuccess("Logged in successfully!");
+                UI.getCurrent().navigate("");
             } else {
                 //here must ask If we alwayes get an UI excpetion and if we get
                 //devException what to do??

@@ -44,8 +44,6 @@ public class LoginView extends VerticalLayout {
         loginButton.addClickListener(e -> {
             String user = username.getValue();
             String pass = password.getValue();
-
-            // TODO: Call your presenter/service logic here
             this.presenter.login();
             System.out.println("Attempt login: " + user + "/" + pass);
         });
