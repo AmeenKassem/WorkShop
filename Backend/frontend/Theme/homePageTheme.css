@@ -1,0 +1,21 @@
+.home-view {
+    background-color: #f4f6fb;
+    padding: 2rem;
+    gap: 2rem;
+}
+
+.button-row {
+    margin-left: 1rem;
+    gap: 1rem;
+}
+
+.home-button {
+    background-color: #333;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
