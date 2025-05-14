@@ -156,7 +156,7 @@ public class UserController {
     //     return res.toJson();
     // }''
 
-    @GetMapping("/getUserDTO")
+    @GetMapping("/getuserdto")
     public String getUserDTO(@RequestParam String token) {
         Response<UserDTO> res;
         try {
