@@ -1,20 +1,20 @@
-package workshop.demo.ApplicationLayer;
+package workshop.demo.Contrrollers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class Response<T> {
+public class ApiResponse<T> {
 
     private T data;
     private String errorMsg;
     private int errNumber;
 
-    public Response(T data, String errorMsg) {
+    public ApiResponse(T data, String errorMsg) {
         this.data = data;
         this.errorMsg = errorMsg;
     }
 
-    public Response(T data, String errorMsg, int errNumber) {
+    public ApiResponse(T data, String errorMsg, int errNumber) {
         this.data = data;
         this.errorMsg = errorMsg;
         this.errNumber = errNumber;
@@ -43,5 +43,4 @@ public class Response<T> {
         }
     }
 
-    
 }

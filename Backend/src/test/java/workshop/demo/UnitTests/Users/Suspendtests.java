@@ -37,7 +37,6 @@ public class Suspendtests {
         userService.setAdmin(token1, "123321", 2);
 
         int userId = userRepo.registerUser("suspendedUser", "pass123",30);
-
         suspensionService.suspendRegisteredUser(userId, 1, token1);
         Assertions.assertTrue(suspensionService.isUserSuspended(userId));
         Thread.sleep(60_000);
@@ -128,7 +127,6 @@ public class Suspendtests {
         userService.setAdmin(token1, "1233321", 2);
 
         int userId = userRepo.registerUser("failUser2", "failPass2",30);
-
         // Attempting with wrong token (simulated as "WRONG_TOKEN")
         assertThrows(UIException.class, () -> {
             suspensionService.suspendRegisteredUser(userId, 5, "WRONG_TOKEN");

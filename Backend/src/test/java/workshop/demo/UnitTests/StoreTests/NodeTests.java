@@ -75,7 +75,7 @@ public class NodeTests {
             manager1.addAuthrization(permsToAdd, owner12.getMyId());
         });
 
-        assertEquals("this owner can't manipulate the authorization for this manager", exception.getMessage());
+        assertEquals("This owner cannot manipulate authorization for this manager", exception.getMessage());
     }
 
     @Test
@@ -109,7 +109,7 @@ public class NodeTests {
             manager1.updateAuthorization(permsToToggle, owner12.getMyId());
         });
 
-        assertEquals("this owner can't manipulate the authorization for this manager", exception.getMessage());
+        assertEquals("This owner cannot manipulate authorization for this manager", exception.getMessage());
     }
 
 }

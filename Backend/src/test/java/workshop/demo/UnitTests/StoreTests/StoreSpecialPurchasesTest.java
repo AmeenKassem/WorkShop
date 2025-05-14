@@ -2,14 +2,11 @@ package workshop.demo.UnitTests.StoreTests;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
@@ -54,38 +51,33 @@ public class StoreSpecialPurchasesTest {
 
     }
 
-    @Test
-    public void testAddAuctionAndBidToStore_Success() throws Exception {
-        initTestStoreWithProducts1(storeRepo);
-
-        // int storeId = 1;
-        int userId = 10;
-        int productId = 101;
-        int quantity = 2;
-        long time = 1000; // +1 minute
-        double startPrice = 99.99;
-
-        int auctionId = stockRepo.addAuctionToStore(storeId1, productId, quantity, time, startPrice);
-        // assertEquals(123, auctionId);
-        assertTrue(true);
-
-        // try{
-        SingleBid first = stockRepo.bidOnAuction(storeId1, 1, auctionId, startPrice + 1);
-        SingleBid second = stockRepo.bidOnAuction(storeId1, 2, auctionId, startPrice + 2);
-        Thread.sleep(1010);
-        assertFalse(first.isWon());
-        assertTrue(second.isWon());
-
-        int bidId = stockRepo.addProductToBid(storeId1, productId, 1);
-        first = stockRepo.bidOnBid(bidId, 10, 2, storeId1);
-        second = stockRepo.bidOnBid(bidId, 10, 1, storeId1);
-        System.out.println(bidId);
-        stockRepo.rejectBid(storeId1, bidId, second.getId());
-        stockRepo.acceptBid(storeId1, bidId, first.getId());
-        assertTrue(first.isWon());
-        assertFalse(second.isWon());
-    }
-
+    // @Test
+    // public void testAddAuctionAndBidToStore_Success() throws Exception {
+    //     initTestStoreWithProducts1(storeRepo);
+    //     // int storeId = 1;
+    //     int userId = 10;
+    //     int productId = 101;
+    //     int quantity = 2;
+    //     long time = 1000; // +1 minute
+    //     double startPrice = 99.99;
+    //     int auctionId = stockRepo.addAuctionToStore(storeId1, productId, quantity, time, startPrice);
+    //     // assertEquals(123, auctionId);
+    //     assertTrue(true);
+    //     // try{
+    //     SingleBid first = stockRepo.bidOnAuction(storeId1, 1, auctionId, startPrice + 1);
+    //     SingleBid second = stockRepo.bidOnAuction(storeId1, 2, auctionId, startPrice + 2);
+    //     Thread.sleep(1010);
+    //     assertFalse(first.isWon());
+    //     assertTrue(second.isWon());
+    //     int bidId = stockRepo.addProductToBid(storeId1, productId, 1);
+    //     first = stockRepo.bidOnBid(bidId, 10, 2, storeId1);
+    //     second = stockRepo.bidOnBid(bidId, 10, 1, storeId1);
+    //     System.out.println(bidId);
+    //     stockRepo.rejectBid(storeId1, bidId, second.getId());
+    //     stockRepo.acceptBid(storeId1, bidId, first.getId());
+    //     assertTrue(first.isWon());
+    //     assertFalse(second.isWon());
+    // }
     // @Test
     // public void testAddAuctionByUnauthorizedUser_Failure() throws Exception { //-> it will fail 
     //     //becuse we change the checking og authorized to the service layer

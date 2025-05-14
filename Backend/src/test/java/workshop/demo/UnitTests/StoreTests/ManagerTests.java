@@ -82,7 +82,7 @@ public class ManagerTests {
                 -> repository.checkToAddManager(storeId, owner1, managerId)
         );
 
-        assertEquals("this worker is already an owner/manager", exception.getMessage());
+        assertEquals("This worker is already an owner/manager", exception.getMessage());
     }
 
     @Test
@@ -94,7 +94,7 @@ public class ManagerTests {
             repository.deleteManager(storeId, owner1, owner2);
         });
 
-        assertEquals("this user: {} is not a manager in this store", exception.getMessage());
+        assertEquals("Manager not found", exception.getMessage());
     }
 
     @Test
@@ -115,7 +115,7 @@ public class ManagerTests {
             repository.deleteManager(storeId, owner1, manager1);
         });
 
-        assertEquals(String.format("this owner: {} can't change manager's issue: {}", owner1, manager1),
+        assertEquals(String.format("Owner does not have permission to delete this manager", owner1, manager1),
                 exception.getMessage());
     }
 
@@ -156,7 +156,7 @@ public class ManagerTests {
             repository.changePermissions(owner2.getMyId(), newManagerId, storeId, updatedPermissions);
         });
 
-        assertEquals(String.format("this owner: {} can't change manager's issue: {}", owner2, newManagerId),
+        assertEquals(String.format("Owner does not have permission to change this manager", owner2, newManagerId),
                 exception.getMessage());
 
     }
