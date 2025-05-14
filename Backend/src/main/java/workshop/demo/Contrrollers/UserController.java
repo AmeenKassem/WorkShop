@@ -156,17 +156,5 @@ public class UserController {
         return res.toJson();
     }
 
-    // @PutMapping("/updateProfile")
-    // public String updateProfile(@RequestParam String token) {
-    //     Response<String> res;
-    //     try {
-    //         userService.updateProfile(token);
-    //         res = new Response<>("done", null);
-    //     } catch (UIException ex) {
-    //         res = new Response<>(null, ex.getMessage(), ex.getNumber());
-    //     } catch (Exception e) {
-    //         res = new Response<>(null, e.getMessage(), -1);
-    //     }
-    //     return res.toJson();
-    // }''
+    
 }
