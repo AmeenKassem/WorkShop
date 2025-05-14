@@ -18,3 +18,53 @@
     margin-top: 0.3rem;
     white-space: pre-line;
 }
+.button-row {
+    display: flex;
+    justify-content: flex-start;
+    gap: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    padding-left: 1rem;
+}
+
+.home-button {
+    background-color: #333;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+.store-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.store-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.store-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.store-card h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.store-card p {
+    margin: 0.5rem 0 0 0;
+    color: #555;
+    font-size: 0.95rem;
+}

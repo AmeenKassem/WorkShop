@@ -1,5 +1,9 @@
 package workshop.demo.PresentationLayer.Presenter;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -8,8 +12,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -17,6 +25,7 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.PresentationLayer.View.LoginView;
 import workshop.demo.PresentationLayer.View.MainLayout;
 import workshop.demo.PresentationLayer.View.RegisterView;
