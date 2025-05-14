@@ -41,7 +41,7 @@ public class PurcheseContoller {
     public String buyGuestCart(@RequestParam String token,
             @RequestParam String paymentJson,
             @RequestParam String supplyJson) {
-        Response<ReceiptDTO[]> res;
+        ApiResponse<ReceiptDTO[]> res;
         try {
             PaymentDetails paymentdetails = PaymentDetails.getPaymentDetailsFromJSON(paymentJson);
             SupplyDetails supplydetails = SupplyDetails.getSupplyDetailsFromJSON(supplyJson);
