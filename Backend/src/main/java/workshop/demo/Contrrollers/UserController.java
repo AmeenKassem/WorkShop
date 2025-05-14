@@ -110,18 +110,18 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    public String logoutUser(@RequestParam String token
+    public ResponseEntity<?> logoutUser(@RequestParam String token
     ) {
-        ApiResponse<String> res;
         try {
             String newToken = userService.logoutUser(token);
-            res = new ApiResponse<>(newToken, null);
+            return ResponseEntity.ok(new ApiResponse<>(newToken, null));
         } catch (UIException ex) {
-            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
     @PostMapping("/setAdmin")

@@ -20,12 +20,34 @@
 }
 .button-row {
     display: flex;
-    justify-content: flex-start;
+    justify-content: flex-end;
     gap: 1rem;
     margin-top: 1rem;
     margin-bottom: 1rem;
-    padding-left: 1rem;
+    padding-right: 1rem;
 }
+/* .right-button-column {
+    position: absolute;
+    right: 1.5rem;
+    top: 5rem;
+} */
+
+.right-button {
+    background-color: #333;
+    color: white;
+    border-radius: 8px;
+    font-weight: bold;
+    padding: 0.4rem 1rem;
+    width: fit-content;
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+}
+
+.right-button:hover {
+    background-color: #555;
+}
+
 
 .home-button {
     background-color: #333;

@@ -1,9 +1,5 @@
 package workshop.demo.PresentationLayer.Presenter;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -12,23 +8,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
-import workshop.demo.DTOs.StoreDTO;
-import workshop.demo.PresentationLayer.View.LoginView;
 import workshop.demo.PresentationLayer.View.MainLayout;
-import workshop.demo.PresentationLayer.View.RegisterView;
 
 public class initPresenter {
 
@@ -39,18 +27,19 @@ public class initPresenter {
         this.view = view;
         this.restTemplate = new RestTemplate();
         createHeader();
-        //initGuestIfNeeded();
+        initGuestIfNeeded();
 
     }
 
-    // private void initGuestIfNeeded() {
-    //     Object token = VaadinSession.getCurrent().getAttribute("auth-token");
-    //     Object role = VaadinSession.getCurrent().getAttribute("auth-role");
-    //     // If no token exists, this is a first-time guest
-    //     if (token == null || !"guest".equals(role)) {
-    //         connectAsGuest();
-    //     }
-    // }
+    private void initGuestIfNeeded() {
+        Object token = VaadinSession.getCurrent().getAttribute("auth-token");
+        Object role = VaadinSession.getCurrent().getAttribute("user-type");
+        // If no token exists, this is a first-time guest
+        if (token == null) {
+            connectAsGuest();
+        }
+    }
+
     private void connectAsGuest() {
         try {
             String url = "http://localhost:8080/api/users/generateGuest";
@@ -69,7 +58,7 @@ public class initPresenter {
                 String guestToken = (String) body.getData();
 
                 VaadinSession.getCurrent().setAttribute("auth-token", guestToken);
-                VaadinSession.getCurrent().setAttribute("auth-role", "guest");
+                VaadinSession.getCurrent().setAttribute("user-type", "guest");
 
                 System.out.println("Guest token stored: " + guestToken);
             } else {
@@ -84,7 +73,8 @@ public class initPresenter {
 
     public void handleOnAttach(String endpoint, Object user) {
         // Log who is currently attached to the UI
-        connectAsGuest();
+        initGuestIfNeeded();
+        //connectAsGuest();
 
     }
 

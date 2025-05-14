@@ -70,6 +70,7 @@ public class LoginPresenter {
                 String newUserToken = (String) body.getData();
 
                 VaadinSession.getCurrent().setAttribute("auth-token", newUserToken);
+                VaadinSession.getCurrent().setAttribute("user-type", "user");
                 view.showSuccess("Logged in successfully!");
                 UI.getCurrent().navigate("");
             } else {
