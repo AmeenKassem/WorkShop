@@ -217,7 +217,7 @@ public class StoreController {
         return res.toJson();
     }
 
-    @GetMapping("/getstreDTO")
+    @GetMapping("/getstoreDTO")
     public String getStoreDTO(@RequestParam String token,@RequestParam int storeId) {
         Response<StoreDTO> res;
         try {
