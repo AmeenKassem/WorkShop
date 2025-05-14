@@ -15,6 +15,8 @@ import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -84,7 +86,8 @@ public class StockService {
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         SingleBid bid = stockRepo.bidOnAuction(storeId, userId, auctionId, price);
-        userRepo.addBidToAuctionCart(bid);
+        UserSpecialItemCart specialItem =new UserSpecialItemCart(storeId,bid.getSpecialId(),bid.getId(),SpecialType.Auction); 
+        userRepo.addSpecialItemToCart(specialItem, userId);
         logger.info("Bid placed successfully by user: {} on auction: {}", userId, auctionId);
         return true;
 
@@ -97,7 +100,8 @@ public class StockService {
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         SingleBid bid = stockRepo.bidOnBid(bitId, price, userId, storeId);
-        userRepo.addBidToRegularCart(bid);
+        UserSpecialItemCart specialItem =new UserSpecialItemCart(storeId,bid.getSpecialId(),bid.getId(),SpecialType.BID); 
+        userRepo.addSpecialItemToCart(specialItem, userId);
         logger.info("Regular bid successful by user: {}", userId);
         return true;
 
@@ -205,6 +209,8 @@ public class StockService {
         }
         return stockRepo.getRandomsInStore(storeId);
     }
+
+    
 
     //stock managment:
     public List<ItemStoreDTO> getProductsInStore(int storeId) throws UIException, DevException {
