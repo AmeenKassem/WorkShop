@@ -70,6 +70,7 @@ public class RegisterPresenter {
             if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
                 Boolean success = (Boolean) body.getData();
                 if (Boolean.TRUE.equals(success)) {
+
                     view.showSuccess("Registered successfully!");
                     UI.getCurrent().navigate("login"); // go to login page
                 } else {

@@ -45,6 +45,10 @@ public class LoginPresenter {
                 UriUtils.encodeQueryParam(username, StandardCharsets.UTF_8),
                 UriUtils.encodeQueryParam(password, StandardCharsets.UTF_8)
         );
+        System.out.println("Username: " + username);
+        System.out.println("Password: " + password);
+        System.out.println("Guest token: " + guestToken);
+        System.out.println("Final URL: " + url);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED); // Optional here, since no body is sent
@@ -60,6 +64,8 @@ public class LoginPresenter {
             );
 
             ApiResponse body = response.getBody();
+            System.out.println("Response body: " + new ObjectMapper().writeValueAsString(body));
+
             if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
                 String newUserToken = (String) body.getData();
 

@@ -30,28 +30,26 @@ public class LoginView extends VerticalLayout {
         title.addClassName("login-title");
 
         // Username
-        TextField username = new TextField("Username:");
-        username.addClassName("login-field");
+        usernameField.setLabel("Username:");
+        usernameField.addClassName("login-field");
 
         // Password
-        PasswordField password = new PasswordField("Password:");
-        password.addClassName("login-field");
+        passwordField.setLabel("Password:");
+        passwordField.addClassName("login-field");
 
         // Login button
-        Button loginButton = new Button("Login");
         loginButton.addClassName("login-button");
 
         loginButton.addClickListener(e -> {
-            String user = username.getValue();
-            String pass = password.getValue();
-            this.presenter.login();
+            String user = getUsername();
+            String pass = getPassword();
             System.out.println("Attempt login: " + user + "/" + pass);
+            this.presenter.login();
         });
 
         // Form layout
-        VerticalLayout form = new VerticalLayout(title, username, password, loginButton);
+        VerticalLayout form = new VerticalLayout(title, usernameField, passwordField, loginButton);
         form.addClassName("login-form");
-
         add(form);
 
     }
