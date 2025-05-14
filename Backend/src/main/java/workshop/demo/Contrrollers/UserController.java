@@ -1,6 +1,8 @@
 package workshop.demo.Contrrollers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -53,11 +55,11 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public String register(@RequestParam String token,
+    public ResponseEntity<ApiResponse<Boolean>> register(@RequestParam String token,
                            @RequestParam String username,
                            @RequestParam String password,
                            @RequestParam int age) {
-        Response<Boolean> res;
+        ApiResponse<Boolean> res;
         try {
             userService.register(token, username, password, age);
             return ResponseEntity
@@ -173,12 +175,12 @@ public class UserController {
 
     @GetMapping("/getuserdto")
     public String getUserDTO(@RequestParam String token) {
-        Response<UserDTO> res;
+        ApiResponse<UserDTO> res;
         try {
             UserDTO dto = userService.getUserDTO(token);
-            res = new Response<>(dto, null);
+            res = new ApiResponse<>(dto, null);
         }catch (UIException e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            res = new ApiResponse<>(null, e.getMessage(), -1);
         }
         return res.toJson();
     }

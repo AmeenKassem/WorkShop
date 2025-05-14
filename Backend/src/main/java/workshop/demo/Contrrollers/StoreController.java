@@ -219,12 +219,12 @@ public class StoreController {
 
     @GetMapping("/getstoreDTO")
     public String getStoreDTO(@RequestParam String token,@RequestParam int storeId) {
-        Response<StoreDTO> res;
+        ApiResponse<StoreDTO> res;
         try {
             StoreDTO dto = storeService.getStoreDTO(token , storeId);
-            res = new Response<>(dto, null);
+            res = new ApiResponse<>(dto, null);
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            res = new ApiResponse<>(null, e.getMessage(), -1);
         }
         return res.toJson();
     }
