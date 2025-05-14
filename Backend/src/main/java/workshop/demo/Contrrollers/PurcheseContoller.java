@@ -39,15 +39,14 @@ public class PurcheseContoller {
     // because they are not in the same class
     @PostMapping("/guest")
     public String buyGuestCart(@RequestParam String token,
-            @RequestParam String address,
-            @RequestParam String city,
-            @RequestParam String state,
-            @RequestParam String zipCode,
-            @RequestBody PaymentDetails payment) {
-        ApiResponse<ReceiptDTO[]> res;
+            @RequestParam String paymentJson,
+            @RequestParam String supplyJson) {
+        Response<ReceiptDTO[]> res;
         try {
-            SupplyDetails supply = new SupplyDetails(address, city, state, zipCode);
-            ReceiptDTO[] receipts = purchaseService.buyGuestCart(token, payment, supply);
+            PaymentDetails paymentdetails = PaymentDetails.getPaymentDetailsFromJSON(paymentJson);
+            SupplyDetails supplydetails = SupplyDetails.getSupplyDetailsFromJSON(supplyJson);
+
+            ReceiptDTO[] receipts = purchaseService.buyGuestCart(token, paymentdetails, supplydetails);
             res = new ApiResponse<>(receipts, null);
         } catch (UIException e) {
             res = new ApiResponse<>(null, e.getMessage(), e.getNumber());
