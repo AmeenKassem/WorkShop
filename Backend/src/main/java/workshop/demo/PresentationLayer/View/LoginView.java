@@ -24,11 +24,38 @@ public class LoginView extends VerticalLayout {
     public LoginView() {
         addClassName("login-view");
 
-        add(new H1("Login"), usernameField, passwordField, loginButton);
-
         presenter = new LoginPresenter(this);
+        // Title
+        H1 title = new H1("Login to your account");
+        title.addClassName("login-title");
 
-        loginButton.addClickListener(event -> presenter.login());
+        // Username
+        TextField username = new TextField("Username:");
+        username.addClassName("login-field");
+
+        // Password
+        PasswordField password = new PasswordField("Password:");
+        password.addClassName("login-field");
+
+        // Login button
+        Button loginButton = new Button("Login");
+        loginButton.addClassName("login-button");
+
+        loginButton.addClickListener(e -> {
+            String user = username.getValue();
+            String pass = password.getValue();
+
+            // TODO: Call your presenter/service logic here
+            this.presenter.login();
+            System.out.println("Attempt login: " + user + "/" + pass);
+        });
+
+        // Form layout
+        VerticalLayout form = new VerticalLayout(title, username, password, loginButton);
+        form.addClassName("login-form");
+
+        add(form);
+
     }
 
     public String getUsername() {
@@ -44,6 +71,6 @@ public class LoginView extends VerticalLayout {
     }
 
     public void showError(String msg) {
-        Notification.show("❌ " + msg, 4000, Notification.Position.MIDDLE);
+        Notification.show("❌ " + msg, 5000, Notification.Position.MIDDLE);
     }
 }

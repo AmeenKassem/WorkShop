@@ -1,4 +1,4 @@
-package workshop.demo.PresentationLayer.Models;
+package workshop.demo.PresentationLayer.Requests;
 
 public class LoginRequest {
 

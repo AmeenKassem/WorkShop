@@ -7,7 +7,10 @@ public class ApiResponse<T> {
 
     private T data;
     private String errorMsg;
-    private int errNumber;
+    private int errNumber = -1;
+
+    public ApiResponse() {
+    } // Required for deserialization
 
     public ApiResponse(T data, String errorMsg) {
         this.data = data;

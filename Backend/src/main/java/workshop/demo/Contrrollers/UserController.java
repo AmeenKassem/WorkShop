@@ -17,6 +17,7 @@ import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.PresentationLayer.Requests.LoginRequest;
 
 @RestController
 @RequestMapping("/api/users")
@@ -38,7 +39,7 @@ public class UserController {
     }
 
     @GetMapping("/generateGuest")
-    public ResponseEntity<ApiResponse<String>> generateGuest() {
+    public ResponseEntity<?> generateGuest() {
         try {
             String token = userService.generateGuest();
             return ResponseEntity.ok(new ApiResponse<>(token, null));
@@ -74,13 +75,10 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<String>> login(@RequestParam String token,
-            @RequestParam String username,
-            @RequestParam String password
+    public ResponseEntity<?> login(@RequestBody LoginRequest request
     ) {
-        ApiResponse<String> res;
         try {
-            String data = userService.login(token, username, password);//data new token for user
+            String data = userService.login(request.getToken(), request.getUsername(), request.getPassword());//data new token for user
             return ResponseEntity.ok(new ApiResponse<>(data, null)); // success: return new token
         } catch (UIException ex) {
             return ResponseEntity

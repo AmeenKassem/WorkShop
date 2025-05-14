@@ -10,7 +10,7 @@ import com.vaadin.flow.router.Route;
 
 import workshop.demo.PresentationLayer.Presenter.RegisterPresenter;
 
-@Route("register")
+@Route(value = "register", layout = MainLayout.class)
 @CssImport("./Theme/registerTheme.css")  //this links the CSS file
 public class RegisterView extends VerticalLayout {
 
