@@ -1,7 +1,20 @@
 .app-header {
-  background-color: #f8f8f8;
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #ccc;
+    padding: 1rem 2rem;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.market-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0;
+    color: #222;
+}
+
+.market-subtitle {
+    font-size: 0.9rem;
+    color: #555;
+    text-align: center;
+    margin-top: 0.3rem;
+    white-space: pre-line;
 }
