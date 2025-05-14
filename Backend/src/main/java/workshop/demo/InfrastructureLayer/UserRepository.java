@@ -59,7 +59,7 @@ public class UserRepository implements IUserRepo {
         if (userExist(username)) {
 
             throw new UIException("another user try to register with used username", ErrorCodes.USERNAME_USED);
-        
+        }
         String encPass = encoder.encodePassword(password);
         int id = idGen.getAndIncrement();
         Registered userToAdd = new Registered(id, username, encPass, age);
