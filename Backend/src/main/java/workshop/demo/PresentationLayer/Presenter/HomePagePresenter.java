@@ -47,14 +47,14 @@ public class HomePagePresenter {
         Div card = new Div();
         card.addClassName("store-card");
 
-        H3 name = new H3(store.getName());
-        Paragraph rank = new Paragraph("⭐ Rank: " + store.getRank());
-        Paragraph category = new Paragraph("🏷️ Category: " + store.getCategory());
+        H3 name = new H3(store.storeName);
+        Paragraph rank = new Paragraph("⭐ Rank: " + store.finalRating);
+        Paragraph category = new Paragraph("🏷️ Category: " + store.category);
 
         card.add(name, rank, category);
 
         card.addClickListener(e
-                -> UI.getCurrent().navigate("store/" + store.getId()));
+                -> UI.getCurrent().navigate("store/" + store.storeId));
 
         return card;
     }
