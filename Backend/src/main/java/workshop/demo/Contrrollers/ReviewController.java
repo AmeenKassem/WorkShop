@@ -2,6 +2,8 @@ package workshop.demo.Contrrollers;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import workshop.demo.ApplicationLayer.ReviewService;
+import workshop.demo.DTOs.ReviewDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 @RestController
@@ -22,65 +25,68 @@ public class ReviewController {
     }
 
     @PostMapping("/addToProduct")
-    public String addReviewToProduct(@RequestParam String token,
+    public ResponseEntity<?> addReviewToProduct(@RequestParam String token,
             @RequestParam int storeId,
             @RequestParam int productId,
             @RequestParam String review) {
-        ApiResponse<String> res;
         try {
             reviewService.AddReviewToProduct(token, storeId, productId, review);
-            res = new ApiResponse<>("review added to product successfully", null);
+            return ResponseEntity.ok(new ApiResponse<>("review added to product successfully", null));
+
         } catch (UIException ex) {
-            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
+
     }
 
     @PostMapping("/addToStore")
-    public String addReviewToStore(@RequestParam String token,
+    public ResponseEntity<?> addReviewToStore(@RequestParam String token,
             @RequestParam int storeId,
             @RequestParam String review) {
-        ApiResponse<String> res;
         try {
             reviewService.AddReviewToStore(token, storeId, review);
-            res = new ApiResponse<>("review added to store successfully", null);
+            return ResponseEntity.ok(new ApiResponse<>("review added to product successfully", null));
         } catch (UIException ex) {
-            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
     @GetMapping("/getProductReviews")
-    public String getProductReviews(@RequestParam int storeId,
+    public ResponseEntity<?> getProductReviews(@RequestParam int storeId,
             @RequestParam int productId) {
-        ApiResponse<List<String>> res;
+
         try {
-            List<String> reviews = reviewService.getReviewsForProduct(storeId, productId);
-            res = new ApiResponse<>(reviews, null);
+            List<ReviewDTO> reviews = reviewService.getReviewsForProduct(storeId, productId);
+            return ResponseEntity.ok(new ApiResponse<>(reviews, null));
         } catch (UIException ex) {
-            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
     @GetMapping("/getStoreReviews")
-    public String getStoreReviews(@RequestParam int storeId) {
-        ApiResponse<List<String>> res;
+    public ResponseEntity<?> getStoreReviews(@RequestParam int storeId) {
         try {
-            List<String> reviews = reviewService.getReviewsForStore(storeId);
-            res = new ApiResponse<>(reviews, null);
+            List<ReviewDTO> reviews = reviewService.getReviewsForStore(storeId);
+            return ResponseEntity.ok(new ApiResponse<>(reviews, null));
         } catch (UIException ex) {
-            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
 }

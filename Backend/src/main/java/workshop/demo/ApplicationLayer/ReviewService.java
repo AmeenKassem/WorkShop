@@ -1,20 +1,22 @@
 package workshop.demo.ApplicationLayer;
 
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-// import workshop.demo.DTOs.MessageDTO;
+import workshop.demo.DTOs.ReviewDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Review.IReviewRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.User.IUserRepo;
+
 @Service
 public class ReviewService {
+
     private IReviewRepo reviewRepo;
     private IAuthRepo authRepo;
     private IUserRepo userRepo;
@@ -35,7 +37,8 @@ public class ReviewService {
         logger.info("about to add review to product: {} in store: {}", productId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         storeRepo.checkStoreExistance(storeId);
-        reviewRepo.AddReviewToProduct(storeId, productId, review);
+
+        reviewRepo.AddReviewToProduct(storeId, productId, authRepo.getUserId(token), authRepo.getUserName(token), review);
         logger.info("added review successfully!");
         return true;
     }
@@ -44,17 +47,17 @@ public class ReviewService {
         logger.info("about to add review to store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         storeRepo.checkStoreExistance(storeId);
-        reviewRepo.AddReviewToStore(storeId, review);
+        reviewRepo.AddReviewToStore(storeId, authRepo.getUserId(token), authRepo.getUserName(token), review);
         logger.info("added review successfully!");
         return true;
     }
 
-    public List<String> getReviewsForStore(int storeId) throws UIException {
+    public List<ReviewDTO> getReviewsForStore(int storeId) throws UIException {
         storeRepo.checkStoreExistance(storeId);
         return reviewRepo.getReviewsForStore(storeId);
     }
 
-    public List<String> getReviewsForProduct(int storeId, int productId) throws UIException {
+    public List<ReviewDTO> getReviewsForProduct(int storeId, int productId) throws UIException {
         storeRepo.checkStoreExistance(storeId);
         return reviewRepo.getReviewsForProduct(storeId, productId);
     }
