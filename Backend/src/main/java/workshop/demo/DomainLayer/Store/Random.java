@@ -125,4 +125,20 @@ public class Random {
     public double getAmountLeft() {
         return amountLeft;
     }
+
+    public boolean userIsWinner(int userId) {
+       return isActive && winner.userId==userId;
+    }
+
+    public ParticipationInRandomDTO getWinner() {
+        return winner;
+    }
+
+    public ParticipationInRandomDTO getCard(int userId) {
+        return usersParticipations.get(userId);
+    }
+
+    public int getProductId() {
+        return productId;
+    }
 }

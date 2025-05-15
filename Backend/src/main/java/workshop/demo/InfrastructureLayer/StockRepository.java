@@ -1,6 +1,7 @@
 package workshop.demo.InfrastructureLayer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,6 +20,7 @@ import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -38,6 +40,7 @@ public class StockRepository implements IStockRepo {
     private ConcurrentHashMap<Integer, ActivePurcheses> storeId2ActivePurchases;//must be thread safe
     private ConcurrentHashMap<Category, List<Product>> allProducts;
     private ConcurrentHashMap<Integer, StoreStock> storeStocks;//storeId, stock of store    
+    
 
     @Autowired
     public StockRepository() {
@@ -70,7 +73,7 @@ public class StockRepository implements IStockRepo {
     }
 
     @Override
-    public Product findByIdInSystem(int productId) throws UIException {
+    public Product findByIdInSystem_throwException(int productId) throws UIException {
         for (List<Product> productList : allProducts.values()) {
             for (Product product : productList) {
                 if (product.getProductId() == productId) {
@@ -128,7 +131,7 @@ public class StockRepository implements IStockRepo {
     //why do we need that? if it's for review it to user -> it's wrong
     @Override
     public ProductDTO GetProductInfo(int productId) throws UIException {
-        Product product = findByIdInSystem(productId);
+        Product product = findByIdInSystem_throwException(productId);
         if (product == null) {
             return null;
         }
@@ -394,9 +397,45 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public void checkProductExists_ThrowException(int productId) throws UIException {
-        if (findByIdInSystem(productId) == null) {
+        if (findByIdInSystem_throwException(productId) == null) {
             throw new UIException("Product not found", ErrorCodes.PRODUCT_NOT_FOUND);
         }
+    }
+
+  
+
+    @Override
+    public ParticipationInRandomDTO getRandomCardIfWinner(int storeId, int specialId, int userId)  {
+        try{
+            return getActivePurchases(storeId).getRandomCardIfWinner(specialId, userId);
+        }catch(UIException ex){
+            return null;
+        }
+    }
+
+    @Override
+    public SingleBid getBidIfWinner(int storeId, int specialId, int bidId, SpecialType type) {
+        try{
+            return getActivePurchases(storeId).getBidIfWinner(specialId, bidId,type);
+        }catch(UIException ex){
+            return null;
+        }
+    }
+
+    @Override
+    public SingleBid getBid(int storeId, int specialId, int bidId, SpecialType type) throws UIException {
+       return  getActivePurchases(storeId).getBidWithId(specialId,bidId,type);
+    }
+
+    @Override
+    public String GetProductNameForBid(int storeId, int specialId, SpecialType type) throws UIException  {
+        int productId = getActivePurchases(storeId).getProductIdForSpecial(specialId, type);
+        return GetProductInfo(productId).getName();
+    }
+
+    @Override
+    public ParticipationInRandomDTO getRandomCard(int storeId, int specialId, int randomId)throws UIException  {
+       return  getActivePurchases(storeId).getCardWithId(specialId,randomId);
     }
 
 }

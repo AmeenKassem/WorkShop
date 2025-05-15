@@ -89,5 +89,24 @@ public class Auction {
         res.auctionId = this.auctionId;
         return res;
     }
+
+    public SingleBid getWinner() {
+        return winner;
+    }
+
+    public boolean bidIsWinner(int bidId) {
+       return winner!=null && winner.getId()==bidId;
+    }
+
+    public SingleBid getBid(int bidId) {
+        for (SingleBid singleBid : bids) {
+            if(singleBid.getId()==bidId)return singleBid;
+        }
+        return null;
+    }
+
+    public int getProductId() {
+        return productId;
+    }
 }
 // >>>>>>> main:Backend/src/main/java/workshop/demo/DomainLayer/Store/Auction.java

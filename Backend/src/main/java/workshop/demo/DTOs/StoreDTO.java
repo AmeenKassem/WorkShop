@@ -1,33 +1,17 @@
 package workshop.demo.DTOs;
 
 public class StoreDTO {
+    public int storeId;
+    public String storeName;
+    public String category;
+    public boolean active;
+    public int finalRating;
 
-    private int id;
-    private String storeName;
-    private String stroeCategory;
-    //please give me the final rank as I implemented it 
-    //with rounding so I can show it in 5 stars
-    private int finalRank;
-    // Getters and setters
-
-    public int getId() {
-        return id;
+    public StoreDTO(int storeId, String storeName, String category, boolean active, int finalRating) {
+        this.storeId = storeId;
+        this.storeName = storeName;
+        this.category = category;
+        this.active = active;
+        this.finalRating = finalRating;
     }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return storeName;
-    }
-
-    public double getRank() {
-        return finalRank;
-    }
-
-    public String getCategory() {
-        return stroeCategory;
-    }
-
 }

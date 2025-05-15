@@ -99,4 +99,26 @@ public class BID {
             return !isAccepted;
         }
     }
+
+    public boolean userIsWinner(int userId) {
+        return winner!=null && winner.getUserId()==userId;
+    }
+
+    public SingleBid getWinner() {
+        return winner;
+    }
+
+    public boolean bidIsWinner(int bidId2) {
+        
+        return getBid(bidId2).isAccepted();
+    }
+
+   
+    public SingleBid getBid(int bidId) {
+        return getBid(bidId);
+    }
+
+    public int getProductId() {
+        return productId;
+    }
 }

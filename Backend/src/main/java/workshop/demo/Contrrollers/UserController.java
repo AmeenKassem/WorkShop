@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 @RestController
@@ -27,9 +28,9 @@ public class UserController {
 
     @Autowired
     public UserController(Repos repos) {
-        this.userService = new UserService(repos.userRepo, repos.auth);
-        this.orderService = new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
-
+        this.userService = new UserService(repos.userRepo, repos.auth,repos.stockrepo);
+        this.orderService= new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
+        
     }
 
     @ModelAttribute
@@ -55,8 +56,10 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<Boolean>> register(@RequestParam String token,
-            @RequestParam String username,
-            @RequestParam String password, @RequestParam int age) {
+                           @RequestParam String username,
+                           @RequestParam String password,
+                           @RequestParam int age) {
+        ApiResponse<Boolean> res;
         try {
             userService.register(token, username, password, age);
             return ResponseEntity
@@ -169,4 +172,17 @@ public class UserController {
     //     }
     //     return res.toJson();
     // }''
+
+    @GetMapping("/getuserdto")
+    public String getUserDTO(@RequestParam String token) {
+        ApiResponse<UserDTO> res;
+        try {
+            UserDTO dto = userService.getUserDTO(token);
+            res = new ApiResponse<>(dto, null);
+        }catch (UIException e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
+    }
+    
 }

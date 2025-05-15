@@ -14,6 +14,7 @@ import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
+import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 
@@ -27,16 +28,16 @@ public class Suspendtests {
     private final AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
     private final IUserRepo userRepo = new UserRepository(encoder, adminInitilizer);
     private final UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-    private final UserService userService = new UserService(userRepo, authRepo);
+    private final UserService userService = new UserService(userRepo, authRepo,new StockRepository());
 
     @Test
     public void test_suspendRegisteredUser() throws Exception {
         String token = userService.generateGuest();
-        userService.register(token, "adminUser2", "adminPass2", 20);
+        userService.register(token, "adminUser2", "adminPass2",22);
         String token1 = userService.login(token, "adminUser2", "adminPass2");
         userService.setAdmin(token1, "123321", 2);
 
-        int userId = userRepo.registerUser("suspendedUser", "pass123", 20);
+        int userId = userRepo.registerUser("suspendedUser", "pass123",22);
 
         suspensionService.suspendRegisteredUser(userId, 1, token1);
         Assertions.assertTrue(suspensionService.isUserSuspended(userId));
@@ -47,7 +48,7 @@ public class Suspendtests {
     @Test
     public void test_suspendGuestUser() throws Exception {
         String token = userService.generateGuest();
-        userService.register(token, "adminUser3", "adminPass3", 20);
+        userService.register(token, "adminUser3", "adminPass3",22);
         String token1 = userService.login(token, "adminUser3", "adminPass3");
         userService.setAdmin(token1, "123321", 2);
 
@@ -62,11 +63,11 @@ public class Suspendtests {
     @Test
     public void test_pauseAndResumeSuspension_behavior() throws Exception {
         String token = userService.generateGuest();
-        userService.register(token, "adminUser7", "adminPass7", 20);
+        userService.register(token, "adminUser7", "adminPass7",22);
         String token1 = userService.login(token, "adminUser7", "adminPass7");
         userService.setAdmin(token1, "123321", 2);
 
-        int userId = userRepo.registerUser("basicPauseUser", "pass123", 20);
+        int userId = userRepo.registerUser("basicPauseUser", "pass123",22);
 
         suspensionService.suspendRegisteredUser(userId, 10, token1);
         Assertions.assertTrue(suspensionService.isUserSuspended(userId));
@@ -81,11 +82,11 @@ public class Suspendtests {
     @Test
     public void test_pausePreventsExpirationAndRemovesAfterResume() throws Exception {
         String token = userService.generateGuest();
-        userService.register(token, "adminUser10", "adminPass10", 20);
+        userService.register(token, "adminUser10", "adminPass10",22);
         String token1 = userService.login(token, "adminUser10", "adminPass10");
         userService.setAdmin(token1, "123321", 2);
 
-        int userId = userRepo.registerUser("pausePreventExpireUser", "pass123", 20);
+        int userId = userRepo.registerUser("pausePreventExpireUser", "pass123",22);
 
         suspensionService.suspendRegisteredUser(userId, 1, token1);
         Assertions.assertTrue(suspensionService.isUserSuspended(userId));
@@ -108,11 +109,11 @@ public class Suspendtests {
     @Test
     public void test_failure_userNotSuspendedButExpectedToBe() throws Exception {
         String token = userService.generateGuest();
-        userService.register(token, "adminFail1", "failPass1", 20);
+        userService.register(token, "adminFail1", "failPass1",22);
         String token1 = userService.login(token, "adminFail1", "failPass1");
         userService.setAdmin(token1, "123321", 2);
 
-        int userId = userRepo.registerUser("failUser1", "failPass1", 20);
+        int userId = userRepo.registerUser("failUser1", "failPass1",22);
         suspensionService.suspendRegisteredUser(10, 1, token1);
 
         Assertions.assertFalse(suspensionService.isUserSuspended(userId),
@@ -123,11 +124,11 @@ public class Suspendtests {
     @Test
     public void test_failure_wrongAdminKey() throws Exception {
         String token = userService.generateGuest();
-        userService.register(token, "adminFail2", "failPass2", 20);
+        userService.register(token, "adminFail2", "failPass2",22);
         String token1 = userService.login(token, "adminFail2", "failPass2");
         userService.setAdmin(token1, "1233321", 2);
 
-        int userId = userRepo.registerUser("failUser2", "failPass2", 20);
+        int userId = userRepo.registerUser("failUser2", "failPass2",22);
 
         // Attempting with wrong token (simulated as "WRONG_TOKEN")
         assertThrows(UIException.class, () -> {

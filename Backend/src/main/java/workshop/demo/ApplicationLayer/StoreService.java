@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.OrderDTO;
+import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -204,5 +205,14 @@ public class StoreService {
 
     public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws Exception {
         throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    public StoreDTO getStoreDTO(String token, int storeId) throws UIException {
+    logger.info("User attempting to get StoreDTO for store {}", storeId);
+    authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    int userId = authRepo.getUserId(token);
+    userRepo.checkUserRegisterOnline_ThrowException(userId);
+    storeRepo.checkStoreExistance(storeId);
+    return storeRepo.getStoreDTO(storeId);
     }
 }

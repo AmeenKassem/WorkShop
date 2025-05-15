@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.DTOs.OrderDTO;
+import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
@@ -228,4 +229,15 @@ public class StoreController {
         throw new UnsupportedOperationException("This operation is not supported.");
     }
 
+    @GetMapping("/getstoreDTO")
+    public String getStoreDTO(@RequestParam String token,@RequestParam int storeId) {
+        ApiResponse<StoreDTO> res;
+        try {
+            StoreDTO dto = storeService.getStoreDTO(token , storeId);
+            res = new ApiResponse<>(dto, null);
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
+    }
 }
