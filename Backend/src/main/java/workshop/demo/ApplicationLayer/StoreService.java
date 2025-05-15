@@ -78,6 +78,7 @@ public class StoreService {
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         suConnectionRepo.checkToAddOwner(storeId, ownerId, newOwnerId);
+        //
         logger.info("Sending ownership approval request from {} to {}", ownerId, newOwnerId);
         boolean approved = sendMessageToTakeApproval(ownerId, newOwnerId);
         if (!approved) {
@@ -85,6 +86,7 @@ public class StoreService {
             return -1;
 
         }
+
         suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
         logger.info("Successfully added user {} as owner to store {} by user {}", newOwnerId, storeId, ownerId);
         return newOwnerId;
