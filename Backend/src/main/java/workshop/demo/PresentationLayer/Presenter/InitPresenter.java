@@ -77,42 +77,9 @@ public class initPresenter {
         // Log who is currently attached to the UI
         connectAsGuest();
 
-        // System.out.println("📌 MainLayout attached");
-        // System.out.println("   ➤ Role: " + role);
-        // System.out.println("   ➤ Token: " + token);
-        // If you plan to use a WebSocket notification system later, this is where you'd connect:
-        // notificationHandler.connect(endpoint, user.toString());
-        // Optional: redirect logic
-        // if ("guest".equals(role)) {
-        //     UI.getCurrent().navigate("login"); // or show a banner
-        // }
     }
 
     private void createHeader() {
-        // H1 logo = new H1("🛒 Click Market");
-        // logo.addClassName("market-title");
-        // Paragraph subtitle = new Paragraph(
-        //         "Welcome to our market. We bring the best stores and products to your fingertips.\n"
-        //         + "Join us and be an owner of your own store in a few clicks."
-        // );
-        // subtitle.addClassName("market-subtitle");
-
-        // RouterLink login = new RouterLink("Login", LoginView.class);
-        // RouterLink register = new RouterLink("Register", RegisterView.class);
-        // RouterLink MyCart = new RouterLink("My Cart", LoginView.class);
-        // login.addClassName("header-button");
-        // register.addClassName("header-button");
-        // MyCart.addClassName("header-button");
-        // HorizontalLayout buttonLayout = new HorizontalLayout(login, register, MyCart);
-        // buttonLayout.addClassName("header-left");
-        // HorizontalLayout header = new HorizontalLayout(buttonLayout);
-        // header.setWidthFull();
-        // header.setAlignItems(FlexComponent.Alignment.CENTER);
-        // header.addClassName("app-header");
-        // // Add both title and button layout
-        // header.add(logo, buttonLayout, subtitle);
-        // this.view.addToNavbar(header);
-        // Title and subtitle
         H1 logo = new H1("🛒 Click Market");
         logo.addClassName("market-title");
 

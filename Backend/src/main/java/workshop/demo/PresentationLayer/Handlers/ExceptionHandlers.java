@@ -11,7 +11,7 @@ public class ExceptionHandlers {
 
     static {
         errorMessages.put(ErrorCodes.INVALID_TOKEN, "Invalid session. Please log in again.");
-        errorMessages.put(ErrorCodes.USER_NOT_FOUND, "User not found.");
+        errorMessages.put(ErrorCodes.USER_NOT_FOUND, "User not found, MUST register first.");
         errorMessages.put(ErrorCodes.WRONG_PASSWORD, "Incorrect password. Please try again.");
         errorMessages.put(ErrorCodes.NO_PERMISSION, "You do not have permission to perform this action.");
         errorMessages.put(ErrorCodes.STORE_NOT_FOUND, "Store could not be found.");
