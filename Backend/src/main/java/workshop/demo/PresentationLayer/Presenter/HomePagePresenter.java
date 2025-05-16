@@ -5,21 +5,25 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.HomePage;
+
 
 public class HomePagePresenter {
 
@@ -81,6 +85,14 @@ public class HomePagePresenter {
                     view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
 
                 }
+                
+                // Clear session and redirect
+                UI.getCurrent().getPage().executeJs("window.closeNotificationSocket();");
+                VaadinSession.getCurrent().getSession().invalidate();
+                UI.getCurrent().navigate("login");
+                System.out.println("session invalidated");
+
+
             } catch (HttpClientErrorException e) {
                 try {
                     String responseBody = e.getResponseBodyAsString();
@@ -99,6 +111,9 @@ public class HomePagePresenter {
                 view.showError("UNEXPECTED ERROR: " + e.getMessage());
 
             }
+
+                
+
         }
 
         // Clear session and redirect

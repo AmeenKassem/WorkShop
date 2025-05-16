@@ -28,11 +28,12 @@ public class SocketHandler extends TextWebSocketHandler {
 
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+		System.out.println("Connection established: " + session.getId());
 		String query = session.getUri().getQuery();
 		String username = null;
 		if (query != null && query.startsWith("username=")) {
 			username = query.substring("username=".length());
-		}
+		} 
 
 		if (username != null) {
 			sessions.computeIfAbsent(username, k -> new ArrayList<>()).add(session);
@@ -47,6 +48,7 @@ public class SocketHandler extends TextWebSocketHandler {
 
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+
 		String query = session.getUri().getQuery();
 		String username = null;
 		if (query != null && query.startsWith("username=")) {
