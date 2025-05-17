@@ -79,27 +79,27 @@ public class StoreService {
         return json.toJson();
     }
 
-    public void MakeofferToAddOwnershipToStore(int storeId, String token, int newOwnerId) throws Exception, DevException {
-        logger.info("User attempting to add a new owner (userId: {}) to store {}", newOwnerId, storeId);
+    public void MakeofferToAddOwnershipToStore(int storeId, String token, String newOwnerName) throws Exception, DevException {
+        logger.info("User attempting to add a new owner (userId: {}) to store {}", newOwnerName, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(ownerId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
+        int newOwnerId = userRepo.getRegisteredUserByName(newOwnerName).getId();
         userRepo.checkUserRegister_ThrowException(newOwnerId);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         suConnectionRepo.checkToAddOwner(storeId, ownerId, newOwnerId);
         logger.info("Making an offer to be a store owner from {} to {}", ownerId, newOwnerId);
         String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
-        String nameNew = this.userRepo.getRegisteredUser(newOwnerId).getUsername();
         String storeName = this.storeRepo.getStoreNameById(storeId);
-        String Message = "In store:{}, the owner:{} is offering you:{} to be an owner of this store" + storeName + owner + nameNew;
-        String jssonMessage = convertNotificationToJson(Message, nameNew, NotificationDTO.NotificationType.OFFER, true);
-        this.notiRepo.sendDelayedMessageToUser(nameNew, jssonMessage);
+        String Message = "In store:{}, the owner:{} is offering you:{} to be an owner of this store" + storeName + owner + newOwnerName;
+        String jssonMessage = convertNotificationToJson(Message, newOwnerName, NotificationDTO.NotificationType.OFFER, true);
+        this.notiRepo.sendDelayedMessageToUser(newOwnerName, jssonMessage);
         suConnectionRepo.makeOffer(storeId, ownerId, ownerId, true, null, Message);
     }
 
-    public void reciveAnswerToOffer(int stroeId, String senderName, String recievierName, boolean answer) {
+    public void reciveAnswerToOffer(int stroeId, String senderName, String recievierName, boolean answer) throws Exception {
 
     }
 
@@ -128,13 +128,14 @@ public class StoreService {
         logger.info("Successfully removed owner {} from store {} by {}", ownerToDelete, storeId, ownerId);
     }
 
-    public void MakeOfferToAddManagerToStore(int storeId, String token, int managerId, List<Permission> authorization) throws Exception, DevException {
+    public void MakeOfferToAddManagerToStore(int storeId, String token, String managerName, List<Permission> authorization) throws Exception, DevException {
 
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
-        logger.info("User {} attempting to add manager {} to store {}", ownerId, managerId, storeId);
+        logger.info("User {} attempting to add manager {} to store {}", ownerId, managerName, storeId);
         userRepo.checkUserRegisterOnline_ThrowException(ownerId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
+        int managerId = userRepo.getRegisteredUserByName(managerName).getId();
         userRepo.checkUserRegister_ThrowException(managerId);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);

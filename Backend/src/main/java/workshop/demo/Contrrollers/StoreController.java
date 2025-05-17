@@ -20,7 +20,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 @RestController
-@RequestMapping("/store")
+@RequestMapping("/api/store")
 public class StoreController {
 
     private final StoreService storeService;
@@ -46,12 +46,27 @@ public class StoreController {
 
     }
 
+    @PostMapping("/respondToOffer")
+    public ResponseEntity<?> respondToOffer(
+            @RequestParam int storeId,
+            @RequestParam String senderName,
+            @RequestParam String receiverName,
+            @RequestParam boolean answer) {
+        try {
+            storeService.reciveAnswerToOffer(storeId, senderName, receiverName, answer);
+            return ResponseEntity.ok(new ApiResponse<>("Offer response recorded successfully", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
     @PostMapping("/makeOfferOwner")
     public ResponseEntity<?> addOwner(@RequestParam int storeId,
             @RequestParam String token,
-            @RequestParam int newOwnerId) {
+            @RequestParam String newOwner) {
         try {
-            storeService.MakeofferToAddOwnershipToStore(storeId, token, newOwnerId);
+            storeService.MakeofferToAddOwnershipToStore(storeId, token, newOwner);
             return ResponseEntity.ok(new ApiResponse<>("Owner added successfully", null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -80,10 +95,10 @@ public class StoreController {
     @PostMapping("/makeOfferManager")
     public ResponseEntity<?> addManager(@RequestParam int storeId,
             @RequestParam String token,
-            @RequestParam int managerId,
+            @RequestParam String managerName,
             @RequestBody List<Permission> permissions) {
         try {
-            storeService.MakeOfferToAddManagerToStore(storeId, token, managerId, permissions);
+            storeService.MakeOfferToAddManagerToStore(storeId, token, managerName, permissions);
             return ResponseEntity.ok(new ApiResponse<>("made an offer successfuly", null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));

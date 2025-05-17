@@ -1,6 +1,7 @@
 package workshop.demo.InfrastructureLayer;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -171,8 +172,6 @@ public class UserRepository implements IUserRepo {
         throw new UnsupportedOperationException("Unimplemented method 'removeItemFromGeustCart'");
     }
 
-    
-
     @Override
     public ShoppingCart getUserCart(int userId) {
         if (guests.containsKey(userId)) {
@@ -236,5 +235,13 @@ public class UserRepository implements IUserRepo {
             throw new RuntimeException(new UIException("User not found with ID: " + userId, ErrorCodes.USER_NOT_FOUND));
         }
     }
-}
 
+    @Override
+    public Registered getRegisteredUserByName(String name) {
+        Registered user = users.get(name);
+        if (user == null) {
+            throw new NoSuchElementException("No user found with username: " + name);
+        }
+        return user;
+    }
+}
