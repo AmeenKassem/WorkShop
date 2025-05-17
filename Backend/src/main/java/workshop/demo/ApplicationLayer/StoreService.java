@@ -29,6 +29,7 @@ import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import workshop.demo.DTOs.OfferDTO;
 
 @Service
 public class StoreService {
@@ -70,8 +71,9 @@ public class StoreService {
         return storeId;
     }
 
-    private String convertNotificationToJson(String message, String receiverName, NotificationDTO.NotificationType type, boolean toBeOwner) {
-        NotificationDTO dto = new NotificationDTO(message, receiverName, NotificationDTO.NotificationType.OFFER, toBeOwner);
+    private String convertNotificationToJson(String message, String receiverName, NotificationDTO.NotificationType type, boolean toBeOwner,
+            String senderName, int storeId) {
+        NotificationDTO dto = new NotificationDTO(message, receiverName, NotificationDTO.NotificationType.OFFER, toBeOwner, senderName, storeId);
         JsonObject json = Json.createObject();
         json.put("message", dto.getMessage());
         json.put("receiverName", dto.getReceiverName());
@@ -94,16 +96,23 @@ public class StoreService {
         String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
         String storeName = this.storeRepo.getStoreNameById(storeId);
         String Message = "In store:{}, the owner:{} is offering you:{} to be an owner of this store" + storeName + owner + newOwnerName;
-        String jssonMessage = convertNotificationToJson(Message, newOwnerName, NotificationDTO.NotificationType.OFFER, true);
+        String jssonMessage = convertNotificationToJson(Message, newOwnerName, NotificationDTO.NotificationType.OFFER, true, owner, storeId);
         this.notiRepo.sendDelayedMessageToUser(newOwnerName, jssonMessage);
         suConnectionRepo.makeOffer(storeId, ownerId, ownerId, true, null, Message);
     }
 
-    public void reciveAnswerToOffer(int stroeId, String senderName, String recievierName, boolean answer) throws Exception {
-
+    public void reciveAnswerToOffer(int storeId, String senderName, String recievierName, boolean answer, boolean toBeOwner) throws Exception {
+        int senderId = userRepo.getRegisteredUserByName(senderName).getId();
+        int recievierId = userRepo.getRegisteredUserByName(recievierName).getId();
+        //OfferDTO offer = suConnectionRepo.getOffer(storeId, senderId, recievierId);
+        if (toBeOwner) {
+            AddOwnershipToStore(storeId, senderId, recievierId, answer);
+        } else {
+            AddManagerToStore(storeId, senderId, recievierId, answer);
+        }
     }
 
-    public int AddOwnershipToStore(int storeId, int ownerId, int newOwnerId, boolean decide) throws Exception {
+    private int AddOwnershipToStore(int storeId, int ownerId, int newOwnerId, boolean decide) throws Exception {
         if (decide) {
             suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
             suConnectionRepo.deleteOffer(storeId, ownerId, newOwnerId);
@@ -145,12 +154,12 @@ public class StoreService {
         String nameNew = this.userRepo.getRegisteredUser(managerId).getUsername();
         String storeName = this.storeRepo.getStoreNameById(storeId);
         String Message = "In store:{}, the owner:{} is offering you: {} to be a manager of this store" + storeName + owner + nameNew;
-        String jssonMessage = convertNotificationToJson(Message, nameNew, NotificationDTO.NotificationType.OFFER, false);
+        String jssonMessage = convertNotificationToJson(Message, nameNew, NotificationDTO.NotificationType.OFFER, false, owner, storeId);
         this.notiRepo.sendDelayedMessageToUser(nameNew, jssonMessage);
         suConnectionRepo.makeOffer(storeId, ownerId, ownerId, false, authorization, Message);
     }
 
-    public int AddManagerToStore(int storeId, int ownerId, int managerId, boolean decide) throws Exception {
+    private int AddManagerToStore(int storeId, int ownerId, int managerId, boolean decide) throws Exception {
         if (decide) {
             suConnectionRepo.AddManagerToStore(storeId, ownerId, managerId);
             List<Permission> authorization = suConnectionRepo.deleteOffer(storeId, ownerId, managerId);

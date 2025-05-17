@@ -166,4 +166,9 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     public List<Permission> deleteOffer(int storeId, int senderId, int reciverId) throws Exception {
         return this.data.deleteOffer(storeId, senderId, reciverId);
     }
+
+    @Override
+    public OfferDTO getOffer(int storeId, int senderId, int reciverId) throws Exception {
+        return this.data.getOffer(storeId, senderId, reciverId);
+    }
 }
