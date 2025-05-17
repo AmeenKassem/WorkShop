@@ -49,12 +49,6 @@ public class StoreService {
         logger.info("created the StoreService");
     }
 
-    private boolean sendMessageToTakeApproval(int sender, int reciver) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'sendMessageToTakeApproval'");
-
-    }
-
     public int addStoreToSystem(String token, String storeName, String category) throws UIException, DevException {
         logger.info("User attempting to add a new store: '{}', category: {}", storeName, category);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
