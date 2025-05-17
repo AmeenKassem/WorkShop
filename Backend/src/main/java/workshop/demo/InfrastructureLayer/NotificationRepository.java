@@ -38,18 +38,4 @@ public class NotificationRepository implements INotificationRepo {
         return delayedNotificationDecorator.getDelayedMessages(username);
     }
 
-    @Override
-    public void sendOffer(OfferDTO offer) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'sendOffer'");
-    }
-
-    @Override
-    public void reciveAnswerFromOffer(OfferDTO offer, boolean answer) {
-        // here you just set the answer after getting it from the UI
-        //then call the function from the Store Repo reseciedOfferAnswer(offer dto)
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'reciveAnswerFromOffer'");
-    }
-
 }
