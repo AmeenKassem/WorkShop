@@ -78,6 +78,9 @@ public class StoreService {
         json.put("message", dto.getMessage());
         json.put("receiverName", dto.getReceiverName());
         json.put("type", dto.getType().name());
+        json.put("toBeOwner", dto.getToBeOwner());
+        json.put("senderName", dto.getSenderName());
+        json.put("storeId", dto.getStoreId());
         return json.toJson();
     }
 
