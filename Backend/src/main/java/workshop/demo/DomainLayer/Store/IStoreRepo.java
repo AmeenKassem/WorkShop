@@ -6,6 +6,7 @@ import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public interface IStoreRepo {
 
@@ -35,10 +36,12 @@ public interface IStoreRepo {
 
     //another: messages to response->4.12
     //another: getting info about the history of purcheses in a specific store -> dpne in order
-
     void checkStoreIsActive(int storeId) throws DevException;
 
     public StoreDTO getStoreDTO(int storeId) throws UIException;
 
+    public void makeOffer(int storeId, int senderId, int reciverId, boolean toBeOwner, List<Permission> permissions) throws Exception;
+
+    public List<Permission> deleteOffer(int storeId, int senderId, int reciverId) throws Exception;
 
 }

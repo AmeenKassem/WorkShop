@@ -1,15 +1,20 @@
 package workshop.demo.DomainLayer.Store;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public class Store {
+
     private static final Logger logger = LoggerFactory.getLogger(Store.class);
 
     private int storeID;
@@ -17,9 +22,9 @@ public class Store {
     private String category;
     private boolean active;
     private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
+    private List<OfferDTO> offers;
     //must add something for messages
     private List<String> messgesInStore;
-    
 
     public Store(int storeID, String storeName, String category) {
         logger.debug("Creating store: ID={}, Name={}, Category={}", storeID, storeName, category);
@@ -33,6 +38,7 @@ public class Store {
             rank[i] = new AtomicInteger(0);
         }
         this.messgesInStore = Collections.synchronizedList(new LinkedList<>());
+        this.offers = Collections.synchronizedList(new LinkedList<>());
     }
 
     public int getStoreID() {
@@ -93,7 +99,25 @@ public class Store {
         return new StoreDTO(storeID, storeName, category, active, getFinalRateInStore(storeID));
     }
 
-    
+    public void makeOffer(int senderId, int receiverId, boolean toBeOwner, List<Permission> per) {
+        OfferDTO newOffer = new OfferDTO(senderId, receiverId, toBeOwner, per);
+        offers.add(newOffer);
+    }
 
+    public List<Permission> deleteOffer(int senderId, int receiverId) {
+        synchronized (offers) {
+            Iterator<OfferDTO> iterator = offers.iterator();
+            while (iterator.hasNext()) {
+                OfferDTO offer = iterator.next();
+                if (offer.getSenderId() == senderId && offer.getReceiverId() == receiverId) {
+                    List<Permission> permissions = offer.getPermissions();
+                    iterator.remove();
+                    return permissions;
+                }
+            }
+
+        }
+        return null; // no matching offer found
+    }
 
 }

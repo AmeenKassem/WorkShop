@@ -15,6 +15,7 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 @Repository
 public class StoreRepository implements IStoreRepo {
@@ -150,9 +151,24 @@ public class StoreRepository implements IStoreRepo {
     public StoreDTO getStoreDTO(int storeId) throws UIException {
         Store store = findStoreByID(storeId);
         if (store == null) {
-            throw new UIException("Store not found for ID: " + storeId, ErrorCodes.STORE_NOT_FOUND); 
-        } 
+            throw new UIException("Store not found for ID: " + storeId, ErrorCodes.STORE_NOT_FOUND);
+        }
         return store.getStoreDTO();
     }
 
+    @Override
+    public void makeOffer(int storeId, int senderId, int reciverId, boolean toBeOwner, List<Permission> per) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new UIException("Store not found for ID: " + storeId, ErrorCodes.STORE_NOT_FOUND);
+        }
+        this.findStoreByID(storeId).makeOffer(senderId, reciverId, toBeOwner, per);
+    }
+
+    @Override
+    public List<Permission> deleteOffer(int storeId, int senderId, int reciverId) throws Exception {
+        if (findStoreByID(storeId) == null) {
+            throw new UIException("Store not found for ID: " + storeId, ErrorCodes.STORE_NOT_FOUND);
+        }
+        return this.findStoreByID(storeId).deleteOffer(senderId, reciverId);
+    }
 }

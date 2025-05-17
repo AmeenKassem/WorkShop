@@ -68,7 +68,7 @@ public class StoreService {
         return storeId;
     }
 
-    public int AddOwnershipToStore(int storeId, String token, int newOwnerId) throws Exception, DevException {
+    public void MakeofferToAddOwnershipToStore(int storeId, String token, int newOwnerId) throws Exception, DevException {
         logger.info("User attempting to add a new owner (userId: {}) to store {}", newOwnerId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
@@ -78,16 +78,25 @@ public class StoreService {
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         suConnectionRepo.checkToAddOwner(storeId, ownerId, newOwnerId);
-        logger.info("Sending ownership approval request from {} to {}", ownerId, newOwnerId);
-        boolean approved = sendMessageToTakeApproval(ownerId, newOwnerId);
-        if (!approved) {
-            logger.info("Ownership addition declined by user {}", newOwnerId);
-            return -1;
+        logger.info("Making an offer to be a store owner from {} to {}", ownerId, newOwnerId);
+        String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
+        String nameNew = this.userRepo.getRegisteredUser(newOwnerId).getUsername();
+        String storeName = this.storeRepo.getStoreNameById(storeId);
+        String Message = "In store:{}, the owner:{} is offering you to be an owner of this store" + storeName + owner;
+        this.notiRepo.sendDelayedMessageToUser(nameNew, Message);
+        storeRepo.makeOffer(storeId, ownerId, ownerId, true, null);
+    }
 
+    public int AddOwnershipToStore(int storeId, int ownerId, int newOwnerId, boolean decide) throws Exception {
+        if (decide) {
+            suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
+            storeRepo.deleteOffer(storeId, ownerId, newOwnerId);
+            logger.info("Successfully added user {} as owner to store {} by user {}", newOwnerId, storeId, ownerId);
+            return newOwnerId;
         }
-        suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
-        logger.info("Successfully added user {} as owner to store {} by user {}", newOwnerId, storeId, ownerId);
-        return newOwnerId;
+        logger.info("Ownership addition declined by user {}", newOwnerId);
+        storeRepo.deleteOffer(storeId, ownerId, newOwnerId);
+        return -1;
     }
 
     public void DeleteOwnershipFromStore(int storeId, String token, int ownerToDelete) throws Exception, DevException {
@@ -103,25 +112,38 @@ public class StoreService {
         logger.info("Successfully removed owner {} from store {} by {}", ownerToDelete, storeId, ownerId);
     }
 
-    public int AddManagerToStore(int storeId, String token, int managerId, List<Permission> authorization) throws Exception, DevException {
-        logger.info("User attempting to add manager {} to store {}", managerId, storeId);
+    public void MakeOfferToAddManagerToStore(int storeId, String token, int managerId, List<Permission> authorization) throws Exception, DevException {
+
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
+        logger.info("User {} attempting to add manager {} to store {}", ownerId, managerId, storeId);
         userRepo.checkUserRegisterOnline_ThrowException(ownerId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
         userRepo.checkUserRegister_ThrowException(managerId);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
-        boolean approved = sendMessageToTakeApproval(ownerId, managerId);
-        if (!approved) {
-            logger.info("Manager addition declined by user {}", managerId);
-            return -1;
+        suConnectionRepo.checkToAddManager(storeId, ownerId, managerId);
+        logger.info("Making an offer to be a store manager from {} to {}", ownerId, managerId);
+        String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
+        String nameNew = this.userRepo.getRegisteredUser(managerId).getUsername();
+        String storeName = this.storeRepo.getStoreNameById(storeId);
+        String Message = "In store:{}, the owner:{} is offering you to be a manager of this store" + storeName + owner;
+        this.notiRepo.sendDelayedMessageToUser(nameNew, Message);
+        storeRepo.makeOffer(storeId, ownerId, ownerId, false, authorization);
+    }
+
+    public int AddManagerToStore(int storeId, int ownerId, int managerId, boolean decide) throws Exception {
+        if (decide) {
+            suConnectionRepo.AddManagerToStore(storeId, ownerId, managerId);
+            List<Permission> authorization = storeRepo.deleteOffer(storeId, ownerId, managerId);
+            suConnectionRepo.changePermissions(ownerId, managerId, storeId, authorization);
+            logger.info("Successfully added user {} as a manager to store {} by user {}", managerId, storeId, ownerId);
+            return managerId;
         }
-        suConnectionRepo.AddManagerToStore(storeId, ownerId, managerId);
-        logger.info("manager {} successfully added to store {} by {}", managerId, storeId, ownerId);
-        suConnectionRepo.changePermissions(ownerId, managerId, storeId, authorization);
-        logger.info("permissions updated for manager {} in store {}", managerId, storeId);
-        return managerId;
+        logger.info("Managment updated addition declined by user {}", ownerId);
+        storeRepo.deleteOffer(storeId, ownerId, managerId);
+        return -1;
+
     }
 
     public void changePermissions(String token, int managerId, int storeId, List<Permission> authorization) throws Exception, DevException {
@@ -208,11 +230,11 @@ public class StoreService {
     }
 
     public StoreDTO getStoreDTO(String token, int storeId) throws UIException {
-    logger.info("User attempting to get StoreDTO for store {}", storeId);
-    authRepo.checkAuth_ThrowTimeOutException(token, logger);
-    int userId = authRepo.getUserId(token);
-    userRepo.checkUserRegisterOnline_ThrowException(userId);
-    storeRepo.checkStoreExistance(storeId);
-    return storeRepo.getStoreDTO(storeId);
+        logger.info("User attempting to get StoreDTO for store {}", storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        storeRepo.checkStoreExistance(storeId);
+        return storeRepo.getStoreDTO(storeId);
     }
 }
