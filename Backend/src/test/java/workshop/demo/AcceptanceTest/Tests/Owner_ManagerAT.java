@@ -2,14 +2,20 @@ package workshop.demo.AcceptanceTest.Tests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import workshop.demo.AcceptanceTest.Utill.Real;
 import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.OrderDTO;
+import workshop.demo.DTOs.WorkerDTO;
+import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Store.item;
+import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Stock.item;
+import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,10 +26,11 @@ public class Owner_ManagerAT extends AcceptanceTests {
 
     @BeforeEach
     void setup() throws Exception {
-        // ========== ADMIN SETUP ==========
+        // ====== ADMIN SETUP ======
         int adminId = 999;
         String adminGuestToken = "admin-guest-token";
         String adminUserToken = "admin-user-token";
+
         when(real.mockUserRepo.generateGuest()).thenReturn(adminId);
         when(real.mockAuthRepo.generateGuestToken(adminId)).thenReturn(adminGuestToken);
         when(real.mockAuthRepo.validToken(adminGuestToken)).thenReturn(true);
@@ -32,119 +39,107 @@ public class Owner_ManagerAT extends AcceptanceTests {
         when(real.mockAuthRepo.validToken(adminUserToken)).thenReturn(true);
         when(real.mockAuthRepo.getUserId(adminUserToken)).thenReturn(adminId);
         when(real.mockAuthRepo.getUserName(adminUserToken)).thenReturn("admin");
+
         String adminGuest = real.userService.generateGuest();
         assertEquals(adminGuestToken, adminGuest);
-        assertTrue(real.userService.register(adminGuest, "admin", "adminPass"));
+        assertTrue(real.userService.register(adminGuest, "admin", "adminPass", 18));
         String adminToken = real.userService.login(adminGuest, "admin", "adminPass");
         assertEquals(adminUserToken, adminToken);
         testSystem_InitMarket(adminUserToken);
 
-        // ========== STORE OWNER SETUP ==========
+        // ====== STORE OWNER SETUP ======
         int ownerId = 10;
-        String ownerGuestToken = "guest-token-owner";
-        String ownerUserToken = "owner-token";
+        String ownerGuestToken = "guest-token";
+        String ownerUserToken = "user-token";
+
         when(real.mockUserRepo.generateGuest()).thenReturn(ownerId);
         when(real.mockAuthRepo.generateGuestToken(ownerId)).thenReturn(ownerGuestToken);
         when(real.mockAuthRepo.validToken(ownerGuestToken)).thenReturn(true);
-        when(real.mockUserRepo.login("owner", "pass")).thenReturn(ownerId);
+        when(real.mockUserRepo.login("owner", "owner")).thenReturn(ownerId);
         when(real.mockAuthRepo.generateUserToken(ownerId, "owner")).thenReturn(ownerUserToken);
         when(real.mockAuthRepo.validToken(ownerUserToken)).thenReturn(true);
         when(real.mockAuthRepo.getUserId(ownerUserToken)).thenReturn(ownerId);
         when(real.mockAuthRepo.getUserName(ownerUserToken)).thenReturn("owner");
+        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
+
         String ownerGuest = real.userService.generateGuest();
         assertEquals(ownerGuestToken, ownerGuest);
-        assertTrue(real.userService.register(ownerGuest, "owner", "pass"));
-        String ownerToken = real.userService.login(ownerGuest, "owner", "pass");
+        assertTrue(real.userService.register(ownerGuest, "owner", "owner", 18));
+        String ownerToken = real.userService.login(ownerGuest, "owner", "owner");
         assertEquals(ownerUserToken, ownerToken);
+
         int storeId = 100;
-        when(real.mockAuthRepo.validToken(ownerUserToken)).thenReturn(true);
-        when(real.mockAuthRepo.getUserId(ownerUserToken)).thenReturn(ownerId);
-        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
         when(real.mockStoreRepo.addStoreToSystem(ownerId, "TestStore", "ELECTRONICS")).thenReturn(storeId);
         when(real.mockIOSrepo.addNewStoreOwner(storeId, ownerId)).thenReturn(true);
         int createdStoreId = real.storeService.addStoreToSystem(ownerToken, "TestStore", "ELECTRONICS");
         assertEquals(storeId, createdStoreId);
-        //ADD PRODUCT TO STORE
+
+        // ====== ADD PRODUCT TO SYSTEM ======
         int productId = 200;
+        String[] keywords = {"Phone", "Smartphone"};
+        when(real.mockStockRepo.addProduct("Phone", Category.ELECTRONICS, "Smartphone", keywords)).thenReturn(productId);
+        int returnedProductId = real.stockService.addProduct(ownerToken, "Phone", Category.ELECTRONICS, "Smartphone", keywords);
+        assertEquals(productId, returnedProductId);
+
+        // ====== ADD ITEM TO STORE ======
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.AddToStock)).thenReturn(true);
-        item newItem = new item(productId, 10, 100, Category.ELECTRONICS);
-        when(real.mockStoreRepo.addItem(storeId, productId, 10, 100, Category.ELECTRONICS)).thenReturn(newItem);
-        real.storeService.addItem(storeId, ownerToken, productId, 10, 100, Category.ELECTRONICS);
+        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", keywords));
+        when(real.mockStockRepo.addItem(storeId, productId, 10, 100, Category.ELECTRONICS))
+                .thenReturn(new item(productId, 10, 100, Category.ELECTRONICS));
+        int itemAdded = real.stockService.addItem(storeId, ownerToken, productId, 10, 100, Category.ELECTRONICS);
+        assertEquals(itemAdded, productId);
 
+        // ====== REGISTERED USER SETUP ======
+        int userId = 20;
+        String userGuestToken = "guest-token-2";
+        String userToken = "user-token-2";
 
-        // ========== USER FOR TESTING (e.g., to be added as manager) ==========
-        int testUserId = 20;
-        String testGuestToken = "guest-token-2";
-        String testUserToken = "user-token-2";
-        when(real.mockUserRepo.generateGuest()).thenReturn(testUserId);
-        when(real.mockAuthRepo.generateGuestToken(testUserId)).thenReturn(testGuestToken);
-        when(real.mockAuthRepo.validToken(testGuestToken)).thenReturn(true);
-        when(real.mockUserRepo.login("testUser", "pass2")).thenReturn(testUserId);
-        when(real.mockAuthRepo.generateUserToken(testUserId, "testUser")).thenReturn(testUserToken);
-        when(real.mockAuthRepo.validToken(testUserToken)).thenReturn(true);
-        when(real.mockAuthRepo.getUserId(testUserToken)).thenReturn(testUserId);
-        when(real.mockAuthRepo.getUserName(testUserToken)).thenReturn("testUser");
-        String guestGenerated = real.userService.generateGuest();
-        assertEquals(testGuestToken, guestGenerated);
-        when(real.mockAuthRepo.isRegistered(testUserToken)).thenReturn(true);
-        when(real.mockUserRepo.isRegistered(testUserId)).thenReturn(true);
-        assertTrue(real.userService.register(guestGenerated, "testUser", "pass2"));
-        String loginToken2 = real.userService.login(guestGenerated, "testUser", "pass2");
-        assertEquals(testUserToken, loginToken2);
+        when(real.mockUserRepo.generateGuest()).thenReturn(userId);
+        when(real.mockAuthRepo.generateGuestToken(userId)).thenReturn(userGuestToken);
+        when(real.mockAuthRepo.validToken(userGuestToken)).thenReturn(true);
+        when(real.mockUserRepo.login("user2", "pass2")).thenReturn(userId);
+        when(real.mockAuthRepo.generateUserToken(userId, "user2")).thenReturn(userToken);
+        when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
+        when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
+        when(real.mockAuthRepo.getUserName(userToken)).thenReturn("user2");
+        when(real.mockUserRepo.isRegistered(userId)).thenReturn(true);
+        when(real.mockAuthRepo.isRegistered(userToken)).thenReturn(true);
 
-        // Optionally: assign this user as manager of the store via mock
-        //when(real.mockIOSrepo.isStoreManager(storeId, testUserId)).thenReturn(true);
+        String guestToken = real.userService.generateGuest();
+        assertEquals(userGuestToken, guestToken);
+        assertTrue(real.userService.register(guestToken, "user2", "pass2", 18));
+        String loginToken = real.userService.login(guestToken, "user2", "pass2");
+        assertEquals(userToken, loginToken);
     }
 
     // ========== Store Owner Use Cases ==========
 
     @Test
     void testOwner_AddProductToStock() throws Exception {
-        int ownerId = 10;
         int storeId = 100;
-        int productId = 200;
-        String ownerToken = "owner-token";
+        int ownerId = 10;
+        String ownerToken = "user-token";
 
+        // === Add new product to system ===
+        int productId = 300;
+        String[] keywords = {"Tablet", "Touchscreen"};
+        when(real.mockStockRepo.addProduct("Tablet", Category.ELECTRONICS, "10-inch Tablet", keywords))
+                .thenReturn(productId);
+        int returnedProductId = real.stockService.addProduct(ownerToken, "Tablet", Category.ELECTRONICS, "10-inch Tablet", keywords);
+        assertEquals(productId, returnedProductId);
 
+        // === Add item to store ===
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.AddToStock)).thenReturn(true);
+        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(
+                new Product("Tablet", productId, Category.ELECTRONICS, "10-inch Tablet", keywords));
+        when(real.mockStockRepo.addItem(storeId, productId, 10, 100, Category.ELECTRONICS))
+                .thenReturn(new item(productId, 10, 100, Category.ELECTRONICS));
 
-        item newItem = new item(productId, 10, 100, Category.ELECTRONICS);
-        when(real.mockStoreRepo.addItem(storeId, productId, 10, 100, Category.ELECTRONICS)).thenReturn(newItem);
-
-        boolean result = real.storeService.addItem(storeId, ownerToken, productId, 10, 100, Category.ELECTRONICS);
-        assertTrue(result);
+        int itemAdded = real.stockService.addItem(storeId, ownerToken, productId, 10, 100, Category.ELECTRONICS);
+        assertEquals(productId, itemAdded);
     }
 
-
-    @Test
-    void testOwner_AddProductToStock_Failure_InvalidToken() throws Exception {
-        int storeId = 100;
-        int productId = 200;
-        String invalidToken = "invalid-owner-token";
-
-        when(real.mockAuthRepo.validToken(invalidToken)).thenReturn(false);
-
-        boolean result = real.storeService.addItem(storeId, invalidToken, productId, 10, 100, Category.ELECTRONICS);
-
-        assertFalse(result);
-    }
-
-    @Test
-    void testOwner_AddProductToStock_Failure_InsufficientPermissions() throws Exception {
-        int storeId = 100;
-        int productId = 200;
-        String ownerToken = "owner-token";
-        int ownerId = 10;
-
-        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
-        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
-        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
-        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.AddToStock)).thenReturn(false); // Permission denied
-
-        boolean result = real.storeService.addItem(storeId, ownerToken, productId, 10, 100, Category.ELECTRONICS);
-
-        assertFalse(result);
-    }
+    //todo:this case is not checked
     @Test
     void testOwner_AddProductToStock_Failure_InvalidProductData() throws Exception {
         int storeId = 100;
@@ -152,22 +147,29 @@ public class Owner_ManagerAT extends AcceptanceTests {
         String ownerToken = "owner-token";
         int ownerId = 10;
 
+        // === Auth & Setup ===
         when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
         when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
         when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.AddToStock)).thenReturn(true);
 
-        // Simulate storeRepo rejecting invalid data
-        when(real.mockStoreRepo.addItem(storeId, productId, -5, -999, Category.ELECTRONICS))
-                .thenThrow(new IllegalArgumentException("Invalid quantity or price"));
+        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(
+                new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", new String[]{"Phone"})
+        );
 
-        boolean result = real.storeService.addItem(storeId, ownerToken, productId, -5, -999, Category.ELECTRONICS);
+        // === Act & Assert ===
+        UIException ex = assertThrows(UIException.class, () ->
+                real.stockService.addItem(storeId, ownerToken, productId, -5, -999, Category.ELECTRONICS)
+        );
 
-        assertFalse(result);
+        assertEquals("price or quantity not in range", ex.getMessage());
+        assertEquals(404, ex.getNumber());
     }
+
+
     @Test
     void testOwner_AddProductToStock_Failure_StoreNotFound() throws Exception {
-        int storeId = 999; // non-existent store
+        int storeId = 999; // Non-existent store
         int productId = 200;
         String ownerToken = "owner-token";
         int ownerId = 10;
@@ -176,13 +178,19 @@ public class Owner_ManagerAT extends AcceptanceTests {
         when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
         when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.AddToStock)).thenReturn(true);
+        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(
+                new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", new String[]{"Phone"})
+        );
+        when(real.mockStoreRepo.checkStoreExistance(storeId))
+                .thenThrow(new UIException(" store does not exist.", ErrorCodes.STORE_NOT_FOUND));
 
-        when(real.mockStoreRepo.addItem(storeId, productId, 10, 100, Category.ELECTRONICS))
-                .thenThrow(new RuntimeException("Store not found"));
+        UIException ex = assertThrows(UIException.class, () ->
+                real.stockService.addItem(storeId, ownerToken, productId, 10, 100, Category.ELECTRONICS)
+        );
 
-        boolean result = real.storeService.addItem(storeId, ownerToken, productId, 10, 100, Category.ELECTRONICS);
-
-        assertFalse(result);
+        // Optional: verify the details of the exception
+        assertEquals(" store does not exist.", ex.getMessage());
+        assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getNumber());
     }
 
     @Test
@@ -190,78 +198,97 @@ public class Owner_ManagerAT extends AcceptanceTests {
         int storeId = 100;
         int productId = 200;
         int ownerId = 10;
-        String ownerToken = "owner-token";
+        String ownerToken = "user-token";
 
-        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
-        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
-        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
+        // Mock that owner has permission to delete from stock
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.DeleteFromStock)).thenReturn(true);
-        //doNothing().when(real.mockStoreRepo).removeItem(storeId,productId);
-        real.mockStoreRepo.removeItem(storeId,productId);
-        boolean result = real.storeService.removeItem(storeId, ownerToken, productId);
 
-        assertTrue(result);
+        // Mock that the product still exists before deletion
+        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(
+                new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", new String[]{"Phone"})
+        );
+
+        // No need to mock removeItem return, just verify the correct result
+        when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true); // optional safety
+
+        // Act
+        int removedProductId = real.stockService.removeItem(storeId, ownerToken, productId);
+
+        // Assert
+        assertEquals(productId, removedProductId);
     }
 
-    //TODO:THE CODE DIDN'T CHECK THIS CASE WHEN WE DO IT FIX THE NOTE TO BE NOT NOTE
-    @Test
-    void testOwner_DeleteProductFromStock_Failure_ProductNotFound() throws Exception {
-        int storeId = 100;
-        int productId = 999;  // Non-existent product
-        int ownerId = 10;
-        String ownerToken = "owner-token";
 
-        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
-        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
-        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
-        //when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.DeleteFromStock)).thenReturn(true);
-        doNothing().when(real.mockStoreRepo).removeItem(storeId,productId);
-        //real.mockStoreRepo.removeItem(storeId,productId);
 
-        boolean result = real.storeService.removeItem(storeId, ownerToken, productId);
-
-        assertFalse(result);
-    }
     @Test
     void testOwner_DeleteProductFromStock_Failure_NoPermission() throws Exception {
         int storeId = 100;
         int productId = 200;
         int ownerId = 10;
-        String ownerToken = "owner-token";
+        String ownerToken = "user-token";
+
+        // Auth + user setup
+        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
+
+        // Simulate lack of permission
+        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.DeleteFromStock)).thenReturn(false);
+
+        // Ensure product exists so we reach the permission check
+        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(
+                new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", new String[]{"Phone"})
+        );
+
+        UIException ex = assertThrows(UIException.class, () ->
+                real.stockService.removeItem(storeId, ownerToken, productId)
+        );
+
+        assertEquals("this worker is not authorized!", ex.getMessage());
+        assertEquals(ErrorCodes.NO_PERMISSION, ex.getNumber());
+    }
+
+    @Test
+    void testOwner_UpdatePriceProductInStock() throws Exception {
+        int storeId = 100;
+        int productId = 200;
+        int ownerId = 10;
+        String ownerToken = "user-token";
 
         when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
         when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
         when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
-        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.DeleteFromStock)).thenReturn(false);
+        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.UpdatePrice)).thenReturn(true);
 
-        boolean result = real.storeService.removeItem(storeId, ownerToken, productId);
+        when(real.mockStockRepo.updatePrice(storeId, productId, 10)).thenReturn(true);
 
-        assertFalse(result);
+        assertDoesNotThrow(() ->
+                real.stockService.updatePrice(storeId, ownerToken, productId, 10)
+        );
     }
 
-
-    //    //Todo the code need fix related to more check in correct way
-//    @Test
-//    void testOwner_DeleteProductFromStock_Failure_InvalidStoreId() throws Exception {
-//        int storeId = 999; // non-existent store
-//        int productId = 200;
-//        int ownerId = 10;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
-//        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
-//        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
-//        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.DeleteFromStock)).thenReturn(true);
-//
-//        doNothing().when(real.mockStoreRepo).removeItem(storeId,productId);
-//
-//        boolean result = real.storeService.removeItem(storeId, ownerToken, productId);
-//
-//        assertFalse(result);
-//    }
-//
     @Test
-    void testOwner_UpdateProductInStock() throws Exception {
+    void testOwner_UpdateQuantityProductInStock() throws Exception {
+        int storeId = 100;
+        int productId = 200;
+        int ownerId = 10;
+        String ownerToken = "user-token";
+
+        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
+        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.UpdateQuantity)).thenReturn(true);
+        when(real.mockStockRepo.updateQuantity(storeId, productId, 10)).thenReturn(true);
+
+        assertDoesNotThrow(() ->
+                real.stockService.updateQuantity(storeId, ownerToken, productId, 10)
+        );
+
+        //verify(real.mockStockRepo).updateQuantity(storeId, productId, 10);
+    }
+    //todo:this case is not checked
+    @Test
+    void testOwner_UpdateProductInStock_Failure_InvalidData() throws Exception {
         int storeId = 100;
         int productId = 200;
         int ownerId = 10;
@@ -270,972 +297,749 @@ public class Owner_ManagerAT extends AcceptanceTests {
         when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
         when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
         when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
-        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.UpdatePrice)).thenReturn(true);
-        doNothing().when(real.mockStoreRepo).updatePrice(storeId, productId, 10);
+        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.UpdateQuantity)).thenReturn(true);
 
-        boolean result = real.storeService.updatePrice(storeId, ownerToken, productId, 10);
+        // Simulate validation failure: negative price
+        when(real.mockStockRepo.updateQuantity(storeId, productId, -10)).thenThrow(new UIException("This worker is not authorized!", ErrorCodes.NO_PERMISSION));
+        //real.stockService.updateQuantity(storeId, ownerToken, productId,  -10),new UIException("This worker is not authorized!", ErrorCodes.NO_PERMISSION));
+        //suppose to return -1 or something or throw ex .or delete this test
+        UIException ex = assertThrows(UIException.class, () ->
+                real.stockService.updateQuantity(storeId, ownerToken, productId, -10)
+        );
+        assertEquals(ex.getMessage(), "the quantity not in range");
+        assertEquals(ex.getNumber(), 404);
 
-        assertTrue(result);
     }
-//    @Test
-//    void testOwner_UpdateProductInStock1() throws Exception {
-//        int storeId = 100;
-//        int productId = 200;
-//        int ownerId = 10;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
-//        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
-//        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
-//        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.UpdateQuantity)).thenReturn(true);
-//        doNothing().when(real.mockStoreRepo).updateQuantity(storeId, productId, 10);
-//
-//        boolean result = real.storeService.updateQuantity(storeId, ownerToken, productId, 10);
-//
-//        assertTrue(result);
-//    }
-//    @Test
-//    void testOwner_UpdateProductInStock_Failure_InvalidData() throws Exception {
-//        int storeId = 100;
-//        int productId = 200;
-//        int ownerId = 10;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
-//        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
-//        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
-//        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.UpdateQuantity)).thenReturn(true);
-//
-//        // Simulate validation failure: negative price
-//        when(real.mockStoreRepo.updateQuantity(storeId, productId, 10, -50);).thenReturn(false);
-//
-//        boolean result = real.storeService.updatePrice(storeId, ownerToken, productId,  -50);
-//
-//        assertFalse(result);
-//    }
-//    @Test
-//    void testOwner_UpdateProductInStock_Failure_ProductNotFound() throws Exception {
-//        int storeId = 100;
-//        int productId = 999;  // non-existent
-//        int ownerId = 10;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
-//        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
-//        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
-//        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.UpdateQuantity)).thenReturn(true);
-//        when(real.mockStoreRepo.updateItem(storeId, productId, 5, 150)).thenReturn(false);  // product not found
-//
-//        boolean result = real.storeService.updateItem(storeId, ownerToken, productId, 5, 150);
-//
-//        assertFalse(result);
-//    }
-//    @Test
-//    void testOwner_UpdateProductInStock_Failure_NoPermission() throws Exception {
-//        int storeId = 100;
-//        int productId = 200;
-//        int ownerId = 10;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
-//        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
-//        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
-//        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.UpdatePrice)).thenReturn(false);  // No permission
-//
-//        boolean result = real.storeService.updateItem(storeId, ownerToken, productId, 10, 100);
-//
-//        assertFalse(result);
-//    }
-//
-////    @Test
-////    void testOwner_AddPurchasePolicy() throws Exception {
-////        int ownerId = 10;
-////        int storeId = 100;
-////        String ownerToken = "owner-token";
-////
-////        PurchasePolicyDTO validPolicy = new PurchasePolicyDTO("MIN_QUANTITY", "productId=200;quantity=2");
-////
-////        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
-////        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
-////        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
-////        when(real.mockIOSrepo.isStoreOwner(storeId, ownerId)).thenReturn(true);
-////        when(real.mockStoreRepo.addPurchasePolicy(storeId, validPolicy)).thenReturn(true);
-////
-////        boolean result = real.storeService.addPurchasePolicy(storeId, ownerToken, validPolicy);
-////
-////        assertTrue(result);
-////    }
-////    @Test
-////    void testOwner_AddPurchasePolicy_Failure_InvalidPolicy() throws Exception {
-////        int ownerId = 10;
-////        int storeId = 100;
-////        String ownerToken = "owner-token";
-////
-////        // Empty or malformed policy
-////        PurchasePolicyDTO invalidPolicy = new PurchasePolicyDTO("", "");
-////
-////        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
-////        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
-////        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
-////        when(real.mockIOSrepo.isStoreOwner(storeId, ownerId)).thenReturn(true);
-////        when(real.mockStoreRepo.addPurchasePolicy(storeId, invalidPolicy)).thenReturn(false);
-////
-////        boolean result = real.storeService.addPurchasePolicy(storeId, ownerToken, invalidPolicy);
-////
-////        assertFalse(result);
-////    }
-////    @Test
-////    void testOwner_AddPurchasePolicy_Failure_NotOwner() throws Exception {
-////        int notOwnerId = 20;
-////        int storeId = 100;
-////        String userToken = "user-token-2";
-////
-////        PurchasePolicyDTO policy = new PurchasePolicyDTO("MAX_QUANTITY", "productId=300;quantity=5");
-////
-////        when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
-////        when(real.mockAuthRepo.getUserId(userToken)).thenReturn(notOwnerId);
-////        when(real.mockUserRepo.isRegistered(notOwnerId)).thenReturn(true);
-////        when(real.mockIOSrepo.isStoreOwner(storeId, notOwnerId)).thenReturn(false);
-////
-////        UIException ex = assertThrows(UIException.class, () ->
-////                real.storeService.addPurchasePolicy(storeId, userToken, policy)
-////        );
-////
-////        assertEquals("Not authorized as store owner!", ex.getMessage());
-////    }
-////
-////    @Test
-////    void testOwner_DeletePurchasePolicy() throws Exception {
-////        int ownerId = 10;
-////        int storeId = 100;
-////        String ownerToken = "owner-token";
-////        int policyId = 1;
-////
-////        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
-////        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
-////        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
-////        when(real.mockIOSrepo.isStoreOwner(storeId, ownerId)).thenReturn(true);
-////        when(real.mockStoreRepo.deletePurchasePolicy(storeId, policyId)).thenReturn(true);
-////
-////        boolean result = real.storeService.deletePurchasePolicy(storeId, ownerToken, policyId);
-////
-////        assertTrue(result);
-////    }
-////    @Test
-////    void testOwner_DeletePurchasePolicy_Failure_NotFound() throws Exception {
-////        int ownerId = 10;
-////        int storeId = 100;
-////        String ownerToken = "owner-token";
-////        int nonExistentPolicyId = 99;
-////
-////        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
-////        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
-////        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
-////        when(real.mockIOSrepo.isStoreOwner(storeId, ownerId)).thenReturn(true);
-////        when(real.mockStoreRepo.deletePurchasePolicy(storeId, nonExistentPolicyId)).thenReturn(false);
-////
-////        boolean result = real.storeService.deletePurchasePolicy(storeId, ownerToken, nonExistentPolicyId);
-////
-////        assertFalse(result);
-////    }
-////    @Test
-////    void testOwner_DeletePurchasePolicy_Failure_NoPermission() throws Exception {
-////        int notOwnerId = 20;
-////        int storeId = 100;
-////        String userToken = "user-token-2";
-////        int policyId = 1;
-////
-////        when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
-////        when(real.mockAuthRepo.getUserId(userToken)).thenReturn(notOwnerId);
-////        when(real.mockUserRepo.isRegistered(notOwnerId)).thenReturn(true);
-////        when(real.mockIOSrepo.isStoreOwner(storeId, notOwnerId)).thenReturn(false);
-////
-////        UIException ex = assertThrows(UIException.class, () ->
-////                real.storeService.deletePurchasePolicy(storeId, userToken, policyId)
-////        );
-////
-////        assertEquals("Not authorized to delete policy!", ex.getMessage());
-////    }
-////
-//
-//
-//
-//    @Test
-//    void testOwner_AddStoreOwner_Success() throws Exception {
-//        int ownerId = 10;
-//        int storeId = 100;
-//        int newOwnerId = 20;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.checkToAddOwner(storeId, ownerId, newOwnerId)).thenReturn(true);
-//        when(real.mockIOSrepo.AddOwnershipToStore(storeId, ownerId, newOwnerId)).thenReturn(true);
-//
-//        boolean result = real.storeService.assignStoreOwner(ownerToken, storeId, newOwnerId);
-//        assertTrue(result);
-//    }
-//
-//    @Test
-//    void testOwner_AddStoreOwner_Failure_SelfAssignment() throws Exception {
-//        int ownerId = 10;
-//        int storeId = 100;
-//        String ownerToken = "owner-token";
-//
+
+    @Test
+    void testOwner_AddStoreOwner_Success() throws Exception {
+        int storeId = 100;
+        int ownerId = 10;
+        int userId = 20;
+        String ownerToken = "user-token";
+        String userToken = "user-token-2";
+
+        // === Auth & Registration ===
+        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
+        when(real.mockUserRepo.isOnline(ownerId)).thenReturn(true);
+
+        when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
+        when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
+        when(real.mockUserRepo.isRegistered(userId)).thenReturn(true);
+
+        // === Store status ===
+        when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
+        when(real.mockStoreRepo.checkStoreIsActive(storeId)).thenReturn(true);
+
+        // === Ownership logic ===
+        when(real.mockIOSrepo.checkToAddOwner(storeId, ownerId, userId)).thenReturn(true);
+        when(real.mockIOSrepo.AddOwnershipToStore(storeId, ownerId, userId)).thenReturn(true);
+
+        // === Approval messaging ===
+        //when(real.storeService.sendMessageToTakeApproval(ownerId, userId)).thenReturn(true);
+
+        // === Act ===
+        int result = real.storeService.AddOwnershipToStore(storeId, ownerToken, userId);
+
+        // === Assert ===
+        assertEquals(userId, result);
+    }
+
+
+    @Test
+    void testOwner_AddStoreOwner_ReassignSameUser_Failure() throws Exception {
+        int storeId = 100;
+        int ownerId = 10;
+        int userId = 20;
+        String ownerToken = "user-token";
+        String userToken = "user-token-2";
+
+        // === Auth & Registration ===
+        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
+        when(real.mockUserRepo.isOnline(ownerId)).thenReturn(true);
+
+        when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
+        when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
+        when(real.mockUserRepo.isRegistered(userId)).thenReturn(true);
+
+        // === Store status ===
+        when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
+        when(real.mockStoreRepo.checkStoreIsActive(storeId)).thenReturn(true);
+
+        // === First assignment (succeeds) ===
+        when(real.mockIOSrepo.checkToAddOwner(storeId, ownerId, userId)).thenReturn(true);
+        when(real.mockIOSrepo.AddOwnershipToStore(storeId, ownerId, userId)).thenReturn(true);
+
+        int first = real.storeService.AddOwnershipToStore(storeId, ownerToken, userId);
+        assertEquals(userId, first);
+
+        // === Second assignment (fails) ===
+        when(real.mockIOSrepo.checkToAddOwner(storeId, ownerId, userId))
+                .thenThrow(new UIException("Already assigned", 1006));
+
+        UIException ex = assertThrows(UIException.class, () ->
+                real.storeService.AddOwnershipToStore(storeId, ownerToken, userId)
+        );
+
+        assertEquals("Already assigned", ex.getMessage());
+        assertEquals(1006, ex.getNumber());
+    }
+
+    @Test
+    void testOwner_AddStoreOwner_Failure_TargetNotFound() throws Exception {
+        int storeId = 100;
+        int ownerId = 10;
+        int newOwnerId = 404;
+        String ownerToken = "user-token";
+
+        // === Auth for assigner ===
+        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
+        when(real.mockUserRepo.isOnline(ownerId)).thenReturn(true);
+
+        // === Store status ===
+        when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
+        when(real.mockStoreRepo.checkStoreIsActive(storeId)).thenReturn(true);
+
+        // === Simulate that new owner check fails
+        doThrow(new UIException("You are not regestered user!", ErrorCodes.USER_NOT_LOGGED_IN))
+                .when(real.mockUserRepo)
+                .checkUserRegister_ThrowException(newOwnerId);
+
+        // === Act + Assert
+        UIException ex = assertThrows(UIException.class, () ->
+                real.storeService.AddOwnershipToStore(storeId, ownerToken, newOwnerId)
+        );
+
+        assertEquals("You are not regestered user!", ex.getMessage());
+        assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ex.getNumber());
+    }
+
+
+    @Test
+    void testOwner_AddStoreOwner_Rejected() throws Exception {
+        int storeId = 100;
+        int ownerId = 10;
+        int userId = 20;
+        String ownerToken = "user-token";
+        String userToken = "user-token-2";
+
+        // === Auth & Registration ===
+        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
+        when(real.mockUserRepo.isOnline(ownerId)).thenReturn(true);
+
+        when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
+        when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
+        when(real.mockUserRepo.isRegistered(userId)).thenReturn(true);
+
+        // === Store status ===
+        when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
+        when(real.mockStoreRepo.checkStoreIsActive(storeId)).thenReturn(true);
+
+        // === Ownership logic ===
+        when(real.mockIOSrepo.checkToAddOwner(storeId, ownerId, userId)).thenReturn(true);
+        when(real.mockIOSrepo.AddOwnershipToStore(storeId, ownerId, userId)).thenReturn(true);
+
+        // === Approval messaging ===
+        real.storeService.sendMessageToTakeApproval(ownerId, ownerId);
+
+        // === Act ===
+        //todo:implement it when u finish then function "sendMessageToTakeApproval"
+        int result = real.storeService.AddOwnershipToStore(storeId, ownerToken, ownerId);
+
+        // === Assert ===
+        assertEquals(-1, result);
+    }
+
+
+    @Test
+    void testOwner_DeleteStoreOwner() throws Exception {
+        int storeId = 100;
+        int ownerId = 10;
+        int userId = 20;
+        String ownerToken = "user-token";
+        String userToken = "user-token-2";
+
+        // === Auth & Registration ===
+        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
+        when(real.mockUserRepo.isOnline(ownerId)).thenReturn(true);
+
+        when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
+        when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
+        when(real.mockUserRepo.isRegistered(userId)).thenReturn(true);
+
+        // === Store status ===
+        when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
+        when(real.mockStoreRepo.checkStoreIsActive(storeId)).thenReturn(true);
+
+        // === Ownership logic ===
+        when(real.mockIOSrepo.checkToAddOwner(storeId, ownerId, userId)).thenReturn(true);
+        when(real.mockIOSrepo.AddOwnershipToStore(storeId, ownerId, userId)).thenReturn(true);
+
+        // === Act ===
+        int result = real.storeService.AddOwnershipToStore(storeId, ownerToken, userId);
+
+        // === Assert ===
+        assertEquals(userId, result);
+
+        assertDoesNotThrow(() -> real.storeService.DeleteOwnershipFromStore(storeId, ownerToken, userId));
+
+    }
+    @Test
+    void testOwner_DeleteStoreOwner_Failure_NotFound() throws Exception {
+        int storeId = 100;
+        int ownerId = 10;
+        //int userId = 20;
+        String ownerToken = "user-token";
+        //String userToken = "user-token-2";
+
+        // === Auth & Registration ===
+        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
+        when(real.mockUserRepo.isOnline(ownerId)).thenReturn(true);
+
+//        when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
+//        when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
+        when(real.mockUserRepo.isRegistered(21)).thenReturn(false);
+
+        when(real.mockUserRepo.checkUserRegister_ThrowException(21)).thenThrow(new IllegalArgumentException("NO SUCH USER"));
+        // === Store status ===
+        when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
+        when(real.mockStoreRepo.checkStoreIsActive(storeId)).thenReturn(true);
+
+        // === Ownership logic ===
+
+        when(real.mockIOSrepo.checkToAddOwner(storeId, ownerId, 21)).thenReturn(false);
+        when(real.mockIOSrepo.AddOwnershipToStore(storeId, ownerId, 21)).thenReturn(false);
+
+        // === Act ===
+        //int result = real.storeService.AddOwnershipToStore(storeId, ownerToken, userId);
+
+        // === Assert ===
+        //assertEquals(userId, result);
+
+        Exception ex = assertThrows(Exception.class, () -> {
+            real.storeService.DeleteOwnershipFromStore(storeId, ownerToken, 21);
+        });
+        assertEquals(ex.getMessage(), "NO SUCH USER");
+    }
+
+
+    @Test
+    void testOwner_AddStoreManager_Success() throws Exception {
+        int ownerId = 10;
+        int storeId = 100;
+        int managerId = 20;
+        String ownerToken = "owner-token";
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+
+        doNothing().when(real.mockIOSrepo).checkToAddManager(storeId, ownerId, managerId);
+        //doNothing().when(real.mockIOSrepo).AddManagerToStore(storeId, ownerId, managerId);
+        List<Permission> a = new LinkedList<>();
+        a.add(Permission.AddToStock);
+        a.add(Permission.DeleteFromStock);
+        int result = real.storeService.AddManagerToStore(storeId, ownerToken, managerId, a);
+        assertEquals(result, managerId);
+    }
+
+    @Test
+    void testOwner_AddStoreManager_Rejected() throws Exception {
+        int ownerId = 10;
+        int storeId = 100;
+        int managerId = 20;
+        String ownerToken = "owner-token";
+
+        doNothing().when(real.mockIOSrepo).checkToAddManager(storeId, ownerId, managerId);
+
 //        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.assignStoreOwner(ownerToken, storeId, ownerId);
+//            real.storeService.AddManagerToStore(ownerToken, storeId, managerId);
 //        });
-//
-//        assertEquals("Cannot assign ownership to yourself", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_AddStoreOwner_Failure_DuplicateOwner() throws Exception {
-//        int ownerId = 10;
-//        int storeId = 100;
-//        int newOwnerId = 20;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.checkToAddOwner(storeId, ownerId, newOwnerId)).thenThrow(new UIException("Already assigned", 1006));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.assignStoreOwner(ownerToken, storeId, newOwnerId);
-//        });
-//
-//        assertEquals("Already assigned", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_AddStoreOwner_Failure_TargetNotFound() throws Exception {
-//        int ownerId = 10;
-//        int storeId = 100;
-//        int newOwnerId = 404;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.checkToAddOwner(storeId, ownerId, newOwnerId)).thenThrow(new UIException("Target user not found", 1004));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.assignStoreOwner(ownerToken, storeId, newOwnerId);
-//        });
-//
-//        assertEquals("Target user not found", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_AddStoreOwner_Failure_NotAuthorized() throws Exception {
-//        int notOwnerId = 30;
-//        String notOwnerToken = "not-owner-token";
-//        int storeId = 100;
-//        int newOwnerId = 20;
-//
-//        when(real.mockAuthRepo.validToken(notOwnerToken)).thenReturn(true);
-//        when(real.mockAuthRepo.getUserId(notOwnerToken)).thenReturn(notOwnerId);
-//        when(real.mockUserRepo.isRegistered(notOwnerId)).thenReturn(true);
-//
-//        when(real.mockIOSrepo.checkToAddOwner(storeId, notOwnerId, newOwnerId)).thenThrow(new UIException("You are not authorized", 1003));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.assignStoreOwner(notOwnerToken, storeId, newOwnerId);
-//        });
-//
-//        assertEquals("You are not authorized", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_AddStoreOwner_Rejected() throws Exception {
-//        int ownerId = 10;
-//        int storeId = 100;
-//        int newOwnerId = 20;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.checkToAddOwner(storeId, ownerId, newOwnerId)).thenReturn(false);
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.assignStoreOwner(ownerToken, storeId, newOwnerId);
-//        });
-//
-//        assertEquals("Ownership request was rejected", ex.getMessage());
-//    }
-//    @Test
-//    void testOwner_AddStoreOwner_Failure_AlreadyOwner() throws Exception {
-//        int ownerId = 10;
-//        int storeId = 100;
-//        int newOwnerId = 20;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.checkToAddOwner(storeId, ownerId, newOwnerId)).thenThrow(new UIException("Already assigned", 1006));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.assignStoreOwner(ownerToken, storeId, newOwnerId);
-//        });
-//
-//        assertEquals("Already assigned", ex.getMessage());
-//    }
-//
-//
-//
-//    @Test
-//    void testOwner_DeleteStoreOwner() throws Exception {
-//        int ownerId = 10;
-//        int storeId = 100;
-//        int targetOwnerId = 20;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.removeOwnership(storeId, ownerId, targetOwnerId)).thenReturn(true);
-//        boolean result = real.storeService.removeStoreOwner(ownerToken, storeId, targetOwnerId);
-//        assertTrue(result);
-//    }    @Test
-//    void testOwner_DeleteStoreOwner_Failure_NotFound() throws Exception {
-//        int ownerId = 10;
-//        int storeId = 100;
-//        int targetOwnerId = 20;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.removeOwnership(storeId, ownerId, targetOwnerId)).thenThrow(new UIException("Store owner not found", 1011));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.removeStoreOwner(ownerToken, storeId, targetOwnerId);
-//        });
-//
-//        assertEquals("Store owner not found", ex.getMessage());
-//    }    @Test
-//    void testOwner_DeleteStoreOwner_Failure_CannotRemoveSelf() throws Exception {
-//        int ownerId = 10;
-//        int storeId = 100;
-//        String ownerToken = "owner-token";
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.removeStoreOwner(ownerToken, storeId, ownerId);
-//        });
-//
-//        assertEquals("Cannot remove self from store ownership", ex.getMessage());
-//    }
-//    @Test
-//    void testOwner_AddStoreManager_Success() throws Exception {
-//        int ownerId = 10;
-//        int storeId = 100;
-//        int managerId = 20;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.checkToAddManager(storeId, ownerId, managerId)).thenReturn(true);
-//        when(real.mockIOSrepo.addNewStoreManager(storeId, ownerId, managerId)).thenReturn(true);
-//
-//        boolean result = real.storeService.assignStoreManager(ownerToken, storeId, managerId);
-//        assertTrue(result);
-//    }
-//    @Test
-//    void testOwner_AddStoreManager_Rejected() throws Exception {
-//        int ownerId = 10;
-//        int storeId = 100;
-//        int managerId = 20;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.checkToAddManager(storeId, ownerId, managerId)).thenReturn(false);
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.assignStoreManager(ownerToken, storeId, managerId);
-//        });
-//
-//        assertEquals("Request rejected: Manager addition was denied", ex.getMessage());
-//    }
-//    @Test
-//    void testOwner_AddStoreManager_Failure_NotAuthorized() throws Exception {
-//        int storeId = 100;
-//        int managerId = 20;
-//        String fakeToken = "unauthorized-token";
-//
-//        when(real.mockAuthRepo.validToken(fakeToken)).thenReturn(true);
-//        when(real.mockAuthRepo.getUserId(fakeToken)).thenReturn(555); // someone else not owner
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.assignStoreManager(fakeToken, storeId, managerId);
-//        });
-//
-//        assertEquals("this user does not have permission to assign manager", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_AddStoreManager_Failure_AlreadyManager() throws Exception {
-//        int ownerId = 10;
-//        int storeId = 100;
-//        int managerId = 20;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.checkToAddManager(storeId, ownerId, managerId))
-//                .thenThrow(new UIException("User is already a manager", 1015));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.assignStoreManager(ownerToken, storeId, managerId);
-//        });
-//
-//        assertEquals("User is already a manager", ex.getMessage());
-//    }
-//    @Test
-//    void testOwner_AddStoreManager_Failure_TargetNotFound() throws Exception {
-//        int ownerId = 10;
-//        int storeId = 100;
-//        int invalidManagerId = 404;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.checkToAddManager(storeId, ownerId, invalidManagerId))
-//                .thenThrow(new UIException("Target user not found", 1012));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.assignStoreManager(ownerToken, storeId, invalidManagerId);
-//        });
-//
-//        assertEquals("Target user not found", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_AddStoreManager_Failure_StoreClosed() throws Exception {
-//        int ownerId = 10;
-//        int storeId = 100;
-//        int managerId = 20;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.checkToAddManager(storeId, ownerId, managerId))
-//                .thenThrow(new UIException("Store is closed", 1016));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.assignStoreManager(ownerToken, storeId, managerId);
-//        });
-//
-//        assertEquals("Store is closed", ex.getMessage());
-//    }
-//    @Test
-//    void testOwner_ManageStoreManagerPermissions() throws Exception {
-//        int ownerId = 10;
-//        int managerId = 20;
-//        int storeId = 100;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.setPermissions(storeId, ownerId, managerId, Permission.AddToStock)).thenReturn(true);
-//
-//        boolean result = real.storeService.setManagerPermission(ownerToken, storeId, managerId, Permission.AddToStock);
-//        assertTrue(result);
-//    }
-//
-//    @Test
-//    void testOwner_ManageStoreManagerPermissions_Failure_NotManager() throws Exception {
-//        int ownerId = 10;
-//        int managerId = 20;
-//        int storeId = 100;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.setPermissions(storeId, ownerId, managerId, Permission.AddToStock))
-//                .thenThrow(new UIException("Target user is not a store manager", 3001));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.setManagerPermission(ownerToken, storeId, managerId, Permission.AddToStock);
-//        });
-//
-//        assertEquals("Target user is not a store manager", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_ManageStoreManagerPermissions_Failure_NoPermission() throws Exception {
-//        int storeId = 100;
-//        int managerId = 20;
-//        String attackerToken = "unauthorized-token";
-//
-//        when(real.mockAuthRepo.validToken(attackerToken)).thenReturn(true);
-//        when(real.mockAuthRepo.getUserId(attackerToken)).thenReturn(888);
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.setManagerPermission(attackerToken, storeId, managerId, Permission.AddToStock);
-//        });
-//
-//        assertEquals("this user does not have permission to assign manager", ex.getMessage());
-//    }
-//
-//
-//    @Test
-//    void testOwner_SetPermissionsForManager() throws Exception {
-//        int storeId = 100;
-//        int ownerId = 10;
-//        int managerId = 20;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.setPermissions(storeId, ownerId, managerId, Permission.AddToStock)).thenReturn(true);
-//
-//        boolean result = real.storeService.setManagerPermission(ownerToken, storeId, managerId, Permission.AddToStock);
-//        assertTrue(result);
-//    }
-//
-//    @Test
-//    void testOwner_SetPermissionsForManager_Failure_InvalidPermissions() throws Exception {
-//        int storeId = 100;
-//        int ownerId = 10;
-//        int managerId = 20;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.setPermissions(storeId, ownerId, managerId, null)).thenThrow(new UIException("Invalid permission value", 3002));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.setManagerPermission(ownerToken, storeId, managerId, null);
-//        });
-//
-//        assertEquals("Invalid permission value", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_SetPermissionsForManager_Failure_ManagerNotFound() throws Exception {
-//        int storeId = 100;
-//        int ownerId = 10;
-//        int managerId = 9999;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.setPermissions(storeId, ownerId, managerId, Permission.AddToStock)).thenThrow(new UIException("Manager not found", 3003));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.setManagerPermission(ownerToken, storeId, managerId, Permission.AddToStock);
-//        });
-//
-//        assertEquals("Manager not found", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_SetPermissions_Failure_TargetIsNotManager() throws Exception {
-//        int storeId = 100;
-//        int ownerId = 10;
-//        int notManagerId = 30;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.setPermissions(storeId, ownerId, notManagerId, Permission.AddToStock)).thenThrow(new UIException("Target is not a manager", 3004));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.setManagerPermission(ownerToken, storeId, notManagerId, Permission.AddToStock);
-//        });
-//
-//        assertEquals("Target is not a manager", ex.getMessage());
-//    }
-//
-//
-//    @Test
-//    void testOwner_RemovePermissionsFromManager() throws Exception {
-//        int storeId = 100;
-//        int ownerId = 10;
-//        int managerId = 20;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.removePermissions(storeId, ownerId, managerId)).thenReturn(true);
-//
-//        boolean result = real.storeService.removeManagerPermission(ownerToken, storeId, managerId);
-//        assertTrue(result);
-//    }
-//
-//    @Test
-//    void testOwner_RemovePermissionsFromManager_Failure_NotFound() throws Exception {
-//        int storeId = 100;
-//        int ownerId = 10;
-//        int managerId = 9999;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.removePermissions(storeId, ownerId, managerId)).thenThrow(new UIException("Manager not found", 3010));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.removeManagerPermission(ownerToken, storeId, managerId);
-//        });
-//
-//        assertEquals("Manager not found", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_RemovePermissionsFromManager_Failure_NoPermissionsSet() throws Exception {
-//        int storeId = 100;
-//        int ownerId = 10;
-//        int managerId = 20;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.removePermissions(storeId, ownerId, managerId)).thenThrow(new UIException("No permissions assigned to this manager", 3011));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.removeManagerPermission(ownerToken, storeId, managerId);
-//        });
-//
-//        assertEquals("No permissions assigned to this manager", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_RemoveManager_Failure_AlreadyRemoved() throws Exception {
-//        int storeId = 100;
-//        int ownerId = 10;
-//        int managerId = 20;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockIOSrepo.removePermissions(storeId, ownerId, managerId)).thenThrow(new UIException("Manager already removed", 3012));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.removeManagerPermission(ownerToken, storeId, managerId);
-//        });
-//
-//        assertEquals("Manager already removed", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_DeactivateStore() throws Exception {
-//        int storeId = 100;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockStoreRepo.deactivateStore(storeId)).thenReturn(true);
-//
-//        boolean result = real.storeService.deactivateStore(ownerToken, storeId);
-//        assertTrue(result);
-//    }
-//
-//    @Test
-//    void testOwner_DeactivateStore_Failure_AlreadyInactive() throws Exception {
-//        int storeId = 100;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockStoreRepo.deactivateStore(storeId)).thenThrow(new UIException("Store is already inactive", 4001));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.deactivateStore(ownerToken, storeId);
-//        });
-//
-//        assertEquals("Store is already inactive", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_DeactivateStore_Failure_NoPermission() throws Exception {
-//        int storeId = 100;
-//        String unauthorizedToken = "not-owner-token";
-//
-//        when(real.mockAuthRepo.validToken(unauthorizedToken)).thenReturn(true);
-//        when(real.mockAuthRepo.getUserId(unauthorizedToken)).thenReturn(777);
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.deactivateStore(unauthorizedToken, storeId);
-//        });
-//
-//        assertEquals("this user does not have permission to deactivate the store", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_ReopenStore() throws Exception {
-//        int storeId = 100;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockStoreRepo.reopenStore(storeId)).thenReturn(true);
-//
-//        boolean result = real.storeService.reopenStore(ownerToken, storeId);
-//        assertTrue(result);
-//    }
-//
-//    @Test
-//    void testOwner_ViewStoreInfo() throws Exception {
-//        int storeId = 100;
-//        String ownerToken = "owner-token";
-//
-//        StoreInfo mockInfo = new StoreInfo("TestStore", "ELECTRONICS", true);
-//        when(real.mockStoreRepo.getStoreInfo(storeId)).thenReturn(mockInfo);
-//
-//        StoreInfo result = real.storeService.viewStoreInfo(ownerToken, storeId);
-//        assertNotNull(result);
-//        assertEquals("TestStore", result.getStoreName());
-//    }
-//
-//    @Test
-//    void testOwner_ViewStoreInfo_Failure_InvalidStoreId() throws Exception {
-//        int invalidStoreId = 9999;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockStoreRepo.getStoreInfo(invalidStoreId)).thenThrow(new UIException("Store not found", 4002));
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.viewStoreInfo(ownerToken, invalidStoreId);
-//        });
-//
-//        assertEquals("Store not found", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_ViewStoreInfo_Failure_NotAuthorized() throws Exception {
-//        int storeId = 100;
-//        String unauthorizedToken = "not-owner-token";
-//
-//        when(real.mockAuthRepo.validToken(unauthorizedToken)).thenReturn(true);
-//        when(real.mockAuthRepo.getUserId(unauthorizedToken)).thenReturn(888);
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.viewStoreInfo(unauthorizedToken, storeId);
-//        });
-//
-//        assertEquals("this user does not have permission to view store info", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_ReplyToMessage() throws Exception {
-//        String ownerToken = "owner-token";
-//        int storeId = 100;
-//        String msg = "We are happy to help!";
-//
-//        doNothing().when(real.mockStoreRepo).replyToMessage(ownerToken, storeId, msg);
-//
-//        assertDoesNotThrow(() -> {
-//            real.storeService.replyToMessage(ownerToken, storeId, msg);
-//        });
-//    }
-//
-//    @Test
-//    void testOwner_ReplyToMessage_Failure_UserNotFound() throws Exception {
-//        String ownerToken = "owner-token";
-//        int storeId = 100;
-//        String msg = "We are happy to help!";
-//
-//        doThrow(new UIException("User not found", 4004))
-//                .when(real.mockStoreRepo).replyToMessage(ownerToken, storeId, msg);
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.replyToMessage(ownerToken, storeId, msg);
-//        });
-//
-//        assertEquals("User not found", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_ReplyToMessage_Failure_MessageNotFound() throws Exception {
-//        String ownerToken = "owner-token";
-//        int storeId = 100;
-//        String msg = "We are happy to help!";
-//
-//        doThrow(new UIException("Message not found", 4005))
-//                .when(real.mockStoreRepo).replyToMessage(ownerToken, storeId, msg);
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.replyToMessage(ownerToken, storeId, msg);
-//        });
-//
-//        assertEquals("Message not found", ex.getMessage());
-//    }
-//    @Test
-//    void testOwner_ViewStorePurchaseHistory() throws Exception {
-//        int storeId = 100;
-//        String ownerToken = "owner-token";
-//
-//        ReceiptDTO receipt = new ReceiptDTO("StoreName", List.of());
-//        when(real.mockOrderRepo.getStorePurchaseHistory(storeId)).thenReturn(List.of(receipt));
-//
-//        List<ReceiptDTO> history = real.orderService.getStorePurchaseHistory(ownerToken, storeId);
-//        assertNotNull(history);
-//        assertFalse(history.isEmpty());
-//        assertEquals("StoreName", history.get(0).getStoreName());
-//    }
-//
-//    @Test
-//    void testOwner_ViewStorePurchaseHistory_Failure_NoHistory() throws Exception {
-//        int storeId = 100;
-//        String ownerToken = "owner-token";
-//
-//        when(real.mockOrderRepo.getStorePurchaseHistory(storeId)).thenReturn(Collections.emptyList());
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.orderService.getStorePurchaseHistory(ownerToken, storeId);
-//        });
-//
-//        assertEquals("No purchase history found for this store", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testOwner_ViewStorePurchaseHistory_Failure_NotAuthorized() throws Exception {
-//        int storeId = 100;
-//        String otherToken = "unauth-token";
-//        int otherId = 222;
-//
-//        when(real.mockAuthRepo.validToken(otherToken)).thenReturn(true);
-//        when(real.mockAuthRepo.getUserId(otherToken)).thenReturn(otherId);
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.orderService.getStorePurchaseHistory(otherToken, storeId);
-//        });
-//
-//        assertEquals("this user does not have permission to view store history", ex.getMessage());
-//    }
-//
-//
-//    @Test
-//    void testOwner_RequestStoreRolesInfo() throws Exception {
-//        int storeId = 100;
-//        String ownerToken = "owner-token";
-//
-//        List<String> mockRoles = List.of("owner: owner", "manager: testUser");
-//        when(real.mockStoreRepo.getStoreRolesInfo(storeId)).thenReturn(mockRoles);
-//
-//        List<String> roles = real.storeService.getStoreRoles(ownerToken, storeId);
-//
-//        assertNotNull(roles);
-//        assertTrue(roles.contains("owner: owner"));
-//        assertTrue(roles.contains("manager: testUser"));
-//    }
-//
-//    @Test
-//    void testOwner_ViewManagerPermissions() throws Exception {
-//        int storeId = 100;
-//        int managerId = 20;
-//        String ownerToken = "owner-token";
-//
-//        List<PermissionDTO> mockPermissions = List.of(new PermissionDTO("AddToStock"));
-//        when(real.mockIOSrepo.getPermissions(storeId, managerId)).thenReturn(mockPermissions);
-//
-//        List<PermissionDTO> perms = real.storeService.getManagerPermissions(ownerToken, storeId, managerId);
-//
-//        assertNotNull(perms);
-//        assertEquals("AddToStock", perms.get(0).getName());
-//    }
-//
-//    // ========== Store Manager Use Cases ==========
-//
-//    void AddTheUserAsManager() throws Exception {
-//        int storeId = 100;
-//        int managerId = 20;
-//        String token = "user-token-2";
-//
-//        when(real.mockAuthRepo.validToken(token)).thenReturn(true);
-//        when(real.mockAuthRepo.getUserId(token)).thenReturn(managerId);
-//        when(real.mockAuthRepo.getUserName(token)).thenReturn("testUser");
-//        when(real.mockAuthRepo.isRegistered(token)).thenReturn(true);
-//        when(real.mockUserRepo.isRegistered(managerId)).thenReturn(true);
-//
-//        when(real.mockIOSrepo.addStoreManager(storeId, 10, managerId)).thenReturn(true);
-//        when(real.mockIOSrepo.isStoreManager(storeId, managerId)).thenReturn(true);
-//        when(real.mockIOSrepo.manipulateItem(managerId, storeId, Permission.AddToStock)).thenReturn(true);
-//        when(real.mockIOSrepo.manipulateItem(managerId, storeId, Permission.UpdateStock)).thenReturn(true);
-//    }
-//    @Test
-//    void testManager_AddProduct_WithPermission() throws Exception {
-//        int storeId = 100;
-//        int managerId = 20;
-//        String token = "user-token-2";
-//        AddTheUserAsManager();
-//
-//        item expectedItem = new item(300, 5, 200, Category.ELECTRONICS);
-//        when(real.mockStoreRepo.addItem(storeId, 300, 5, 200, Category.ELECTRONICS)).thenReturn(expectedItem);
-//
-//        boolean result = real.storeService.addItem(storeId, token, 300, 5, 200, Category.ELECTRONICS);
-//        assertTrue(result);
-//    }
-//    @Test
-//    void testManager_UpdateProduct_WithPermission() throws Exception {
-//        int storeId = 100;
-//        int managerId = 20;
-//        String token = "user-token-2";
-//        AddTheUserAsManager();
-//
-//        item updatedItem = new item(300, 10, 250, Category.ELECTRONICS);
-//        when(real.mockStoreRepo.updateItem(storeId, 300, 10, 250, Category.ELECTRONICS)).thenReturn(updatedItem);
-//
-//        boolean result = real.storeService.updateItem(storeId, token, 300, 10, 250, Category.ELECTRONICS);
-//        assertTrue(result);
-//    }
-//
-//    @Test
-//    void testManager_ViewStoreInfo_WithPermission() throws Exception {
-//        int storeId = 100;
-//        String token = "user-token-2";
-//        AddTheUserAsManager();
-//
-//
-//        StoreInfo mockInfo = new StoreInfo("TestStore", "ELECTRONICS", true);
-//        when(real.mockStoreRepo.getStoreInfo(storeId)).thenReturn(mockInfo);
-//
-//        StoreInfo result = real.storeService.viewStoreInfo(token, storeId);
-//        assertNotNull(result);
-//        assertEquals("TestStore", result.getStoreName());
-//    }
-//
-//    @Test
-//    void testManager_ViewPurchaseHistory_WithPermission() throws Exception {
-//        int storeId = 100;
-//        String token = "user-token-2";
-//        AddTheUserAsManager();
-//
-//        ReceiptDTO receipt = new ReceiptDTO("TestStore", List.of());
-//        when(real.mockOrderRepo.getStorePurchaseHistory(storeId)).thenReturn(List.of(receipt));
-//
-//        List<ReceiptDTO> history = real.orderService.getStorePurchaseHistory(token, storeId);
-//        assertNotNull(history);
-//        assertFalse(history.isEmpty());
-//        assertEquals("TestStore", history.get(0).getStoreName());
-//    }
-//
-//    @Test
-//    void testManager_ReplyToMessage_WithPermission() throws Exception {
-//        String token = "user-token-2";
-//        int storeId = 100;
-//        String msg = "Thanks for your feedback!";
-//        AddTheUserAsManager();
-//
-//        doNothing().when(real.mockStoreRepo).replyToMessage(token, storeId, msg);
-//
-//        assertDoesNotThrow(() -> real.storeService.replyToMessage(token, storeId, msg));
-//    }
-//
-//    @Test
-//    void testManager_Action_Failure_NoPermission() throws Exception {
-//        int storeId = 100;
-//        String token = "user-token-2";
-//        AddTheUserAsManager();
-//
-//        when(real.mockIOSrepo.manipulateItem(20, storeId, Permission.AddToStock)).thenReturn(false);
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.addItem(storeId, token, 300, 5, 200, Category.ELECTRONICS);
-//        });
-//
-//        assertEquals("this worker is not authorized!", ex.getMessage());
-//    }
-//
-//
-//    @Test
-//    void testManager_DeleteProduct_WithPermission() throws Exception {
-//        int storeId = 100;
-//        String token = "user-token-2";
-//        AddTheUserAsManager();
-//
-//        when(real.mockStoreRepo.deleteItem(storeId, 300)).thenReturn(true);
-//
-//        boolean result = real.storeService.deleteItem(storeId, token, 300);
-//        assertTrue(result);
-//    }
-//
-//    @Test
-//    void testManager_DeleteProduct_WithoutPermission() throws Exception {
-//        int storeId = 100;
-//        String token = "user-token-2";
-//        AddTheUserAsManager();
-//
-//        when(real.mockIOSrepo.manipulateItem(20, storeId, Permission.RemoveFromStock)).thenReturn(false);
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            real.storeService.deleteItem(storeId, token, 300);
-//        });
-//
-//        assertEquals("this worker is not authorized!", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testManager_DeleteProduct_Failure_ProductNotFound() throws Exception {
-//        int storeId = 100;
-//        String token = "user-token-2";
-//        AddTheUserAsManager();
-//
-//        when(real.mockStoreRepo.deleteItem(storeId, 999)).thenReturn(false);
-//
-//        boolean result = real.storeService.deleteItem(storeId, token, 999);
-//        assertFalse(result);
-//    }
-//
-//    @Test
-//    void testManager_DeleteProduct_Failure_InvalidStoreId() throws Exception {
-//        int invalidStoreId = -1;
-//        String token = "user-token-2";
-//        AddTheUserAsManager();
-//
-//        when(real.mockIOSrepo.manipulateItem(20, invalidStoreId, Permission.RemoveFromStock)).thenReturn(true);
-//        when(real.mockStoreRepo.deleteItem(invalidStoreId, 300)).thenReturn(false);
-//
-//        boolean result = real.storeService.deleteItem(invalidStoreId, token, 300);
-//        assertFalse(result);
-//    }
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+        List<Permission> a = new LinkedList<>();
+        a.add(Permission.AddToStock);
+        a.add(Permission.DeleteFromStock);
+        int result = real.storeService.AddManagerToStore(storeId, ownerToken, ownerId, a);
+
+        assertEquals(result, -1);
+    }
+
+
+    @Test
+    void testOwner_AddStoreManager_Failure_UserNotExist() throws Exception {
+        int nonExistentUserId = 9999;
+        int ownerId = 10;
+        String ownerToken = "user-token"; // מתוך setup
+        int storeId = 100;
+
+        // סימולציה: הבעלים מורשה למנות מנהלים
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+
+        // סימולציה: המשתמש שמנסים למנות לא רשום בכלל — לכן תיזרק שגיאה
+        doThrow(new UIException("User not registered", ErrorCodes.USER_NOT_FOUND))
+                .when(real.mockUserRepo).checkUserRegister_ThrowException(nonExistentUserId);
+        List<Permission> a = new LinkedList<>();
+        a.add(Permission.AddToStock);
+        a.add(Permission.DeleteFromStock);
+        // ניסיון מינוי – אמור להיכשל
+        assertThrows(UIException.class, () -> {
+            real.storeService.AddManagerToStore(storeId, ownerToken, nonExistentUserId, a);
+        });
+    }
+
+    @Test
+    void testOwner_AddStoreManager_Failure_AlreadyManager() throws Exception {
+        int ownerId = 10;
+        int storeId = 100;
+        int managerId = 20;
+        String ownerToken = "user-token";
+
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+
+        doThrow(new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION))
+                .when(real.mockIOSrepo).checkToAddManager(storeId, ownerId, managerId);
+
+        List<Permission> permissions = new LinkedList<>();
+        permissions.add(Permission.AddToStock);
+        permissions.add(Permission.DeleteFromStock);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            real.storeService.AddManagerToStore(storeId, ownerToken, managerId, permissions);
+        });
+
+        assertEquals("This worker is already an owner/manager", ex.getMessage());
+    }
+
+    @Test
+    void testOwner_AddStoreManager_Failure_OwnerTargetNotFound() throws Exception {
+        int ownerId = 10;
+        int storeId = 100;
+        int managerId = 20;
+        String ownerToken = "user-token";
+
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+
+        doThrow(new DevException("Owner does not exist in this store"))
+                .when(real.mockIOSrepo).checkToAddManager(storeId, ownerId, managerId);
+
+        List<Permission> permissions = new LinkedList<>();
+        permissions.add(Permission.AddToStock);
+        permissions.add(Permission.DeleteFromStock);
+
+        DevException ex = assertThrows(DevException.class, () -> {
+            real.storeService.AddManagerToStore(storeId, ownerToken, managerId, permissions);
+        });
+
+        assertEquals("Owner does not exist in this store", ex.getMessage());
+    }
+
+    @Test
+    void testOwner_AddStoreManager_Failure_StoreClosed() throws Exception {
+        int ownerId = 10;
+        int storeId = 100;
+        int managerId = 20;
+        String ownerToken = "user-token";
+
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+
+        doThrow(new DevException("Store not found with ID: " + storeId))
+                .when(real.mockStoreRepo).checkStoreIsActive(storeId);
+
+        List<Permission> permissions = new LinkedList<>();
+        permissions.add(Permission.AddToStock);
+        permissions.add(Permission.DeleteFromStock);
+
+        DevException ex = assertThrows(DevException.class, () -> {
+            real.storeService.AddManagerToStore(storeId, ownerToken, managerId, permissions);
+        });
+
+        assertEquals("Store not found with ID: " + storeId, ex.getMessage());
+    }
+    //delete manager
+    @Test
+    void testDeleteManager_Success() throws Exception {
+        int ownerId = 10;
+        int storeId = 100;
+        int managerId = 20;
+        String ownerToken = "owner-token";
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+
+        doNothing().when(real.mockIOSrepo).checkToAddManager(storeId, ownerId, managerId);
+        //doNothing().when(real.mockIOSrepo).AddManagerToStore(storeId, ownerId, managerId);
+        List<Permission> a = new LinkedList<>();
+        a.add(Permission.AddToStock);
+        a.add(Permission.DeleteFromStock);
+        int result = real.storeService.AddManagerToStore(storeId, ownerToken, managerId, a);
+        assertEquals(result, managerId);
+        when(real.mockUserRepo.checkUserRegister_ThrowException(ownerId)).thenReturn(true);
+        when(real.mockSusRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId)).thenReturn(true);
+        when(real.mockUserRepo.checkUserRegisterOnline_ThrowException(managerId)).thenReturn(true);
+        when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
+        when(real.mockStoreRepo.checkStoreIsActive(storeId)).thenReturn(true);
+        real.storeService.deleteManager(storeId,ownerToken,managerId);
+    }
+    @Test
+    void testDeleteManager_Failure_StoreExist() throws Exception {
+        int ownerId = 10;
+        int storeId = 100;
+        int managerId = 20;
+        String ownerToken = "owner-token";
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+
+        doNothing().when(real.mockIOSrepo).checkToAddManager(storeId, ownerId, managerId);
+        //doNothing().when(real.mockIOSrepo).AddManagerToStore(storeId, ownerId, managerId);
+        List<Permission> a = new LinkedList<>();
+        a.add(Permission.AddToStock);
+        a.add(Permission.DeleteFromStock);
+        int result = real.storeService.AddManagerToStore(storeId, ownerToken, managerId, a);
+        assertEquals(result, managerId);
+        when(real.mockUserRepo.checkUserRegister_ThrowException(ownerId)).thenReturn(true);
+        when(real.mockSusRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId)).thenReturn(true);
+        when(real.mockUserRepo.checkUserRegisterOnline_ThrowException(managerId)).thenReturn(true);
+        when(real.mockStoreRepo.checkStoreExistance(storeId)).thenThrow(new UIException(" store does not exist.", ErrorCodes.STORE_NOT_FOUND));
+        when(real.mockStoreRepo.checkStoreIsActive(storeId)).thenReturn(true);
+        //real.storeService.deleteManager(storeId,ownerToken,managerId);
+
+        UIException ex=assertThrows(UIException.class, () -> {
+            real.storeService.deleteManager(storeId,ownerToken,managerId);
+        });
+        assertEquals(ex.getMessage()," store does not exist.");
+        assertEquals(ex.getNumber(),1005);
+    }
+
+    @Test
+    void testDeleteManager_Failure_StoreNotActive() throws Exception {
+        int ownerId = 10;
+        int storeId = 100;
+        int managerId = 20;
+        String ownerToken = "owner-token";
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+
+        doNothing().when(real.mockIOSrepo).checkToAddManager(storeId, ownerId, managerId);
+        //doNothing().when(real.mockIOSrepo).AddManagerToStore(storeId, ownerId, managerId);
+        List<Permission> a = new LinkedList<>();
+        a.add(Permission.AddToStock);
+        a.add(Permission.DeleteFromStock);
+        int result = real.storeService.AddManagerToStore(storeId, ownerToken, managerId, a);
+        assertEquals(result, managerId);
+        when(real.mockUserRepo.checkUserRegister_ThrowException(ownerId)).thenReturn(true);
+        when(real.mockSusRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId)).thenReturn(true);
+        when(real.mockUserRepo.checkUserRegisterOnline_ThrowException(managerId)).thenReturn(true);
+        when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
+        when(real.mockStoreRepo.checkStoreIsActive(storeId)).thenThrow(new DevException(" store is not active"));
+        //real.storeService.deleteManager(storeId,ownerToken,managerId);
+
+        DevException ex=assertThrows(DevException.class, () -> {
+            real.storeService.deleteManager(storeId,ownerToken,managerId);
+        });
+        assertEquals(ex.getMessage()," store is not active");
+    }
+    @Test
+    void testDeleteManager_Failure_StoreNotFound() throws Exception {
+        int ownerId = 10;
+        int storeId = 100;
+        int managerId = 20;
+        String ownerToken = "owner-token";
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+
+        doNothing().when(real.mockIOSrepo).checkToAddManager(storeId, ownerId, managerId);
+        //doNothing().when(real.mockIOSrepo).AddManagerToStore(storeId, ownerId, managerId);
+        List<Permission> a = new LinkedList<>();
+        a.add(Permission.AddToStock);
+        a.add(Permission.DeleteFromStock);
+        int result = real.storeService.AddManagerToStore(storeId, ownerToken, managerId, a);
+        assertEquals(result, managerId);
+        when(real.mockUserRepo.checkUserRegister_ThrowException(ownerId)).thenReturn(true);
+        when(real.mockSusRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId)).thenReturn(true);
+        when(real.mockUserRepo.checkUserRegisterOnline_ThrowException(managerId)).thenReturn(true);
+        when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
+        when(real.mockStoreRepo.checkStoreIsActive(storeId)).thenThrow(new DevException("Store not found with ID: " + storeId));
+        //real.storeService.deleteManager(storeId,ownerToken,managerId);
+
+        DevException ex=assertThrows(DevException.class, () -> {
+            real.storeService.deleteManager(storeId,ownerToken,managerId);
+        });
+        assertEquals(ex.getMessage(),"Store not found with ID: "+storeId);
+    }
+
+    @Test
+    void testOwner_ManageStoreManagerPermissions() throws Exception {
+        int ownerId = 10;
+        int storeId = 100;
+        int managerId = 20;
+        String ownerToken = "owner-token";
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+        doNothing().when(real.mockIOSrepo).checkToAddManager(storeId, ownerId, managerId);
+        //doNothing().when(real.mockIOSrepo).AddManagerToStore(storeId, ownerId, managerId);
+        List<Permission> a = new LinkedList<>();
+        a.add(Permission.AddToStock);
+        a.add(Permission.DeleteFromStock);
+        int result = real.storeService.AddManagerToStore(storeId, ownerToken, managerId, a);
+        assertEquals(result, managerId);
+        List<Permission> updatedPermissions = new LinkedList<>();
+        updatedPermissions.add(Permission.UpdatePrice);
+
+        doNothing().when(real.mockIOSrepo).changePermissions(ownerId, managerId, storeId, updatedPermissions);
+
+        assertDoesNotThrow(() -> {
+            real.storeService.changePermissions(ownerToken, managerId, storeId, updatedPermissions);
+        });
+    }
+    @Test
+    void testOwner_ManageStoreManagerPermissions_Failure_NotAManagerFlag() throws Exception {
+        int ownerId = 10;
+        int storeId = 100;
+        int notManagerId = 20;
+        String ownerToken = "owner-token";
+
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+
+        List<Permission> permissions = new LinkedList<>();
+        permissions.add(Permission.UpdatePrice);
+
+        doThrow(new UIException("User is not a manager", ErrorCodes.NO_PERMISSION))
+                .when(real.mockIOSrepo)
+                .changePermissions(ownerId, notManagerId, storeId, permissions);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            real.storeService.changePermissions(ownerToken, notManagerId, storeId, permissions);
+        });
+
+        assertEquals("User is not a manager", ex.getMessage());
+    }
+
+    @Test
+    void testOwner_DeactivateStore() throws Exception {
+        int storeId = 100;
+        String ownerToken = "owner-token";
+        int result=real.storeService.deactivateteStore(100,ownerToken);
+        assertEquals(result,storeId);
+    }
+
+    @Test
+    void testOwner_DeactivateStore_Failure_AlreadyInactive() throws Exception {
+        int ownerId = 10;
+        int storeId = 100;
+        String ownerToken = "owner-token";
+
+        Store s = new Store(storeId, "TestStore", "ELECTRONICS");
+        when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(s);
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+        real.storeService.deactivateteStore(storeId,ownerToken);
+
+
+        // Simulate store already deactivated → should throw
+        doThrow(new UIException("can't deactivate an DEactivated store", ErrorCodes.DEACTIVATED_STORE))
+                .when(real.mockStoreRepo).deactivateStore(storeId, ownerId);
+
+        // Assert exception is thrown
+        UIException ex = assertThrows(UIException.class, () -> {
+            real.storeService.deactivateteStore(storeId, ownerToken);
+        });
+
+        assertEquals("can't deactivate an DEactivated store", ex.getMessage());
+    }
+
+    @Test
+    void testOwner_ViewStorePurchaseHistory() throws Exception {
+        int ownerId = 10;
+        int storeId = 100;
+        String ownerToken = "owner-token";
+        List<OrderDTO> history=real.storeService.veiwStoreHistory(storeId);
+        assertTrue(history.isEmpty());
+    }
+
+    @Test
+    void testOwner_ViewStorePurchaseHistory_Failure_StoreNotExist() throws Exception {
+        int ownerId = 10;
+        int storeId = 100;
+        String ownerToken = "owner-token";
+        doThrow(new UIException("Store does not exist!", ErrorCodes.STORE_NOT_FOUND))
+                .when(real.mockOrderRepo).getAllOrderByStore(storeId);
+
+        // Assert exception is thrown
+        UIException ex = assertThrows(UIException.class, () -> {
+            real.storeService.veiwStoreHistory(storeId);
+        });
+
+        assertEquals("Store does not exist!", ex.getMessage());
+
+
+    }
+
+    //todo not implemented
+    @Test
+    void testOwner_RequestStoreRolesInfoAndPermission() throws Exception {
+        int ownerId = 10;
+        int storeId = 100;
+        String ownerToken = "owner-token";
+        List<WorkerDTO> worker=real.storeService.ViewRolesAndPermissions(storeId);
+        assertTrue(worker.isEmpty());
+    }
+
+    @Test
+    void testOwner_AddPurchasePolicy() throws Exception {
+        //TODO
+    }
+    @Test
+    void testOwner_AddPurchasePolicy_Failure_InvalidPolicy() throws Exception {
+        //TODO
+    }
+    @Test
+    void testOwner_AddPurchasePolicy_Failure_NotOwner() throws Exception {
+        //TODO
+
+    }
+//
+    @Test
+    void testOwner_DeletePurchasePolicy() throws Exception {
+        //TODO
+
+    }
+
+    @Test
+    void testOwner_DeletePurchasePolicy_Failure_NotFound() throws Exception {
+        //TODO
+    }
+//
+    @Test
+    void testOwner_DeletePurchasePolicy_Failure_NoPermission() throws Exception {
+        //TODO
+    }
+
+    @Test
+    void testOwner_ReplyToMessage() throws Exception {
+        //TODO
+    }
+//
+    @Test
+    void testOwner_ReplyToMessage_Failure_UserNotFound() throws Exception {
+        //TODO
+    }
+//
+    @Test
+    void testOwner_ReplyToMessage_Failure_MessageNotFound() throws Exception {
+        //TODO
+    }
+
+        @Test
+    void testOwner_ReopenStore() throws Exception {
+        //TODO
+    }
+    //todo:this case is not checked
+    @Test
+    void testOwner_DeleteProductFromStock_Failure_ProductNotFound() throws Exception {
+        int storeId = 100;
+        int productId = 999;  // Non-existent product
+        int ownerId = 10;
+        String ownerToken = "user-token";  // from setup
+
+        // === Simulate permission granted
+        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.DeleteFromStock)).thenReturn(true);
+
+        // === Simulate product does NOT exist by throwing exception
+        when(real.mockStockRepo.findByIdInSystem_throwException(productId))
+                .thenThrow(new UIException("Product not found!", ErrorCodes.PRODUCT_NOT_FOUND));
+
+        // === Act & Assert
+        UIException ex = assertThrows(UIException.class, () ->
+                real.stockService.removeItem(storeId, ownerToken, productId)
+        );
+
+        assertEquals("Product not found!", ex.getMessage());
+        assertEquals(ErrorCodes.PRODUCT_NOT_FOUND, ex.getNumber());
+    }
+
+    @Test
+    void testOwner_AddToAuction_Success() throws Exception {
+        int storeId = 100;
+        int productId = 200;
+        int ownerId = 10;
+        String ownerToken = "user-token";
+        //create list have all permissions
+        List<Permission> permissions=new LinkedList<>();
+        permissions.add(Permission.AddToStock);
+        permissions.add(Permission.ViewAllProducts);
+        permissions.add(Permission.DeleteFromStock);
+        permissions.add(Permission.SpecialType);
+        permissions.add(Permission.UpdatePrice);
+        permissions.add(Permission.UpdateQuantity);
+
+        when(real.mockIOSrepo.manipulateItem(ownerId,storeId,Permission.SpecialType)).thenReturn(true);
+        real.stockService.setProductToAuction(ownerToken,storeId,productId,1,5000,2);
+    }
+
+    @Test
+    void testOwner_AddToBID_Success() throws Exception {
+        int storeId = 100;
+        int productId = 200;
+        int ownerId = 10;
+        String ownerToken = "user-token";
+        //create list have all permissions
+        List<Permission> permissions=new LinkedList<>();
+        permissions.add(Permission.AddToStock);
+        permissions.add(Permission.ViewAllProducts);
+        permissions.add(Permission.DeleteFromStock);
+        permissions.add(Permission.SpecialType);
+        permissions.add(Permission.UpdatePrice);
+        permissions.add(Permission.UpdateQuantity);
+
+        when(real.mockIOSrepo.manipulateItem(ownerId,storeId,Permission.SpecialType)).thenReturn(true);
+        real.stockService.setProductToBid(ownerToken,storeId,productId,1);
+    }
+
+    @Test
+    void testOwner_AddToRandom_Success() throws Exception {
+        int storeId = 100;
+        int productId = 200;
+        int ownerId = 10;
+        String ownerToken = "user-token";
+        //create list have all permissions
+        List<Permission> permissions=new LinkedList<>();
+        permissions.add(Permission.AddToStock);
+        permissions.add(Permission.ViewAllProducts);
+        permissions.add(Permission.DeleteFromStock);
+        permissions.add(Permission.SpecialType);
+        permissions.add(Permission.UpdatePrice);
+        permissions.add(Permission.UpdateQuantity);
+
+        when(real.mockIOSrepo.manipulateItem(ownerId,storeId,Permission.SpecialType)).thenReturn(true);
+        real.stockService.setProductToRandom(ownerToken,productId,1,100,storeId,5000);
+    }
+    @Test
+    void testOwner_AddtoBID_RANDOM_AUCTION_FAILURE() throws Exception {
+        int storeId = 100;
+        int productId = 200;
+        int ownerId = 10;
+        String ownerToken = "user-token";
+        //create list have all permissions
+        List<Permission> permissions=new LinkedList<>();
+        permissions.add(Permission.AddToStock);
+        permissions.add(Permission.ViewAllProducts);
+        permissions.add(Permission.DeleteFromStock);
+        permissions.add(Permission.SpecialType);
+        permissions.add(Permission.UpdatePrice);
+        permissions.add(Permission.UpdateQuantity);
+
+        when(real.mockIOSrepo.manipulateItem(ownerId,storeId,null)).thenReturn(false);
+        //real.stockService.setProductToBid(ownerToken,storeId,productId,1);
+
+        UIException ex = assertThrows(UIException.class, () ->
+                real.stockService.setProductToBid(ownerToken,storeId,productId,1)
+        );
+        assertEquals(ex.getMessage(),"you have no permession to set product to bid.");
+        assertEquals(1004,ex.getNumber());
+    }
+
+
 }
 

@@ -1,122 +1,131 @@
 package workshop.demo.ApplicationLayer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.SpecialCartItemDTO;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
-import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
+@Service
 public class UserService {
-     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private IUserRepo userRepo;
     private IAuthRepo authRepo;
+    private IStockRepo stockRepo;
 
-    public UserService(IUserRepo userRepo, IAuthRepo authRepo) {
+    @Autowired
+    public UserService(IUserRepo userRepo, IAuthRepo authRepo, IStockRepo stockRepo) {
         this.userRepo = userRepo;
         this.authRepo = authRepo;
+        this.stockRepo = stockRepo;
     }
 
-    public String generateGuest() throws UIException , Exception{
+    public String generateGuest() throws UIException, Exception {
         logger.info("generateGuest called");
         int id = userRepo.generateGuest();
         logger.info("Generated guest with ID={}", id);
         return authRepo.generateGuestToken(id);
     }
 
-    public void register(String token, String username, String password) throws UIException {
+    //for test boolean
+    public boolean register(String token, String username, String password, int age) throws UIException {
         logger.info("register called for username={}", username);
-
-        if (authRepo.validToken(token)) {
-            logger.info("User {} registered", username);
-
-            userRepo.registerUser(username, password);
-            //return true;
-        } else {
-            logger.error("Invalid token in register");
-
-            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-        }
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        userRepo.registerUser(username, password, age);
+        return true;
     }
 
     public String login(String token, String username, String pass) throws UIException {
         logger.info("login called for username={}", username);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int id = userRepo.login(username, pass);
+        logger.info("User {} logged in .", username);
+        return authRepo.generateUserToken(id, username);
 
-        if (authRepo.validToken(token)) {
-            int id = userRepo.login(username, pass);
-            logger.info("User {} logged in .", username);
-
-            return authRepo.generateUserToken(id, username);
-        } else {
-            logger.error("Invalid token in login");
-
-            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-        }
     }
 
-    public void destroyGuest(String token) throws UIException {
+    //for test
+    public boolean destroyGuest(String token) throws UIException {
         logger.info("destroyGuest called");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int id = authRepo.getUserId(token);
+        logger.info("Destroyed guest with ID={}", id);
+        userRepo.destroyGuest(id);
+        return true;
 
-        if (authRepo.validToken(token)) {
-            int id = authRepo.getUserId(token);
-            logger.info("Destroyed guest with ID={}", id);
-
-            userRepo.destroyGuest(id);
-            
-        } else {
-            logger.error("Invalid token in destroyGuest");
-
-            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-        }
     }
 
     public String logoutUser(String token) throws UIException {
         logger.info("logoutUser called");
-
-        if (authRepo.validToken(token)) {
-            String userName = authRepo.getUserName(token);
-            int id = userRepo.logoutUser(userName);
-            logger.info("User {} logged out", userName);
-
-            return authRepo.generateGuestToken(id);
-        } else {
-            logger.error("Invalid token in logoutUser");
-
-            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-        }
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        String userName = authRepo.getUserName(token);
+        int id = userRepo.logoutUser(userName);
+        logger.info("User {} logged out", userName);
+        return authRepo.generateGuestToken(id);
     }
 
-    public boolean setAdmin(String token, String adminKey,int id) throws UIException {
+    public boolean setAdmin(String token, String adminKey, int id) throws UIException {
         logger.info("setAdmin called");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        logger.info("User {} set as admin: {}");
+        return userRepo.setUserAsAdmin(id, adminKey);
 
-        if (authRepo.validToken(token)) {
-         //   String userName = authRepo.getUserName(token);
-            //int id = userRepo.logoutUser(userName);
-            logger.info("User {} set as admin: {}");
-
-            return userRepo.setUserAsAdmin(id, adminKey);
-        } else {
-            logger.error("Invalid token in setAdmin");
-
-            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-        }
     }
 
     public boolean addToUserCart(String token, ItemStoreDTO itemToAdd) throws UIException {
         logger.info("addToUserCart called");
-
-        if (!authRepo.validToken(token)) {
-            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-        }
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         ItemCartDTO item = new ItemCartDTO(itemToAdd);
         userRepo.addItemToGeustCart(authRepo.getUserId(token), item);
         logger.info("Item added to user cart");
-
         return true;
     }
+
+
+    public SpecialCartItemDTO[] getSpecialCart(String token) throws UIException {
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        List<UserSpecialItemCart> specialIds = userRepo.getAllSpecialItems(userId);
+        List<SpecialCartItemDTO> result = new ArrayList<>();
+        for (UserSpecialItemCart item : specialIds) {
+            SpecialCartItemDTO itemToSend = new SpecialCartItemDTO();
+            itemToSend.setIds(item.storeId, item.specialId, item.bidId, item.type);
+            if (item.type == SpecialType.Random) {
+                ParticipationInRandomDTO card = stockRepo.getRandomCard(item.storeId, item.specialId, item.bidId);
+                itemToSend.setValues(stockRepo.GetProductNameForBid(item.storeId, item.specialId, item.type), card.isWinner, card.ended);
+            } else {
+                SingleBid bid = stockRepo.getBid(item.storeId, item.specialId, item.bidId, item.type);
+                itemToSend.setValues(stockRepo.GetProductNameForBid(item.storeId, item.specialId, item.type), bid.isWinner() || bid.isAccepted(), bid.isEnded());
+            }
+            result.add(itemToSend);
+        }
+        return result.toArray(new SpecialCartItemDTO[0]);
+    }
+
+
+    public UserDTO getUserDTO(String token) throws UIException {
+        logger.info("getUserDTO");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        return userRepo.getUserDTO(userId);
+    }
+
 }

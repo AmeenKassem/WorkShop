@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.UserDTO;
 
 public class Guest {
     private static final Logger logger = LoggerFactory.getLogger(Guest.class);
@@ -51,6 +52,10 @@ public class Guest {
 
     public ShoppingCart geCart() {
         return cart;
+    }
+
+    public UserDTO getUserDTO() {
+        return new UserDTO(this.id);
     }
 
 }

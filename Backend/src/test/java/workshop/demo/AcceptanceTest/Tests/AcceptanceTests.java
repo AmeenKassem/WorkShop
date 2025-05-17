@@ -38,8 +38,8 @@ public abstract class AcceptanceTests {
         return bridge.testGuest_Exit(token);
     }
 
-    String testGuest_Register(String token, String username, String password) throws Exception {
-        return bridge.testGuest_Register(token, username, password);
+    boolean testGuest_Register(String token, String username, String password, int age) throws Exception {
+        return bridge.testGuest_Register(token, username, password, age);
     }
 
     String testGuest_GetStoreProducts(int storeID) throws Exception {

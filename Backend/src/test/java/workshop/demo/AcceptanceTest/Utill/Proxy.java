@@ -5,6 +5,7 @@ import java.util.List;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
@@ -43,8 +44,8 @@ public class Proxy implements Bridge {
     }
 
     @Override
-    public String testGuest_Register(String token, String username, String password) throws Exception {
-        return real.testGuest_Register(token, username, password);
+    public boolean testGuest_Register(String token, String username, String password, int age) throws Exception {
+        return real.testGuest_Register(token, username, password, age);
     }
 
     @Override
@@ -58,7 +59,7 @@ public class Proxy implements Bridge {
     }
 
     @Override
-    public  ItemStoreDTO[] testGuest_SearchProduct(String token, ProductSearchCriteria criteria) throws Exception {
+    public ItemStoreDTO[] testGuest_SearchProduct(String token, ProductSearchCriteria criteria) throws Exception {
         return real.testGuest_SearchProduct(token, criteria);
     }
 
@@ -69,7 +70,7 @@ public class Proxy implements Bridge {
 
     @Override
     public boolean testGuest_AddProductToCart(String token, ItemStoreDTO a) throws Exception {
-        return real.testGuest_AddProductToCart( token, a);
+        return real.testGuest_AddProductToCart(token, a);
     }
 
     @Override
@@ -135,7 +136,7 @@ public class Proxy implements Bridge {
     }
 
     @Override
-    public String testUser_CheckPurchaseHistory(String token) throws Exception {
+    public List<ReceiptDTO> testUser_CheckPurchaseHistory(String token) throws Exception {
         return real.testUser_CheckPurchaseHistory(token);
     }
 
@@ -173,10 +174,12 @@ public class Proxy implements Bridge {
     public String testUser_getAllRandomInStore(String token, int storeId) throws Exception {
         return real.testUser_getAllRandomInStore(token, storeId);
     }
+
     @Override
     public String testUser_BuyCart(String token) throws Exception {
         return real.testUser_BuyCart(token);
     }
+
     // Owner
     @Override
     public String testOwner_ManageInventory_AddProduct(int storeId, String token, int productId, int quantity,
@@ -299,7 +302,7 @@ public class Proxy implements Bridge {
         return real.testOwner_addProductToRandom(token, storeId, quantity, productId, numberOfCards, priceForCard);
     }
 
-    // manager 
+    // manager
     @Override
     public String testManager_PerformPermittedActions(String token, int storeID)
             throws Exception {

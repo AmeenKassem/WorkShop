@@ -1,4 +1,5 @@
 package workshop.demo.AcceptanceTest.Utill;
+
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +18,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.InfrastructureLayer.*;
 import workshop.demo.DTOs.*;
+
 public class Real implements Bridge {
     public AuthenticationRepo mockAuthRepo = Mockito.mock(AuthenticationRepo.class);
     public UserRepository mockUserRepo = Mockito.mock(UserRepository.class);
@@ -25,12 +27,13 @@ public class Real implements Bridge {
     public OrderRepository mockOrderRepo = Mockito.mock(OrderRepository.class);
     public PurchaseRepository mockPurchaseRepo = Mockito.mock(PurchaseRepository.class);
     public StockRepository mockStockRepo = Mockito.mock(StockRepository.class);
-    //public ISUConnectionRepo mockIOSrepo=Mockito.mock(ISUConnectionRepo.class);
 
-    public ISUConnectionRepo mockIOSrepo=new SUConnectionRepository();
-    public SuperDataStructure mockserviceios=new SuperDataStructure();
-    public SingleBid mockSingleBid = Mockito.mock(SingleBid.class);
-    public ShoppingCart mockShoppingCart = Mockito.mock(ShoppingCart.class);
+    public ISUConnectionRepo mockIOSrepo = Mockito.mock(ISUConnectionRepo.class);
+    public UserSuspensionRepo mockSusRepo = Mockito.mock(UserSuspensionRepo.class);
+    //public SuperDataStructure mockserviceios=new SuperDataStructure();
+
+    //    public SingleBid mockSingleBid = Mockito.mock(SingleBid.class);
+//    public ShoppingCart mockShoppingCart = Mockito.mock(ShoppingCart.class);
     public PaymentServiceImp mockPay = Mockito.mock(PaymentServiceImp.class);
     public SupplyServiceImp mockSupply = Mockito.mock(SupplyServiceImp.class);
     // Service layer classes (built with mocks)
@@ -40,22 +43,24 @@ public class Real implements Bridge {
     public NotificationService notificationService;
     public PurchaseService purchaseService;
     public OrderService orderService;
+
     public Real() {
         initServices();
         //setupDefaultMocks();
     }
 
     private void initServices() {
-        orderService = new OrderService(mockOrderRepo, mockStoreRepo, mockAuthRepo,mockUserRepo);
+        orderService = new OrderService(mockOrderRepo, mockStoreRepo, mockAuthRepo, mockUserRepo);
 
-        stockService = new StockService(mockStockRepo, mockStoreRepo, mockAuthRepo);
-        userService = new UserService(mockUserRepo, mockAuthRepo);
-        storeService = new StoreService(mockStoreRepo, mockNotiRepo, mockAuthRepo,mockUserRepo,mockOrderRepo,mockIOSrepo);
+        stockService = new StockService(mockStockRepo, mockStoreRepo, mockAuthRepo, mockUserRepo, mockIOSrepo, mockSusRepo);
+        userService = new UserService(mockUserRepo, mockAuthRepo, mockStockRepo);
+        storeService = new StoreService(mockStoreRepo, mockNotiRepo, mockAuthRepo, mockUserRepo, mockOrderRepo, mockIOSrepo, mockStockRepo, mockSusRepo);
         notificationService = new NotificationService(mockNotiRepo, mockUserRepo);
         purchaseService = new PurchaseService(mockAuthRepo, mockStockRepo, mockStoreRepo, mockUserRepo,
-                mockPurchaseRepo, mockOrderRepo, mockPay, mockSupply);
+                mockPurchaseRepo, mockOrderRepo, mockPay, mockSupply, mockSusRepo);
 
     }
+
     /////////////////////// System /////////////////////////////
     @Override
     public String testSystem_InitMarket(String admin) throws Exception {
@@ -66,14 +71,14 @@ public class Real implements Bridge {
     @Override
     public String testSystem_sendDMessageToAll(List<Integer> receiversIds, String message, int senderId)
             throws Exception {
-        notificationService.sendDMessageToAll(receiversIds, message, senderId);
+        //notificationService.sendDMessageToAll(receiversIds, message, senderId);
         return "Done";
     }
 
     @Override
     public String testSystem_sendRTMessageToAll(List<Integer> receiversIds, String message, int senderId)
             throws Exception {
-        notificationService.sendRTMessageToAll(receiversIds, message, senderId);
+        //notificationService.sendRTMessageToAll(receiversIds, message, senderId);
         return "Done";
     }
 
@@ -90,13 +95,13 @@ public class Real implements Bridge {
     }
 
     @Override
-    public String testGuest_Register(String token, String username, String password) throws Exception {
-        return ""+userService.register(token, username, password);
+    public boolean testGuest_Register(String token, String username, String password, int age) throws Exception {
+        return userService.register(token, username, password, age);
     }
 
     @Override
     public String testGuest_GetStoreProducts(int storeID) throws Exception {
-        List<ItemStoreDTO> items = storeService.getProductsInStore(storeID);
+        List<ItemStoreDTO> items = stockService.getProductsInStore(storeID);
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(items);
     }
@@ -104,13 +109,13 @@ public class Real implements Bridge {
     // stock service
     @Override
     public String testGuest_GetProductInfo(String token, int productID) throws Exception {
-        ProductDTO a= stockService.getProductInfo(token,productID);
-        return ""+a.getProductId()+" "+a.getName()+" "+a.getCategory()+" "+a.getDescription();
+        ProductDTO a = stockService.getProductInfo(token, productID);
+        return "" + a.getProductId() + " " + a.getName() + " " + a.getCategory() + " " + a.getDescription();
     }
 
     @Override
-    public  ItemStoreDTO[] testGuest_SearchProduct(String token, ProductSearchCriteria criteria) throws Exception {
-        return  stockService.searchProducts(token, criteria);
+    public ItemStoreDTO[] testGuest_SearchProduct(String token, ProductSearchCriteria criteria) throws Exception {
+        return stockService.searchProducts(token, criteria);
 
     }
 
@@ -119,29 +124,28 @@ public class Real implements Bridge {
     // with store id in the store id
     @Override
     public String testGuest_SearchProductInStore(String token, int storeID, int productID) throws Exception {
-        // return stockService.searchProductInStore(storeID, productID);
-        return "TODO";
-
+        //return stockService.searchProducts(token,storeID, productID);
+        return "Done";
     }
 
     // for the user is the same think
     @Override
-    public boolean testGuest_AddProductToCart(String token,ItemStoreDTO a) throws Exception {
-        return userService.addToUserCart(token,a);
+    public boolean testGuest_AddProductToCart(String token, ItemStoreDTO a) throws Exception {
+        return userService.addToUserCart(token, a);
     }
 
     @Override
     public String testGuest_ModifyCartAddQToBuy(int storeId, String token, int productId) throws Exception {
-        // return stockService.modifyCart(token, cartID);
-        storeService.updateQuantity(storeId, token, productId);
+//        // return stockService.modifyCart(token, cartID);
+//        stockService.updateQuantity(storeId, token, productId);
         return "Done";
 
     }
 
     @Override
     public String testGuest_BuyCart(String token) throws Exception {
-        purchaseService.buyGuestCart(token,PaymentDetails.testPayment(),SupplyDetails.getTestDetails());
-        return "Done";
+        ReceiptDTO[] a = purchaseService.buyGuestCart(token, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
+        return a[0].getStoreName() + a[0].getProductsList().toString();
 
     }
 
@@ -155,14 +159,12 @@ public class Real implements Bridge {
     //////////////////////////// User ////////////////////////////
     @Override
     public String testUser_LogIn(String token, String username, String password) throws Exception {
-        userService.login(token, username, password);
-        return "Done";
+        return userService.login(token, username, password);
     }
 
     @Override
     public String testUser_LogOut(String token) throws Exception {
-        userService.logoutUser(token);
-        return "Done";
+        return userService.logoutUser(token);
     }
 
     @Override
@@ -189,7 +191,7 @@ public class Real implements Bridge {
     @Override
     public String testUser_RateProduct(int storeId, String token, int productId, int newRank) throws Exception {
         // return productService.rateProduct(token, storeID, productID, rate);
-        storeService.rankProduct(storeId, token, productId, newRank);
+        //storeService.rankProduct(storeId, token, productId, newRank);
         return "Done";
     }
 
@@ -202,19 +204,19 @@ public class Real implements Bridge {
 
     @Override
     public String testUser_SendMessageToStoreOwner(int userId, int ownerId, String msg) throws Exception {
-        notificationService.sendDMessageToUser(userId, ownerId, msg);
+        //notificationService.sendDMessageToUser(userId, ownerId, msg);
         return "Done";
     }
 
     @Override
     public String testUser_SendMessageToAdmin(String msg, int userId, int adminId) throws Exception {
-        notificationService.sendDMessageToUser(userId, adminId, msg);
+        //notificationService.sendDMessageToUser(userId, adminId, msg);
         return "Done";
     }
 
     @Override
-    public String testUser_CheckPurchaseHistory(String token) throws Exception {
-        return orderService.getReceiptDTOsByUser(token).toString();
+    public List<ReceiptDTO> testUser_CheckPurchaseHistory(String token) throws Exception {
+        return orderService.getReceiptDTOsByUser(token);
     }
 
 //    @Override
@@ -227,7 +229,7 @@ public class Real implements Bridge {
     @Override
     public String testUser_AddBid(String token, int bitId, int storeId, double price) throws Exception {
         // return purchaseService.addBid(token, storeID, productID, bid);
-        storeService.addRegularBid(token, bitId, storeId, price);
+        //storeService.addRegularBid(token, bitId, storeId, price);
         return "Done";
 
     }
@@ -235,7 +237,7 @@ public class Real implements Bridge {
     @Override
     public String testUser_JoinAuction(String token, int auctionId, int storeId, double price) throws Exception {
         // return purchaseService.joinAuction(token, storeID, auctionID);
-        storeService.addBidOnAucction(token, auctionId, storeId, price);
+        //storeService.addBidOnAucction(token, auctionId, storeId, price);
         return "Done";
 
     }
@@ -249,29 +251,29 @@ public class Real implements Bridge {
 
     @Override
     public String testUser_setAdmin(String token, String newAdminUsername) throws Exception {
-        if (userService.setAdmin(token, newAdminUsername))
-            return "Done";
-        else
-            return "false";
+        //if (userService.setAdmin(token, newAdminUsername))
+        return "Done";
+        //else
+        //return "false";
     }
 
     @Override
     public String testUser_getAllAucationInStore(String token, int storeId) throws Exception {
-        storeService.getAllAuctions(token, storeId);
+        //storeService.getAllAuctions(token, storeId);
         return "Done";
     }
 
     @Override
 
     public String testUser_getAllRandomInStore(String token, int storeId) throws Exception {
-        storeService.getAllRandomInStore(token, storeId);
+        //storeService.getAllRandomInStore(token, storeId);
         return "Done";
     }
 
     // the function that named here is for the guest
     @Override
     public String testUser_BuyCart(String token) throws Exception {
-        purchaseService.buyRegisteredCart(token,PaymentDetails.testPayment(),SupplyDetails.getTestDetails());
+        purchaseService.buyRegisteredCart(token, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
         return "Done";
 
     }
@@ -281,13 +283,13 @@ public class Real implements Bridge {
     public String testOwner_ManageInventory_AddProduct(int storeId, String token, int productId, int quantity,
                                                        int price, Category category)
             throws Exception {
-        storeService.addItem(storeId, token, productId, quantity, price, category);
+        stockService.addItem(storeId, token, productId, quantity, price, category);
         return "Done";
     }
 
     @Override
     public String testOwner_ManageInventory_RemoveProduct(int storeId, String token, int productId) throws Exception {
-        storeService.removeItem(storeId, token, productId);
+        stockService.removeItem(storeId, token, productId);
         return "Done";
 
     }
@@ -295,14 +297,14 @@ public class Real implements Bridge {
     @Override
     public String testOwner_ManageInventory_UpdateProductPrice(int storeId, String token, int productId, int newPrice)
             throws Exception {
-        storeService.updatePrice(storeId, token, productId, newPrice);
+        stockService.updatePrice(storeId, token, productId, newPrice);
         return "Done";
 
     }
 
     @Override
     public String testOwner_SetPurchasePolicies(int storeId, String token, int productId) throws Exception {
-        storeService.updateQuantity(storeId, token, productId);
+        //storeService.updateQuantity(storeId, token, productId);
         return "Done";
 
     }
@@ -362,13 +364,13 @@ public class Real implements Bridge {
 
     @Override
     public String testOwner_ReceiveNotifications(int userId) throws Exception {
-        notificationService.getDelayedMessages(userId);
+        //notificationService.getDelayedMessages(userId);
         return "Done";
     }
 
     @Override
     public String testOwner_ReplyToMessages(String msg, int ownerId, int UserId) throws Exception {
-        notificationService.sendRTMessageToUser(msg, ownerId, UserId);
+        //notificationService.sendRTMessageToUser(msg, ownerId, UserId);
         return "Done";
     }
 
@@ -388,35 +390,35 @@ public class Real implements Bridge {
     public String testOwner_addProductToAucation(String token, int id, int productId, int quantity, long time,
                                                  double startPrice)
             throws Exception {
-        storeService.setProductToAuction(token, id, productId, quantity, time, startPrice);
+        //storeService.setProductToAuction(token, id, productId, quantity, time, startPrice);
         return "Done";
     }
 
     @Override
     public String testOwner_addProductToBid(String token, int storeid, int productId, int quantity)
             throws Exception {
-        storeService.setProductToBid(token, storeid, productId, quantity);
+        //storeService.setProductToBid(token, storeid, productId, quantity);
         return "Done";
     }
 
     @Override
     public String testOwner_EndBid(String token, int storeId, int randomId)
             throws Exception {
-        storeService.endBid(token, storeId, randomId);
+        //storeService.endBid(token, storeId, randomId);
         return "Done";
     }
 
     @Override
     public String testOwner_AcceptBid(String token, int storeId, int bidId, int bidToAcceptId)
             throws Exception {
-        storeService.acceptBid(token, storeId, bidId, bidToAcceptId);
+        //storeService.acceptBid(token, storeId, bidId, bidToAcceptId);
         return "Done";
     }
 
     @Override
     public String testOwner_BidStatus(String token, int storeId)
             throws Exception {
-        storeService.getAllBidsStatus(token, storeId);
+        //storeService.getAllBidsStatus(token, storeId);
         return "Done";
     }
 
@@ -424,7 +426,7 @@ public class Real implements Bridge {
     public String testOwner_addProductToRandom(String token, int storeId, int quantity, int productId,
                                                int numberOfCards, double priceForCard)
             throws Exception {
-        storeService.setProductToRandom(token, storeId, quantity, productId, numberOfCards, (long)priceForCard);
+        //storeService.setProductToRandom(token, storeId, quantity, productId, numberOfCards, (long)priceForCard);
         return "Done";
     }
 

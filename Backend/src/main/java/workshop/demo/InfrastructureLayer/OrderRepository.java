@@ -1,20 +1,34 @@
 package workshop.demo.InfrastructureLayer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import workshop.demo.DTOs.*;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import workshop.demo.DTOs.OrderDTO;
+import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Order.*;
+import workshop.demo.DomainLayer.Order.IOrderRepo;
+import workshop.demo.DomainLayer.Order.Order;
 
+@Repository
 public class OrderRepository implements IOrderRepo {
 
-    private Map<Integer, List<Order>> history = new ConcurrentHashMap<>();
+    private Map<Integer, List<Order>> history;
     private static final AtomicInteger counterOId = new AtomicInteger(1);
 
     public static int generateId() {
         return counterOId.getAndIncrement();
+    }
+
+    @Autowired
+    public OrderRepository() {
+        this.history = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -25,8 +39,9 @@ public class OrderRepository implements IOrderRepo {
 
     @Override
     public List<OrderDTO> getAllOrderByStore(int storeId) throws UIException {
-        if (!history.containsKey(storeId))
+        if (!history.containsKey(storeId)) {
             throw new UIException("Store does not exist!", ErrorCodes.STORE_NOT_FOUND);
+        }
 
         List<OrderDTO> result = new ArrayList<>();
         for (Order order : history.get(storeId)) {
@@ -47,8 +62,9 @@ public class OrderRepository implements IOrderRepo {
                 }
             }
         }
-        if (!found)
+        if (!found) {
             throw new UIException("User has no receipts.", ErrorCodes.RECEIPT_NOT_FOUND);
+        }
         return result;
     }
 

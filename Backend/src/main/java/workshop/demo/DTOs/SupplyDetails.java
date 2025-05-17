@@ -1,5 +1,7 @@
 package workshop.demo.DTOs;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class SupplyDetails {
     // public static final SupplyDetails getTestDetails = null;
     public String address;
@@ -16,5 +18,10 @@ public class SupplyDetails {
 
     public static SupplyDetails getTestDetails() {
         return new SupplyDetails("123 Test Street", "Testville", "TS", "00000");
+    }
+
+    public static SupplyDetails getSupplyDetailsFromJSON(String json) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(json, SupplyDetails.class);
     }
 }

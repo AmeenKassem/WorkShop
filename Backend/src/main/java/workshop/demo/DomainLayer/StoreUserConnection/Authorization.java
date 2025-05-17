@@ -1,3 +1,4 @@
+
 package workshop.demo.DomainLayer.StoreUserConnection;
 
 import java.util.HashMap;
@@ -20,7 +21,7 @@ public class Authorization {
 
     private void fillAuth() {
         for (Permission permission : Permission.values()) {
-            myAutho.put(permission, false);
+            myAutho.put(permission, true);
         }
         logger.debug("All permissions set to false by default");
 

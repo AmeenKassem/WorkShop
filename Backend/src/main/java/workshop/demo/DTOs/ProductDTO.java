@@ -2,10 +2,10 @@ package workshop.demo.DTOs;
 
 public class ProductDTO {
 
-    private int productId;
-    private String name;
-    private Category category;
-    private String description;
+    public int productId;
+    public String name;
+    public Category category;
+    public String description;
 
     public ProductDTO(int productId, String name, Category category, String description) {
         this.productId = productId;
@@ -14,12 +14,12 @@ public class ProductDTO {
         this.description = description;
     }
 
-    // store:
-    private boolean initStoreValues = false;
-    private int storeId;
-    private double price;
-    private double rating;
-    private String storeName;
+    // // store:
+    // public boolean initStoreValues = false;
+    // public int storeId;
+    // public double price;
+    // public double rating;
+    // public String storeName;
 
     // Getters and setters
     public int getProductId() {
@@ -54,8 +54,8 @@ public class ProductDTO {
         this.description = description;
     }
 
-    public double getRating() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getRating'");
-    }
+    // public double getRating() {
+    //     // TODO Auto-generated method stub
+    //     throw new UnsupportedOperationException("Unimplemented method 'getRating'");
+    // }
 }

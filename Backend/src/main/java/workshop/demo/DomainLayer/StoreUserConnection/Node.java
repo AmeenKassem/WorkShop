@@ -1,3 +1,4 @@
+
 package workshop.demo.DomainLayer.StoreUserConnection;
 
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class Node {
         if (isManager) {
             this.myAuth = new Authorization();
         } else {
-            this.myAuth = null;
+            this.myAuth = new Authorization();
         }
         this.isManager = isManager;
         this.children = Collections.synchronizedList(new ArrayList<>());

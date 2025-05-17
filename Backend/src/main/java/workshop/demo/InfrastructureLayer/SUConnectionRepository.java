@@ -2,39 +2,47 @@ package workshop.demo.InfrastructureLayer;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 
+@Repository
 public class SUConnectionRepository implements ISUConnectionRepo {
 
     private final SuperDataStructure data;
 
+    @Autowired
     public SUConnectionRepository() {
         data = new SuperDataStructure();
     }
 
+    //for test
     @Override
-    public void addNewStoreOwner(int storeId, int bossID) {
-        data.addNewStore(storeId, bossID);
+    public boolean addNewStoreOwner(int storeId, int bossID) {
+        return data.addNewStore(storeId, bossID);
 
     }
 
     @Override
-    public void checkToAddOwner(int storeID, int ownerID, int newOwnerId) throws Exception {// for owner
+    public boolean checkToAddOwner(int storeID, int ownerID, int newOwnerId) throws Exception {// for owner
         try {
             this.data.checkToAddOwner(storeID, ownerID, newOwnerId);
+            return true;
         } catch (Exception e) {
             throw e;
         }
     }
 
     @Override
-    public void AddOwnershipToStore(int storeID, int ownerID, int newOwnerId) throws Exception {
+    public boolean AddOwnershipToStore(int storeID, int ownerID, int newOwnerId) throws Exception {
         try {
             this.data.addNewOwner(storeID, ownerID, newOwnerId);
-
+            return true;
         } catch (Exception e) {
             throw e;
         }
@@ -42,10 +50,11 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     }
 
     @Override
-    public void DeleteOwnershipFromStore(int storeID, int ownerID, int OwnerToDelete) throws Exception {
+    public boolean DeleteOwnershipFromStore(int storeID, int ownerID, int OwnerToDelete) throws Exception {
 
         try {
             this.data.DeleteOwnershipFromStore(storeID, ownerID, OwnerToDelete);
+            return true;
         } catch (Exception e) {
             throw e;
         }
@@ -120,7 +129,7 @@ public class SUConnectionRepository implements ISUConnectionRepo {
 
     @Override
     public boolean manipulateItem(int userId, int storeId, Permission permission) throws Exception {
-        Node Worker = getWorkerInStoreById(userId, userId);
+        Node Worker = getWorkerInStoreById(storeId, userId);
         if (Worker == null) {
             throw new Exception("this user is not a worker in this store");
         }
@@ -138,4 +147,13 @@ public class SUConnectionRepository implements ISUConnectionRepo {
         return this.data;
     }
 
+    public void checkMainOwnerToDeactivateStore_ThrowException(int storeId, int userId) throws DevException {
+        try {
+            if (!checkDeactivateStore(storeId, userId)) {
+                throw new DevException("Only the boss/main owner can perform this action on store " + storeId);
+            }
+        } catch (Exception e) {
+            throw new DevException("failed to check ownership for this userid: " + e.getMessage());
+        }
+    }
 }

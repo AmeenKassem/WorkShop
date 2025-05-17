@@ -1,16 +1,15 @@
 package workshop.demo.ApplicationLayer;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-//import ch.qos.logback.classic.Logger;
-// import workshop.demo.DTOs.MessageDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
+@Service
 public class NotificationService {
 
     INotificationRepo notificationRepo;
@@ -18,13 +17,14 @@ public class NotificationService {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
 
+    @Autowired
     public NotificationService(INotificationRepo notificationRepo, IUserRepo userRepo) {
         this.notificationRepo = notificationRepo;
         this.userRepo = userRepo;
     }
 
-    public void sendRTMessageToUser(String username,String message) throws UIException {
-        notificationRepo.sendImmediateMessage(username,message);
+    public void sendRTMessageToUser(String username, String message) throws UIException {
+        notificationRepo.sendImmediateMessage(username, message);
     }
 
     public void sendDMessageToUser(String username, String message) throws UIException {
@@ -37,14 +37,12 @@ public class NotificationService {
     //         notificationRepo.sendRTMessageToUser(message, senderId, receiverId, isReceiverOnline);
     //     }
     // }
-
     // public void sendDMessageToAll(List<Integer> receiversIds ,String message, int senderId) throws UIException {
     //     for (int receiverId : receiversIds) {
     //         boolean isReceiverOnline = userRepo.isOnline(receiverId);
     //         notificationRepo.sendDMessageToUser(senderId, receiverId, message, isReceiverOnline);
     //     }
     // }
-
     public String[] getDelayedMessages(String username) {
         return notificationRepo.getDelayedMessages(username);
     }

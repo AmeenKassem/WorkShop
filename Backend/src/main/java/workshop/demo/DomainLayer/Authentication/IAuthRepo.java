@@ -18,6 +18,6 @@ public interface IAuthRepo {
 
     public boolean validToken(String token)throws UIException;
 
-    public void checkAuth_ThrowTimeOutException(String token,Logger logger)throws UIException;
+    public boolean checkAuth_ThrowTimeOutException(String token,Logger logger)throws UIException;
 
 }

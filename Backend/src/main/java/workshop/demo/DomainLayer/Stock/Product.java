@@ -1,3 +1,4 @@
+
 package workshop.demo.DomainLayer.Stock;
 
 import java.util.ArrayList;

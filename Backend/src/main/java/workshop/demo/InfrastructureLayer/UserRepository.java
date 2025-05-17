@@ -1,14 +1,20 @@
 package workshop.demo.InfrastructureLayer;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DTOs.UserSpecialItemCart;
+import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
@@ -17,17 +23,19 @@ import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
+@Repository
 public class UserRepository implements IUserRepo {
 
     private AtomicInteger idGen;
-    private ConcurrentHashMap<Integer, Guest> guests;
-    private ConcurrentHashMap<String, Registered> users;
-    private ConcurrentHashMap<Integer, String> idToUsername;
+    private ConcurrentHashMap<Integer, Guest> guests; // id -> Guest
+    private ConcurrentHashMap<String, Registered> users; // username -> Registered
+    private ConcurrentHashMap<Integer, String> idToUsername; // id -> username
     private Encoder encoder;
-    private AdminInitilizer adminInit ;
+    private AdminInitilizer adminInit;
 
     private static final Logger logger = Logger.getLogger(UserRepository.class.getName());
 
+    @Autowired
     public UserRepository(Encoder encoder, AdminInitilizer adminInit) {
         this.encoder = encoder;
         this.idGen = new AtomicInteger(1);
@@ -42,30 +50,28 @@ public class UserRepository implements IUserRepo {
         if (userExist(username)) {
             Registered user = users.get(username);
             user.logout();
-            logger.info("User logged out: " + username);
+            logger.log(Level.INFO, "User logged out: {0}", username);
             return generateGuest();
         } else {
-            logger.warning("User not found: " + username);
+            logger.log(Level.WARNING, "User not found: {0}", username);
             throw new UIException("User not found: " + username, ErrorCodes.USER_NOT_FOUND);
         }
     }
 
     @Override
-    public int registerUser(String username, String password) throws UIException {
-        if (userExist(username))
+    public int registerUser(String username, String password, int age) throws UIException {
+        if (userExist(username)) {
+
             throw new UIException("another user try to register with used username", ErrorCodes.USERNAME_USED);
+        }
         String encPass = encoder.encodePassword(password);
         int id = idGen.getAndIncrement();
-        Registered userToAdd = new Registered(id, username, encPass);
+        Registered userToAdd = new Registered(id, username, encPass, age);
         users.put(username, userToAdd);
         idToUsername.put(id, username);
-        logger.info("User " + username + " registered successfully");
+        logger.log(Level.INFO, "User {0} registered successfully", username);
         return id;
 
-    }
-
-    private boolean validPassword(String username, String password) {
-        return !users.containsKey(username);
     }
 
     @Override
@@ -81,10 +87,10 @@ public class UserRepository implements IUserRepo {
         if (userExist(username)) {
             Registered user = users.get(username);
             if (user.check(encoder, username, password)) {
-                logger.info("User logged in: " + username);
+                logger.log(Level.INFO, "User logged in: {0}", username);
                 return user.getId();
             } else {
-                logger.warning("Invalid password for user: " + username);
+                logger.log(Level.WARNING, "Invalid password for user: {0}", username);
                 throw new UIException("Incorrect username or password.", ErrorCodes.WRONG_PASSWORD);
             }
         } else {
@@ -105,7 +111,7 @@ public class UserRepository implements IUserRepo {
         if (guestExist(guestId)) {
             Guest geust = guests.get(guestId);
             geust.addToCart(item);
-            logger.info("Item added to guest cart: " + item.getProdutId() + " for guest id: " + guestId);
+            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProdutId(), guestId});
         } else {
             throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
         }
@@ -114,7 +120,7 @@ public class UserRepository implements IUserRepo {
     @Override
     public void destroyGuest(int id) {
         guests.remove(id);
-        logger.info("guest destroyed: " + id);
+        logger.log(Level.INFO, "guest destroyed: {0}", id);
     }
 
     @Override
@@ -131,13 +137,11 @@ public class UserRepository implements IUserRepo {
     @Override
     public boolean isOnline(int id) {
         Registered registered = getRegisteredUser(id);
-        return registered != null && registered.isOnlien();
+        return registered != null && registered.isOnline();
     }
 
-    private Registered getRegisteredUser(int id) {
-        for (Map.Entry<String, Registered> entry : users.entrySet()) {
-    Registered user = entry.getValue();
-}
+    @Override
+    public Registered getRegisteredUser(int id) {
         if (idToUsername.containsKey(id)) {
             String username = idToUsername.get(id);
             if (users.containsKey(username)) {
@@ -155,7 +159,7 @@ public class UserRepository implements IUserRepo {
         if (registered != null) {
             if (adminInit.matchPassword(adminKey)) {
                 registered.setAdmin();
-                logger.info("User " + registered.getUsername() + " is now an admin.");
+                logger.log(Level.INFO, "User {0} is now an admin.", registered.getUsername());
                 return true;
             }
         }
@@ -167,44 +171,7 @@ public class UserRepository implements IUserRepo {
         throw new UnsupportedOperationException("Unimplemented method 'removeItemFromGeustCart'");
     }
 
-    @Override
-    public void addBidToRegularCart(SingleBid bid) {
-        try {
-            getRegisteredUser(bid.getUserId()).addRegularBid(bid);
-            logger.info("Bid added to regular cart for user id: " + bid.getUserId());
-        } catch (RuntimeException e) {
-            logger.warning("User not found: " + bid.getUserId());
-            throw new RuntimeException(
-                    new UIException("User not found: " + bid.getUserId(), ErrorCodes.USER_NOT_FOUND));
-        }
-    }
-
-    @Override
-    public void addBidToAuctionCart(SingleBid bid) {
-        try {
-            getRegisteredUser(bid.getUserId()).addAuctionBid(bid);
-            logger.info("Bid added to auction cart for user id: " + bid.getUserId());
-        } catch (RuntimeException e) {
-            logger.warning("User not found: " + bid.getUserId());
-            throw new RuntimeException(
-                    new UIException("User not found: " + bid.getUserId(), ErrorCodes.USER_NOT_FOUND));
-        }
-    }
-
-    @Override
-    public void ParticipateInRandom(ParticipationInRandomDTO card) {
-        getRegisteredUser(card.userId).addParticipationForRandom(card);
-    }
-
-    @Override
-    public List<SingleBid> getWinningBids(int userId) {
-        return getRegisteredUser(userId).getWinningBids();
-    }
-
-    @Override
-    public List<ParticipationInRandomDTO> getWinningCards(int userId) {
-        return getRegisteredUser(userId).getWinningCards();
-    }
+    
 
     @Override
     public ShoppingCart getUserCart(int userId) {
@@ -224,10 +191,53 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public void checkUserRegisterOnline_ThrowException(int userId) throws UIException {
+    public boolean checkUserRegisterOnline_ThrowException(int userId) throws UIException {
         if (!(isRegistered(userId) && isOnline(userId))) {
             // logger.error("User not logged in for setProductToBid: {}", userId);
             throw new UIException("You are not logged in!", ErrorCodes.USER_NOT_LOGGED_IN);
         }
+        return true;
+    }
+
+    @Override
+    public boolean checkAdmin_ThrowException(int userId) throws UIException {
+        checkUserRegisterOnline_ThrowException(userId);
+        if (!isAdmin(userId)) {
+            throw new UIException("User is not an admin", ErrorCodes.NO_PERMISSION);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean checkUserRegister_ThrowException(int userId) throws UIException {
+        if (!(isRegistered(userId))) {
+            // logger.error("User not logged in for setProductToBid: {}", userId);
+            throw new UIException("You are not regestered user!", ErrorCodes.USER_NOT_LOGGED_IN);
+        }
+        return true;
+    }
+
+    @Override
+    public void addSpecialItemToCart(UserSpecialItemCart item, int userId) throws DevException {
+        getRegisteredUser(userId).addSpecialItemToCart(item);
+    }
+
+    @Override
+    public List<UserSpecialItemCart> getAllSpecialItems(int userId) {
+        return getRegisteredUser(userId).getSpecialCart();
+    }
+
+    @Override
+    public UserDTO getUserDTO(int userId) {
+        if (isRegistered(userId)) {
+            logger.log(Level.INFO, "getUserDTO for registered user ID={}", userId);
+            return getRegisteredUser(userId).getUserDTO();
+        } else if (guests.containsKey(userId)) {
+            logger.log(Level.INFO, "getUserDTO for guests user ID={}", userId);
+            return guests.get(userId).getUserDTO();
+        } else {
+            throw new RuntimeException(new UIException("User not found with ID: " + userId, ErrorCodes.USER_NOT_FOUND));
+        }
     }
 }
+

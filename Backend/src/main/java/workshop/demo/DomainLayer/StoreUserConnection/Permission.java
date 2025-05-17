@@ -5,5 +5,6 @@ public enum Permission {
     AddToStock,
     DeleteFromStock,
     UpdateQuantity,
-    UpdatePrice, SpecialType;
+    UpdatePrice,
+    SpecialType;
 }

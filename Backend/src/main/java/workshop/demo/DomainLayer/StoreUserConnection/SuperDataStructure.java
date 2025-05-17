@@ -1,3 +1,4 @@
+
 package workshop.demo.DomainLayer.StoreUserConnection;
 
 import java.util.LinkedList;
@@ -19,13 +20,15 @@ public class SuperDataStructure {
         employees = new ConcurrentHashMap<>();
     }
 
-    public void addNewStore(int storeID, int bossId) {
+    public boolean addNewStore(int storeID, int bossId) {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeID, k -> new ReentrantLock());
         lock.lock();
         try {
             this.employees.put(storeID, new Tree(bossId, false, -1));
+            return true;
         } finally {
             lock.unlock();
+            return false;
         }
     }
 
@@ -40,9 +43,12 @@ public class SuperDataStructure {
                 throw new UIException("Owner does not exist in this store", ErrorCodes.NO_PERMISSION);
             }
             Node child = employees.get(storeID).getNodeById(newOnwerId);
-            if (child != null && !child.getIsManager()) {
+
+            //todo:assume that there is nno manager can promote to be owner
+            if (child != null ) {
                 throw new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION);
             }
+
             return true;
         } finally {
             lock.unlock();
@@ -236,3 +242,4 @@ public class SuperDataStructure {
         return employees.containsKey(storeId);
     }
 }
+
