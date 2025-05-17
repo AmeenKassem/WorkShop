@@ -86,10 +86,10 @@ public class UserService {
 
     }
 
-    public boolean addToUserCart(String token, ItemStoreDTO itemToAdd) throws UIException {
+    public boolean addToUserCart(String token, ItemStoreDTO itemToAdd,int quantity) throws UIException {
         logger.info("addToUserCart called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        ItemCartDTO item = new ItemCartDTO(itemToAdd);
+        ItemCartDTO item = new ItemCartDTO(itemToAdd,quantity);
         userRepo.addItemToGeustCart(authRepo.getUserId(token), item);
         logger.info("Item added to user cart");
         return true;

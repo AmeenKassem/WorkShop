@@ -53,5 +53,14 @@ public class ReviewRepository implements IReviewRepo {
     public List<ReviewDTO> getReviewsForStore(int storeId) {
         return storeReviews.getOrDefault(storeId, Collections.emptyList());
     }
+    public void clear() {
+    if (storeReviews != null) {
+        storeReviews.clear();
+    }
+    if (productReviews != null) {
+        productReviews.clear();
+    }
+}
+
 
 }

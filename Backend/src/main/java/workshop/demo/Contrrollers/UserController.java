@@ -145,12 +145,13 @@ public class UserController {
 
     @PostMapping("/addToCart")
     public String addToUserCart(@RequestParam String token,
-            @RequestBody ItemStoreDTO itemToAdd
+            @RequestBody ItemStoreDTO itemToAdd,
+             @RequestBody int quantity
     ) {
         ApiResponse<Boolean> res;
         try {
 
-            res = new ApiResponse<>(userService.addToUserCart(token, itemToAdd), null);
+            res = new ApiResponse<>(userService.addToUserCart(token, itemToAdd,quantity), null);
         } catch (UIException ex) {
             res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
         } catch (Exception e) {
