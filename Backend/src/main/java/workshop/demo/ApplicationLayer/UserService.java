@@ -8,17 +8,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.SingleBid;
-import workshop.demo.DTOs.SpecialCartItemDTO;
-import workshop.demo.DTOs.SpecialType;
-import workshop.demo.DTOs.UserDTO;
-import workshop.demo.DTOs.UserSpecialItemCart;
+import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
+import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
 @Service
@@ -29,12 +24,21 @@ public class UserService {
     private IUserRepo userRepo;
     private IAuthRepo authRepo;
     private IStockRepo stockRepo;
+    //Hmode
+    private IStoreRepo storeRepo;
 
     @Autowired
     public UserService(IUserRepo userRepo, IAuthRepo authRepo,IStockRepo stockRepo) {
         this.userRepo = userRepo;
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
+    }
+    //Hmode
+    public UserService(IUserRepo userRepo, IAuthRepo authRepo,IStockRepo stockRepo,IStoreRepo storeRepo) {
+        this.userRepo = userRepo;
+        this.authRepo = authRepo;
+        this.stockRepo = stockRepo;
+        this.storeRepo=storeRepo;
     }
 
     public String generateGuest() throws UIException, Exception {
@@ -124,5 +128,30 @@ public class UserService {
         int userId = authRepo.getUserId(token);
         return userRepo.getUserDTO(userId);
     }
-
+    public List<StoreInfoDTO> viewSystemInfo(String token) throws UIException, DevException {
+        logger.info("viewSystemInfo called");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        List<StoreDTO> allStores = storeRepo.viewAllStores();
+        List<StoreDTO> activeStores = new ArrayList<>();
+        for (StoreDTO store : allStores) {
+            if (store.active) {
+                activeStores.add(store);
+            }
+        }
+        List<StoreInfoDTO> result = new ArrayList<>();
+        for (StoreDTO store : activeStores) {
+            int storeId = store.storeId;
+            List<ItemStoreDTO> storeItems = stockRepo.getProductsInStore(storeId);
+            List<ProductInfoDTO> products = new ArrayList<>();
+            for (ItemStoreDTO item : storeItems) {
+                String productName = item.productName;
+                int quantity = item.getQuantity();
+                products.add(new ProductInfoDTO(productName, quantity));
+            }
+            StoreInfoDTO storeInfo = new StoreInfoDTO(store.storeName, products);
+            result.add(storeInfo);
+        }
+        logger.info("viewSystemInfo: {} active stores found", result.size());
+        return result;
+    }
 }
