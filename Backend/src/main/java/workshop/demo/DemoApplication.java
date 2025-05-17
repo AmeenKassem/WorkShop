@@ -2,6 +2,9 @@ package workshop.demo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import workshop.demo.ApplicationLayer.UserService;
 
 @SpringBootApplication
 public class DemoApplication {
@@ -10,4 +13,15 @@ public class DemoApplication {
 		SpringApplication.run(DemoApplication.class, args);
 	}
 
+	@Bean
+	public CommandLineRunner initAdmin(UserService userService) {
+		return args -> {
+			try {
+				userService.registerAdminIfNotExists("admin", "admin123", 30);
+				System.out.println(" Admin initialized");
+			} catch (Exception e) {
+				System.err.println(" Failed to initialize admin: " + e.getMessage());
+			}
+		};
+	}
 }

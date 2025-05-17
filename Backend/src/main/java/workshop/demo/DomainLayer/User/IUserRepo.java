@@ -104,4 +104,8 @@ public interface IUserRepo {
     public void checkAdmin_ThrowException(int userId) throws UIException;
 
     public UserDTO getUserDTO(int userId);
+
+    List<String> getAllUsernames();
+
+
 }

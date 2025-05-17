@@ -19,7 +19,9 @@ import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.InfrastructureLayer.UserRepository;
 
 @Service
 public class UserService {
@@ -29,12 +31,15 @@ public class UserService {
     private IUserRepo userRepo;
     private IAuthRepo authRepo;
     private IStockRepo stockRepo;
+    private final AdminInitilizer adminInitilizer;
 
     @Autowired
-    public UserService(IUserRepo userRepo, IAuthRepo authRepo,IStockRepo stockRepo) {
+    public UserService(IUserRepo userRepo, IAuthRepo authRepo,IStockRepo stockRepo,AdminInitilizer adminInitilizer) {
         this.userRepo = userRepo;
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
+        this.adminInitilizer = adminInitilizer;
+
     }
 
     public String generateGuest() throws UIException, Exception {
@@ -124,5 +129,37 @@ public class UserService {
         int userId = authRepo.getUserId(token);
         return userRepo.getUserDTO(userId);
     }
+
+    public void registerAdminIfNotExists(String username, String password, int age) throws Exception {
+        try {
+            int id = userRepo.login(username, password);
+            System.out.println("🟡 Admin already exists with username: " + username);
+            return;
+        } catch (UIException e) {
+            System.out.println("🔄 Admin doesn't exist. Proceeding with creation.");
+        }
+
+        String guestToken = this.generateGuest();
+
+        this.register(guestToken, username, password, age);
+
+        String userToken = this.login(guestToken, username, password);
+
+        System.out.println(userToken);
+        int adminId = userRepo.login(username, password);
+        this.setAdmin(userToken, adminInitilizer.getPassword(), adminId);
+
+        //  Print all registered usernames:
+        System.out.println(" Registered users:");
+        for (String u : ((UserRepository) userRepo).getAllUsernames()) {
+            System.out.println(" - " + u);
+        }
+
+
+        System.out.println(" Admin registered and promoted: " + username);
+        System.out.println(" All registered usernames: " + userRepo.getAllUsernames().get(0));
+
+    }
+
 
 }

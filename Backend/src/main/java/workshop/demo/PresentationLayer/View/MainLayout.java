@@ -7,17 +7,17 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
-import workshop.demo.PresentationLayer.Presenter.initPresenter;
+import workshop.demo.PresentationLayer.Presenter.InitPresenter;
 
 @Route
 @CssImport("./Theme/main-layout.css")
 public class MainLayout extends AppLayout {
 
-    private initPresenter presenter;
+    private InitPresenter presenter;
 
     public MainLayout() {
         addClassName("main-layout");
-        this.presenter = new initPresenter(this);
+        this.presenter = new InitPresenter(this);
 
     }
 
