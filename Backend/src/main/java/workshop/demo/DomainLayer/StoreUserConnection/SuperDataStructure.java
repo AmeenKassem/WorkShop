@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -275,4 +276,18 @@ public class SuperDataStructure {
         return null; // offer not found
     }
 
+    public OfferDTO getOffer(int storeId, int senderId, int receiverId) throws Exception {
+        List<OfferDTO> storeOffers = offers.get(storeId);
+        if (storeOffers == null) {
+            throw new Exception("No offers found for store ID: " + storeId);
+        }
+
+        for (OfferDTO offer : storeOffers) {
+            if (offer.getSenderId() == senderId && offer.getReceiverId() == receiverId) {
+                return offer;
+            }
+        }
+
+        throw new Exception("No offer found from sender " + senderId + " to receiver " + receiverId + " in store " + storeId);
+    }
 }

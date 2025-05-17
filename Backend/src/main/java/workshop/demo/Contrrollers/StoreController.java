@@ -51,10 +51,10 @@ public class StoreController {
             @RequestParam int storeId,
             @RequestParam String senderName,
             @RequestParam String receiverName,
-            @RequestParam boolean answer) {
+            @RequestParam boolean answer,
+            @RequestParam boolean toBeOwner) {
         try {
-            System.out.println("offer response: " + answer);
-            storeService.reciveAnswerToOffer(storeId, senderName, receiverName, answer);
+            storeService.reciveAnswerToOffer(storeId, senderName, receiverName, answer, toBeOwner);
             return ResponseEntity.ok(new ApiResponse<>("Offer response recorded successfully", null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

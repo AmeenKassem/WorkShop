@@ -2,6 +2,7 @@ package workshop.demo.DomainLayer.StoreUserConnection;
 
 import java.util.List;
 
+import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 
 public interface ISUConnectionRepo {
@@ -37,6 +38,8 @@ public interface ISUConnectionRepo {
     void makeOffer(int storeId, int senderId, int reciverId, boolean toBeOwner, List<Permission> per, String Message) throws Exception;
 
     public List<Permission> deleteOffer(int storeId, int senderId, int reciverId) throws Exception;
+
+    public OfferDTO getOffer(int storeId, int senderId, int reciverId) throws Exception;
 
     // for tests
     SuperDataStructure getData();

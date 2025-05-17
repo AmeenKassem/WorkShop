@@ -8,15 +8,20 @@ public class NotificationDTO {
     }
 
     private String message;
+    private String senderName;
+    private int storeId;
     private String receiverName;
     private NotificationType type;
     private boolean toBeOwner;//else manager
 
-    public NotificationDTO(String message, String receiverName, NotificationType type, boolean toBeOwner) {
+    public NotificationDTO(String message, String receiverName, NotificationType type, boolean toBeOwner,
+            String senderName, int storeId) {
         this.message = message;
         this.receiverName = receiverName;
         this.type = type;
         this.toBeOwner = toBeOwner;
+        this.senderName = senderName;
+        this.storeId = storeId;
     }
 
     // Getters
@@ -34,6 +39,14 @@ public class NotificationDTO {
 
     public boolean getToBeOwner() {
         return this.toBeOwner;
+    }
+
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public int getStoreId() {
+        return storeId;
     }
 
     // Setters
