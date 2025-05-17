@@ -78,7 +78,7 @@ public class StoreService {
         String storeName = this.storeRepo.getStoreNameById(storeId);
         String Message = "In store:{}, the owner:{} is offering you to be an owner of this store" + storeName + owner;
         this.notiRepo.sendDelayedMessageToUser(nameNew, Message);
-        storeRepo.makeOffer(storeId, ownerId, ownerId, true, null);
+        storeRepo.makeOffer(storeId, ownerId, ownerId, true, null, Message);
     }
 
     public int AddOwnershipToStore(int storeId, int ownerId, int newOwnerId, boolean decide) throws Exception {
@@ -123,7 +123,7 @@ public class StoreService {
         String storeName = this.storeRepo.getStoreNameById(storeId);
         String Message = "In store:{}, the owner:{} is offering you to be a manager of this store" + storeName + owner;
         this.notiRepo.sendDelayedMessageToUser(nameNew, Message);
-        storeRepo.makeOffer(storeId, ownerId, ownerId, false, authorization);
+        storeRepo.makeOffer(storeId, ownerId, ownerId, false, authorization, Message);
     }
 
     public int AddManagerToStore(int storeId, int ownerId, int managerId, boolean decide) throws Exception {
@@ -195,11 +195,17 @@ public class StoreService {
         userRepo.checkUserRegisterOnline_ThrowException(ownerId);
         storeRepo.checkStoreExistance(storeId);
         suConnectionRepo.checkMainOwnerToDeactivateStore_ThrowException(storeId, ownerId);
-        storeRepo.deactivateStore(storeId, ownerId);
         List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
+        storeRepo.deactivateStore(storeId, ownerId);
+        String storeName = storeRepo.getStoreNameById(storeId);
         logger.info("Store {} successfully deactivated by owner {}", storeId, ownerId);
-        logger.info("About to notify all employees: {}", toNotify);
+        logger.info("About to notify all employees");
         ///we have to notify the employees here
+         for (int userId : toNotify) {
+            String userName = this.userRepo.getRegisteredUser(userId).getUsername();
+            String message = "The store:{} has been closed, you are no longer an employee here" + storeName;
+            this.notiRepo.sendDelayedMessageToUser(userName, message);
+        }
         return storeId;
     }
 
@@ -210,12 +216,19 @@ public class StoreService {
         userRepo.checkAdmin_ThrowException(adminId);
         logger.info("trying to close store: {} by: {}", storeId, adminId);
         this.storeRepo.checkStoreExistance(storeId);
+        String storeName = storeRepo.getStoreNameById(storeId);
         List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
         this.storeRepo.closeStore(storeId);
         this.suConnectionRepo.closeStore(storeId);
         logger.info("store removed successfully!");
+        logger.info("About to notify all employees");
         //also notify the employees
-        logger.info("About to notify all employees: {}", toNotify);
+        for (int userId : toNotify) {
+            String userName = this.userRepo.getRegisteredUser(userId).getUsername();
+            String message = "The store:{} has been closed, you are no longer an employee here" + storeName;
+            this.notiRepo.sendDelayedMessageToUser(userName, message);
+        }
+
         return storeId;
     }
 

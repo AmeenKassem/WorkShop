@@ -3,6 +3,7 @@ package workshop.demo.InfrastructureLayer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DomainLayer.Notification.BaseNotifier;
 import workshop.demo.DomainLayer.Notification.DelayedNotificationDecorator;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
@@ -35,6 +36,20 @@ public class NotificationRepository implements INotificationRepo {
     @Override
     public String[] getDelayedMessages(String username) {
         return delayedNotificationDecorator.getDelayedMessages(username);
+    }
+
+    @Override
+    public void sendOffer(OfferDTO offer) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'sendOffer'");
+    }
+
+    @Override
+    public void reciveAnswerFromOffer(OfferDTO offer, boolean answer) {
+        // here you just set the answer after getting it from the UI
+        //then call the function from the Store Repo reseciedOfferAnswer(offer dto)
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'reciveAnswerFromOffer'");
     }
 
 }

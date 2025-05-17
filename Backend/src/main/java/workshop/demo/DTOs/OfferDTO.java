@@ -9,9 +9,11 @@ public class OfferDTO {
     private int senderId;
     private int receiverId;
     private boolean toBeOwner;//false -> to be manager
-    List<Permission> permissions;
+    private List<Permission> permissions;
+    private String message;
+    private boolean approve;
 
-    public OfferDTO(int senderId, int receiverId, boolean toBeOwner, List<Permission> permissions) {
+    public OfferDTO(int senderId, int receiverId, boolean toBeOwner, List<Permission> permissions, String message) {
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.toBeOwner = toBeOwner;
@@ -33,5 +35,17 @@ public class OfferDTO {
 
     public List<Permission> getPermissions() {
         return permissions;
+    }
+
+    public String message() {
+        return message;
+    }
+
+    public boolean getApprove() {
+        return approve;
+    }
+
+    public void SetApprove(boolean app) {
+        this.approve = app;
     }
 }

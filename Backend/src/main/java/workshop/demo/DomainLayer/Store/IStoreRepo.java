@@ -2,6 +2,7 @@ package workshop.demo.DomainLayer.Store;
 
 import java.util.List;
 
+import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -40,8 +41,9 @@ public interface IStoreRepo {
 
     public StoreDTO getStoreDTO(int storeId) throws UIException;
 
-    public void makeOffer(int storeId, int senderId, int reciverId, boolean toBeOwner, List<Permission> permissions) throws Exception;
+    public void makeOffer(int storeId, int senderId, int reciverId, boolean toBeOwner, List<Permission> permissions, String Message) throws Exception;
 
     public List<Permission> deleteOffer(int storeId, int senderId, int reciverId) throws Exception;
 
+    public void receiveOffer(OfferDTO offer);
 }

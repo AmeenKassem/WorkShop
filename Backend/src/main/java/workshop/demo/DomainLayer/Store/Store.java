@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.atmosphere.config.service.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,8 +100,8 @@ public class Store {
         return new StoreDTO(storeID, storeName, category, active, getFinalRateInStore(storeID));
     }
 
-    public void makeOffer(int senderId, int receiverId, boolean toBeOwner, List<Permission> per) {
-        OfferDTO newOffer = new OfferDTO(senderId, receiverId, toBeOwner, per);
+    public void makeOffer(int senderId, int receiverId, boolean toBeOwner, List<Permission> per, String Message) {
+        OfferDTO newOffer = new OfferDTO(senderId, receiverId, toBeOwner, per, Message);
         offers.add(newOffer);
     }
 

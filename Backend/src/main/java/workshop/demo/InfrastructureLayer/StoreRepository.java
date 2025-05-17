@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -157,11 +158,11 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public void makeOffer(int storeId, int senderId, int reciverId, boolean toBeOwner, List<Permission> per) throws Exception {
+    public void makeOffer(int storeId, int senderId, int reciverId, boolean toBeOwner, List<Permission> per, String Message) throws Exception {
         if (findStoreByID(storeId) == null) {
             throw new UIException("Store not found for ID: " + storeId, ErrorCodes.STORE_NOT_FOUND);
         }
-        this.findStoreByID(storeId).makeOffer(senderId, reciverId, toBeOwner, per);
+        this.findStoreByID(storeId).makeOffer(senderId, reciverId, toBeOwner, per, Message);
     }
 
     @Override
@@ -170,5 +171,27 @@ public class StoreRepository implements IStoreRepo {
             throw new UIException("Store not found for ID: " + storeId, ErrorCodes.STORE_NOT_FOUND);
         }
         return this.findStoreByID(storeId).deleteOffer(senderId, reciverId);
+    }
+
+    @Override
+    public void receiveOffer(OfferDTO offer) {
+        if (offer == null) {
+            return;
+        }
+        if (offer.isToBeOwner()) {
+            if (offer.getApprove()) {
+
+            } else {
+            }
+
+        }
+        if (!offer.isToBeOwner()) {
+            if (offer.getApprove()) {//manager
+
+            } else {
+            }
+
+        }
+
     }
 }
