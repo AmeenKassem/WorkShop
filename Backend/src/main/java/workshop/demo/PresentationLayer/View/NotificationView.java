@@ -54,7 +54,7 @@ public class NotificationView extends com.vaadin.flow.component.Component {
     public List<JsonObject> getReceivedNotifications() {
         return receivedNotifications;
     }
-    
+
     private void storeNotification(JsonObject json) {
         receivedNotifications.add(json);
     }
@@ -121,19 +121,18 @@ public class NotificationView extends com.vaadin.flow.component.Component {
 
     private void showOfferNotification(JsonObject json) {
         String message = json.getString("message");
-        String storeName = json.getString("storeName");
 
         Span body = new Span("💼 " + message);
         body.getStyle().set("font-size", "1.1rem");
 
         Button approve = new Button("✅ Approve", e -> {
             // TODO: call backend service with approval
-            Notification.show("You accepted the offer from " + storeName);
+            Notification.show("You accepted the offer");
         });
 
         Button decline = new Button("❌ Decline", e -> {
             // TODO: call backend service with rejection
-            Notification.show("You declined the offer from " + storeName);
+            Notification.show("You declined the offer");
         });
 
         HorizontalLayout actions = new HorizontalLayout(approve, decline);
