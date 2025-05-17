@@ -78,7 +78,6 @@ public class InitPresenter {
         // Log who is currently attached to the UI
         initGuestIfNeeded();
         // connectAsGuest();
-        
 
     }
 
@@ -96,8 +95,7 @@ public class InitPresenter {
                 ResponseEntity<ApiResponse> response = restTemplate.postForEntity(
                         "http://localhost:8080/api/users/logout?token=" + token,
                         null,
-                        ApiResponse.class
-                );
+                        ApiResponse.class);
 
                 ApiResponse body = response.getBody();
                 if (body != null && body.getErrNumber() != -1) {
@@ -105,11 +103,8 @@ public class InitPresenter {
 
                 }
                 // Clear session and redirect
-                UI.getCurrent().getPage().executeJs("window.closeNotificationSocket();");
-                VaadinSession.getCurrent().getSession().invalidate();
-                UI.getCurrent().navigate("login");
-                System.out.println("session invalidated");
 
+                System.out.println("session invalidated");
 
             } catch (HttpClientErrorException e) {
                 try {
@@ -132,10 +127,12 @@ public class InitPresenter {
         }
 
         // Clear session and redirect
-        //guest token -> main layout it wil generated aoyomaticlly
+        // guest token -> main layout it wil generated aoyomaticlly
         VaadinSession.getCurrent().setAttribute("auth-token", null);
         VaadinSession.getCurrent().setAttribute("user-type", "guest");
-        //UI.getCurrent().navigate("");
+        UI.getCurrent().getPage().executeJs("window.closeNotificationSocket();");
+        VaadinSession.getCurrent().getSession().invalidate();
+        // UI.getCurrent().navigate("");
         UI.getCurrent().getPage().reload(); // Force hard refresh to reinitialize MainLayout
     }
 
