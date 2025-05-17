@@ -138,14 +138,14 @@ public class NotificationView extends com.vaadin.flow.component.Component {
 
         Button approve = new Button("✅ Approve", e -> {
             // 🔽 This part is executed when Approve is clicked
-            handleOfferDecision(true, json);
+            sendOfferResponse( json, true);
             Notification.show("You accepted the offer");
             notification.close();
         });
 
         Button decline = new Button("❌ Decline", e -> {
             // 🔽 This part is executed when Decline is clicked
-            handleOfferDecision(false, json);
+            sendOfferResponse( json, false);
             Notification.show("You declined the offer");
             notification.close();
         });
@@ -275,30 +275,31 @@ public class NotificationView extends com.vaadin.flow.component.Component {
         System.out.println("✅ NotificationView added to UI");
     }
 
-    public void handleOfferDecision(boolean decision, JsonObject json) {
+    public void sendOfferResponse(JsonObject json, boolean answer) {
         try {
-            int storeId = Integer.parseInt(json.getString("storeId"));
+            int storeId = Integer.parseInt(json.get("storeId"));
             String senderName = json.getString("senderName");
             String receiverName = json.getString("receiverName");
+            boolean toBeOwner = json.getBoolean("toBeOwner");
 
             String url = String.format(
-                    "http://localhost:8080/respondToOffer?storeId=%s&senderName=%s&receiverName=%s&answer=%b",
+                    "http://localhost:8080/respondToOffer?storeId=%s&senderName=%s&receiverName=%s&answer=%b&toBeOwner=%b",
                     storeId,
                     URLEncoder.encode(senderName, StandardCharsets.UTF_8),
                     URLEncoder.encode(receiverName, StandardCharsets.UTF_8),
-                    decision);
+                    answer,
+                    toBeOwner);
 
-            // Send POST request
             ResponseEntity<String> response = restTemplate.postForEntity(url, null, String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                Notification.show("Offer decision sent successfully");
+                Notification.show("Offer response sent");
             } else {
-                Notification.show("Failed to send offer decision", 3000, Notification.Position.MIDDLE);
+                Notification.show("Failed to respond to offer");
             }
 
         } catch (Exception e) {
-            Notification.show("Error: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
+            Notification.show("Error: " + e.getMessage());
             e.printStackTrace();
         }
     }

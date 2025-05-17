@@ -112,7 +112,7 @@ public class StoreService {
         }
     }
 
-    private int AddOwnershipToStore(int storeId, int ownerId, int newOwnerId, boolean decide) throws Exception {
+    public int AddOwnershipToStore(int storeId, int ownerId, int newOwnerId, boolean decide) throws Exception {
         if (decide) {
             suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
             suConnectionRepo.deleteOffer(storeId, ownerId, newOwnerId);
@@ -159,7 +159,7 @@ public class StoreService {
         suConnectionRepo.makeOffer(storeId, ownerId, ownerId, false, authorization, Message);
     }
 
-    private int AddManagerToStore(int storeId, int ownerId, int managerId, boolean decide) throws Exception {
+    public int AddManagerToStore(int storeId, int ownerId, int managerId, boolean decide) throws Exception {
         if (decide) {
             suConnectionRepo.AddManagerToStore(storeId, ownerId, managerId);
             List<Permission> authorization = suConnectionRepo.deleteOffer(storeId, ownerId, managerId);
