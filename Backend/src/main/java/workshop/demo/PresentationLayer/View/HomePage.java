@@ -17,8 +17,11 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
 
-
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import workshop.demo.DTOs.NotificationDTO;
 import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.NotificationDTO.NotificationType;
 import workshop.demo.PresentationLayer.Presenter.HomePagePresenter;
 
 @Route(value = "", layout = MainLayout.class)
@@ -28,6 +31,7 @@ public class HomePage extends VerticalLayout {
     private final HomePagePresenter homePagePresenter;
 
     public HomePage() {
+        
         this.homePagePresenter = new HomePagePresenter(this);
         setSizeFull();
         setSpacing(false);
