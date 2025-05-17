@@ -13,12 +13,18 @@ import org.springframework.web.util.UriUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.LoginView;
+import workshop.demo.PresentationLayer.View.MainLayout;
+import workshop.demo.PresentationLayer.View.NotificationView;
 
+@JsModule("./notification.js")
 public class LoginPresenter {
 
     private final LoginView view;
@@ -43,8 +49,7 @@ public class LoginPresenter {
                 "http://localhost:8080/api/users/login?token=%s&username=%s&password=%s",
                 UriUtils.encodeQueryParam(guestToken, StandardCharsets.UTF_8),
                 UriUtils.encodeQueryParam(username, StandardCharsets.UTF_8),
-                UriUtils.encodeQueryParam(password, StandardCharsets.UTF_8)
-        );
+                UriUtils.encodeQueryParam(password, StandardCharsets.UTF_8));
         System.out.println("Username: " + username);
         System.out.println("Password: " + password);
         System.out.println("Guest token: " + guestToken);
@@ -60,8 +65,7 @@ public class LoginPresenter {
                     url,
                     HttpMethod.POST,
                     entity,
-                    ApiResponse.class
-            );
+                    ApiResponse.class);
 
             ApiResponse body = response.getBody();
             System.out.println("Response body: " + new ObjectMapper().writeValueAsString(body));
@@ -71,7 +75,13 @@ public class LoginPresenter {
 
                 VaadinSession.getCurrent().setAttribute("auth-token", newUserToken);
                 VaadinSession.getCurrent().setAttribute("user-type", "user");
+                VaadinSession.getCurrent().setAttribute("username", username);
                 view.showSuccess("Logged in successfully!");
+                NotificationView notificationView = new NotificationView();
+                notificationView.createWS(UI.getCurrent(), username);
+                notificationView.register(UI.getCurrent());
+                VaadinSession.getCurrent().setAttribute("notification-view", notificationView);
+
                 UI.getCurrent().navigate("");
             } else {
                 if (body.getErrNumber() != -1) {

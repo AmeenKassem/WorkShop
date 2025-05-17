@@ -2,14 +2,21 @@ package workshop.demo.PresentationLayer.View;
 
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+
+import com.vaadin.flow.component.ClientCallable;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
+
 
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.PresentationLayer.Presenter.HomePagePresenter;

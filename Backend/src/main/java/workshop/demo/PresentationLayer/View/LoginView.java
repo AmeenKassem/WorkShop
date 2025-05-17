@@ -2,13 +2,16 @@ package workshop.demo.PresentationLayer.View;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 
+import ch.qos.logback.core.Layout;
 import workshop.demo.PresentationLayer.Presenter.LoginPresenter;
 
 @Route(value = "login", layout = MainLayout.class)
@@ -63,10 +66,10 @@ public class LoginView extends VerticalLayout {
     }
 
     public void showSuccess(String msg) {
-        Notification.show("✅ " + msg, 3000, Notification.Position.MIDDLE);
+        Notification.show("✅ " + msg, 3000, Notification.Position.BOTTOM_CENTER);
     }
 
     public void showError(String msg) {
-        Notification.show("❌ " + msg, 5000, Notification.Position.MIDDLE);
+        Notification.show("❌ " + msg, 5000, Notification.Position.BOTTOM_CENTER);
     }
 }
