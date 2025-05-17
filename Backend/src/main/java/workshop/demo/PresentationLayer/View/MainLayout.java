@@ -5,6 +5,7 @@ import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
@@ -86,23 +87,23 @@ public class MainLayout extends AppLayout {
 
     // @Override
     // protected void onDetach(DetachEvent detachEvent) {
-    //     presenter.handleOnDetach();
+    // presenter.handleOnDetach();
     // private void createHeader() { // this should be in the presenter
-    //     H1 logo = new H1("🛒 MarketAppMarket App");
-    //     RouterLink login = new RouterLink("Login", LoginView.class);
-    //     RouterLink register = new RouterLink("Register", RegisterView.class);
-    //     HorizontalLayout header = new HorizontalLayout(logo, login, register);
-    //     header.addClassName("app-header");
-    //     addToNavbar(header);
+    // H1 logo = new H1("🛒 MarketAppMarket App");
+    // RouterLink login = new RouterLink("Login", LoginView.class);
+    // RouterLink register = new RouterLink("Register", RegisterView.class);
+    // HorizontalLayout header = new HorizontalLayout(logo, login, register);
+    // header.addClassName("app-header");
+    // addToNavbar(header);
     // }
     private void addRightSideButtons() {
-        //Determine user type
+        // Determine user type
         String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
         if (userType == null) {
             userType = "guest";
         }
 
-        //Create a right-aligned vertical layout for buttons
+        // Create a right-aligned vertical layout for buttons
         if (buttonColumn != null) {
             remove(buttonColumn); // Remove old one from navbar
             buttonColumn.removeAll();
@@ -116,27 +117,28 @@ public class MainLayout extends AppLayout {
 
         }
 
-        //Shared: My Cart
+        // Shared: My Cart
         RouterLink myCart = new RouterLink("My Cart", MyCartView.class);
         myCart.addClassName("right-button");
         buttonColumn.add(myCart);
 
         if (userType.equals("guest")) {
-            //Guest buttons: sign up and login -> might mix it 
+            // Guest buttons: sign up and login -> might mix it
             RouterLink login = new RouterLink("Login", LoginView.class);
             RouterLink signUp = new RouterLink("Sign Up", RegisterView.class);
             login.addClassName("right-button");
             signUp.addClassName("right-button");
             buttonColumn.add(login, signUp);
         } else if (userType.equals("user")) {
-            //Logged-in user buttons: myStores and log out, notification, open my own store
+            // Logged-in user buttons: myStores and log out, notification, open my own store
             RouterLink myStore = new RouterLink("My Stores", MyStoresView.class);
             myStore.addClassName("right-button");
             buttonColumn.add(myStore);
-            //here must add also a button for notification
+            // here must add also a button for notification
 
-            //open my own store
-            RouterLink openStore = new RouterLink("Open My Store", OpenStoreView.class); // <-- replace with your actual view
+            // open my own store
+            RouterLink openStore = new RouterLink("Open My Store", OpenStoreView.class); // <-- replace with your actual
+                                                                                         // view
             openStore.addClassName("right-button");
             buttonColumn.add(openStore);
 
@@ -160,8 +162,7 @@ public class MainLayout extends AppLayout {
 
         Paragraph subtitle = new Paragraph(
                 "Welcome to our market. We bring the best stores and products to your fingertips.\n"
-                + "Join us and be an owner of your own store in a few clicks."
-        );
+                        + "Join us and be an owner of your own store in a few clicks.");
         subtitle.addClassName("market-subtitle");
 
         VerticalLayout titleLayout = new VerticalLayout(logo, subtitle);
@@ -174,6 +175,31 @@ public class MainLayout extends AppLayout {
         header.setAlignItems(FlexComponent.Alignment.CENTER);
         header.addClassName("app-header");
         header.setHeight("120px");
+        
+
+        Object userType = VaadinSession.getCurrent().getAttribute("user-type");
+        boolean isLoggedIn = userType != null && !"guest".equals(userType);
+
+        if (isLoggedIn) {
+            Button billButton = new Button("🧾 Notifications");
+            billButton.addClickListener(e -> {
+                UI.getCurrent().getChildren()
+                        .filter(c -> c instanceof NotificationView)
+                        .map(c -> (NotificationView) c)
+                        .findFirst()
+                        .ifPresent(NotificationView::openNotificationBill);
+            });
+
+            billButton.getStyle()
+                    .set("position", "absolute")
+                    .set("bottom", "0")
+                    .set("left", "0")
+                    .set("margin", "10px");
+
+            header.getElement().getStyle().set("position", "relative"); // anchor container
+            header.add(billButton);
+        }
+        
         addToNavbar(header);
     }
 

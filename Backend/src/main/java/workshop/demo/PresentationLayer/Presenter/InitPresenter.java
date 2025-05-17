@@ -104,6 +104,13 @@ public class InitPresenter {
                     view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
 
                 }
+                // Clear session and redirect
+                UI.getCurrent().getPage().executeJs("window.closeNotificationSocket();");
+                VaadinSession.getCurrent().getSession().invalidate();
+                UI.getCurrent().navigate("login");
+                System.out.println("session invalidated");
+
+
             } catch (HttpClientErrorException e) {
                 try {
                     String responseBody = e.getResponseBodyAsString();
