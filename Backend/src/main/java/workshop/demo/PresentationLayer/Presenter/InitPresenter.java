@@ -8,6 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -17,6 +19,7 @@ import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.PresentationLayer.View.MainLayout;
+import workshop.demo.PresentationLayer.View.NotificationView;
 
 public class InitPresenter {
 
@@ -51,8 +54,7 @@ public class InitPresenter {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<ApiResponse<String>>() {
-            }
-            );
+                    });
             ApiResponse body = response.getBody();
             if (body != null && body.getErrorMsg() == null) {
                 String guestToken = (String) body.getData();
@@ -62,7 +64,7 @@ public class InitPresenter {
 
                 System.out.println("Guest token stored: " + guestToken);
             } else {
-                //view.showError(body.getErrorMsg());
+                // view.showError(body.getErrorMsg());
                 System.err.println(" Failed to generate guest: "
                         + (body != null ? body.getErrorMsg() : "null body"));
             }
@@ -74,7 +76,8 @@ public class InitPresenter {
     public void handleOnAttach(String endpoint, Object user) {
         // Log who is currently attached to the UI
         initGuestIfNeeded();
-        //connectAsGuest();
+        // connectAsGuest();
+        
 
     }
 
@@ -84,8 +87,7 @@ public class InitPresenter {
 
         Paragraph subtitle = new Paragraph(
                 "Welcome to our market. We bring the best stores and products to your fingertips.\n"
-                + "Join us and be an owner of your own store in a few clicks."
-        );
+                        + "Join us and be an owner of your own store in a few clicks.");
         subtitle.addClassName("market-subtitle");
 
         VerticalLayout titleLayout = new VerticalLayout(logo, subtitle);
@@ -97,6 +99,29 @@ public class InitPresenter {
         header.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
         header.setAlignItems(FlexComponent.Alignment.CENTER);
         header.addClassName("app-header");
+
+        // Object userType = VaadinSession.getCurrent().getAttribute("user-type");
+        // boolean isLoggedIn = userType != null && !"guest".equals(userType);
+
+        // if (isLoggedIn) {
+        //     Button billButton = new Button("🧾 Bill");
+        //     billButton.addClickListener(e -> {
+        //         UI.getCurrent().getChildren()
+        //                 .filter(c -> c instanceof NotificationView)
+        //                 .map(c -> (NotificationView) c)
+        //                 .findFirst()
+        //                 .ifPresent(NotificationView::openNotificationBill);
+        //     });
+
+        //     billButton.getStyle()
+        //             .set("position", "absolute")
+        //             .set("bottom", "0")
+        //             .set("left", "0")
+        //             .set("margin", "10px");
+
+        //     header.getElement().getStyle().set("position", "relative"); // anchor container
+        //     header.add(billButton);
+        // }
 
         this.view.addToNavbar(header);
     }

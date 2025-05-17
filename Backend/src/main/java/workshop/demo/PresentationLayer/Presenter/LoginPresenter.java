@@ -15,11 +15,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.LoginView;
+import workshop.demo.PresentationLayer.View.MainLayout;
 import workshop.demo.PresentationLayer.View.NotificationView;
 
 @JsModule("./notification.js")
@@ -73,51 +75,12 @@ public class LoginPresenter {
 
                 VaadinSession.getCurrent().setAttribute("auth-token", newUserToken);
                 VaadinSession.getCurrent().setAttribute("user-type", "user");
+                VaadinSession.getCurrent().setAttribute("username", username);
                 view.showSuccess("Logged in successfully!");
-
-                // Initialize WebSocket connection
-                VaadinSession session = VaadinSession.getCurrent();
-                session.setAttribute("username", username);
-
-                try {
-                    NotificationView.create().register(UI.getCurrent());
-                } catch (Exception e) {
-                    System.err.println("Error registering NotificationView: " + e.getMessage());
-                }
-
-                if (username != null) {
-                    // Add a small delay to ensure JS is fully loaded
-                    UI ui = UI.getCurrent();
-                    if (ui != null) {
-                        Page page = ui.getPage();
-
-                        // First check if the notification.js is loaded
-                        page.executeJs("console.log('Testing if JS module is loaded properly');");
-
-                        // Then initialize the WebSocket with proper error handling
-                        page.executeJs("try { " +
-                                "console.log('About to initialize notification socket for: ' + $0); " +
-                                "if (typeof window.initNotificationSocket === 'function') { " +
-                                "  window.initNotificationSocket($0); " +
-                                "  console.log('WebSocket initialization called'); " +
-                                "} else { " +
-                                "  console.error('initNotificationSocket function not found!'); " +
-                                "} " +
-                                "} catch(e) { console.error('Error initializing WebSocket:', e); }", username);
-
-                        // Set the flag to avoid multiple initializations
-                        session.setAttribute("ws-initialized", true);
-                        // Register the notification view to this UI
-                        // UI.getCurrent().addAttachListener(event -> {
-                        // NotificationView.register(event.getUI());
-
-                        // });
-                        System.out.println("WebSocket initialization attempted for user: " + username);
-                    }
-                } else {
-                    System.out.println("Cannot initialize WebSocket: username is null");
-                }
-                // ------------------------------->
+                NotificationView notificationView = new NotificationView();
+                notificationView.createWS(UI.getCurrent(), username);
+                notificationView.register(UI.getCurrent());
+                VaadinSession.getCurrent().setAttribute("notification-view", notificationView);
 
                 UI.getCurrent().navigate("");
             } else {

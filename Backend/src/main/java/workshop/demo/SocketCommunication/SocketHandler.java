@@ -34,8 +34,9 @@ public class SocketHandler extends TextWebSocketHandler {
 		if (query != null && query.startsWith("username=")) {
 			username = query.substring("username=".length());
 		} 
-
+		
 		if (username != null) {
+			System.out.println("sending delayed notifications for user: " + username);
 			sessions.computeIfAbsent(username, k -> new ArrayList<>()).add(session);
 			String[] messages = applicationContext.getBean(DelayedNotificationDecorator.class).getDelayedMessages(username);
 			if (messages != null) {
@@ -43,6 +44,8 @@ public class SocketHandler extends TextWebSocketHandler {
 					session.sendMessage(new TextMessage(notification));
 				}
 			}
+		}else {
+			System.out.println("No username provided in the query.");
 		}
 	}
 
