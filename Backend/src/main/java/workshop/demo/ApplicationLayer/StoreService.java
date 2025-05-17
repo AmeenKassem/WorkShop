@@ -2,11 +2,16 @@ package workshop.demo.ApplicationLayer;
 
 import java.util.List;
 
+import org.atmosphere.config.service.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.vaadin.flow.component.notification.Notification;
+
+import workshop.demo.DTOs.NotificationDTO;
+import workshop.demo.DTOs.NotificationDTO.NotificationType;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
@@ -21,6 +26,9 @@ import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 @Service
 public class StoreService {
@@ -62,6 +70,15 @@ public class StoreService {
         return storeId;
     }
 
+    private String convertNotificationToJson(String message, String receiverName, NotificationDTO.NotificationType type, boolean toBeOwner) {
+        NotificationDTO dto = new NotificationDTO(message, receiverName, NotificationDTO.NotificationType.OFFER, toBeOwner);
+        JsonObject json = Json.createObject();
+        json.put("message", dto.getMessage());
+        json.put("receiverName", dto.getReceiverName());
+        json.put("type", dto.getType().name());
+        return json.toJson();
+    }
+
     public void MakeofferToAddOwnershipToStore(int storeId, String token, int newOwnerId) throws Exception, DevException {
         logger.info("User attempting to add a new owner (userId: {}) to store {}", newOwnerId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -76,20 +93,25 @@ public class StoreService {
         String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
         String nameNew = this.userRepo.getRegisteredUser(newOwnerId).getUsername();
         String storeName = this.storeRepo.getStoreNameById(storeId);
-        String Message = "In store:{}, the owner:{} is offering you to be an owner of this store" + storeName + owner;
-        this.notiRepo.sendDelayedMessageToUser(nameNew, Message);
-        storeRepo.makeOffer(storeId, ownerId, ownerId, true, null, Message);
+        String Message = "In store:{}, the owner:{} is offering you:{} to be an owner of this store" + storeName + owner + nameNew;
+        String jssonMessage = convertNotificationToJson(Message, nameNew, NotificationDTO.NotificationType.OFFER, true);
+        this.notiRepo.sendDelayedMessageToUser(nameNew, jssonMessage);
+        suConnectionRepo.makeOffer(storeId, ownerId, ownerId, true, null, Message);
+    }
+
+    public void reciveAnswerToOffer(int stroeId, String senderName, String recievierName, boolean answer) {
+
     }
 
     public int AddOwnershipToStore(int storeId, int ownerId, int newOwnerId, boolean decide) throws Exception {
         if (decide) {
             suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
-            storeRepo.deleteOffer(storeId, ownerId, newOwnerId);
+            suConnectionRepo.deleteOffer(storeId, ownerId, newOwnerId);
             logger.info("Successfully added user {} as owner to store {} by user {}", newOwnerId, storeId, ownerId);
             return newOwnerId;
         }
         logger.info("Ownership addition declined by user {}", newOwnerId);
-        storeRepo.deleteOffer(storeId, ownerId, newOwnerId);
+        suConnectionRepo.deleteOffer(storeId, ownerId, newOwnerId);
         return -1;
     }
 
@@ -121,21 +143,22 @@ public class StoreService {
         String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
         String nameNew = this.userRepo.getRegisteredUser(managerId).getUsername();
         String storeName = this.storeRepo.getStoreNameById(storeId);
-        String Message = "In store:{}, the owner:{} is offering you to be a manager of this store" + storeName + owner;
-        this.notiRepo.sendDelayedMessageToUser(nameNew, Message);
-        storeRepo.makeOffer(storeId, ownerId, ownerId, false, authorization, Message);
+        String Message = "In store:{}, the owner:{} is offering you: {} to be a manager of this store" + storeName + owner + nameNew;
+        String jssonMessage = convertNotificationToJson(Message, nameNew, NotificationDTO.NotificationType.OFFER, false);
+        this.notiRepo.sendDelayedMessageToUser(nameNew, jssonMessage);
+        suConnectionRepo.makeOffer(storeId, ownerId, ownerId, false, authorization, Message);
     }
 
     public int AddManagerToStore(int storeId, int ownerId, int managerId, boolean decide) throws Exception {
         if (decide) {
             suConnectionRepo.AddManagerToStore(storeId, ownerId, managerId);
-            List<Permission> authorization = storeRepo.deleteOffer(storeId, ownerId, managerId);
+            List<Permission> authorization = suConnectionRepo.deleteOffer(storeId, ownerId, managerId);
             suConnectionRepo.changePermissions(ownerId, managerId, storeId, authorization);
             logger.info("Successfully added user {} as a manager to store {} by user {}", managerId, storeId, ownerId);
             return managerId;
         }
         logger.info("Managment updated addition declined by user {}", ownerId);
-        storeRepo.deleteOffer(storeId, ownerId, managerId);
+        suConnectionRepo.deleteOffer(storeId, ownerId, managerId);
         return -1;
 
     }

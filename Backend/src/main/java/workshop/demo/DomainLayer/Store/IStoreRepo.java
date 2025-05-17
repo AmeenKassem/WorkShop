@@ -40,10 +40,4 @@ public interface IStoreRepo {
     void checkStoreIsActive(int storeId) throws DevException;
 
     public StoreDTO getStoreDTO(int storeId) throws UIException;
-
-    public void makeOffer(int storeId, int senderId, int reciverId, boolean toBeOwner, List<Permission> permissions, String Message) throws Exception;
-
-    public List<Permission> deleteOffer(int storeId, int senderId, int reciverId) throws Exception;
-
-    public void receiveOffer(OfferDTO offer);
 }

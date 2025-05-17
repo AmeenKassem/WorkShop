@@ -34,6 +34,10 @@ public interface ISUConnectionRepo {
 
     void checkMainOwnerToDeactivateStore_ThrowException(int storeId, int userId) throws DevException;
 
+    void makeOffer(int storeId, int senderId, int reciverId, boolean toBeOwner, List<Permission> per, String Message) throws Exception;
+
+    public List<Permission> deleteOffer(int storeId, int senderId, int reciverId) throws Exception;
+
     // for tests
     SuperDataStructure getData();
 

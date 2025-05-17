@@ -23,7 +23,6 @@ public class Store {
     private String category;
     private boolean active;
     private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
-    private List<OfferDTO> offers;
     //must add something for messages
     private List<String> messgesInStore;
 
@@ -39,7 +38,6 @@ public class Store {
             rank[i] = new AtomicInteger(0);
         }
         this.messgesInStore = Collections.synchronizedList(new LinkedList<>());
-        this.offers = Collections.synchronizedList(new LinkedList<>());
     }
 
     public int getStoreID() {
@@ -98,27 +96,6 @@ public class Store {
 
     public StoreDTO getStoreDTO() {
         return new StoreDTO(storeID, storeName, category, active, getFinalRateInStore(storeID));
-    }
-
-    public void makeOffer(int senderId, int receiverId, boolean toBeOwner, List<Permission> per, String Message) {
-        OfferDTO newOffer = new OfferDTO(senderId, receiverId, toBeOwner, per, Message);
-        offers.add(newOffer);
-    }
-
-    public List<Permission> deleteOffer(int senderId, int receiverId) {
-        synchronized (offers) {
-            Iterator<OfferDTO> iterator = offers.iterator();
-            while (iterator.hasNext()) {
-                OfferDTO offer = iterator.next();
-                if (offer.getSenderId() == senderId && offer.getReceiverId() == receiverId) {
-                    List<Permission> permissions = offer.getPermissions();
-                    iterator.remove();
-                    return permissions;
-                }
-            }
-
-        }
-        return null; // no matching offer found
     }
 
 }
