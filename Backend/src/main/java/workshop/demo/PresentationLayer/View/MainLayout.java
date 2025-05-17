@@ -1,7 +1,6 @@
 package workshop.demo.PresentationLayer.View;
 
 import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -16,17 +15,17 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
+
 import workshop.demo.PresentationLayer.Presenter.InitPresenter;
 
 @Route
 @CssImport("./Theme/main-layout.css")
 @JsModule("./notification.js")
 public class MainLayout extends AppLayout {
+
     private InitPresenter presenter;
     VerticalLayout buttonColumn;
 
@@ -135,10 +134,28 @@ public class MainLayout extends AppLayout {
             myStore.addClassName("right-button");
             buttonColumn.add(myStore);
             // here must add also a button for notification
+            Button billButton = new Button("🧾 Notifications");
+            billButton.addClickListener(e -> {
+                UI.getCurrent().getChildren()
+                        .filter(c -> c instanceof NotificationView)
+                        .map(c -> (NotificationView) c)
+                        .findFirst()
+                        .ifPresent(NotificationView::openNotificationBill);
+            });
 
+            billButton.getStyle()
+                    .set("position", "absolute")
+                    .set("bottom", "0")
+                    .set("left", "0")
+                    .set("margin", "10px");
+
+            billButton.addClassName("right-button"); // consistent styling
+            buttonColumn.add(billButton); // ✅ Add to layout normally
+            // header.getElement().getStyle().set("position", "relative"); // anchor container
+            // header.add(billButton);
             // open my own store
-            RouterLink openStore = new RouterLink("Open My Store", OpenStoreView.class); // <-- replace with your actual
-                                                                                         // view
+            RouterLink openStore = new RouterLink("Open My Store", OpenStoreView.class);
+            // view
             openStore.addClassName("right-button");
             buttonColumn.add(openStore);
 
@@ -162,7 +179,7 @@ public class MainLayout extends AppLayout {
 
         Paragraph subtitle = new Paragraph(
                 "Welcome to our market. We bring the best stores and products to your fingertips.\n"
-                        + "Join us and be an owner of your own store in a few clicks.");
+                + "Join us and be an owner of your own store in a few clicks.");
         subtitle.addClassName("market-subtitle");
 
         VerticalLayout titleLayout = new VerticalLayout(logo, subtitle);
@@ -175,31 +192,26 @@ public class MainLayout extends AppLayout {
         header.setAlignItems(FlexComponent.Alignment.CENTER);
         header.addClassName("app-header");
         header.setHeight("120px");
-        
 
-        Object userType = VaadinSession.getCurrent().getAttribute("user-type");
-        boolean isLoggedIn = userType != null && !"guest".equals(userType);
-
-        if (isLoggedIn) {
-            Button billButton = new Button("🧾 Notifications");
-            billButton.addClickListener(e -> {
-                UI.getCurrent().getChildren()
-                        .filter(c -> c instanceof NotificationView)
-                        .map(c -> (NotificationView) c)
-                        .findFirst()
-                        .ifPresent(NotificationView::openNotificationBill);
-            });
-
-            billButton.getStyle()
-                    .set("position", "absolute")
-                    .set("bottom", "0")
-                    .set("left", "0")
-                    .set("margin", "10px");
-
-            header.getElement().getStyle().set("position", "relative"); // anchor container
-            header.add(billButton);
-        }
-        
+        // Object userType = VaadinSession.getCurrent().getAttribute("user-type");
+        // boolean isLoggedIn = userType != null && !"guest".equals(userType);
+        // if (isLoggedIn) {
+        //     Button billButton = new Button("🧾 Notifications");
+        //     billButton.addClickListener(e -> {
+        //         UI.getCurrent().getChildren()
+        //                 .filter(c -> c instanceof NotificationView)
+        //                 .map(c -> (NotificationView) c)
+        //                 .findFirst()
+        //                 .ifPresent(NotificationView::openNotificationBill);
+        //     });
+        //     billButton.getStyle()
+        //             .set("position", "absolute")
+        //             .set("bottom", "0")
+        //             .set("left", "0")
+        //             .set("margin", "10px");
+        //     header.getElement().getStyle().set("position", "relative"); // anchor container
+        //     header.add(billButton);
+        // }
         addToNavbar(header);
     }
 
