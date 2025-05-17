@@ -1,9 +1,12 @@
 package workshop.demo.PresentationLayer.View;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 //import com.nimbusds.jose.shaded.gson.JsonObject;
@@ -148,11 +151,11 @@ public class NotificationView extends com.vaadin.flow.component.Component {
         });
 
         // ❌ Dismiss button
-        Button close = new Button("✖", event -> notification.close());
-        close.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-        close.getStyle().set("margin-left", "auto");
+        Button closeButton = new Button("✖", e -> notification.close());
+        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+        closeButton.getStyle().set("margin-left", "auto");
 
-        HorizontalLayout actions = new HorizontalLayout(approve, decline, close);
+        HorizontalLayout actions = new HorizontalLayout(approve, decline, closeButton);
         actions.setWidthFull();
         actions.setAlignItems(FlexComponent.Alignment.CENTER);
         actions.getStyle().set("margin-top", "0.5rem");
@@ -184,18 +187,26 @@ public class NotificationView extends com.vaadin.flow.component.Component {
                 String msg = json.getString("message");
 
                 Span offerMsg = new Span("📢 " + msg);
+
+                // Container for the message + buttons (so we can remove it)
+                VerticalLayout offerLayout = new VerticalLayout();
+                offerLayout.setSpacing(false);
+                offerLayout.setPadding(false);
+                offerLayout.setMargin(false);
+
                 Button approve = new Button("✅ Approve", e -> {
                     Notification.show("You accepted the offer");
-                    dialog.close();
+                    content.remove(offerLayout); // remove this message
                 });
 
                 Button decline = new Button("❌ Decline", e -> {
                     Notification.show("You declined the offer");
-                    dialog.close();
+                    content.remove(offerLayout); // remove this message
                 });
 
                 HorizontalLayout actionRow = new HorizontalLayout(approve, decline);
-                content.add(new VerticalLayout(offerMsg, actionRow));
+                offerLayout.add(offerMsg, actionRow);
+                content.add(offerLayout);
 
             } else {
                 String message = json.getString("message");
@@ -265,8 +276,31 @@ public class NotificationView extends com.vaadin.flow.component.Component {
     }
 
     public void handleOfferDecision(boolean decision, JsonObject json) {
-        
+        try {
+            int storeId = Integer.parseInt(json.getString("storeId"));
+            String senderName = json.getString("senderName");
+            String receiverName = json.getString("receiverName");
 
+            String url = String.format(
+                    "http://localhost:8080/respondToOffer?storeId=%s&senderName=%s&receiverName=%s&answer=%b",
+                    storeId,
+                    URLEncoder.encode(senderName, StandardCharsets.UTF_8),
+                    URLEncoder.encode(receiverName, StandardCharsets.UTF_8),
+                    decision);
+
+            // Send POST request
+            ResponseEntity<String> response = restTemplate.postForEntity(url, null, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                Notification.show("Offer decision sent successfully");
+            } else {
+                Notification.show("Failed to send offer decision", 3000, Notification.Position.MIDDLE);
+            }
+
+        } catch (Exception e) {
+            Notification.show("Error: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
+            e.printStackTrace();
+        }
     }
 
 }

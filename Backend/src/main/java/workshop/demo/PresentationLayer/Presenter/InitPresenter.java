@@ -100,28 +100,28 @@ public class InitPresenter {
         header.setAlignItems(FlexComponent.Alignment.CENTER);
         header.addClassName("app-header");
 
-        // Object userType = VaadinSession.getCurrent().getAttribute("user-type");
-        // boolean isLoggedIn = userType != null && !"guest".equals(userType);
+        Object userType = VaadinSession.getCurrent().getAttribute("user-type");
+        boolean isLoggedIn = userType != null && !"guest".equals(userType);
 
-        // if (isLoggedIn) {
-        //     Button billButton = new Button("🧾 Bill");
-        //     billButton.addClickListener(e -> {
-        //         UI.getCurrent().getChildren()
-        //                 .filter(c -> c instanceof NotificationView)
-        //                 .map(c -> (NotificationView) c)
-        //                 .findFirst()
-        //                 .ifPresent(NotificationView::openNotificationBill);
-        //     });
+        if (isLoggedIn) {
+            Button billButton = new Button("🧾 Notifications");
+            billButton.addClickListener(e -> {
+                UI.getCurrent().getChildren()
+                        .filter(c -> c instanceof NotificationView)
+                        .map(c -> (NotificationView) c)
+                        .findFirst()
+                        .ifPresent(NotificationView::openNotificationBill);
+            });
 
-        //     billButton.getStyle()
-        //             .set("position", "absolute")
-        //             .set("bottom", "0")
-        //             .set("left", "0")
-        //             .set("margin", "10px");
+            billButton.getStyle()
+                    .set("position", "absolute")
+                    .set("bottom", "0")
+                    .set("left", "0")
+                    .set("margin", "10px");
 
-        //     header.getElement().getStyle().set("position", "relative"); // anchor container
-        //     header.add(billButton);
-        // }
+            header.getElement().getStyle().set("position", "relative"); // anchor container
+            header.add(billButton);
+        }
 
         this.view.addToNavbar(header);
     }
