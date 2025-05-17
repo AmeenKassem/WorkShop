@@ -1,12 +1,14 @@
-
 package workshop.demo.DomainLayer.StoreUserConnection;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -14,10 +16,12 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 public class SuperDataStructure {
 
     private Map<Integer, Tree> employees;
+    private final Map<Integer, List<OfferDTO>> offers;//storeId, list of offers
     private final ConcurrentHashMap<Integer, ReentrantLock> storeLocks = new ConcurrentHashMap<>();
 
     public SuperDataStructure() {
         employees = new ConcurrentHashMap<>();
+        this.offers = new ConcurrentHashMap<>();
     }
 
     public void addNewStore(int storeID, int bossId) {
@@ -236,5 +240,39 @@ public class SuperDataStructure {
     public boolean checkStoreExist(int storeId) {
         return employees.containsKey(storeId);
     }
-}
 
+    //make offer delete offer
+    public void makeOffer(OfferDTO offer, int storeId) {
+        synchronized (offers) {
+            offers.computeIfAbsent(storeId, k -> new ArrayList<>()).add(offer);
+        }
+    }
+
+    public List<Permission> deleteOffer(int storeId, int senderId, int reciverId) throws Exception {
+        synchronized (offers) {
+            List<OfferDTO> storeOffers = offers.get(storeId);
+            if (storeOffers == null) {
+                return null; // no offers for this store
+            }
+
+            Iterator<OfferDTO> iterator = storeOffers.iterator();
+            while (iterator.hasNext()) {
+                OfferDTO offer = iterator.next();
+                if (offer.getSenderId() == senderId && offer.getReceiverId() == reciverId) {
+                    List<Permission> permissions = offer.getPermissions();
+                    iterator.remove();
+
+                    // Clean up empty list
+                    if (storeOffers.isEmpty()) {
+                        offers.remove(storeId);
+                    }
+
+                    return permissions;
+                }
+            }
+        }
+
+        return null; // offer not found
+    }
+
+}

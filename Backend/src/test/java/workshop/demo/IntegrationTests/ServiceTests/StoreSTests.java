@@ -50,19 +50,20 @@ class StoreSTests {
 
     @BeforeEach
     void setUp() throws Exception {
-        // STEP 1: Create test user
-        testUserPassword = "999";
-        userName = "rahaf@example.com";
 
-        userId = userRepo.registerUser(userName, testUserPassword,22); // Add this method to IUserRepo fake
-        testToken = authRepo.generateUserToken(userId, testUserPassword);// Add to IAuthRepo fake
-        userRepo.login(userName, testUserPassword);
-        assertTrue(userRepo.isOnline(userId), "User should be logged in but is not!");
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId); // Add this to IUserSuspensionRepo fake
     }
 
     @Test
     void testAddStoreToSystem() throws Exception {
+        // STEP 1: Create test user
+        testUserPassword = "999";
+        userName = "rahaf@example.com";
+
+        userId = userRepo.registerUser(userName, testUserPassword, 22); // Add this method to IUserRepo fake
+        testToken = authRepo.generateUserToken(userId, testUserPassword);// Add to IAuthRepo fake
+        userRepo.login(userName, testUserPassword);
+        assertTrue(userRepo.isOnline(userId), "User should be logged in but is not!");
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId); // Add this to IUserSuspensionRepo fake
         String storeName = "TestBookStore";
         String category = "Books";
 
@@ -75,17 +76,27 @@ class StoreSTests {
 
     @Test
     void testAddOwnershipSuccessfully() throws Exception {
+        // STEP 1: Create test user
+        testUserPassword = "999";
+        userName = "rahaf1@example.com";
+
+        userId = userRepo.registerUser(userName, testUserPassword, 22); // Add this method to IUserRepo fake
+        testToken = authRepo.generateUserToken(userId, testUserPassword);// Add to IAuthRepo fake
+        userRepo.login(userName, testUserPassword);
+        assertTrue(userRepo.isOnline(userId), "User should be logged in but is not!");
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId); // Add this to IUserSuspensionRepo fake
         // STEP 1: Add a store
         String storeName = "MyTestStore";
         String category = "Books";
         int storeId = storeService.addStoreToSystem(testToken, storeName, category);
+        int ownerId = authRepo.getUserId(testToken);
         // STEP 2: Create a new user who will become the new owner
         String newOwnerEmail = "newowner@example.com";
-        int newOwnerId = userRepo.registerUser(newOwnerEmail, testUserPassword,30);
+        int newOwnerId = userRepo.registerUser(newOwnerEmail, testUserPassword, 30);
         userRepo.login(newOwnerEmail, testUserPassword);
         assertTrue(userRepo.isOnline(newOwnerId), "New owner should be logged in");
         // STEP 3: Add ownership
-        int returnedId = storeService.AddOwnershipToStore(storeId, testToken, newOwnerId);
+        int returnedId = storeService.AddOwnershipToStore(storeId, ownerId, newOwnerId, true);
         // STEP 4: Assert
         assertEquals(newOwnerId, returnedId);
         assertTrue(suConnectionRepo.getData().getWorkersInStore(storeId).contains(newOwnerId));

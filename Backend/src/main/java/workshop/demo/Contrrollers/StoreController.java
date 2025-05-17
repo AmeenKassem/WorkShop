@@ -46,13 +46,12 @@ public class StoreController {
 
     }
 
-    @PostMapping("/addOwner")
+    @PostMapping("/makeOfferOwner")
     public ResponseEntity<?> addOwner(@RequestParam int storeId,
             @RequestParam String token,
             @RequestParam int newOwnerId) {
-        ApiResponse<String> res;
         try {
-            storeService.AddOwnershipToStore(storeId, token, newOwnerId);
+            storeService.MakeofferToAddOwnershipToStore(storeId, token, newOwnerId);
             return ResponseEntity.ok(new ApiResponse<>("Owner added successfully", null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -78,15 +77,14 @@ public class StoreController {
 
     }
 
-    @PostMapping("/addManager")
+    @PostMapping("/makeOfferManager")
     public ResponseEntity<?> addManager(@RequestParam int storeId,
             @RequestParam String token,
             @RequestParam int managerId,
             @RequestBody List<Permission> permissions) {
-        ApiResponse<String> res;
         try {
-            storeService.AddManagerToStore(storeId, token, managerId, permissions);
-            return ResponseEntity.ok(new ApiResponse<>("Permissions updated successfully", null));
+            storeService.MakeOfferToAddManagerToStore(storeId, token, managerId, permissions);
+            return ResponseEntity.ok(new ApiResponse<>("made an offer successfuly", null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
@@ -131,7 +129,6 @@ public class StoreController {
 
     @GetMapping("/viewHistory")
     public ResponseEntity<?> viewStoreHistory(@RequestParam int storeId) {
-        ApiResponse<List<OrderDTO>> res;
         try {
             List<OrderDTO> history = storeService.veiwStoreHistory(storeId);
             return ResponseEntity.ok(new ApiResponse<>(history, null));
@@ -185,7 +182,6 @@ public class StoreController {
     @PostMapping("/close")
     public ResponseEntity<?> closeStore(@RequestParam int storeId,
             @RequestParam String token) {
-        ApiResponse<String> res;
         try {
             storeService.closeStore(storeId, token);
             return ResponseEntity.ok(new ApiResponse<>("Store closed successfully", null));
@@ -230,14 +226,14 @@ public class StoreController {
     }
 
     @GetMapping("/getstoreDTO")
-    public String getStoreDTO(@RequestParam String token,@RequestParam int storeId) {
-        ApiResponse<StoreDTO> res;
+    public ResponseEntity<?> getStoreDTO(@RequestParam String token, @RequestParam int storeId) {
         try {
-            StoreDTO dto = storeService.getStoreDTO(token , storeId);
-            res = new ApiResponse<>(dto, null);
+            StoreDTO dto = storeService.getStoreDTO(token, storeId);
+            return ResponseEntity.ok(new ApiResponse<>(dto, null));
         } catch (Exception e) {
-            res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
+
     }
 }
