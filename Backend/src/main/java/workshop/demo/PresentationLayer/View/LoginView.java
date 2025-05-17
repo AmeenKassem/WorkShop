@@ -57,6 +57,14 @@ public class LoginView extends VerticalLayout {
 
     }
 
+    public void refreshLayoutButtons() {
+        getParent().ifPresent(parent -> {
+            if (parent instanceof MainLayout layout) {
+                layout.refreshButtons();
+            }
+        });
+    }
+
     public String getUsername() {
         return usernameField.getValue();
     }

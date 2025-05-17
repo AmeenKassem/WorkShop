@@ -82,6 +82,7 @@ public class LoginPresenter {
                 notificationView.register(UI.getCurrent());
                 VaadinSession.getCurrent().setAttribute("notification-view", notificationView);
 
+                view.refreshLayoutButtons();
                 UI.getCurrent().navigate("");
             } else {
                 if (body.getErrNumber() != -1) {
