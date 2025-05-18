@@ -35,13 +35,6 @@ public class UserService {
         this.adminInitilizer = adminInitilizer;
 
     }
-    //Hmode
-    public UserService(IUserRepo userRepo, IAuthRepo authRepo,IStockRepo stockRepo,IStoreRepo storeRepo) {
-        this.userRepo = userRepo;
-        this.authRepo = authRepo;
-        this.stockRepo = stockRepo;
-        this.storeRepo=storeRepo;
-    }
 
     public String generateGuest() throws UIException, Exception {
         logger.info("generateGuest called");
