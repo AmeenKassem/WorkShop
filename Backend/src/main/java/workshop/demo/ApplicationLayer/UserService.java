@@ -6,17 +6,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.stereotype.Service;
 
-import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.SingleBid;
-import workshop.demo.DTOs.SpecialCartItemDTO;
-import workshop.demo.DTOs.SpecialType;
-import workshop.demo.DTOs.UserDTO;
-import workshop.demo.DTOs.UserSpecialItemCart;
+import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
+import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
@@ -32,6 +27,9 @@ public class UserService {
     private IAuthRepo authRepo;
     private IStockRepo stockRepo;
     private final AdminInitilizer adminInitilizer;
+    //Hmode
+    private AdminService adminService;
+    //HmodeEnd
 
     @Autowired
     public UserService(IUserRepo userRepo, IAuthRepo authRepo,IStockRepo stockRepo,AdminInitilizer adminInitilizer) {
@@ -40,6 +38,13 @@ public class UserService {
         this.stockRepo = stockRepo;
         this.adminInitilizer = adminInitilizer;
 
+    }
+    public UserService(IUserRepo userRepo, IAuthRepo authRepo,IStockRepo stockRepo,AdminInitilizer adminInitilizer,AdminService adminService) {
+        this.userRepo = userRepo;
+        this.authRepo = authRepo;
+        this.stockRepo = stockRepo;
+        this.adminInitilizer = adminInitilizer;
+        this.adminService = adminService;
     }
 
     public String generateGuest() throws UIException, Exception {
@@ -53,6 +58,9 @@ public class UserService {
         logger.info("register called for username={}", username);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         userRepo.registerUser(username, password,age);
+        //Hmode
+        adminService.recordRegisterEvent();
+        //HmodeEnd
         
     }
 
@@ -60,6 +68,9 @@ public class UserService {
         logger.info("login called for username={}", username);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int id = userRepo.login(username, pass);
+        //Hmode
+        adminService.recordLoginEvent();
+        //HmodeEnd
         logger.info("User {} logged in .", username);
         return authRepo.generateUserToken(id, username);
       
@@ -79,6 +90,9 @@ public class UserService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         String userName = authRepo.getUserName(token);
         int id = userRepo.logoutUser(userName);
+        //Hmode
+        adminService.recordLogoutEvent();
+        //HmodeEnd
         logger.info("User {} logged out", userName);
         return authRepo.generateGuestToken(id);
     }

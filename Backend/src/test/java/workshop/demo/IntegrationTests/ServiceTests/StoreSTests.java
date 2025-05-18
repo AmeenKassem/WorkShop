@@ -49,6 +49,7 @@ import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
 @SpringBootTest
 public class StoreSTests {
 
@@ -80,6 +81,7 @@ public class StoreSTests {
     @BeforeEach
     void setup() throws Exception {
         System.out.println("===== SETUP RUNNING =====");
+
 
         purchaseRepository = new PurchaseRepository();
         suspensionRepo = new UserSuspensionRepo();
