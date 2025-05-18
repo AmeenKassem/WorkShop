@@ -18,4 +18,43 @@ public class OrderDTO {
         this.finalPrice = finalPrice;
     }
 
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public int getStoreId() {
+        return storeId;
+    }
+
+    public void setStoreId(int storeId) {
+        this.storeId = storeId;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public List<ReceiptProduct> getProductsList() {
+        return productsList;
+    }
+
+    public void setProductsList(List<ReceiptProduct> productsList) {
+        this.productsList = productsList;
+    }
+
+    public double getFinalPrice() {
+        return finalPrice;
+    }
+
+    public void setFinalPrice(double finalPrice) {
+        this.finalPrice = finalPrice;
+    }
 }
