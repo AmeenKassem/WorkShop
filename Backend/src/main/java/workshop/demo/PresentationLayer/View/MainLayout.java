@@ -20,6 +20,7 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.PresentationLayer.Presenter.InitPresenter;
+import workshop.demo.PresentationLayer.Presenter.InitPresenter;
 
 @Route
 @CssImport("./Theme/main-layout.css")

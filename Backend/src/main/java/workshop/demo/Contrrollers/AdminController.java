@@ -28,7 +28,7 @@ import java.util.List;
 @RequestMapping("/admin")
 public class AdminController {
 
-    private final UserService userService;
+    // private final UserService userService;
     private final OrderService orderService;
     private final UserSuspensionService userSuspensionService;
     private AdminService adminService;
@@ -36,7 +36,7 @@ public class AdminController {
 
     @Autowired
     public AdminController(Repos repos) {
-        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer);
+        // this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer,adminService);
         this.orderService = new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
         this.userSuspensionService = new UserSuspensionService(repos.UserSuspensionRepo, repos.userRepo, repos.auth);
         this.adminService = new AdminService(repos.orderRepo,repos.storeRepo,repos.userRepo,repos.auth);

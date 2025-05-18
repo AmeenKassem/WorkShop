@@ -28,9 +28,9 @@ public class UserController {
     private OrderService orderService;
 
     @Autowired
-    public UserController(UserService userService, OrderService orderService) {
-        this.userService = userService;
-        this.orderService = orderService;
+    public UserController(Repos repos) {
+        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer, repos.adminService);
+        this.orderService = new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
     }
 
     @ModelAttribute

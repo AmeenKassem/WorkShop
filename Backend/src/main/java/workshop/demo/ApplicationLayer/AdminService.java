@@ -2,6 +2,8 @@ package workshop.demo.ApplicationLayer;
 
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.cglib.core.Local;
+import org.springframework.stereotype.Service;
+
 import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -20,6 +22,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Service
 public class AdminService {
     private final IOrderRepo orderRepo;
     private final IStoreRepo storeRepo;
