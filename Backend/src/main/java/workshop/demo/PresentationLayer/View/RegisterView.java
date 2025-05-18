@@ -48,11 +48,11 @@ public class RegisterView extends VerticalLayout {
     }
 
     public void showSuccess(String message) {
-        Notification.show("✅ " + message, 3000, Notification.Position.MIDDLE);
+        Notification.show("✅ " + message, 3000, Notification.Position.BOTTOM_CENTER);
     }
 
     public void showError(String message) {
-        Notification.show("❌ " + message, 5000, Notification.Position.MIDDLE);
+        Notification.show("❌ " + message, 5000, Notification.Position.BOTTOM_CENTER);
     }
 
 }

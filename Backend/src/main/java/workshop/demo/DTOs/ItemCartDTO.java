@@ -23,8 +23,14 @@ public class ItemCartDTO {
         this.description = description;
     }
 
-    public ItemCartDTO(ItemStoreDTO itemToAdd) {
-        //TODO Auto-generated constructor stub
+    public ItemCartDTO(ItemStoreDTO itemToAdd,int quantity) {
+          this.storeId =itemToAdd.getStoreId();
+        this.category = itemToAdd.getCategory();
+        this.productId = itemToAdd.getId();
+        this.quantity = quantity;
+        this.price = itemToAdd.getPrice();
+        // need item name but itemstore doesnt have name 
+        // need description but itemstore doesn have description
     }
 
     public ItemCartDTO(CartItem item) {

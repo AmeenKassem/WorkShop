@@ -3,14 +3,15 @@ package workshop.demo.DomainLayer.User;
 import java.util.List;
 
 import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public interface IUserRepo {
+
+    // added for tests
+    public boolean guestExist(int id);
 
     /**
      *
@@ -47,8 +48,7 @@ public interface IUserRepo {
      * @param username
      * @param password
      */
-    public int registerUser( String username, String password,int age)throws UIException;
-
+    public int registerUser(String username, String password, int age) throws UIException;
 
     /**
      * this function must return a token with new id user for the guest , must
@@ -62,6 +62,8 @@ public interface IUserRepo {
     public void addItemToGeustCart(int guestId, ItemCartDTO item) throws UIException;
 
     public void removeItemFromGeustCart(int guestId, int productId) throws UIException;
+
+    public void ModifyCartAddQToBuy(int guestId, int productId, int quantity) throws UIException;
 
     public boolean isAdmin(int id) throws UIException;
 
@@ -80,10 +82,9 @@ public interface IUserRepo {
      */
     public boolean setUserAsAdmin(int id, String adminKey) throws UIException;
 
-    
     public void addSpecialItemToCart(UserSpecialItemCart item, int userId) throws DevException;
 
-    public List<UserSpecialItemCart> getAllSpecialItems(int userId) ;
+    public List<UserSpecialItemCart> getAllSpecialItems(int userId);
 
     /**
      * Returns the shopping cart of the user (guest or registered)
@@ -91,7 +92,7 @@ public interface IUserRepo {
      * @param userId the id of the user
      * @return ShoppingCart instance
      */
-    public Registered getRegisteredUser(int id) ;
+    public Registered getRegisteredUser(int id);
 
     public ShoppingCart getUserCart(int userId) throws UIException;
 
@@ -104,4 +105,8 @@ public interface IUserRepo {
     public void checkAdmin_ThrowException(int userId) throws UIException;
 
     public UserDTO getUserDTO(int userId);
+
+    List<String> getAllUsernames();
+
+    public Registered getRegisteredUserByName(String name);
 }

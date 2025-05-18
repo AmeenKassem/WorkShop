@@ -341,14 +341,13 @@ public class StockRepository implements IStockRepo {
         return this.storeId2ActivePurchases.get(storeId).getProductPrice(randomId);
     }
 
-    public List<ReceiptProduct> processCartItemsForStore(int storeId, List<ItemCartDTO> cartItems, boolean isGuest)
+  public List<ReceiptProduct> processCartItemsForStore(int storeId, List<ItemCartDTO> cartItems, boolean isGuest)
             throws Exception {
-        //  if (storeStocks.get(storeId) == null) {
-        //     throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        // }
-        // String storeName = store.getStoreName();
-        // return store.ProcessCartItems(cartItems, isGuest, storeName);
-        throw new UnsupportedOperationException("This operation is not supported.");
+        StoreStock storeStock = storeStocks.get(storeId);
+        if (storeStock == null) {
+            throw new DevException("Store stock not initialized for storeId: " + storeId);
+        }
+        return storeStock.ProcessCartItems(cartItems, isGuest, storeId);
     }
 
     @Override
@@ -437,5 +436,20 @@ public class StockRepository implements IStockRepo {
     public ParticipationInRandomDTO getRandomCard(int storeId, int specialId, int randomId)throws UIException  {
        return  getActivePurchases(storeId).getCardWithId(specialId,randomId);
     }
+   public void clear() {
+    idGen.set(1);
+    
+    if (storeId2ActivePurchases != null) {
+        storeId2ActivePurchases.clear();
+    }
+    
+    if (allProducts != null) {
+        allProducts.clear();
+    }
+    
+    if (storeStocks != null) {
+        storeStocks.clear();
+    }
+} 
 
 }

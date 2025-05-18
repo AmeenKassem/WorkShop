@@ -32,7 +32,7 @@
   "include": [
     "frontend/**/*",
     "types.d.ts"
-  ],
+, "src/main/java/workshop/demo/PresentationLayer/notification-socket.js"  ],
   "exclude": [
     "frontend/generated/jar-resources/**"
   ]

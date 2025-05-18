@@ -91,4 +91,12 @@ public class UserSuspensionRepo implements IUserSuspensionRepo {
     public List<UserSuspension> getAllSuspensions() {
         return new ArrayList<>(Suspensions.values());
     }
+    public void clear() {
+    Suspensions.clear();
+
+    // Optional: shut down scheduler if tasks are scheduled per test
+    if (scheduler != null && !scheduler.isShutdown()) {
+        scheduler.shutdownNow(); // or scheduler.shutdown();
+    }
+}
 }
