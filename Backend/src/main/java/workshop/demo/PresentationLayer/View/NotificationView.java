@@ -142,6 +142,7 @@ public class NotificationView extends com.vaadin.flow.component.Component {
         Button approve = new Button("✅ Approve", e -> {
             // 🔽 This part is executed when Approve is clicked
             sendOfferResponse( json, true);
+            receivedNotifications.remove(json); // remove this message
             Notification.show("You accepted the offer");
             notification.close();
         });
@@ -149,6 +150,7 @@ public class NotificationView extends com.vaadin.flow.component.Component {
         Button decline = new Button("❌ Decline", e -> {
             // 🔽 This part is executed when Decline is clicked
             sendOfferResponse( json, false);
+            receivedNotifications.remove(json); // remove this message
             Notification.show("You declined the offer");
             notification.close();
         });
