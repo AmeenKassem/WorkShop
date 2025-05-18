@@ -1,12 +1,18 @@
 package workshop.demo.ApplicationLayer;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.atmosphere.config.service.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.vaadin.flow.component.notification.Notification;
+
+import workshop.demo.DTOs.NotificationDTO;
+import workshop.demo.DTOs.NotificationDTO.NotificationType;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
@@ -21,6 +27,10 @@ import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import workshop.demo.DTOs.OfferDTO;
 
 @Service
 public class StoreService {
@@ -49,12 +59,6 @@ public class StoreService {
         logger.info("created the StoreService");
     }
 
-    private boolean sendMessageToTakeApproval(int sender, int reciver) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'sendMessageToTakeApproval'");
-
-    }
-
     public int addStoreToSystem(String token, String storeName, String category) throws UIException, DevException {
         logger.info("User attempting to add a new store: '{}', category: {}", storeName, category);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -68,26 +72,60 @@ public class StoreService {
         return storeId;
     }
 
-    public int AddOwnershipToStore(int storeId, String token, int newOwnerId) throws Exception, DevException {
-        logger.info("User attempting to add a new owner (userId: {}) to store {}", newOwnerId, storeId);
+    private String convertNotificationToJson(String message, String receiverName, NotificationDTO.NotificationType type, boolean toBeOwner,
+            String senderName, int storeId) {
+        NotificationDTO dto = new NotificationDTO(message, receiverName, NotificationDTO.NotificationType.OFFER, toBeOwner, senderName, storeId);
+        JsonObject json = Json.createObject();
+        json.put("message", dto.getMessage());
+        json.put("receiverName", dto.getReceiverName());
+        json.put("type", dto.getType().name());
+        json.put("toBeOwner", dto.getToBeOwner());
+        json.put("senderName", dto.getSenderName());
+        json.put("storeId", dto.getStoreId());
+        return json.toJson();
+    }
+
+    public void MakeofferToAddOwnershipToStore(int storeId, String token, String newOwnerName) throws Exception, DevException {
+        logger.info("User attempting to add a new owner (userId: {}) to store {}", newOwnerName, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(ownerId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
+        int newOwnerId = userRepo.getRegisteredUserByName(newOwnerName).getId();
         userRepo.checkUserRegister_ThrowException(newOwnerId);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         suConnectionRepo.checkToAddOwner(storeId, ownerId, newOwnerId);
-        logger.info("Sending ownership approval request from {} to {}", ownerId, newOwnerId);
-        boolean approved = sendMessageToTakeApproval(ownerId, newOwnerId);
-        if (!approved) {
-            logger.info("Ownership addition declined by user {}", newOwnerId);
-            return -1;
+        logger.info("Making an offer to be a store owner from {} to {}", ownerId, newOwnerId);
+        String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
+        String storeName = this.storeRepo.getStoreNameById(storeId);
+        String Message = "In store:{}, the owner:{} is offering you:{} to be an owner of this store" + storeName + owner + newOwnerName;
+        String jssonMessage = convertNotificationToJson(Message, newOwnerName, NotificationDTO.NotificationType.OFFER, true, owner, storeId);
+        this.notiRepo.sendDelayedMessageToUser(newOwnerName, jssonMessage);
+        suConnectionRepo.makeOffer(storeId, ownerId, ownerId, true, null, Message);
+    }
 
+    public void reciveAnswerToOffer(int storeId, String senderName, String recievierName, boolean answer, boolean toBeOwner) throws Exception {
+        int senderId = userRepo.getRegisteredUserByName(senderName).getId();
+        int recievierId = userRepo.getRegisteredUserByName(recievierName).getId();
+        //OfferDTO offer = suConnectionRepo.getOffer(storeId, senderId, recievierId);
+        if (toBeOwner) {
+            AddOwnershipToStore(storeId, senderId, recievierId, answer);
+        } else {
+            AddManagerToStore(storeId, senderId, recievierId, answer);
         }
-        suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
-        logger.info("Successfully added user {} as owner to store {} by user {}", newOwnerId, storeId, ownerId);
-        return newOwnerId;
+    }
+
+    public int AddOwnershipToStore(int storeId, int ownerId, int newOwnerId, boolean decide) throws Exception {
+        if (decide) {
+            suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
+            suConnectionRepo.deleteOffer(storeId, ownerId, newOwnerId);
+            logger.info("Successfully added user {} as owner to store {} by user {}", newOwnerId, storeId, ownerId);
+            return newOwnerId;
+        }
+        logger.info("Ownership addition declined by user {}", newOwnerId);
+        suConnectionRepo.deleteOffer(storeId, ownerId, newOwnerId);
+        return -1;
     }
 
     public void DeleteOwnershipFromStore(int storeId, String token, int ownerToDelete) throws Exception, DevException {
@@ -103,25 +141,40 @@ public class StoreService {
         logger.info("Successfully removed owner {} from store {} by {}", ownerToDelete, storeId, ownerId);
     }
 
-    public int AddManagerToStore(int storeId, String token, int managerId, List<Permission> authorization) throws Exception, DevException {
-        logger.info("User attempting to add manager {} to store {}", managerId, storeId);
+    public void MakeOfferToAddManagerToStore(int storeId, String token, String managerName, List<Permission> authorization) throws Exception, DevException {
+
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
+        logger.info("User {} attempting to add manager {} to store {}", ownerId, managerName, storeId);
         userRepo.checkUserRegisterOnline_ThrowException(ownerId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
+        int managerId = userRepo.getRegisteredUserByName(managerName).getId();
         userRepo.checkUserRegister_ThrowException(managerId);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
-        boolean approved = sendMessageToTakeApproval(ownerId, managerId);
-        if (!approved) {
-            logger.info("Manager addition declined by user {}", managerId);
-            return -1;
+        suConnectionRepo.checkToAddManager(storeId, ownerId, managerId);
+        logger.info("Making an offer to be a store manager from {} to {}", ownerId, managerId);
+        String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
+        String nameNew = this.userRepo.getRegisteredUser(managerId).getUsername();
+        String storeName = this.storeRepo.getStoreNameById(storeId);
+        String Message = "In store:{}, the owner:{} is offering you: {} to be a manager of this store" + storeName + owner + nameNew;
+        String jssonMessage = convertNotificationToJson(Message, nameNew, NotificationDTO.NotificationType.OFFER, false, owner, storeId);
+        this.notiRepo.sendDelayedMessageToUser(nameNew, jssonMessage);
+        suConnectionRepo.makeOffer(storeId, ownerId, ownerId, false, authorization, Message);
+    }
+
+    public int AddManagerToStore(int storeId, int ownerId, int managerId, boolean decide) throws Exception {
+        if (decide) {
+            suConnectionRepo.AddManagerToStore(storeId, ownerId, managerId);
+            List<Permission> authorization = suConnectionRepo.deleteOffer(storeId, ownerId, managerId);
+            suConnectionRepo.changePermissions(ownerId, managerId, storeId, authorization);
+            logger.info("Successfully added user {} as a manager to store {} by user {}", managerId, storeId, ownerId);
+            return managerId;
         }
-        suConnectionRepo.AddManagerToStore(storeId, ownerId, managerId);
-        logger.info("manager {} successfully added to store {} by {}", managerId, storeId, ownerId);
-        suConnectionRepo.changePermissions(ownerId, managerId, storeId, authorization);
-        logger.info("permissions updated for manager {} in store {}", managerId, storeId);
-        return managerId;
+        logger.info("Managment updated addition declined by user {}", ownerId);
+        suConnectionRepo.deleteOffer(storeId, ownerId, managerId);
+        return -1;
+
     }
 
     public void changePermissions(String token, int managerId, int storeId, List<Permission> authorization) throws Exception, DevException {
@@ -179,11 +232,17 @@ public class StoreService {
         userRepo.checkUserRegisterOnline_ThrowException(ownerId);
         storeRepo.checkStoreExistance(storeId);
         suConnectionRepo.checkMainOwnerToDeactivateStore_ThrowException(storeId, ownerId);
-        storeRepo.deactivateStore(storeId, ownerId);
         List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
+        storeRepo.deactivateStore(storeId, ownerId);
+        String storeName = storeRepo.getStoreNameById(storeId);
         logger.info("Store {} successfully deactivated by owner {}", storeId, ownerId);
-        logger.info("About to notify all employees: {}", toNotify);
+        logger.info("About to notify all employees");
         ///we have to notify the employees here
+         for (int userId : toNotify) {
+            String userName = this.userRepo.getRegisteredUser(userId).getUsername();
+            String message = "The store:{} has been closed, you are no longer an employee here" + storeName;
+            this.notiRepo.sendDelayedMessageToUser(userName, message);
+        }
         return storeId;
     }
 
@@ -194,12 +253,19 @@ public class StoreService {
         userRepo.checkAdmin_ThrowException(adminId);
         logger.info("trying to close store: {} by: {}", storeId, adminId);
         this.storeRepo.checkStoreExistance(storeId);
+        String storeName = storeRepo.getStoreNameById(storeId);
         List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
         this.storeRepo.closeStore(storeId);
         this.suConnectionRepo.closeStore(storeId);
         logger.info("store removed successfully!");
+        logger.info("About to notify all employees");
         //also notify the employees
-        logger.info("About to notify all employees: {}", toNotify);
+        for (int userId : toNotify) {
+            String userName = this.userRepo.getRegisteredUser(userId).getUsername();
+            String message = "The store:{} has been closed, you are no longer an employee here" + storeName;
+            this.notiRepo.sendDelayedMessageToUser(userName, message);
+        }
+
         return storeId;
     }
 
@@ -208,11 +274,31 @@ public class StoreService {
     }
 
     public StoreDTO getStoreDTO(String token, int storeId) throws UIException {
-    logger.info("User attempting to get StoreDTO for store {}", storeId);
-    authRepo.checkAuth_ThrowTimeOutException(token, logger);
-    int userId = authRepo.getUserId(token);
-    userRepo.checkUserRegisterOnline_ThrowException(userId);
-    storeRepo.checkStoreExistance(storeId);
-    return storeRepo.getStoreDTO(storeId);
+        logger.info("User attempting to get StoreDTO for store {}", storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        storeRepo.checkStoreExistance(storeId);
+        return storeRepo.getStoreDTO(storeId);
+    }
+
+    public List<StoreDTO> getStoresOwnedByUser(String token) throws Exception, UIException {
+        List<StoreDTO> result = new ArrayList<>();
+        logger.info("trying to get the stores of the user");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        List<Integer> storesId= suConnectionRepo.getStoresIdForUser(userId);
+        logger.info("got the stores Id for user:{}" + userId);
+        for (int storeId : storesId) {
+        storeRepo.checkStoreExistance(storeId);
+            StoreDTO dto = storeRepo.getStoreDTO(storeId);
+            result.add(dto);
+        }
+        return result;
     }
 }
+
+
+
+

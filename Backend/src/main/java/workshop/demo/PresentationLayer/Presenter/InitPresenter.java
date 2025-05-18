@@ -6,8 +6,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -16,7 +19,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.MainLayout;
+import workshop.demo.PresentationLayer.View.NotificationView;
 
 public class InitPresenter {
 
@@ -26,7 +31,6 @@ public class InitPresenter {
     public InitPresenter(MainLayout view) {
         this.view = view;
         this.restTemplate = new RestTemplate();
-        createHeader();
         initGuestIfNeeded();
 
     }
@@ -51,8 +55,7 @@ public class InitPresenter {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<ApiResponse<String>>() {
-            }
-            );
+                    });
             ApiResponse body = response.getBody();
             if (body != null && body.getErrorMsg() == null) {
                 String guestToken = (String) body.getData();
@@ -62,7 +65,7 @@ public class InitPresenter {
 
                 System.out.println("Guest token stored: " + guestToken);
             } else {
-                //view.showError(body.getErrorMsg());
+                // view.showError(body.getErrorMsg());
                 System.err.println(" Failed to generate guest: "
                         + (body != null ? body.getErrorMsg() : "null body"));
             }
@@ -74,31 +77,63 @@ public class InitPresenter {
     public void handleOnAttach(String endpoint, Object user) {
         // Log who is currently attached to the UI
         initGuestIfNeeded();
-        //connectAsGuest();
+        // connectAsGuest();
 
     }
 
-    private void createHeader() {
-        H1 logo = new H1("🛒 Click Market");
-        logo.addClassName("market-title");
+    public void handleLogout() {
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        String type = (String) VaadinSession.getCurrent().getAttribute("user-type");
+        System.out.println("in logout -> presenter");
+        System.out.println("token; " + token);
+        System.out.println("the user type is: " + type);
 
-        Paragraph subtitle = new Paragraph(
-                "Welcome to our market. We bring the best stores and products to your fingertips.\n"
-                + "Join us and be an owner of your own store in a few clicks."
-        );
-        subtitle.addClassName("market-subtitle");
+        if (token != null) {
+            System.out.println("the user type is: " + type);
+            System.out.println("the token is: " + token);
+            try {
+                ResponseEntity<ApiResponse> response = restTemplate.postForEntity(
+                        "http://localhost:8080/api/users/logout?token=" + token,
+                        null,
+                        ApiResponse.class);
 
-        VerticalLayout titleLayout = new VerticalLayout(logo, subtitle);
-        titleLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-        titleLayout.addClassName("header-title");
+                ApiResponse body = response.getBody();
+                if (body != null && body.getErrNumber() != -1) {
+                    view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
 
-        HorizontalLayout header = new HorizontalLayout(titleLayout);
-        header.setWidthFull();
-        header.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-        header.setAlignItems(FlexComponent.Alignment.CENTER);
-        header.addClassName("app-header");
+                }
+                // Clear session and redirect
 
-        this.view.addToNavbar(header);
+                System.out.println("session invalidated");
+
+            } catch (HttpClientErrorException e) {
+                try {
+                    String responseBody = e.getResponseBodyAsString();
+                    ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
+
+                    if (errorBody.getErrNumber() != -1) {
+                        view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                    } else {
+                        view.showError("FAILED: " + errorBody.getErrorMsg());
+                    }
+                } catch (Exception parsingEx) {
+                    view.showError("HTTP error: " + e.getMessage());
+                }
+
+            } catch (Exception e) {
+                view.showError("UNEXPECTED ERROR: " + e.getMessage());
+
+            }
+        }
+
+        // Clear session and redirect
+        // guest token -> main layout it wil generated aoyomaticlly
+        VaadinSession.getCurrent().setAttribute("auth-token", null);
+        VaadinSession.getCurrent().setAttribute("user-type", "guest");
+        UI.getCurrent().getPage().executeJs("window.closeNotificationSocket();");
+        VaadinSession.getCurrent().getSession().invalidate();
+        // UI.getCurrent().navigate("");
+        UI.getCurrent().getPage().reload(); // Force hard refresh to reinitialize MainLayout
     }
 
 }
