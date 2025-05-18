@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
@@ -34,7 +35,11 @@ public class MyStoresPresenter {
 
     public void loadMyStores() {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-
+        if (token == null || token.isBlank()) {
+            view.showError("You must be logged in to view your stores.");
+            UI.getCurrent().navigate(""); // navigate to home
+            return;
+        }
         String url = String.format("http://localhost:8080/api/store/myStores?token=%s",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
