@@ -12,6 +12,10 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public interface IUserRepo {
 
+
+    // added for tests
+        public boolean guestExist(int id) ;
+
     /**
      *
      *
@@ -104,4 +108,8 @@ public interface IUserRepo {
     public void checkAdmin_ThrowException(int userId) throws UIException;
 
     public UserDTO getUserDTO(int userId);
+
+    List<String> getAllUsernames();
+
+
 }

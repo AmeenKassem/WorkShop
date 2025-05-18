@@ -11,6 +11,7 @@ public class ItemStoreDTO {
     public String productName;
     public String storeName;
 
+    
     public ItemStoreDTO(int id, int quantity, int price, Category category, int rank, int storeId) {
         this.id = id;
         this.quantity = quantity;

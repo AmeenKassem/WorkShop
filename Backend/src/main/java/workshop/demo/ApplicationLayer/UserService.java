@@ -13,8 +13,9 @@ import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.InfrastructureLayer.UserRepository;
 
 @Service
 public class UserService {
@@ -24,14 +25,15 @@ public class UserService {
     private IUserRepo userRepo;
     private IAuthRepo authRepo;
     private IStockRepo stockRepo;
-    //Hmode
-    private IStoreRepo storeRepo;
+    private final AdminInitilizer adminInitilizer;
 
     @Autowired
-    public UserService(IUserRepo userRepo, IAuthRepo authRepo,IStockRepo stockRepo) {
+    public UserService(IUserRepo userRepo, IAuthRepo authRepo,IStockRepo stockRepo,AdminInitilizer adminInitilizer) {
         this.userRepo = userRepo;
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
+        this.adminInitilizer = adminInitilizer;
+
     }
     //Hmode
     public UserService(IUserRepo userRepo, IAuthRepo authRepo,IStockRepo stockRepo,IStoreRepo storeRepo) {
@@ -90,10 +92,10 @@ public class UserService {
 
     }
 
-    public boolean addToUserCart(String token, ItemStoreDTO itemToAdd) throws UIException {
+    public boolean addToUserCart(String token, ItemStoreDTO itemToAdd,int quantity) throws UIException {
         logger.info("addToUserCart called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        ItemCartDTO item = new ItemCartDTO(itemToAdd);
+        ItemCartDTO item = new ItemCartDTO(itemToAdd,quantity);
         userRepo.addItemToGeustCart(authRepo.getUserId(token), item);
         logger.info("Item added to user cart");
         return true;
@@ -128,30 +130,37 @@ public class UserService {
         int userId = authRepo.getUserId(token);
         return userRepo.getUserDTO(userId);
     }
-    public List<StoreInfoDTO> viewSystemInfo(String token) throws UIException, DevException {
-        logger.info("viewSystemInfo called");
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        List<StoreDTO> allStores = storeRepo.viewAllStores();
-        List<StoreDTO> activeStores = new ArrayList<>();
-        for (StoreDTO store : allStores) {
-            if (store.active) {
-                activeStores.add(store);
-            }
+
+    public void registerAdminIfNotExists(String username, String password, int age) throws Exception {
+        try {
+            int id = userRepo.login(username, password);
+            System.out.println("🟡 Admin already exists with username: " + username);
+            return;
+        } catch (UIException e) {
+            System.out.println("🔄 Admin doesn't exist. Proceeding with creation.");
         }
-        List<StoreInfoDTO> result = new ArrayList<>();
-        for (StoreDTO store : activeStores) {
-            int storeId = store.storeId;
-            List<ItemStoreDTO> storeItems = stockRepo.getProductsInStore(storeId);
-            List<ProductInfoDTO> products = new ArrayList<>();
-            for (ItemStoreDTO item : storeItems) {
-                String productName = item.productName;
-                int quantity = item.getQuantity();
-                products.add(new ProductInfoDTO(productName, quantity));
-            }
-            StoreInfoDTO storeInfo = new StoreInfoDTO(store.storeName, products);
-            result.add(storeInfo);
+
+        String guestToken = this.generateGuest();
+
+        this.register(guestToken, username, password, age);
+
+        String userToken = this.login(guestToken, username, password);
+
+        System.out.println(userToken);
+        int adminId = userRepo.login(username, password);
+        this.setAdmin(userToken, adminInitilizer.getPassword(), adminId);
+
+        //  Print all registered usernames:
+        System.out.println(" Registered users:");
+        for (String u : ((UserRepository) userRepo).getAllUsernames()) {
+            System.out.println(" - " + u);
         }
-        logger.info("viewSystemInfo: {} active stores found", result.size());
-        return result;
+
+
+        System.out.println(" Admin registered and promoted: " + username);
+        System.out.println(" All registered usernames: " + userRepo.getAllUsernames().get(0));
+
     }
+
+
 }

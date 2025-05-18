@@ -1,5 +1,6 @@
 package workshop.demo.InfrastructureLayer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,7 +44,20 @@ public class UserRepository implements IUserRepo {
         users = new ConcurrentHashMap<>();
         guests = new ConcurrentHashMap<>();
         idToUsername = new ConcurrentHashMap<>();
+//        int a=generateGuest();
+//        try{
+//            registerUser("name","pass",30);
+//            int x=login("name","pass");
+//            setUserAsAdmin(x,"123321");
+//        }
+//         catch (UIException e) {
+//            throw new RuntimeException(e);
+//        }
     }
+    public List<String> getAllUsernames() {
+        return new ArrayList<>(users.keySet());
+    }
+
 
     @Override
     public int logoutUser(String username) throws UIException {
@@ -101,19 +115,28 @@ public class UserRepository implements IUserRepo {
     private boolean userExist(String username) {
         return users.containsKey(username);
     }
-
-    private boolean guestExist(int id) {
+    private boolean userExist(int userid) {
+        return idToUsername.containsKey(userid);
+    }
+// changed from private to public
+    public boolean guestExist(int id) {
         return guests.containsKey(id);
     }
-
+// changed it to handle users as well
+// added fucntion userexists that takes userid and returns name
     @Override
     public void addItemToGeustCart(int guestId, ItemCartDTO item) throws UIException {
         if (guestExist(guestId)) {
             Guest geust = guests.get(guestId);
             geust.addToCart(item);
             logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProdutId(), guestId});
-        } else {
-            throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
+        }
+         else if  (userExist(guestId)){
+ getRegisteredUser(guestId).addToCart(item);
+            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProdutId(), guestId});        }
+        else{
+                        throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
+
         }
     }
 
@@ -236,5 +259,20 @@ public class UserRepository implements IUserRepo {
             throw new RuntimeException(new UIException("User not found with ID: " + userId, ErrorCodes.USER_NOT_FOUND));
         }
     }
+    public void clear() {
+    if (guests != null) {
+        guests.clear();
+    }
+    if (users != null) {
+        users.clear();
+    }
+    if (idToUsername != null) {
+        idToUsername.clear();
+    }
+    if (idGen != null) {
+        idGen.set(1); // Reset to starting ID
+    }
+}
+
 }
 
