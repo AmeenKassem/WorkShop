@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
@@ -152,5 +153,26 @@ public class SUConnectionRepository implements ISUConnectionRepo {
         } catch (Exception e) {
             throw new DevException("failed to check ownership for this userid: " + e.getMessage());
         }
+    }
+
+    @Override
+    public void makeOffer(int storeId, int senderId, int reciverId, boolean toBeOwner, List<Permission> per,
+            String Message) throws Exception {
+        OfferDTO offer = new OfferDTO(senderId, reciverId, toBeOwner, per, Message);
+        this.data.makeOffer(offer, storeId);
+    }
+
+    @Override
+    public List<Permission> deleteOffer(int storeId, int senderId, int reciverId) throws Exception {
+        return this.data.deleteOffer(storeId, senderId, reciverId);
+    }
+
+    @Override
+    public OfferDTO getOffer(int storeId, int senderId, int reciverId) throws Exception {
+        return this.data.getOffer(storeId, senderId, reciverId);
+    }
+    @Override
+    public List<Integer> getStoresIdForUser(int userId){
+        return this.data.getStoresIdForUser(userId);
     }
 }
