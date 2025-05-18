@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 
 public class UserTests {
+public class UserTests {
     PaymentServiceImp payment = new PaymentServiceImp();
     SupplyServiceImp serviceImp = new SupplyServiceImp();
     PurchaseRepository purchaseRepository = new PurchaseRepository();

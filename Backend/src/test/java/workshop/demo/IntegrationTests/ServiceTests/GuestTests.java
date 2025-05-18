@@ -39,7 +39,7 @@ public class GuestTests {
     PurchaseRepository purchaseRepository = new PurchaseRepository();
     UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
     @Autowired
-    NotificationRepository notificationRepository ;
+    NotificationRepository notificationRepository;
     OrderRepository orderRepository = new OrderRepository();
     StoreRepository storeRepository = new StoreRepository();
     StockRepository stockRepository = new StockRepository();
@@ -243,7 +243,6 @@ public class GuestTests {
         assertEquals(ErrorCodes.INVALID_TOKEN, exception.getNumber());
 
         // Assert
-
     }
 
     // //NOTE :BUY CART FINISH +ASK FOR MORE FAILURE
