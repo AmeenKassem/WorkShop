@@ -48,9 +48,12 @@ public class GuestTests {
     UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
     UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
     UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"));
-    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
-    StoreService storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
-    PurchaseService purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
+    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo,
+            sIsuConnectionRepo, suspensionRepo);
+    StoreService storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo,
+            orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
+    PurchaseService purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo,
+            purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
     String NOToken;
     String NGToken;
     ItemStoreDTO itemStoreDTO;
@@ -73,9 +76,12 @@ public class GuestTests {
         userRepo = new UserRepository(encoder, adminInitilizer);
         suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
         userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"));
-        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
-        storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
-        purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
+        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo,
+                suspensionRepo);
+        storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository,
+                sIsuConnectionRepo, stockRepository, suspensionRepo);
+        purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository,
+                orderRepository, payment, serviceImp, suspensionRepo);
 
         GToken = userService.generateGuest();
 
@@ -123,7 +129,7 @@ public class GuestTests {
         // Add clear() for all other repos you wrote it for
     }
 
-    //NOTE:ENTER+EXIT+REGISTER FINISH
+    // NOTE:ENTER+EXIT+REGISTER FINISH
     @Test
     void testGuestEnter_Success() throws Exception {
 
@@ -151,7 +157,7 @@ public class GuestTests {
 
     @Test
     void testGuestRegister_Success() throws Exception {
-        //enter
+        // enter
         String token = userService.generateGuest();
 
         userService.register(token, "Mohamad", "finish", 24);
@@ -174,7 +180,7 @@ public class GuestTests {
         assertEquals(ErrorCodes.USERNAME_USED, exception.getNumber());
     }
 
-    //NOTE:GET STORE PRODUCT FINISH
+    // NOTE:GET STORE PRODUCT FINISH
     @Test
     void testGuestGetStoreProducts() throws Exception {
 
@@ -219,7 +225,7 @@ public class GuestTests {
         assertEquals("Product not found.", exception.getMessage());
     }
 
-    //NOTE:ADD TO CART FINISH +ASK FOR MORE FAILURE
+    // NOTE:ADD TO CART FINISH +ASK FOR MORE FAILURE
     @Test
     void testGuestAddProductToCart_Success() throws Exception {
 
@@ -241,19 +247,20 @@ public class GuestTests {
         // Assert
     }
 
-//     //NOTE :BUY CART FINISH +ASK FOR MORE FAILURE
+    // //NOTE :BUY CART FINISH +ASK FOR MORE FAILURE
     @Test
     void testGuestBuyCart_Success() throws Exception {
 
         userService.addToUserCart(GToken, itemStoreDTO, 1);
-        PaymentDetails paymentDetails = PaymentDetails.testPayment();  // fill if needed
-        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();    // fill if needed
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
         ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
 
         assertNotNull(receipts);
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(2000.0, receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice());
+        assertEquals(2000.0,
+                receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice());
 
         // --- Step 8: Verify important calls happened ---
     }
@@ -262,11 +269,11 @@ public class GuestTests {
     void testGuestBuyCart_InvalidToken() throws Exception {
         String guestToken = "guest-token";
 
-        PaymentDetails paymentDetails = PaymentDetails.testPayment();  // fill if needed
-        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();    // fill if needed
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
 
-        Exception ex = assertThrows(UIException.class, ()
-                -> purchaseService.buyGuestCart(guestToken, paymentDetails, supplyDetails));
+        Exception ex = assertThrows(UIException.class,
+                () -> purchaseService.buyGuestCart(guestToken, paymentDetails, supplyDetails));
 
         assertEquals("Invalid token!", ex.getMessage());
     }
@@ -279,8 +286,8 @@ public class GuestTests {
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-        Exception ex = assertThrows(UIException.class, ()
-                -> purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails));
+        Exception ex = assertThrows(UIException.class,
+                () -> purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails));
 
         assertEquals("Not all items are available for guest purchase", ex.getMessage());
     }
@@ -290,8 +297,8 @@ public class GuestTests {
 
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-        Exception ex = assertThrows(Exception.class, ()
-                -> purchaseService.buyGuestCart(GToken, PaymentDetails.test_fail_Payment(), supplyDetails));
+        Exception ex = assertThrows(Exception.class,
+                () -> purchaseService.buyGuestCart(GToken, PaymentDetails.test_fail_Payment(), supplyDetails));
 
         assertEquals("Payment failed", ex.getMessage());
     }
@@ -299,8 +306,8 @@ public class GuestTests {
     @Test
     void testGuestBuyCart_supplier_Fails() throws Exception {
 
-        Exception ex = assertThrows(Exception.class, ()
-                -> purchaseService.buyGuestCart(GToken, PaymentDetails.testPayment(), SupplyDetails.test_fail_supply()));
+        Exception ex = assertThrows(Exception.class, () -> purchaseService.buyGuestCart(GToken,
+                PaymentDetails.testPayment(), SupplyDetails.test_fail_supply()));
 
         assertEquals("supplier failed", ex.getMessage());
     }
@@ -333,7 +340,8 @@ public class GuestTests {
         String[] keywords = {"Laptop", "Lap", "top"};
         System.out.println(storeService.getFinalRateInStore(1));
 
-        ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.ELECTRONICS, null, 1, 0, 2000, 0, 2);
+        ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.ELECTRONICS, null, 1, 0, 2000, 0,
+                2);
 
         // --- Step 5: Call the system under test ---
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
@@ -354,8 +362,7 @@ public class GuestTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 "Laptop", Category.ELECTRONICS, "Laptop", 100,
                 0, 5000,
-                0, 5
-        );
+                0, 5);
 
         // 1. Throw on auth check
         // 3. Run the test
@@ -372,7 +379,8 @@ public class GuestTests {
     void testSearchProducts_NoMatches() throws Exception {
 
         String[] keywords = {"Laptop", "Lap", "top"};
-        ProductSearchCriteria criteria = new ProductSearchCriteria("aa", Category.ELECTRONICS, keywords[0], 1, 0, 5000, 0, 5);
+        ProductSearchCriteria criteria = new ProductSearchCriteria("aa", Category.ELECTRONICS, keywords[0], 1, 0, 5000,
+                0, 5);
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
         assertNotNull(result);
         assertEquals(0, result.length);
@@ -383,8 +391,7 @@ public class GuestTests {
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 "toy", Category.ELECTRONICS, null, 1,
-                0, 0, 0, 0
-        );
+                0, 0, 0, 0);
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
 
         assertNotNull(result);
