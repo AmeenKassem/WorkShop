@@ -126,7 +126,7 @@ public class SUConnectionRepository implements ISUConnectionRepo {
 
     @Override
     public boolean manipulateItem(int userId, int storeId, Permission permission) throws Exception {
-        Node Worker = getWorkerInStoreById(userId, userId);
+        Node Worker = getWorkerInStoreById(storeId, userId);
         if (Worker == null) {
             throw new Exception("this user is not a worker in this store");
         }

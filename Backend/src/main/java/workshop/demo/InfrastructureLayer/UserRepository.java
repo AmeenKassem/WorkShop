@@ -1,5 +1,6 @@
 package workshop.demo.InfrastructureLayer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,7 +44,20 @@ public class UserRepository implements IUserRepo {
         users = new ConcurrentHashMap<>();
         guests = new ConcurrentHashMap<>();
         idToUsername = new ConcurrentHashMap<>();
+//        int a=generateGuest();
+//        try{
+//            registerUser("name","pass",30);
+//            int x=login("name","pass");
+//            setUserAsAdmin(x,"123321");
+//        }
+//         catch (UIException e) {
+//            throw new RuntimeException(e);
+//        }
     }
+    public List<String> getAllUsernames() {
+        return new ArrayList<>(users.keySet());
+    }
+
 
     @Override
     public int logoutUser(String username) throws UIException {

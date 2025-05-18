@@ -18,12 +18,12 @@ import com.vaadin.flow.server.VaadinSession;
 import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.PresentationLayer.View.MainLayout;
 
-public class initPresenter {
+public class InitPresenter {
 
     private final RestTemplate restTemplate;
     private final MainLayout view;
 
-    public initPresenter(MainLayout view) {
+    public InitPresenter(MainLayout view) {
         this.view = view;
         this.restTemplate = new RestTemplate();
         createHeader();
