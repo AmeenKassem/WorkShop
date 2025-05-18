@@ -4,6 +4,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
@@ -22,6 +24,9 @@ import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Notification.BaseNotifier;
+import workshop.demo.DomainLayer.Notification.DelayedNotificationDecorator;
+import workshop.demo.DomainLayer.Notification.RealTimeNotificationDecorator;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
@@ -43,97 +48,99 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+@SpringBootTest
+public class StoreSTests {
 
-      
- public class StoreSTests  {
     PaymentServiceImp payment = new PaymentServiceImp();
-                      SupplyServiceImp serviceImp=new SupplyServiceImp();
- PurchaseRepository purchaseRepository=new PurchaseRepository();
-UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
-       NotificationRepository     notificationRepository=new NotificationRepository();
-        OrderRepository    orderRepository=new OrderRepository();
-      StoreRepository      storeRepository=new StoreRepository();
-       StockRepository     stockRepository=new StockRepository();
-            SUConnectionRepository sIsuConnectionRepo=new SUConnectionRepository();
-    AuthenticationRepo   authRepo = new AuthenticationRepo();
-   Encoder    encoder = new Encoder();
-      AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
-      UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
-     UserSuspensionService  suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-      UserService userService = new UserService(userRepo, authRepo, stockRepository);
-               StockService   stockService=new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
-               StoreService   storeService=new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
-              PurchaseService    purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
-                 String NOToken;
-                  String NGToken;
-                     ItemStoreDTO itemStoreDTO ;
-                      String GToken;
+    SupplyServiceImp serviceImp = new SupplyServiceImp();
+    PurchaseRepository purchaseRepository = new PurchaseRepository();
+    UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
+    
+@Autowired
+    NotificationRepository notificationRepository;
+    OrderRepository orderRepository = new OrderRepository();
+    StoreRepository storeRepository = new StoreRepository();
+    StockRepository stockRepository = new StockRepository();
+    SUConnectionRepository sIsuConnectionRepo = new SUConnectionRepository();
+    AuthenticationRepo authRepo = new AuthenticationRepo();
+    Encoder encoder = new Encoder();
+    AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
+    UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
+    UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
+    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"));
+    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
+    StoreService storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
+    PurchaseService purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
+    String NOToken;
+    String NGToken;
+    ItemStoreDTO itemStoreDTO;
+    String GToken;
 
- @BeforeEach
+    @BeforeEach
     void setup() throws Exception {
         System.out.println("===== SETUP RUNNING =====");
 
-        purchaseRepository=new PurchaseRepository();
-          suspensionRepo = new UserSuspensionRepo();
-            notificationRepository=new NotificationRepository();
-            orderRepository=new OrderRepository();
-            storeRepository=new StoreRepository();
-            stockRepository=new StockRepository();
-            sIsuConnectionRepo=new SUConnectionRepository();
-       authRepo = new AuthenticationRepo();
-       encoder = new Encoder();
-       adminInitilizer = new AdminInitilizer("123321");
-       userRepo = new UserRepository(encoder, adminInitilizer);
-       suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-       userService = new UserService(userRepo, authRepo, stockRepository);
-                  stockService=new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
-                  storeService=new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
-                  purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
+        purchaseRepository = new PurchaseRepository();
+        suspensionRepo = new UserSuspensionRepo();
+        orderRepository = new OrderRepository();
+        storeRepository = new StoreRepository();
+        stockRepository = new StockRepository();
+        sIsuConnectionRepo = new SUConnectionRepository();
+        authRepo = new AuthenticationRepo();
+        encoder = new Encoder();
+        adminInitilizer = new AdminInitilizer("123321");
+        userRepo = new UserRepository(encoder, adminInitilizer);
+        suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
+        userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"));
+        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
+        storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
+        purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
 
-    
+        GToken = userService.generateGuest();
 
-         GToken= userService.generateGuest();
+        String OToken = userService.generateGuest();
 
-        
-
-        
-        String OToken= userService.generateGuest();
-
-        
-
-userService.register(OToken, "owner", "owner", 25);
+        userService.register(OToken, "owner", "owner", 25);
 
         // --- Login ---
-        NOToken=userService.login(OToken, "owner", "owner");
+        NOToken = userService.login(OToken, "owner", "owner");
 
-
-       
         assertTrue(authRepo.getUserName(NOToken).equals("owner"));
         // ======================= STORE CREATION =======================
-      
 
         int created1 = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
         assertEquals(created1,1);
 
         // ======================= PRODUCT & ITEM ADDITION =======================
         String[] keywords = {"Laptop", "Lap", "top"};
-stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
+        stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-                 itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1);
-
+        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1);
 
        
 
+        // ======================= SECOND GUEST SETUP =======================
     }
-        @AfterEach
 
-      void tearDown() {
-        if (userRepo != null) userRepo.clear();
-        if (storeRepository != null) storeRepository.clear();
-        if (stockRepository != null) stockRepository.clear();
-        if (orderRepository != null) orderRepository.clear();
-        if (suspensionRepo != null) suspensionRepo.clear();
+    @AfterEach
+
+    void tearDown() {
+        if (userRepo != null) {
+            userRepo.clear();
+        }
+        if (storeRepository != null) {
+            storeRepository.clear();
+        }
+        if (stockRepository != null) {
+            stockRepository.clear();
+        }
+        if (orderRepository != null) {
+            orderRepository.clear();
+        }
+        if (suspensionRepo != null) {
+            suspensionRepo.clear();
+        }
         // Add clear() for all other repos you wrote it for
     }
 
@@ -173,10 +180,8 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
     @Test
     void testOwner_AddProductToStock_Failure_StoreNotFound() throws Exception {
       
-
        
-      
-
+    
         UIException ex = assertThrows(UIException.class, () ->
               stockService.addItem(22, NOToken, 1, 10, 100, Category.ELECTRONICS)
         );
@@ -241,14 +246,31 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
         String token=   userService.generateGuest();
         userService.register(token, "token", "token", 0);
         String token1=userService.login(token, "token", "token");
+        storeService.MakeofferToAddOwnershipToStore(1, NOToken, authRepo.getUserName(token1));
 
         // === Act ===
-        storeService.AddOwnershipToStore(1, NOToken, 5);
+        storeService.AddOwnershipToStore(1, 3, 5,true);
        assertTrue( storeService.ViewRolesAndPermissions(1).size()==2);
 
         // === Assert ===
        // assertEquals(sotre);
     }
+      @Test
+    void testOwner_AddStoreOwner_fail() throws Exception {
+        
+
+        String token=   userService.generateGuest();
+        userService.register(token, "token", "token", 0);
+        String token1=userService.login(token, "token", "token");
+
+        // === Act ===
+        storeService.AddOwnershipToStore(1, 3, 5,true);
+       assertFalse( storeService.ViewRolesAndPermissions(1).size()==2);
+
+        // === Assert ===
+       // assertEquals(sotre);
+    }
+
 
 
     @Test
@@ -258,10 +280,10 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
         String token1=userService.login(token, "token", "token");
 
         // === Act ===
-        storeService.AddOwnershipToStore(1, NOToken, 5);
+        storeService.AddOwnershipToStore(1, 3, 5,true);
        assertTrue( storeService.ViewRolesAndPermissions(1).size()==2); 
               UIException ex = assertThrows(UIException.class, () ->
-                storeService.AddOwnershipToStore(1, NOToken, 5)
+                storeService.AddOwnershipToStore(1, 3, 5,true)
         );
 
         assertEquals("This worker is already an owner/manager", ex.getMessage());
@@ -278,7 +300,7 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
 
         // === Act + Assert
         UIException ex = assertThrows(UIException.class, () ->
-                storeService.AddOwnershipToStore(1, NOToken, 4)
+                storeService.AddOwnershipToStore(1, 3, 4,true)
         );
 
         assertEquals("You are not regestered user!", ex.getMessage());
@@ -295,7 +317,7 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
         String token1=userService.login(token, "token", "token");
 
         // === Act ===
-        storeService.AddOwnershipToStore(1, NOToken, 5);
+        storeService.AddOwnershipToStore(1, 3, 5,false);
        assertTrue( storeService.ViewRolesAndPermissions(1).size()==1);
 
 
@@ -310,7 +332,7 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
         String token1=userService.login(token, "token", "token");
 
         // === Act ===
-        storeService.AddOwnershipToStore(1, NOToken, 5);
+        storeService.AddOwnershipToStore(1, 3, 5,true);
        assertTrue( storeService.ViewRolesAndPermissions(1).size()==2); 
           
 
@@ -346,7 +368,8 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
                 List<Permission> a = new LinkedList<>();
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
-        storeService.AddManagerToStore(1, NOToken, 5,a);
+        storeService.MakeOfferToAddManagerToStore(1, NGToken, authRepo.getUserName(token1), a);
+        storeService.AddManagerToStore(1, 3, 5,true);
        assertTrue( storeService.ViewRolesAndPermissions(1).size()==2);
 
        
@@ -361,7 +384,7 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
                 List<Permission> a = new LinkedList<>();
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
-        storeService.AddManagerToStore(1, NOToken, 5,a);
+        storeService.AddManagerToStore(1, 3, 5,false);
        assertTrue( storeService.ViewRolesAndPermissions(1).size()==1);
 
        
@@ -377,7 +400,7 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
         a.add(Permission.DeleteFromStock);
        
       UIException ex=  assertThrows(UIException.class, () -> {
-            storeService.AddManagerToStore(1, NOToken, 5, a);
+            storeService.AddManagerToStore(1, 3, 5, true);
         });
           assertEquals("You are not regestered user!", ex.getMessage());
         assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ex.getNumber());
@@ -395,10 +418,10 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
         List<Permission> permissions = new LinkedList<>();
         permissions.add(Permission.AddToStock);
         permissions.add(Permission.DeleteFromStock);
-            storeService.AddManagerToStore(1, NOToken, 5, permissions);
+            storeService.AddManagerToStore(1, 3, 5, true);
 
         UIException ex = assertThrows(UIException.class, () -> {
-            storeService.AddManagerToStore(1, NOToken, 5, permissions);
+            storeService.AddManagerToStore(1, 3, 5, true);
         });
 
         assertEquals("This worker is already an owner/manager", ex.getMessage());
@@ -413,7 +436,7 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
         permissions.add(Permission.DeleteFromStock);
 
         UIException ex = assertThrows(UIException.class, () -> {
-            storeService.AddManagerToStore(1, NOToken, 55, permissions);
+            storeService.AddManagerToStore(1, 3, 55, true);
         });
 
         assertEquals("You are not regestered user!", ex.getMessage());
@@ -431,7 +454,7 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
         permissions.add(Permission.DeleteFromStock);
 
         UIException ex = assertThrows(UIException.class, () -> {
-            storeService.AddManagerToStore(2, NOToken, 5, permissions);
+            storeService.AddManagerToStore(2, 3, 5, true);
         });
 
         assertEquals(" store does not exist.", ex.getMessage());
@@ -443,7 +466,7 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
         String token1=userService.login(token, "token", "token");    List<Permission> a = new LinkedList<>();
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
-        storeService.AddManagerToStore(1, NOToken, 5, a);
+        storeService.AddManagerToStore(1, 3, 5, true);
        
         storeService.deleteManager(1,NOToken,5);
         assertTrue(storeService.ViewRolesAndPermissions(1).size()==1);
@@ -456,7 +479,7 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
         List<Permission> a = new LinkedList<>();
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
-        int result = storeService.AddManagerToStore(1, NOToken, 5, a);
+        int result = storeService.AddManagerToStore(1, 3, 5, true);
         assertEquals(result, 5);
         //storeService.deleteManager(1,NOToken,5);
 
@@ -476,7 +499,7 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
         List<Permission> a = new LinkedList<>();
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
-        storeService.AddManagerToStore(1, NOToken, 5, a);
+        storeService.AddManagerToStore(1, 3, 5, true);
        storeService.deactivateteStore(1, NOToken);
 
         DevException ex=assertThrows(DevException.class, () -> {
@@ -650,7 +673,7 @@ storeRepository.checkStoreIsActive(1) ;       });
 
         assertTrue(  stockService.getAllRandomInStore(NOToken, 1).length==1);
             assertTrue(  stockService.getAllRandomInStore(NOToken, 1)[0].productId==1);
-            assertTrue(  stockService.getAllBidsStatus(NOToken, 1).length==1);
+            assertTrue(  stockService.getAllRandomInStore(NOToken, 1).length==1);
 
     }
     
