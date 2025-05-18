@@ -29,187 +29,168 @@ import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 
-
-
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 
-
-
-
-
-public class UserTests  {
+public class UserTests {
     PaymentServiceImp payment = new PaymentServiceImp();
-                      SupplyServiceImp serviceImp=new SupplyServiceImp();
- PurchaseRepository purchaseRepository=new PurchaseRepository();
-UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
-       NotificationRepository     notificationRepository=new NotificationRepository();
-        OrderRepository    orderRepository=new OrderRepository();
-      StoreRepository      storeRepository=new StoreRepository();
-       StockRepository     stockRepository=new StockRepository();
-            SUConnectionRepository sIsuConnectionRepo=new SUConnectionRepository();
-    AuthenticationRepo   authRepo = new AuthenticationRepo();
-   Encoder    encoder = new Encoder();
-      AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
-      UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
-     UserSuspensionService  suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-      UserService userService = new UserService(userRepo, authRepo, stockRepository,new AdminInitilizer("123321"));
-               StockService   stockService=new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
-               StoreService   storeService=new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
-              PurchaseService    purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
-                      OrderService orderService=new OrderService(orderRepository, storeRepository, authRepo, userRepo);
+    SupplyServiceImp serviceImp = new SupplyServiceImp();
+    PurchaseRepository purchaseRepository = new PurchaseRepository();
+    UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
+    NotificationRepository notificationRepository = new NotificationRepository();
+    OrderRepository orderRepository = new OrderRepository();
+    StoreRepository storeRepository = new StoreRepository();
+    StockRepository stockRepository = new StockRepository();
+    SUConnectionRepository sIsuConnectionRepo = new SUConnectionRepository();
+    AuthenticationRepo authRepo = new AuthenticationRepo();
+    Encoder encoder = new Encoder();
+    AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
+    UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
+    UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
+    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"));
+    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo,
+            sIsuConnectionRepo, suspensionRepo);
+    StoreService storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo,
+            orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
+    PurchaseService purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo,
+            purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
+    OrderService orderService = new OrderService(orderRepository, storeRepository, authRepo, userRepo);
 
-                 String NOToken;
-                  String NGToken;
-                     ItemStoreDTO itemStoreDTO ;
+    String NOToken;
+    String NGToken;
+    ItemStoreDTO itemStoreDTO;
 
     @BeforeEach
     void setup() throws Exception {
         // ====== ADMIN SETUP ======
-      purchaseRepository=new PurchaseRepository();
-          suspensionRepo = new UserSuspensionRepo();
-            notificationRepository=new NotificationRepository();
-            orderRepository=new OrderRepository();
-            storeRepository=new StoreRepository();
-            stockRepository=new StockRepository();
-            sIsuConnectionRepo=new SUConnectionRepository();
-       authRepo = new AuthenticationRepo();
-       encoder = new Encoder();
-       adminInitilizer = new AdminInitilizer("123321");
-       userRepo = new UserRepository(encoder, adminInitilizer);
-       suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-       userService = new UserService(userRepo, authRepo, stockRepository,new AdminInitilizer("123321"));
-                  stockService=new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
-                  storeService=new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
-                  purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
-         orderService=new OrderService(orderRepository, storeRepository, authRepo, userRepo);
-    
+        purchaseRepository = new PurchaseRepository();
+        suspensionRepo = new UserSuspensionRepo();
+        notificationRepository = new NotificationRepository();
+        orderRepository = new OrderRepository();
+        storeRepository = new StoreRepository();
+        stockRepository = new StockRepository();
+        sIsuConnectionRepo = new SUConnectionRepository();
+        authRepo = new AuthenticationRepo();
+        encoder = new Encoder();
+        adminInitilizer = new AdminInitilizer("123321");
+        userRepo = new UserRepository(encoder, adminInitilizer);
+        suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
+        userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"));
+        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo,
+                suspensionRepo);
+        storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository,
+                sIsuConnectionRepo, stockRepository, suspensionRepo);
+        purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository,
+                orderRepository, payment, serviceImp, suspensionRepo);
+        orderService = new OrderService(orderRepository, storeRepository, authRepo, userRepo);
 
-        String GToken= userService.generateGuest();
-         userService.register(GToken, "User", "User", 25);
+        String GToken = userService.generateGuest();
+        userService.register(GToken, "User", "User", 25);
 
         // --- Login ---
-        NGToken=userService.login(GToken, "User", "User");
+        NGToken = userService.login(GToken, "User", "User");
 
-
-       
         assertTrue(authRepo.getUserName(NGToken).equals("User"));
-        
 
-        
+        String OToken = userService.generateGuest();
 
-        
-        String OToken= userService.generateGuest();
-
-        
-
-userService.register(OToken, "owner", "owner", 25);
+        userService.register(OToken, "owner", "owner", 25);
 
         // --- Login ---
-        NOToken=userService.login(OToken, "owner", "owner");
+        NOToken = userService.login(OToken, "owner", "owner");
 
-
-       
         assertTrue(authRepo.getUserName(NOToken).equals("owner"));
         // ======================= STORE CREATION =======================
-      
 
         int createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
-        assertEquals(createdStoreId,1);
+        assertEquals(createdStoreId, 1);
 
         // ======================= PRODUCT & ITEM ADDITION =======================
-        String[] keywords = {"Laptop", "Lap", "top"};
-stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
+        String[] keywords = { "Laptop", "Lap", "top" };
+        stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-                 itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1);
-
+        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1);
 
     }
-        @AfterEach
+
+    @AfterEach
     void tearDown() {
-        if (userRepo != null) userRepo.clear();
-        if (storeRepository != null) storeRepository.clear();
-        if (stockRepository != null) stockRepository.clear();
-        if (orderRepository != null) orderRepository.clear();
-        if (suspensionRepo != null) suspensionRepo.clear();
+        if (userRepo != null)
+            userRepo.clear();
+        if (storeRepository != null)
+            storeRepository.clear();
+        if (stockRepository != null)
+            stockRepository.clear();
+        if (orderRepository != null)
+            orderRepository.clear();
+        if (suspensionRepo != null)
+            suspensionRepo.clear();
         // Add clear() for all other repos you wrote it for
     }
- @Test
+
+    @Test
     void testUser_Add_Admin() throws Exception {
-          String Token= userService.generateGuest();
-         userService.register(Token, "User1", "User", 25);
+        String Token = userService.generateGuest();
+        userService.register(Token, "User1", "User", 25);
 
         // --- Login ---
-        String token1=userService.login(Token, "User1", "User");
+        String token1 = userService.login(Token, "User1", "User");
 
-
-       
         assertTrue(authRepo.getUserName(token1).equals("User1"));
-        userService.setAdmin(Token, "123321",6);
+        userService.setAdmin(Token, "123321", 6);
         assertTrue(userRepo.isAdmin(6));
-   
-      
+
     }
+
     @Test
     void testUser_Add_Admin_wrongkey() throws Exception {
-          String Token= userService.generateGuest();
-         userService.register(Token, "User1", "User", 25);
+        String Token = userService.generateGuest();
+        userService.register(Token, "User1", "User", 25);
 
         // --- Login ---
-        String token1=userService.login(Token, "User1", "User");
+        String token1 = userService.login(Token, "User1", "User");
 
-
-       
         assertTrue(authRepo.getUserName(token1).equals("User1"));
-        userService.setAdmin(Token, "13321",6);
+        userService.setAdmin(Token, "13321", 6);
         assertFalse(userRepo.isAdmin(6));
-   
-      
-    }
 
+    }
 
     @Test
     void testUser_LogIn_Success() throws Exception {
-          String Token= userService.generateGuest();
-         userService.register(Token, "User1", "User", 25);
+        String Token = userService.generateGuest();
+        userService.register(Token, "User1", "User", 25);
 
         // --- Login ---
-        String token1=userService.login(Token, "User1", "User");
+        String token1 = userService.login(Token, "User1", "User");
 
-
-       
         assertTrue(authRepo.getUserName(token1).equals("User1"));
-   
-      
+
     }
 
     @Test
     void testUser_LogOut_Success() throws Exception {
-       String Token= userService.generateGuest();
-         userService.register(Token, "User1", "User", 25);
+        String Token = userService.generateGuest();
+        userService.register(Token, "User1", "User", 25);
 
         // --- Login ---
-        String token1=userService.login(Token, "User1", "User");
+        String token1 = userService.login(Token, "User1", "User");
 
-
-       
         assertTrue(authRepo.getUserName(token1).equals("User1"));
- 
-         userService.logoutUser(token1);
+
+        userService.logoutUser(token1);
         assertFalse(userRepo.isOnline(6));
     }
 
     @Test
     void testUser_LogIn_Failure() throws Exception {
-       String Token= userService.generateGuest();
-         userService.register(Token, "User1", "User", 25);
+        String Token = userService.generateGuest();
+        userService.register(Token, "User1", "User", 25);
 
         // --- Login ---
 
-
-       
         UIException ex = assertThrows(UIException.class, () -> {
             userService.login(Token, "User1", "invalid");
         });
@@ -218,48 +199,37 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
 
     @Test
     void testUser_LogOut_Failure() throws Exception {
-        
- String Token= userService.generateGuest();
-         userService.register(Token, "User1", "User", 25);
-            userService.login(Token, "User1", "User");
 
+        String Token = userService.generateGuest();
+        userService.register(Token, "User1", "User", 25);
+        userService.login(Token, "User1", "User");
 
         // Expect the logout to fail due to invalid token
-        UIException ex = assertThrows(UIException.class, () ->
-                userService.logoutUser("invalidToken")
-        );
+        UIException ex = assertThrows(UIException.class, () -> userService.logoutUser("invalidToken"));
 
         // Verify exception details
         assertEquals("Invalid token!", ex.getMessage());
         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
     }
 
-
     @Test
     void testUserLogin_Failure_InvalidToken() throws Exception {
-                
- String Token= userService.generateGuest();
-         userService.register(Token, "User1", "User", 25);
 
+        String Token = userService.generateGuest();
+        userService.register(Token, "User1", "User", 25);
 
         // Expect the logout to fail due to invalid token
-        UIException ex = assertThrows(UIException.class, () ->
-                userService.login("invalidToken","user1","User")
-        );
-          assertEquals("Invalid token!", ex.getMessage());
+        UIException ex = assertThrows(UIException.class, () -> userService.login("invalidToken", "user1", "User"));
+        assertEquals("Invalid token!", ex.getMessage());
         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
     }
 
-
     @Test
     void testUserLogin_Failure_UserNotFound() throws Exception {
-       String Token= userService.generateGuest();
-         userService.register(Token, "User1", "User", 25);
+        String Token = userService.generateGuest();
+        userService.register(Token, "User1", "User", 25);
 
-
-        UIException exception = assertThrows(UIException.class, () ->
-                userService.login(Token, "ghost", "nopass")
-        );
+        UIException exception = assertThrows(UIException.class, () -> userService.login(Token, "ghost", "nopass"));
 
         assertEquals("User not found: ghost", exception.getMessage());
     }
@@ -267,20 +237,17 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
     @Test
     void testUserLogout_Failure_UserNotFound() throws Exception {
         String token = "bad-token";
-     
 
-        UIException exception = assertThrows(UIException.class, () ->
-                userService.logoutUser(token)
-        );
+        UIException exception = assertThrows(UIException.class, () -> userService.logoutUser(token));
 
-  assertEquals("Invalid token!", exception.getMessage());
-        assertEquals(ErrorCodes.INVALID_TOKEN, exception.getNumber());    }
-
+        assertEquals("Invalid token!", exception.getMessage());
+        assertEquals(ErrorCodes.INVALID_TOKEN, exception.getNumber());
+    }
 
     @Test
     void testUser_setAdmin_Success() throws Exception {
-    String token = userService.generateGuest();
-        userService.register(token, "adminUser3", "adminPass3",22);
+        String token = userService.generateGuest();
+        userService.register(token, "adminUser3", "adminPass3", 22);
         String token1 = userService.login(token, "adminUser3", "adminPass3");
         userService.setAdmin(token1, "123321", 6);
 
@@ -290,14 +257,12 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
 
     @Test
     void testUser_setAdmin_Failure_InvalidToken() throws Exception {
-      String token = userService.generateGuest();
-        userService.register(token, "adminUser3", "adminPass3",22);
+        String token = userService.generateGuest();
+        userService.register(token, "adminUser3", "adminPass3", 22);
         String token1 = userService.login(token, "adminUser3", "adminPass3");
         userService.setAdmin(token1, "123321", 6);
 
         assertTrue(userRepo.isAdmin(authRepo.getUserId(token1)));
-
-
 
         UIException ex = assertThrows(UIException.class, () -> {
             userService.setAdmin("invalid token", "123321", 6);
@@ -305,48 +270,47 @@ stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop"
         assertFalse(userService.setAdmin(token, "123321", 1));
     }
 
+    @Test
+    void testUser_setAdmin_Failure_LogoutUserThrows() throws Exception {
+        String token = userService.generateGuest();
+        userService.register(token, "adminUser3", "adminPass3", 22);
 
-       @Test
-   void testUser_setAdmin_Failure_LogoutUserThrows() throws Exception {
-     String token = userService.generateGuest();
-        userService.register(token, "adminUser3", "adminPass3",22);
-     
+        assertFalse(userService.setAdmin(token, "adminUser3", 5));
+    }
 
-        
-           assertFalse(userService.setAdmin(token, "adminUser3",5));
-   }
-   @Test
+    @Test
     void testUser_CheckPurchaseHistory_Success() throws Exception {
-       userService.addToUserCart(NGToken, itemStoreDTO,1);
-        PaymentDetails paymentDetails = PaymentDetails.testPayment();  // fill if needed
-        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();    // fill if needed
+        userService.addToUserCart(NGToken, itemStoreDTO, 1);
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
         ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
 
-       assertNotNull(receipts);
+        assertNotNull(receipts);
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(2000.0, receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice() );
-   
-     List<ReceiptDTO> result =  orderService.getReceiptDTOsByUser(NGToken);
+        assertEquals(2000.0,
+                receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice());
 
-         assertEquals(1, result.size());
-         ReceiptDTO r = result.get(0);
-         assertEquals("TestStore", r.getStoreName());
-         assertEquals(2000, r.getFinalPrice());
+        List<ReceiptDTO> result = orderService.getReceiptDTOsByUser(NGToken);
+
+        assertEquals(1, result.size());
+        ReceiptDTO r = result.get(0);
+        assertEquals("TestStore", r.getStoreName());
+        assertEquals(2000, r.getFinalPrice());
     }
 
     @Test
     void testUser_CheckPurchaseHistory_Failure_InvalidToken() throws Exception {
-userService.addToUserCart(NGToken, itemStoreDTO,1);
-        PaymentDetails paymentDetails = PaymentDetails.testPayment();  // fill if needed
-        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();    // fill if needed
+        userService.addToUserCart(NGToken, itemStoreDTO, 1);
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
         ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
 
-       assertNotNull(receipts);
+        assertNotNull(receipts);
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(2000.0, receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice() );
-   
+        assertEquals(2000.0,
+                receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice());
 
         UIException ex = assertThrows(UIException.class, () -> {
             orderService.getReceiptDTOsByUser("invalid token");
@@ -355,11 +319,8 @@ userService.addToUserCart(NGToken, itemStoreDTO,1);
         assertEquals("Invalid token!", ex.getMessage());
     }
 
-    
-
     @Test
     void testUser_CheckPurchaseHistory_Failure_NoReceipts() throws Exception {
- 
 
         // Act & Assert
         UIException ex = assertThrows(UIException.class, () -> {
@@ -372,24 +333,24 @@ userService.addToUserCart(NGToken, itemStoreDTO,1);
 
     @Test
     void testUserGetStoreProducts() throws Exception {
-        List<ItemStoreDTO> items=   stockService.getProductsInStore(1);
-assertTrue(items.size()==1);
-   assertTrue(items.get(0).getId() ==1);
-   
+        List<ItemStoreDTO> items = stockService.getProductsInStore(1);
+        assertTrue(items.size() == 1);
+        assertTrue(items.get(0).getId() == 1);
+
     }
 
-     @Test
-     void testUserViewEmptyStore() throws Exception {
-    storeService.addStoreToSystem(  NOToken, "failure", "HOME");
+    @Test
+    void testUserViewEmptyStore() throws Exception {
+        storeService.addStoreToSystem(NOToken, "failure", "HOME");
 
         List<ItemStoreDTO> products = stockService.getProductsInStore(2);
 
         // ===== ASSERT =====
         assertTrue(products.isEmpty());
     }
+
     @Test
     void testUserViewInvalidStore() throws Exception {
-        
 
         List<ItemStoreDTO> products = null;
         try {
@@ -400,25 +361,23 @@ assertTrue(items.size()==1);
         }
     }
 
-
     @Test
     void testUserGetProductInfo() throws Exception {
-     ProductDTO info = stockService.getProductInfo(NGToken, 1);
+        ProductDTO info = stockService.getProductInfo(NGToken, 1);
 
         // ===== ASSERTIONS =====
-      
+
         assertNotNull(info);
         System.out.println(info.getName());
         assertTrue(info.getName().equals("Laptop"));
-        assertTrue(info.getProductId()==1);
-        assertTrue(info.getCategory().equals(  Category.ELECTRONICS));
-        assertTrue(info.getDescription().equals( "Gaming Laptop"));
+        assertTrue(info.getProductId() == 1);
+        assertTrue(info.getCategory().equals(Category.ELECTRONICS));
+        assertTrue(info.getDescription().equals("Gaming Laptop"));
     }
-
 
     @Test
     void testUserGetProductInfo_ProductNotFound() throws Exception {
-     
+
         UIException exception = assertThrows(UIException.class, () -> {
             stockService.getProductInfo(NGToken, 2);
         });
@@ -426,19 +385,17 @@ assertTrue(items.size()==1);
         assertEquals("Product not found.", exception.getMessage());
     }
 
-
     @Test
     void testUserAddProductToCart_Success() throws Exception {
-             assertDoesNotThrow(() -> {
-            userService.addToUserCart(NGToken, itemStoreDTO,1);
+        assertDoesNotThrow(() -> {
+            userService.addToUserCart(NGToken, itemStoreDTO, 1);
         });
     }
-    
 
     @Test
     void testUserAddProductToCart_InvalidToken() throws Exception {
-      UIException exception = assertThrows(UIException.class, () -> {
-            userService.addToUserCart("invalid token", itemStoreDTO,1);
+        UIException exception = assertThrows(UIException.class, () -> {
+            userService.addToUserCart("invalid token", itemStoreDTO, 1);
         });
 
         assertEquals("Invalid token!", exception.getMessage());
@@ -448,72 +405,65 @@ assertTrue(items.size()==1);
 
     }
 
-
-
     @Test
     void testUserBuyCart_Success() throws Exception {
-  userService.addToUserCart(NGToken, itemStoreDTO,1);
-        PaymentDetails paymentDetails = PaymentDetails.testPayment();  // fill if needed
-        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();    // fill if needed
+        userService.addToUserCart(NGToken, itemStoreDTO, 1);
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
         ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
 
         assertNotNull(receipts);
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(2000.0, receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice() );
+        assertEquals(2000.0,
+                receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice());
     }
-
-
 
     @Test
     void testUserBuyCart_ProductNotAvailable() throws Exception {
-       userService.addToUserCart(NGToken, new ItemStoreDTO(0, 0, 0, null, 0, 0),1);
+        userService.addToUserCart(NGToken, new ItemStoreDTO(0, 0, 0, null, 0, 0), 1);
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
-        
 
-        Exception ex = assertThrows(UIException.class, () ->
-                purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
+        Exception ex = assertThrows(UIException.class,
+                () -> purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
 
         assertEquals("Store not found for ID: 0", ex.getMessage());
     }
-      @Test
+
+    @Test
     void testUserBuyCart_EmptyCart() throws Exception {
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
-        
 
-        Exception ex = assertThrows(UIException.class, () ->
-                purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
+        Exception ex = assertThrows(UIException.class,
+                () -> purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
 
         assertEquals("Shopping cart is empty or not found", ex.getMessage());
     }
 
     @Test
     void testUserBuyCart_PaymentFails() throws Exception {
-    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-        Exception ex = assertThrows(Exception.class, () ->
-                purchaseService.buyRegisteredCart(NGToken,  PaymentDetails.test_fail_Payment(), supplyDetails));
+        Exception ex = assertThrows(Exception.class,
+                () -> purchaseService.buyRegisteredCart(NGToken, PaymentDetails.test_fail_Payment(), supplyDetails));
 
         assertEquals("Payment failed", ex.getMessage());
     }
+
     @Test
     void testUserSearchProductInStore_Success() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null,             // product name filter
-                null,             // category filter
-                null,             // keyword filter
-                1,          // store ID to filter
-                0, 10000,             // no price range
-                0, 5             // no rating range
+                null, // product name filter
+                null, // category filter
+                null, // keyword filter
+                1, // store ID to filter
+                0, 10000, // no price range
+                0, 5 // no rating range
         );
-
-     
-
-
 
         ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
 
@@ -524,21 +474,15 @@ assertTrue(items.size()==1);
         assertEquals(Category.ELECTRONICS, result[0].getCategory());
     }
 
-
-
-
-
     @Test
     void testUserSearchProducts_InvalidToken() throws Exception {
- 
+
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 "Laptop", Category.ELECTRONICS, "Laptop", 100,
                 0, 5000,
-                0, 5
-        );
+                0, 5);
 
         // 1. Throw on auth check
-  
 
         // 3. Run the test
         UIException exception = assertThrows(UIException.class, () -> {
@@ -548,12 +492,12 @@ assertTrue(items.size()==1);
         assertEquals(ErrorCodes.INVALID_TOKEN, exception.getNumber());
     }
 
-
     @Test
     void testUserSearchProducts_NoMatches() throws Exception {
 
-        String[] keywords = {"Laptop", "Lap", "top"};
-        ProductSearchCriteria criteria = new ProductSearchCriteria("aa", Category.ELECTRONICS, keywords[0], 1, 0, 5000, 0, 5);
+        String[] keywords = { "Laptop", "Lap", "top" };
+        ProductSearchCriteria criteria = new ProductSearchCriteria("aa", Category.ELECTRONICS, keywords[0], 1, 0, 5000,
+                0, 5);
         ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
         assertNotNull(result);
         assertEquals(0, result.length);
@@ -564,11 +508,9 @@ assertTrue(items.size()==1);
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 "Laptop", Category.ELECTRONICS, "Laptop", 100,
                 0, 5000,
-                0, 5
-        );
+                0, 5);
 
         // 1. Throw on auth check
-  
 
         // 3. Run the test
         UIException exception = assertThrows(UIException.class, () -> {
@@ -580,25 +522,20 @@ assertTrue(items.size()==1);
         assertEquals(ErrorCodes.INVALID_TOKEN, exception.getNumber());
     }
 
-
-
-
     @Test
     void testUserSearchProductInStore_ProductNotInStore() throws Exception {
-           ProductSearchCriteria criteria = new ProductSearchCriteria(
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
                 "toy", Category.ELECTRONICS, null, 1,
-                0, 0, 0, 0
-        );
+                0, 0, 0, 0);
         ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
 
         assertNotNull(result);
         assertEquals(0, result.length); // Product not sold in this store
     }
 
-
     @Test
-    void testUserGetPurchasePolicy_Success() throws Exception {     
-           throw new Exception("not implmented");
+    void testUserGetPurchasePolicy_Success() throws Exception {
+        throw new Exception("not implmented");
 
     }
 
@@ -610,6 +547,5 @@ assertTrue(items.size()==1);
     void testGuestModifyCartAddQToBuy() throws Exception {
         throw new Exception("not implmented");
     }
-
 
 }
