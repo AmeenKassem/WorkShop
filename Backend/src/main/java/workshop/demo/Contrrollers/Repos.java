@@ -46,6 +46,7 @@ public class Repos {
     public IPaymentService paymentService= new PaymentServiceImp();
     public ISupplyService supplyService=new SupplyServiceImp();
     public ISUConnectionRepo sUConnectionRepo=new SUConnectionRepository();
+    public AdminService adminService = new AdminService(orderRepo, storeRepo, userRepo, auth)   ;
     
     // public ProductFilter productFilter;
     // public IUserSuspensionRepo userRusepo;

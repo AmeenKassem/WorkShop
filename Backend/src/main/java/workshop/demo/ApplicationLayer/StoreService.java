@@ -61,6 +61,7 @@ public class StoreService {
 
     public int addStoreToSystem(String token, String storeName, String category) throws UIException, DevException {
         logger.info("User attempting to add a new store: '{}', category: {}", storeName, category);
+        logger.info(token);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int bossId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(bossId);

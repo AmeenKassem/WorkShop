@@ -77,7 +77,8 @@ public class UserTests {
         adminInitilizer = new AdminInitilizer("123321");
         userRepo = new UserRepository(encoder, adminInitilizer);
         suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-        // userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"));
+         userService =  new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),new AdminService(orderRepository, storeRepository, userRepo, authRepo));
+    
         stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo,
                 suspensionRepo);
         storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository,
