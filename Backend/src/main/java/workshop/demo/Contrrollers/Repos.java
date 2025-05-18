@@ -3,6 +3,7 @@ package workshop.demo.Contrrollers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import workshop.demo.ApplicationLayer.AdminService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
@@ -45,6 +46,8 @@ public class Repos {
     public IPaymentService paymentService= new PaymentServiceImp();
     public ISupplyService supplyService=new SupplyServiceImp();
     public ISUConnectionRepo sUConnectionRepo=new SUConnectionRepository();
+    public AdminService adminService = new AdminService(orderRepo, storeRepo, userRepo, auth)   ;
+    
     // public ProductFilter productFilter;
     // public IUserSuspensionRepo userRusepo;
     // public IUserSuspensionRepo userSusRepo=new UserSuspensionRepo();

@@ -1,16 +1,24 @@
 package workshop.demo.Contrrollers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
+import workshop.demo.ApplicationLayer.AdminService;
+
 import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
 import workshop.demo.ApplicationLayer.OrderService;
+import workshop.demo.DTOs.PurchaseHistoryDTO;
 import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.SystemAnalyticsDTO;
+
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 import java.util.List;
@@ -20,15 +28,19 @@ import java.util.List;
 @RequestMapping("/admin")
 public class AdminController {
 
-    private final UserService userService;
+    // private final UserService userService;
     private final OrderService orderService;
     private final UserSuspensionService userSuspensionService;
+    private AdminService adminService;
+
 
     @Autowired
     public AdminController(Repos repos) {
-        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer);
+        // this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer,adminService);
         this.orderService = new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
         this.userSuspensionService = new UserSuspensionService(repos.UserSuspensionRepo, repos.userRepo, repos.auth);
+        this.adminService = new AdminService(repos.orderRepo,repos.storeRepo,repos.userRepo,repos.auth);
+
     }
 
     @ModelAttribute
@@ -81,8 +93,9 @@ public class AdminController {
 
     @PostMapping("/suspendUser")
     public String suspendUser(@RequestParam Integer userId,
-            @RequestParam int minutes,
-            @RequestParam String token) {
+                              @RequestParam int minutes,
+                              @RequestParam String token) {
+
         ApiResponse<Boolean> res;
         try {
             userSuspensionService.suspendRegisteredUser(userId, minutes, token);
@@ -97,7 +110,8 @@ public class AdminController {
 
     @PostMapping("/pauseSuspension")
     public String pauseSuspension(@RequestParam Integer userId,
-            @RequestParam String token) {
+                                  @RequestParam String token) {
+
         ApiResponse<Boolean> res;
         try {
             userSuspensionService.pauseSuspension(userId, token);
@@ -112,7 +126,8 @@ public class AdminController {
 
     @PostMapping("/resumeSuspension")
     public String resumeSuspension(@RequestParam Integer userId,
-            @RequestParam String token) {
+                                   @RequestParam String token) {
+
         ApiResponse<Boolean> res;
         try {
             userSuspensionService.resumeSuspension(userId, token);
@@ -126,4 +141,31 @@ public class AdminController {
     }
 
     // Additional admin methods can be added here...
+    @GetMapping("/purchaseHistory")
+    public ResponseEntity<List<PurchaseHistoryDTO>> getSystemPurchaseHistory(@RequestParam String token) {
+        try {
+            List<PurchaseHistoryDTO> history = adminService.viewPurchaseHistory(token);
+            return ResponseEntity.ok(history);
+        } catch (UIException ex) {
+            // Return an error response if token is invalid or user is not admin
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(null);
+        } catch (Exception ex) {
+            // Handle other exceptions as needed
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+    @GetMapping("/analytics")
+    public ResponseEntity<SystemAnalyticsDTO> getSystemAnalytics(@RequestParam String token) {
+        try {
+            SystemAnalyticsDTO analytics = adminService.getSystemAnalytics(token);
+            return ResponseEntity.ok(analytics);
+        } catch (UIException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
 }
+
