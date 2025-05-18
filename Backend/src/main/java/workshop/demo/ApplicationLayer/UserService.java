@@ -32,13 +32,6 @@ public class UserService {
     //HmodeEnd
 
     @Autowired
-    public UserService(IUserRepo userRepo, IAuthRepo authRepo,IStockRepo stockRepo,AdminInitilizer adminInitilizer) {
-        this.userRepo = userRepo;
-        this.authRepo = authRepo;
-        this.stockRepo = stockRepo;
-        this.adminInitilizer = adminInitilizer;
-
-    }
     public UserService(IUserRepo userRepo, IAuthRepo authRepo,IStockRepo stockRepo,AdminInitilizer adminInitilizer,AdminService adminService) {
         this.userRepo = userRepo;
         this.authRepo = authRepo;

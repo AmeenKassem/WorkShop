@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.stereotype.Service;
 
+import workshop.demo.ApplicationLayer.AdminService;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
@@ -14,7 +15,9 @@ import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
+import workshop.demo.InfrastructureLayer.OrderRepository;
 import workshop.demo.InfrastructureLayer.StockRepository;
+import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 
@@ -28,7 +31,7 @@ public class Suspendtests {
     private final AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
     private final IUserRepo userRepo = new UserRepository(encoder, adminInitilizer);
     private final UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-    private final UserService userService = new UserService(userRepo, authRepo, new StockRepository());
+    private final UserService userService = new UserService(userRepo, authRepo, new StockRepository(),adminInitilizer, new AdminService(new OrderRepository(), new StoreRepository(), userRepo, authRepo));
 
     @Test
     public void test_suspendRegisteredUser() throws Exception {
