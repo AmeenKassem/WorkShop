@@ -1,4 +1,5 @@
 package workshop.demo.IntegrationTests.ServiceTests;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,183 +27,165 @@ import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 
-
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GuestTests {
-PaymentServiceImp payment = new PaymentServiceImp();
-                      SupplyServiceImp serviceImp=new SupplyServiceImp();
- PurchaseRepository purchaseRepository=new PurchaseRepository();
-UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
-       NotificationRepository     notificationRepository=new NotificationRepository();
-        OrderRepository    orderRepository=new OrderRepository();
-      StoreRepository      storeRepository=new StoreRepository();
-       StockRepository     stockRepository=new StockRepository();
-            SUConnectionRepository sIsuConnectionRepo=new SUConnectionRepository();
-    AuthenticationRepo   authRepo = new AuthenticationRepo();
-   Encoder    encoder = new Encoder();
-      AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
-      UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
-     UserSuspensionService  suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-      UserService userService = new UserService(userRepo, authRepo, stockRepository,new AdminInitilizer("123321"));
-               StockService   stockService=new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
-               StoreService   storeService=new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
-              PurchaseService    purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
-                 String NOToken;
-                  String NGToken;
-                     ItemStoreDTO itemStoreDTO ;
-                      String GToken;
-                      
 
-  
+    PaymentServiceImp payment = new PaymentServiceImp();
+    SupplyServiceImp serviceImp = new SupplyServiceImp();
+    PurchaseRepository purchaseRepository = new PurchaseRepository();
+    UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
+    NotificationRepository notificationRepository = new NotificationRepository();
+    OrderRepository orderRepository = new OrderRepository();
+    StoreRepository storeRepository = new StoreRepository();
+    StockRepository stockRepository = new StockRepository();
+    SUConnectionRepository sIsuConnectionRepo = new SUConnectionRepository();
+    AuthenticationRepo authRepo = new AuthenticationRepo();
+    Encoder encoder = new Encoder();
+    AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
+    UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
+    UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
+    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"));
+    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
+    StoreService storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
+    PurchaseService purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
+    String NOToken;
+    String NGToken;
+    ItemStoreDTO itemStoreDTO;
+    String GToken;
 
     @BeforeEach
     void setup() throws Exception {
         System.out.println("===== SETUP RUNNING =====");
 
-        purchaseRepository=new PurchaseRepository();
-          suspensionRepo = new UserSuspensionRepo();
-            notificationRepository=new NotificationRepository();
-            orderRepository=new OrderRepository();
-            storeRepository=new StoreRepository();
-            stockRepository=new StockRepository();
-            sIsuConnectionRepo=new SUConnectionRepository();
-       authRepo = new AuthenticationRepo();
-       encoder = new Encoder();
-       adminInitilizer = new AdminInitilizer("123321");
-       userRepo = new UserRepository(encoder, adminInitilizer);
-       suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-       userService = new UserService(userRepo, authRepo, stockRepository,new AdminInitilizer("123321"));
-                  stockService=new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
-                  storeService=new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
-                  purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
+        purchaseRepository = new PurchaseRepository();
+        suspensionRepo = new UserSuspensionRepo();
+        notificationRepository = new NotificationRepository();
+        orderRepository = new OrderRepository();
+        storeRepository = new StoreRepository();
+        stockRepository = new StockRepository();
+        sIsuConnectionRepo = new SUConnectionRepository();
+        authRepo = new AuthenticationRepo();
+        encoder = new Encoder();
+        adminInitilizer = new AdminInitilizer("123321");
+        userRepo = new UserRepository(encoder, adminInitilizer);
+        suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
+        userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"));
+        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
+        storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
+        purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
 
-    
+        GToken = userService.generateGuest();
 
-         GToken= userService.generateGuest();
+        String OToken = userService.generateGuest();
 
-        
-
-        
-        String OToken= userService.generateGuest();
-
-        
-
-userService.register(OToken, "owner", "owner", 25);
+        userService.register(OToken, "owner", "owner", 25);
 
         // --- Login ---
-        NOToken=userService.login(OToken, "owner", "owner");
+        NOToken = userService.login(OToken, "owner", "owner");
 
-
-       
         assertTrue(authRepo.getUserName(NOToken).equals("owner"));
         // ======================= STORE CREATION =======================
-      
 
         int createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
-        assertEquals(createdStoreId,1);
+        assertEquals(createdStoreId, 1);
 
         // ======================= PRODUCT & ITEM ADDITION =======================
         String[] keywords = {"Laptop", "Lap", "top"};
-stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
+        stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-                 itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1);
-
+        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1);
 
         // ======================= SECOND GUEST SETUP =======================
-       
-
     }
-        @AfterEach
 
-      void tearDown() {
-        if (userRepo != null) userRepo.clear();
-        if (storeRepository != null) storeRepository.clear();
-        if (stockRepository != null) stockRepository.clear();
-        if (orderRepository != null) orderRepository.clear();
-        if (suspensionRepo != null) suspensionRepo.clear();
+    @AfterEach
+
+    void tearDown() {
+        if (userRepo != null) {
+            userRepo.clear();
+        }
+        if (storeRepository != null) {
+            storeRepository.clear();
+        }
+        if (stockRepository != null) {
+            stockRepository.clear();
+        }
+        if (orderRepository != null) {
+            orderRepository.clear();
+        }
+        if (suspensionRepo != null) {
+            suspensionRepo.clear();
+        }
         // Add clear() for all other repos you wrote it for
     }
-
 
     //NOTE:ENTER+EXIT+REGISTER FINISH
     @Test
     void testGuestEnter_Success() throws Exception {
-       
+
         String token = userService.generateGuest();
 
-        assertTrue(authRepo.getUserId(token)==4);
+        assertTrue(authRepo.getUserId(token) == 4);
     }
-
-
 
     @Test
     void testGuestExit_Success() throws Exception {
-        
 
         String token = userService.generateGuest();
 
-
         userService.destroyGuest(token);
-assertFalse(userRepo.guestExist(4));        
-
+        assertFalse(userRepo.guestExist(4));
 
     }
 
     @Test
     void testGuestExit_Failure_InvalidToken() throws Exception {
-      
-assertThrows(UIException.class, () -> userService.destroyGuest("invalid token"));
 
+        assertThrows(UIException.class, () -> userService.destroyGuest("invalid token"));
 
     }
-
 
     @Test
     void testGuestRegister_Success() throws Exception {
         //enter
         String token = userService.generateGuest();
-       
 
         userService.register(token, "Mohamad", "finish", 24);
-      String tt=  userService.login(token,"Mohamad", "finish");
+        String tt = userService.login(token, "Mohamad", "finish");
         assertTrue(authRepo.getUserName(tt).equals("Mohamad"));
 
     }
 
     @Test
     void testGuestRegister_Failure_UsernameExists() throws Exception {
-      
-                String token = userService.generateGuest();
+
+        String token = userService.generateGuest();
 
         userService.register(token, "Mohamad", "finish", 24);
-
-
 
         UIException exception = assertThrows(UIException.class, () -> {
             userService.register(token, "Mohamad", "finish", 24);
         });
 
-        
         assertEquals(ErrorCodes.USERNAME_USED, exception.getNumber());
     }
 
+    //NOTE:GET STORE PRODUCT FINISH
+    @Test
+    void testGuestGetStoreProducts() throws Exception {
 
-   //NOTE:GET STORE PRODUCT FINISH
-   @Test
-   void testGuestGetStoreProducts() throws Exception {
-
-   List<ItemStoreDTO> items=   stockService.getProductsInStore(1);
-assertTrue(items.size()==1);
-   assertTrue(items.get(0).getId() ==1);
-   }
+        List<ItemStoreDTO> items = stockService.getProductsInStore(1);
+        assertTrue(items.size() == 1);
+        assertTrue(items.get(0).getId() == 1);
+    }
 
     @Test
     void testGuestViewEmptyStore() throws Exception {
-       storeService.addStoreToSystem(  NOToken, "failure", "HOME");
+        storeService.addStoreToSystem(NOToken, "failure", "HOME");
 
         List<ItemStoreDTO> products = stockService.getProductsInStore(2);
 
@@ -212,28 +195,22 @@ assertTrue(items.size()==1);
 
     @Test
     void testGuestGetProductInfo() throws Exception {
-      
 
         // ===== GUEST REQUESTS PRODUCT INFO =====
         ProductDTO info = stockService.getProductInfo(GToken, 1);
 
         // ===== ASSERTIONS =====
-      
         assertNotNull(info);
         System.out.println(info.getName());
         assertTrue(info.getName().equals("Laptop"));
-        assertTrue(info.getProductId()==1);
-        assertTrue(info.getCategory().equals(  Category.ELECTRONICS));
-        assertTrue(info.getDescription().equals( "Gaming Laptop"));
-
+        assertTrue(info.getProductId() == 1);
+        assertTrue(info.getCategory().equals(Category.ELECTRONICS));
+        assertTrue(info.getDescription().equals("Gaming Laptop"));
 
     }
 
     @Test
     void testGuestGetProductInfo_ProductNotFound() throws Exception {
-       
-
-
 
         UIException exception = assertThrows(UIException.class, () -> {
             stockService.getProductInfo(GToken, 2);
@@ -245,35 +222,30 @@ assertTrue(items.size()==1);
     //NOTE:ADD TO CART FINISH +ASK FOR MORE FAILURE
     @Test
     void testGuestAddProductToCart_Success() throws Exception {
-     
+
         assertDoesNotThrow(() -> {
-            userService.addToUserCart(GToken, itemStoreDTO,1);
+            userService.addToUserCart(GToken, itemStoreDTO, 1);
         });
     }
 
     @Test
     void testGuestAddProductToCart_InvalidToken() throws Exception {
-              
+
         UIException exception = assertThrows(UIException.class, () -> {
-            userService.addToUserCart("invalid token", itemStoreDTO,1);
+            userService.addToUserCart("invalid token", itemStoreDTO, 1);
         });
 
         assertEquals("Invalid token!", exception.getMessage());
         assertEquals(ErrorCodes.INVALID_TOKEN, exception.getNumber());
 
         // Assert
-
     }
-
-
-
 
 //     //NOTE :BUY CART FINISH +ASK FOR MORE FAILURE
     @Test
     void testGuestBuyCart_Success() throws Exception {
 
-
-        userService.addToUserCart(GToken, itemStoreDTO,1);
+        userService.addToUserCart(GToken, itemStoreDTO, 1);
         PaymentDetails paymentDetails = PaymentDetails.testPayment();  // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();    // fill if needed
         ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
@@ -281,80 +253,69 @@ assertTrue(items.size()==1);
         assertNotNull(receipts);
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(2000.0, receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice() );
+        assertEquals(2000.0, receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice());
 
         // --- Step 8: Verify important calls happened ---
-       
     }
 
     @Test
     void testGuestBuyCart_InvalidToken() throws Exception {
         String guestToken = "guest-token";
 
-         PaymentDetails paymentDetails = PaymentDetails.testPayment();  // fill if needed
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();  // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();    // fill if needed
 
-        Exception ex = assertThrows(UIException.class, () ->
-                purchaseService.buyGuestCart(guestToken, paymentDetails,supplyDetails ));
+        Exception ex = assertThrows(UIException.class, ()
+                -> purchaseService.buyGuestCart(guestToken, paymentDetails, supplyDetails));
 
         assertEquals("Invalid token!", ex.getMessage());
     }
 
-    
-
     @Test
     void testGuestBuyCart_ProductNotAvailable() throws Exception {
-      
-        userService.addToUserCart(GToken, new ItemStoreDTO(0, 0, 0, null, 0, 0),1);
+
+        userService.addToUserCart(GToken, new ItemStoreDTO(0, 0, 0, null, 0, 0), 1);
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
-        
 
-        Exception ex = assertThrows(UIException.class, () ->
-                purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails));
+        Exception ex = assertThrows(UIException.class, ()
+                -> purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails));
 
         assertEquals("Not all items are available for guest purchase", ex.getMessage());
     }
 
     @Test
     void testGuestBuyCart_PaymentFails() throws Exception {
-       
+
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-        Exception ex = assertThrows(Exception.class, () ->
-                purchaseService.buyGuestCart(GToken,  PaymentDetails.test_fail_Payment(), supplyDetails));
+        Exception ex = assertThrows(Exception.class, ()
+                -> purchaseService.buyGuestCart(GToken, PaymentDetails.test_fail_Payment(), supplyDetails));
 
         assertEquals("Payment failed", ex.getMessage());
     }
-@Test
-    void testGuestBuyCart_supplier_Fails() throws Exception {
-       
 
-        Exception ex = assertThrows(Exception.class, () ->
-                purchaseService.buyGuestCart(GToken,  PaymentDetails.testPayment(), SupplyDetails.test_fail_supply()));
+    @Test
+    void testGuestBuyCart_supplier_Fails() throws Exception {
+
+        Exception ex = assertThrows(Exception.class, ()
+                -> purchaseService.buyGuestCart(GToken, PaymentDetails.testPayment(), SupplyDetails.test_fail_supply()));
 
         assertEquals("supplier failed", ex.getMessage());
     }
 
     @Test
     void testGuestSearchProductInStore_Success() throws Exception {
-        
-
-        
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null,             // product name filter
-                null,             // category filter
-                null,             // keyword filter
-                1,          // store ID to filter
-                0, 10000,             // no price range
-                0, 5             // no rating range
+                null, // product name filter
+                null, // category filter
+                null, // keyword filter
+                1, // store ID to filter
+                0, 10000, // no price range
+                0, 5 // no rating range
         );
-
-     
-
-
 
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
 
@@ -365,10 +326,8 @@ assertTrue(items.size()==1);
         assertEquals(Category.ELECTRONICS, result[0].getCategory());
     }
 
-
     @Test
     void testGuestSearchProducts_Success() throws Exception {
-     
 
         // --- Step 2: Prepare search criteria ---
         String[] keywords = {"Laptop", "Lap", "top"};
@@ -376,8 +335,6 @@ assertTrue(items.size()==1);
 
         ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.ELECTRONICS, null, 1, 0, 2000, 0, 2);
 
-
-        
         // --- Step 5: Call the system under test ---
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
 
@@ -389,7 +346,6 @@ assertTrue(items.size()==1);
         assertEquals(1, result[0].getStoreId());
 
         // --- Step 7: Verify mocks ---
-        
     }
 
     @Test
@@ -402,8 +358,6 @@ assertTrue(items.size()==1);
         );
 
         // 1. Throw on auth check
-  
-
         // 3. Run the test
         UIException exception = assertThrows(UIException.class, () -> {
             stockService.searchProducts("invalid token", criteria);
@@ -426,7 +380,6 @@ assertTrue(items.size()==1);
 
     @Test
     void testSearchProducts_ProductExists_NotInStore() throws Exception {
-        
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 "toy", Category.ELECTRONICS, null, 1,
@@ -448,16 +401,12 @@ assertTrue(items.size()==1);
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
 
         assertNotNull(result);
-        assertEquals(0, result.length); 
+        assertEquals(0, result.length);
     }
-
 
     @Test
     void testGuestModifyCartAddQToBuy() throws Exception {
         throw new Exception("not implmented");
-        }
-
-
+    }
 
 }
-

@@ -304,4 +304,31 @@ public class SuperDataStructure {
 
         return result;
     }
+
+    public int removeUserAccordingly(int userId) throws Exception {
+        boolean userFound = false;
+
+        // Remove user from all trees
+        for (Tree tree : employees.values()) {
+            if (tree.getNodeById(userId) != null) {
+                tree.deleteNode(userId);
+                userFound = true;
+            }
+        }
+
+        // Remove offers where user is sender or receiver
+        for (List<OfferDTO> offerList : offers.values()) {
+            boolean removed = offerList.removeIf(
+                    offer -> offer.getSenderId() == userId || offer.getReceiverId() == userId
+            );
+            if (removed) {
+                userFound = true;
+            }
+        }
+
+        if (!userFound) {
+            return -1;
+        }
+        return userId;
+    }
 }
