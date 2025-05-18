@@ -43,6 +43,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+
 public class StoreSTests {
 
     PaymentServiceImp payment = new PaymentServiceImp();
@@ -72,6 +73,7 @@ public class StoreSTests {
     @BeforeEach
     void setup() throws Exception {
         System.out.println("===== SETUP RUNNING =====");
+
 
         purchaseRepository = new PurchaseRepository();
         suspensionRepo = new UserSuspensionRepo();
