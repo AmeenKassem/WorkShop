@@ -61,6 +61,7 @@ public class StoreService {
 
     public int addStoreToSystem(String token, String storeName, String category) throws UIException, DevException {
         logger.info("User attempting to add a new store: '{}', category: {}", storeName, category);
+        logger.info(token);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int bossId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(bossId);
@@ -269,9 +270,10 @@ public class StoreService {
         return storeId;
     }
 
-    public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws Exception {
-        throw new UnsupportedOperationException("Not implemented yet");
+    public List<Integer> ViewRolesAndPermissions(int storeId) throws Exception {
+        return suConnectionRepo.getWorkersInStore(storeId);
     }
+     
 
     public StoreDTO getStoreDTO(String token, int storeId) throws UIException {
         logger.info("User attempting to get StoreDTO for store {}", storeId);

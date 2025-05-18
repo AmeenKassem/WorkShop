@@ -3,7 +3,7 @@ package workshop.demo.DTOs;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SupplyDetails {
-    // public static final SupplyDetails getTestDetails = null;
+    
     public String address;
     public String city;
     public String state;

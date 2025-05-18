@@ -28,9 +28,8 @@ public class UserController {
 
     @Autowired
     public UserController(Repos repos) {
-        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer);
+        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer, repos.adminService);
         this.orderService = new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
-
     }
 
     @ModelAttribute
