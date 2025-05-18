@@ -123,7 +123,7 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     public void closeStore(int storeId) throws Exception {
         this.data.closeStore(storeId);
     }
-
+ // changed userid to storeid
     @Override
     public boolean manipulateItem(int userId, int storeId, Permission permission) throws Exception {
         Node Worker = getWorkerInStoreById(storeId, userId);

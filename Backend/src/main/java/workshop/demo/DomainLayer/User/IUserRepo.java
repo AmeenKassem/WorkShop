@@ -12,6 +12,10 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public interface IUserRepo {
 
+
+    // added for tests
+        public boolean guestExist(int id) ;
+
     /**
      *
      *
