@@ -20,6 +20,7 @@ import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.MyStoresView;
+import workshop.demo.PresentationLayer.View.NotificationView;
 
 public class MyStoresPresenter {
 
@@ -63,7 +64,7 @@ public class MyStoresPresenter {
                 view.displayStores(stores);
 
             } else if (body != null && body.getErrNumber() != -1) {
-                view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+                NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
             }
 
         } catch (HttpClientErrorException e) {
@@ -71,16 +72,16 @@ public class MyStoresPresenter {
                 String responseBody = e.getResponseBodyAsString();
                 ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
                 if (errorBody.getErrNumber() != -1) {
-                    view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
                 } else {
-                    view.showError("FAILED: " + errorBody.getErrorMsg());
+                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
                 }
             } catch (Exception parsingEx) {
-                view.showError("HTTP error: " + e.getMessage());
+                NotificationView.showError("HTTP error: " + e.getMessage());
             }
 
         } catch (Exception e) {
-            view.showError("UNEXPECTED ERROR: " + e.getMessage());
+            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
         }
 
     }

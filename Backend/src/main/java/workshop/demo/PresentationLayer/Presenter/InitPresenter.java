@@ -2,6 +2,7 @@ package workshop.demo.PresentationLayer.Presenter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.springframework.core.ParameterizedTypeReference;
@@ -160,35 +161,22 @@ public class InitPresenter {
             headers.setAccept(List.of(MediaType.APPLICATION_JSON));
             HttpEntity<?> entity = new HttpEntity<>(headers);
 
-            ResponseEntity<String> response = restTemplate.exchange(
+            ResponseEntity<ApiResponse<List<ReceiptDTO>>> response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     entity,
-                    String.class);
+                    new ParameterizedTypeReference<ApiResponse<List<ReceiptDTO>>>() {
+                    });
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            ApiResponse responseBody = objectMapper.readValue(response.getBody(), ApiResponse.class);
+            ApiResponse<List<ReceiptDTO>> responseBody = response.getBody();
+
             if (responseBody != null && responseBody.getErrNumber() == -1) {
+                List<ReceiptDTO> receiptList = responseBody.getData();
+                ReceiptDTO[] receipts = receiptList.toArray(new ReceiptDTO[0]);
 
-                Object rawData = responseBody.getData();
-                System.out.println(rawData instanceof List<?>);
-                if (rawData instanceof List<?>) {
-                    List<?> rawList = (List<?>) rawData;
-                    List<ReceiptDTO> receiptList = new ArrayList<>();
-                    for (Object obj : rawList) {
-                        ObjectMapper objectMapper2 = new ObjectMapper();
-                        ReceiptDTO receiptDTO = objectMapper2.convertValue(obj, ReceiptDTO.class);
-                        if (receiptDTO instanceof ReceiptDTO) {
-                            receiptList.add((ReceiptDTO) obj);
-                        }
-                    }
-
-                    ReceiptDTO[] receipts = receiptList.toArray(new ReceiptDTO[0]);
-                    System.out.println(receipts);
-                    PurchaseView.showReceiptDialog(receipts);
-
-                }
-
+                System.out.println("ok2");
+                PurchaseView.showReceiptDialog(receipts);
+                
             } else {
 
                 NotificationView.showError(ExceptionHandlers.getErrorMessage(responseBody.getErrNumber()));
