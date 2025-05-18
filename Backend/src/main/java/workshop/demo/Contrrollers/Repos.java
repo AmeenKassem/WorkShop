@@ -1,5 +1,6 @@
 package workshop.demo.Contrrollers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
@@ -36,7 +37,7 @@ public class Repos {
     public IUserRepo userRepo = new UserRepository(new Encoder(), adminInitilizer);
     public IStoreRepo storeRepo=new StoreRepository();
     public AuthenticationRepo auth = new AuthenticationRepo();
-    public INotificationRepo notificationRepo= new NotificationRepository();
+    @Autowired public INotificationRepo notificationRepo;
     public IOrderRepo orderRepo= new OrderRepository();
     public IStockRepo stockrepo=new StockRepository();
     public IPurchaseRepo purchaseRepo= new PurchaseRepository();

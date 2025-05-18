@@ -1,9 +1,5 @@
 package workshop.demo.PresentationLayer.Presenter;
 
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -11,36 +7,36 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
-import workshop.demo.PresentationLayer.View.MyStoresView;
+import workshop.demo.PresentationLayer.View.ManageStoreView;
 
-public class MyStoresPresenter {
+public class ManageStorePresenter {
 
+    private final ManageStoreView view;
     private final RestTemplate restTemplate;
-    private final MyStoresView view;
 
-    public MyStoresPresenter(MyStoresView view) {
+    public ManageStorePresenter(ManageStoreView view) {
         this.view = view;
-        restTemplate = new RestTemplate();
+        this.restTemplate = new RestTemplate();
     }
 
-    public void loadMyStores() {
-        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-
-        String url = String.format("http://localhost:8080/api/store/myStores?token=%s",
-                UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
+    public void fetchStore(String token, int storeId) {
+        String url = String.format(
+                "http://localhost:8080/api/store/getstoreDTO?token=%s&storeId=%d",
+                token,
+                storeId
+        );
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         HttpEntity<?> entity = new HttpEntity<>(headers);
+
         try {
             ResponseEntity<ApiResponse> response = restTemplate.exchange(
                     url,
@@ -54,14 +50,8 @@ public class MyStoresPresenter {
 
             if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
                 ObjectMapper mapper = new ObjectMapper();
-                List<?> rawList = (List<?>) body.getData();
-
-                List<StoreDTO> stores = rawList.stream()
-                        .map(obj -> mapper.convertValue(obj, StoreDTO.class))
-                        .collect(Collectors.toList());
-
-                view.displayStores(stores);
-
+                StoreDTO store = mapper.convertValue(body.getData(), StoreDTO.class);
+                view.buildManageUI(store);
             } else if (body != null && body.getErrNumber() != -1) {
                 view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
             }
@@ -82,7 +72,6 @@ public class MyStoresPresenter {
         } catch (Exception e) {
             view.showError("UNEXPECTED ERROR: " + e.getMessage());
         }
-
     }
 
 }

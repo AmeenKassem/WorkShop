@@ -3,12 +3,14 @@ package workshop.demo.Contrrollers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.AdminService;
+
 import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
@@ -16,6 +18,7 @@ import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.DTOs.PurchaseHistoryDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.SystemAnalyticsDTO;
+
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 import java.util.List;
@@ -30,12 +33,14 @@ public class AdminController {
     private final UserSuspensionService userSuspensionService;
     private AdminService adminService;
 
+
     @Autowired
     public AdminController(Repos repos) {
         this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer);
         this.orderService = new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
         this.userSuspensionService = new UserSuspensionService(repos.UserSuspensionRepo, repos.userRepo, repos.auth);
         this.adminService = new AdminService(repos.orderRepo,repos.storeRepo,repos.userRepo,repos.auth);
+
     }
 
     @ModelAttribute
@@ -90,6 +95,7 @@ public class AdminController {
     public String suspendUser(@RequestParam Integer userId,
                               @RequestParam int minutes,
                               @RequestParam String token) {
+
         ApiResponse<Boolean> res;
         try {
             userSuspensionService.suspendRegisteredUser(userId, minutes, token);
@@ -105,6 +111,7 @@ public class AdminController {
     @PostMapping("/pauseSuspension")
     public String pauseSuspension(@RequestParam Integer userId,
                                   @RequestParam String token) {
+
         ApiResponse<Boolean> res;
         try {
             userSuspensionService.pauseSuspension(userId, token);
@@ -120,6 +127,7 @@ public class AdminController {
     @PostMapping("/resumeSuspension")
     public String resumeSuspension(@RequestParam Integer userId,
                                    @RequestParam String token) {
+
         ApiResponse<Boolean> res;
         try {
             userSuspensionService.resumeSuspension(userId, token);
@@ -160,3 +168,4 @@ public class AdminController {
     }
 
 }
+

@@ -6,7 +6,7 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 
-@Route("store/:id")
+@Route(value = "store/:id", layout = MainLayout.class)
 public class StoreDetailsView extends VerticalLayout {
 
     public StoreDetailsView(@PathVariable("id") int storeId) {

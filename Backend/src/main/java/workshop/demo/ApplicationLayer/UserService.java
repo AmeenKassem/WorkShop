@@ -114,6 +114,22 @@ public class UserService {
         return true;
     }
 
+    public boolean ModifyCartAddQToBuy(String token, int productId, int quantity) throws UIException {
+        logger.info("ModifyCartAddQToBuy called");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        userRepo.ModifyCartAddQToBuy(authRepo.getUserId(token), productId, quantity);
+        logger.info("Cart modified for productId={}", productId);
+        return true;
+    }
+
+    public boolean removeItemFromCart(String token, int productId) throws UIException {
+        logger.info("removeItemFromCart called");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        userRepo.removeItemFromGeustCart(authRepo.getUserId(token), productId);
+        logger.info("Item removed from cart for productId={}", productId);
+        return true;
+    }
+
 
     public SpecialCartItemDTO[] getSpecialCart(String token) throws UIException{
         authRepo.checkAuth_ThrowTimeOutException(token, logger);

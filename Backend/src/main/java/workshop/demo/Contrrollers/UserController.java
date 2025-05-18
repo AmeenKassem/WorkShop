@@ -160,6 +160,41 @@ public class UserController {
         return res.toJson();
     }
 
+    @PostMapping("/removeFromCart")
+    public String removeFromUserCart(@RequestParam String token,
+            @RequestParam int productId
+    ) {
+        ApiResponse<Boolean> res;
+        try {
+            userService.removeItemFromCart(token, productId);
+            res = new ApiResponse<>(true, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
+    }
+
+    @PostMapping("/modifyCart")
+    public String modifyCart(@RequestParam String token,
+            @RequestParam int productId,
+            @RequestParam int quantity
+    ) {
+        ApiResponse<Boolean> res;
+        try {
+            userService.ModifyCartAddQToBuy(token, productId, quantity);
+            res = new ApiResponse<>(true, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
+    }
+
+    
+
     // @PutMapping("/updateProfile")
     // public String updateProfile(@RequestParam String token) {
     //     Response<String> res;
