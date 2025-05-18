@@ -109,9 +109,12 @@ public class PurchaseService {
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
         for (ShoppingBasket basket : cart.getBaskets().values()) {
             logger.info("Processing basket for storeId={}", basket.getStoreId());
-
+String storeName = storeRepo.getStoreNameById(basket.getStoreId());
             List<ReceiptProduct> boughtItems = stockRepo.processCartItemsForStore(basket.getStoreId(),
                     basket.getItems(), isGuest);
+            for (ReceiptProduct product : boughtItems) {
+                product.setstoreName(storeName); //need to change 
+            }
             double total = stockRepo.calculateTotalPrice(boughtItems);
             paymentService.processPayment(payment, total);
             supplyService.processSupply(supply);
