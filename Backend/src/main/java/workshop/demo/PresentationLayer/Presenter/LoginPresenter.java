@@ -41,7 +41,7 @@ public class LoginPresenter {
         // Get guest token from session
         String guestToken = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         if (guestToken == null) {
-            view.showError(ExceptionHandlers.getErrorMessage(1001));
+            NotificationView.showError(ExceptionHandlers.getErrorMessage(1001));
             return;
         }
         // Build the URL with query parameters
@@ -76,7 +76,7 @@ public class LoginPresenter {
                 VaadinSession.getCurrent().setAttribute("auth-token", newUserToken);
                 VaadinSession.getCurrent().setAttribute("user-type", "user");
                 VaadinSession.getCurrent().setAttribute("username", username);
-                view.showSuccess("Logged in successfully!");
+                NotificationView.showSuccess("Logged in successfully!");
                 NotificationView notificationView = new NotificationView();
                 notificationView.createWS(UI.getCurrent(), username);
                 notificationView.register(UI.getCurrent());
@@ -86,7 +86,7 @@ public class LoginPresenter {
                 UI.getCurrent().navigate("");
             } else {
                 if (body.getErrNumber() != -1) {
-                    view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
                 }
             }
 
@@ -96,16 +96,16 @@ public class LoginPresenter {
                 ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
 
                 if (errorBody.getErrNumber() != -1) {
-                    view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
                 } else {
-                    view.showError("FAILED: " + errorBody.getErrorMsg());
+                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
                 }
             } catch (Exception parsingEx) {
-                view.showError("HTTP error: " + e.getMessage());
+                NotificationView.showError("HTTP error: " + e.getMessage());
             }
 
         } catch (Exception e) {
-            view.showError("UNEXPECTED ERROR: " + e.getMessage());
+            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
 
         }
     }

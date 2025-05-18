@@ -58,4 +58,19 @@ public class Guest {
         return new UserDTO(this.id);
     }
 
+    public void ModifyCartAddQToBuy(int productId, int quantity) {
+        logger.debug("ModifyCartAddQToBuy called for guestId={}, productId={}, quantity={}", id, productId, quantity);
+
+        cart.ModifyCartAddQToBuy(productId, quantity);
+    }
+
+    public void removeItem(int productId) {
+        logger.debug("removeItem called for guestId={}, productId={}", id, productId);
+
+        cart.getBaskets().values().forEach(basket -> {
+            basket.getItems().removeIf(item -> item.productId == productId);
+        });
+        
+    }
+
 }

@@ -3,6 +3,7 @@ package workshop.demo.IntegrationTests.ServiceTests;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
@@ -32,13 +33,13 @@ import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
-
 public class UserTests {
     PaymentServiceImp payment = new PaymentServiceImp();
     SupplyServiceImp serviceImp = new SupplyServiceImp();
     PurchaseRepository purchaseRepository = new PurchaseRepository();
     UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
-    NotificationRepository notificationRepository = new NotificationRepository();
+    @Autowired
+    NotificationRepository notificationRepository;
     OrderRepository orderRepository = new OrderRepository();
     StoreRepository storeRepository = new StoreRepository();
     StockRepository stockRepository = new StockRepository();
@@ -66,7 +67,6 @@ public class UserTests {
         // ====== ADMIN SETUP ======
         purchaseRepository = new PurchaseRepository();
         suspensionRepo = new UserSuspensionRepo();
-        notificationRepository = new NotificationRepository();
         orderRepository = new OrderRepository();
         storeRepository = new StoreRepository();
         stockRepository = new StockRepository();

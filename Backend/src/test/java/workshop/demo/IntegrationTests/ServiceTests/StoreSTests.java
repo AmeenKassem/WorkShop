@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
@@ -19,6 +20,7 @@ import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Notification.DelayedNotificationDecorator;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
@@ -47,7 +49,8 @@ public class StoreSTests {
     SupplyServiceImp serviceImp = new SupplyServiceImp();
     PurchaseRepository purchaseRepository = new PurchaseRepository();
     UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
-    NotificationRepository notificationRepository = new NotificationRepository();
+    @Autowired
+    NotificationRepository notificationRepository;
     OrderRepository orderRepository = new OrderRepository();
     StoreRepository storeRepository = new StoreRepository();
     StockRepository stockRepository = new StockRepository();
@@ -72,7 +75,6 @@ public class StoreSTests {
 
         purchaseRepository = new PurchaseRepository();
         suspensionRepo = new UserSuspensionRepo();
-        notificationRepository = new NotificationRepository();
         orderRepository = new OrderRepository();
         storeRepository = new StoreRepository();
         stockRepository = new StockRepository();
