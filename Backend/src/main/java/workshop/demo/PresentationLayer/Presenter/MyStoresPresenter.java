@@ -90,4 +90,8 @@ public class MyStoresPresenter {
 
     }
 
+    public void viewEmployeesBtn(int storeId) {
+        String url = String.format("http://localhost:8080//api/store/viewRoles?storeId=%d", storeId);
+
+    }
 }

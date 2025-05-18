@@ -51,9 +51,9 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
 
         Button viewEmployeesBtn = new Button("👥 View Employees", e -> Notification.show("Coming soon!"));
         Button viewReviewsBtn = new Button("📝 View Reviews", e -> Notification.show("Coming soon!"));
-        Button makeOfferBtn = new Button("➕ Make Offer to Add", e -> Notification.show("Coming soon!"));
-        Button deleteUserBtn = new Button("❌ Remove Owner/Manager", e -> Notification.show("Coming soon!"));
-        Button changeAuthBtn = new Button("🔧 Change Manager Permissions", e -> Notification.show("Coming soon!"));
+        Button makeOfferBtn = new Button("➕ Manage my owners", e -> Notification.show("Coming soon!"));
+        Button deleteUserBtn = new Button("➕ Manage my managers", e -> Notification.show("Coming soon!"));
+        Button changeAuthBtn = new Button("👥 View store's history", e -> Notification.show("Coming soon!"));
         Button deactivateStoreBtn = new Button("📴 Deactivate Store", e -> Notification.show("Coming soon!"));
 
         add(viewEmployeesBtn, viewReviewsBtn, makeOfferBtn, deleteUserBtn, changeAuthBtn, deactivateStoreBtn);
