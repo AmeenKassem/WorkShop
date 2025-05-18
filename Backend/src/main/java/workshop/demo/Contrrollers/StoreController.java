@@ -199,7 +199,7 @@ public class StoreController {
     public ResponseEntity<?> viewRoles(@RequestParam int storeId) {
 
         try {
-            List<WorkerDTO> roles = storeService.ViewRolesAndPermissions(storeId);
+            List<Integer> roles = storeService.ViewRolesAndPermissions(storeId);
             return ResponseEntity.ok(new ApiResponse<>(roles, null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

@@ -51,8 +51,7 @@ public class StoreService {
 
     private boolean sendMessageToTakeApproval(int sender, int reciver) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'sendMessageToTakeApproval'");
-
+return true;
     }
 
     public int addStoreToSystem(String token, String storeName, String category) throws UIException, DevException {
@@ -112,6 +111,7 @@ public class StoreService {
         userRepo.checkUserRegister_ThrowException(managerId);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
+        suConnectionRepo.checkToAddManager(storeId, ownerId, managerId); // was missing
         boolean approved = sendMessageToTakeApproval(ownerId, managerId);
         if (!approved) {
             logger.info("Manager addition declined by user {}", managerId);
@@ -203,9 +203,10 @@ public class StoreService {
         return storeId;
     }
 
-    public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws Exception {
-        throw new UnsupportedOperationException("Not implemented yet");
+    public List<Integer> ViewRolesAndPermissions(int storeId) throws Exception {
+        return suConnectionRepo.getWorkersInStore(storeId);
     }
+     
 
     public StoreDTO getStoreDTO(String token, int storeId) throws UIException {
     logger.info("User attempting to get StoreDTO for store {}", storeId);
