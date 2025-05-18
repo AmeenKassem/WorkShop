@@ -18,7 +18,6 @@ import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.User.AdminInitilizer;
 
 @RestController
 @RequestMapping("/api/users")
@@ -29,7 +28,7 @@ public class UserController {
 
     @Autowired
     public UserController(Repos repos) {
-        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo);
+        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer);
         this.orderService = new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
 
     }
