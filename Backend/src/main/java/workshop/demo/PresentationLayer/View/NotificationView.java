@@ -1,14 +1,19 @@
 package workshop.demo.PresentationLayer.View;
 
-import java.net.URLEncoder;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 //import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Tag;
@@ -26,13 +31,12 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 //import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import workshop.demo.Contrrollers.ApiResponse;
-
+import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 
 // Add a custom tag so the component can be found in the DOM
 @Tag("notification-handler")
@@ -141,7 +145,7 @@ public class NotificationView extends com.vaadin.flow.component.Component {
 
         Button approve = new Button("✅ Approve", e -> {
             // 🔽 This part is executed when Approve is clicked
-            sendOfferResponse( json, true);
+            sendOfferResponse(json, true);
             receivedNotifications.remove(json); // remove this message
             Notification.show("You accepted the offer");
             notification.close();
@@ -149,7 +153,7 @@ public class NotificationView extends com.vaadin.flow.component.Component {
 
         Button decline = new Button("❌ Decline", e -> {
             // 🔽 This part is executed when Decline is clicked
-            sendOfferResponse( json, false);
+            sendOfferResponse(json, false);
             receivedNotifications.remove(json); // remove this message
             Notification.show("You declined the offer");
             notification.close();
@@ -200,13 +204,17 @@ public class NotificationView extends com.vaadin.flow.component.Component {
                 offerLayout.setMargin(false);
 
                 Button approve = new Button("✅ Approve", e -> {
+                    sendOfferResponse(json, true);
                     Notification.show("You accepted the offer");
                     content.remove(offerLayout); // remove this message
+                    receivedNotifications.remove(json); // remove this message
                 });
 
                 Button decline = new Button("❌ Decline", e -> {
+                    sendOfferResponse(json, false);
                     Notification.show("You declined the offer");
                     content.remove(offerLayout); // remove this message
+                    receivedNotifications.remove(json); // remove this message
                 });
 
                 HorizontalLayout actionRow = new HorizontalLayout(approve, decline);
@@ -281,33 +289,71 @@ public class NotificationView extends com.vaadin.flow.component.Component {
     }
 
     public void sendOfferResponse(JsonObject json, boolean answer) {
-    try {
+
         int storeId = (int) json.getNumber("storeId");
         String senderName = json.getString("senderName");
         String receiverName = json.getString("receiverName");
         boolean toBeOwner = json.getBoolean("toBeOwner");
+
+        // Construct URL with query parameters
         String url = String.format(
-            "http://localhost:8080/api/store/respondToOffer?storeId=%d&senderName=%s&receiverName=%s&answer=%b&toBeOwner=%b",
-            storeId,
-            URLEncoder.encode(senderName, StandardCharsets.UTF_8),
-            URLEncoder.encode(receiverName, StandardCharsets.UTF_8),
-            answer,
-            toBeOwner
-        );
+                "http://localhost:8080/api/store/respondToOffer?storeId=%d&senderName=%s&receiverName=%s&answer=%s&toBeOwner=%s",
+                storeId,
+                UriUtils.encodeQueryParam(senderName, StandardCharsets.UTF_8),
+                UriUtils.encodeQueryParam(receiverName, StandardCharsets.UTF_8),
+                String.valueOf(answer),
+                String.valueOf(toBeOwner));
 
-        ResponseEntity<String> response = restTemplate.postForEntity(url, null, String.class);
+        System.out.println("Request URL: " + url);
 
-        if (response.getStatusCode().is2xxSuccessful()) {
-            Notification.show("Offer response sent");
-        } else {
-            Notification.show("Failed to respond to offer");
+        // Prepare headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED); // Optional here if no body
+
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    ApiResponse.class);
+
+            ApiResponse body = response.getBody();
+            System.out.println("Response body: " + new ObjectMapper().writeValueAsString(body));
+
+            if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
+                showSuccess("Offer response submitted successfully!");
+            } else {
+                showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+            }
+
+        } catch (HttpClientErrorException e) {
+            try {
+                String responseBody = e.getResponseBodyAsString();
+                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
+
+                if (errorBody.getErrNumber() != -1) {
+                    showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                } else {
+                    showError("FAILED: " + errorBody.getErrorMsg());
+                }
+            } catch (Exception parsingEx) {
+                showError("HTTP error: " + e.getMessage());
+            }
+
+        } catch (Exception e) {
+            showError("UNEXPECTED ERROR: " + e.getMessage());
         }
-
-    } catch (Exception e) {
-        Notification.show("Error: " + e.getMessage());
-        e.printStackTrace();
     }
-}
+    
+    public static void showSuccess(String msg) {
+        Notification.show("✅ " + msg, 3000, Notification.Position.BOTTOM_CENTER);
+    }
 
+    public static void showError(String msg) {
+        Notification.show("❌ " + msg, 5000, Notification.Position.BOTTOM_CENTER);
+    }
+    
 
 }

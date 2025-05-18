@@ -72,12 +72,4 @@ public class LoginView extends VerticalLayout {
     public String getPassword() {
         return passwordField.getValue();
     }
-
-    public void showSuccess(String msg) {
-        Notification.show("✅ " + msg, 3000, Notification.Position.BOTTOM_CENTER);
-    }
-
-    public void showError(String msg) {
-        Notification.show("❌ " + msg, 5000, Notification.Position.BOTTOM_CENTER);
-    }
 }
