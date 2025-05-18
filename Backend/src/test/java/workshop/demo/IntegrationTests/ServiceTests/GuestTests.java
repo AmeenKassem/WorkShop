@@ -32,6 +32,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GuestTests {
+
     PaymentServiceImp payment = new PaymentServiceImp();
     SupplyServiceImp serviceImp = new SupplyServiceImp();
     PurchaseRepository purchaseRepository = new PurchaseRepository();
@@ -98,29 +99,33 @@ public class GuestTests {
         assertEquals(createdStoreId, 1);
 
         // ======================= PRODUCT & ITEM ADDITION =======================
-        String[] keywords = { "Laptop", "Lap", "top" };
+        String[] keywords = {"Laptop", "Lap", "top"};
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
         itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1);
 
         // ======================= SECOND GUEST SETUP =======================
-
     }
 
     @AfterEach
 
     void tearDown() {
-        if (userRepo != null)
+        if (userRepo != null) {
             userRepo.clear();
-        if (storeRepository != null)
+        }
+        if (storeRepository != null) {
             storeRepository.clear();
-        if (stockRepository != null)
+        }
+        if (stockRepository != null) {
             stockRepository.clear();
-        if (orderRepository != null)
+        }
+        if (orderRepository != null) {
             orderRepository.clear();
-        if (suspensionRepo != null)
+        }
+        if (suspensionRepo != null) {
             suspensionRepo.clear();
+        }
         // Add clear() for all other repos you wrote it for
     }
 
@@ -201,7 +206,6 @@ public class GuestTests {
         ProductDTO info = stockService.getProductInfo(GToken, 1);
 
         // ===== ASSERTIONS =====
-
         assertNotNull(info);
         System.out.println(info.getName());
         assertTrue(info.getName().equals("Laptop"));
@@ -241,7 +245,6 @@ public class GuestTests {
         assertEquals(ErrorCodes.INVALID_TOKEN, exception.getNumber());
 
         // Assert
-
     }
 
     // //NOTE :BUY CART FINISH +ASK FOR MORE FAILURE
@@ -260,7 +263,6 @@ public class GuestTests {
                 receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice());
 
         // --- Step 8: Verify important calls happened ---
-
     }
 
     @Test
@@ -335,7 +337,7 @@ public class GuestTests {
     void testGuestSearchProducts_Success() throws Exception {
 
         // --- Step 2: Prepare search criteria ---
-        String[] keywords = { "Laptop", "Lap", "top" };
+        String[] keywords = {"Laptop", "Lap", "top"};
         System.out.println(storeService.getFinalRateInStore(1));
 
         ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.ELECTRONICS, null, 1, 0, 2000, 0,
@@ -352,7 +354,6 @@ public class GuestTests {
         assertEquals(1, result[0].getStoreId());
 
         // --- Step 7: Verify mocks ---
-
     }
 
     @Test
@@ -364,7 +365,6 @@ public class GuestTests {
                 0, 5);
 
         // 1. Throw on auth check
-
         // 3. Run the test
         UIException exception = assertThrows(UIException.class, () -> {
             stockService.searchProducts("invalid token", criteria);
@@ -378,7 +378,7 @@ public class GuestTests {
     @Test
     void testSearchProducts_NoMatches() throws Exception {
 
-        String[] keywords = { "Laptop", "Lap", "top" };
+        String[] keywords = {"Laptop", "Lap", "top"};
         ProductSearchCriteria criteria = new ProductSearchCriteria("aa", Category.ELECTRONICS, keywords[0], 1, 0, 5000,
                 0, 5);
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
