@@ -171,4 +171,8 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     public OfferDTO getOffer(int storeId, int senderId, int reciverId) throws Exception {
         return this.data.getOffer(storeId, senderId, reciverId);
     }
+    @Override
+    public List<Integer> getStoresIdForUser(int userId){
+        return this.data.getStoresIdForUser(userId);
+    }
 }
