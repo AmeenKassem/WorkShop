@@ -1,5 +1,4 @@
 package workshop.demo.Contrrollers;
-package workshop.demo.Contrrollers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,20 +19,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
-@RestController
-@RequestMapping("/admin")
-public class AdminController {
 
-    private final UserService userService;
-    private final OrderService orderService;
-    private final UserSuspensionService userSuspensionService;
     private final UserService userService;
     private final OrderService orderService;
     private final UserSuspensionService userSuspensionService;
 
     @Autowired
     public AdminController(Repos repos) {
-        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo);
+        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo,repos.adminInitilizer);
         this.orderService = new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
         this.userSuspensionService = new UserSuspensionService(repos.UserSuspensionRepo, repos.userRepo, repos.auth);
     }
@@ -42,10 +35,7 @@ public class AdminController {
     public void beforeEveryRequest(HttpServletRequest request) {
         System.out.println("Checking admin access...");
     }
-    @ModelAttribute
-    public void beforeEveryRequest(HttpServletRequest request) {
-        System.out.println("Checking admin access...");
-    }
+   
 
     @GetMapping("/viewSystemPurchaseHistory")
     public String viewSystemPurchaseHistory(@RequestParam String token) {
