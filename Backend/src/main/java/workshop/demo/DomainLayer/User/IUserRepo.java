@@ -63,6 +63,8 @@ public interface IUserRepo {
 
     public void removeItemFromGeustCart(int guestId, int productId) throws UIException;
 
+    public void ModifyCartAddQToBuy(int guestId, int productId, int quantity) throws UIException;
+
     public boolean isAdmin(int id) throws UIException;
 
     public boolean isRegistered(int id) throws UIException;

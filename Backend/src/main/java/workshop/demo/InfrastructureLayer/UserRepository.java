@@ -142,6 +142,21 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
+    public void ModifyCartAddQToBuy(int guestId, int productId, int quantity) throws UIException {
+        if (guestExist(guestId)) {
+            Guest geust = guests.get(guestId);
+            geust.ModifyCartAddQToBuy(productId, quantity);
+            logger.log(Level.INFO, "Item modified in guest cart: {0} for guest id: {1}", new Object[]{productId, guestId});
+        } else if (userExist(guestId)) {
+            getRegisteredUser(guestId).ModifyCartAddQToBuy(productId, quantity);
+            logger.log(Level.INFO, "Item modified in guest cart: {0} for guest id: {1}", new Object[]{productId, guestId});
+        } else {
+            throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
+
+        }
+    }
+
+    @Override
     public void destroyGuest(int id) {
         guests.remove(id);
         logger.log(Level.INFO, "guest destroyed: {0}", id);
@@ -191,8 +206,18 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public void removeItemFromGeustCart(int guestId, int productId) {
-        throw new UnsupportedOperationException("Unimplemented method 'removeItemFromGeustCart'");
+    public void removeItemFromGeustCart(int guestId, int productId) throws UIException {
+        if (guestExist(guestId)) {
+            Guest geust = guests.get(guestId);
+            geust.removeItem(productId);
+            logger.log(Level.INFO, "Item removed from guest cart: {0} for guest id: {1}", new Object[]{productId, guestId});
+        } else if (userExist(guestId)) {
+            getRegisteredUser(guestId).removeItem(productId);
+            logger.log(Level.INFO, "Item removed from guest cart: {0} for guest id: {1}", new Object[]{productId, guestId});
+        } else {
+            throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
+
+        }
     }
 
     @Override
