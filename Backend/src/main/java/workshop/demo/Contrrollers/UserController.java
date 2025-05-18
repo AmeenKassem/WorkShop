@@ -18,6 +18,7 @@ import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.User.AdminInitilizer;
 
 @RestController
 @RequestMapping("/api/users")
@@ -27,10 +28,9 @@ public class UserController {
     private OrderService orderService;
 
     @Autowired
-    public UserController(Repos repos) {
-        this.userService = new UserService(repos.userRepo, repos.auth,repos.stockrepo);
-        this.orderService= new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
-        
+    public UserController(UserService userService, OrderService orderService) {
+        this.userService = userService;
+        this.orderService = orderService;
     }
 
     @ModelAttribute
@@ -145,12 +145,13 @@ public class UserController {
 
     @PostMapping("/addToCart")
     public String addToUserCart(@RequestParam String token,
-            @RequestBody ItemStoreDTO itemToAdd
+            @RequestBody ItemStoreDTO itemToAdd,
+             @RequestBody int quantity
     ) {
         ApiResponse<Boolean> res;
         try {
 
-            res = new ApiResponse<>(userService.addToUserCart(token, itemToAdd), null);
+            res = new ApiResponse<>(userService.addToUserCart(token, itemToAdd,quantity), null);
         } catch (UIException ex) {
             res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
         } catch (Exception e) {
@@ -184,5 +185,5 @@ public class UserController {
         }
         return res.toJson();
     }
-    
+
 }

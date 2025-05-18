@@ -1,5 +1,8 @@
 package workshop.demo.Contrrollers;
+package workshop.demo.Contrrollers;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,11 +15,18 @@ import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 import java.util.List;
+import java.util.List;
 
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
+@RestController
+@RequestMapping("/admin")
+public class AdminController {
 
+    private final UserService userService;
+    private final OrderService orderService;
+    private final UserSuspensionService userSuspensionService;
     private final UserService userService;
     private final OrderService orderService;
     private final UserSuspensionService userSuspensionService;
@@ -28,6 +38,10 @@ public class AdminController {
         this.userSuspensionService = new UserSuspensionService(repos.UserSuspensionRepo, repos.userRepo, repos.auth);
     }
 
+    @ModelAttribute
+    public void beforeEveryRequest(HttpServletRequest request) {
+        System.out.println("Checking admin access...");
+    }
     @ModelAttribute
     public void beforeEveryRequest(HttpServletRequest request) {
         System.out.println("Checking admin access...");

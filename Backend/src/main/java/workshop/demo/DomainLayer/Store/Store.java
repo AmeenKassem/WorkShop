@@ -1,15 +1,21 @@
 package workshop.demo.DomainLayer.Store;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.atmosphere.config.service.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public class Store {
+
     private static final Logger logger = LoggerFactory.getLogger(Store.class);
 
     private int storeID;
@@ -19,7 +25,6 @@ public class Store {
     private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
     //must add something for messages
     private List<String> messgesInStore;
-    
 
     public Store(int storeID, String storeName, String category) {
         logger.debug("Creating store: ID={}, Name={}, Category={}", storeID, storeName, category);
@@ -92,8 +97,5 @@ public class Store {
     public StoreDTO getStoreDTO() {
         return new StoreDTO(storeID, storeName, category, active, getFinalRateInStore(storeID));
     }
-
-    
-
 
 }
