@@ -14,7 +14,7 @@ import com.vaadin.flow.server.VaadinSession;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.PresentationLayer.Presenter.ManageStorePresenter;
 
-@Route(value = "manageStore/:id", layout = MainLayout.class)
+@Route(value = "manageStore", layout = MainLayout.class)
 public class ManageStoreView extends VerticalLayout implements HasUrlParameter<Integer> {
 
     //private int storeId;

@@ -55,7 +55,7 @@ public class InitPresenter {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<ApiResponse<String>>() {
-                    });
+            });
             ApiResponse body = response.getBody();
             if (body != null && body.getErrorMsg() == null) {
                 String guestToken = (String) body.getData();
@@ -128,12 +128,15 @@ public class InitPresenter {
 
         // Clear session and redirect
         // guest token -> main layout it wil generated aoyomaticlly
+        // Remove session attributes
         VaadinSession.getCurrent().setAttribute("auth-token", null);
         VaadinSession.getCurrent().setAttribute("user-type", "guest");
         UI.getCurrent().getPage().executeJs("window.closeNotificationSocket();");
         VaadinSession.getCurrent().getSession().invalidate();
-        // UI.getCurrent().navigate("");
-        UI.getCurrent().getPage().reload(); // Force hard refresh to reinitialize MainLayout
+        // Navigate to home page and re-init MainLayout
+        // Force hard refresh to homepage (will also reload MainLayout cleanly)
+        UI.getCurrent().navigate("");
+        //UI.getCurrent().getPage().reload(); // Force hard refresh to reinitialize MainLayout
     }
 
 }

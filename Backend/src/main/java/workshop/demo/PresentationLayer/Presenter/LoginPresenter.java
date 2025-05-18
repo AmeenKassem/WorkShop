@@ -14,14 +14,12 @@ import org.springframework.web.util.UriUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.DTOs.UserDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.LoginView;
-import workshop.demo.PresentationLayer.View.MainLayout;
 import workshop.demo.PresentationLayer.View.NotificationView;
 
 @JsModule("./notification.js")
@@ -77,6 +75,9 @@ public class LoginPresenter {
                 VaadinSession.getCurrent().setAttribute("user-type", "user");
                 VaadinSession.getCurrent().setAttribute("username", username);
                 view.showSuccess("Logged in successfully!");
+                if (checkIfAdmin(newUserToken)) {
+                    VaadinSession.getCurrent().setAttribute("user-type", "admin");
+                }
                 NotificationView notificationView = new NotificationView();
                 notificationView.createWS(UI.getCurrent(), username);
                 notificationView.register(UI.getCurrent());
@@ -108,5 +109,25 @@ public class LoginPresenter {
             view.showError("UNEXPECTED ERROR: " + e.getMessage());
 
         }
+    }
+
+    private boolean checkIfAdmin(String token) {
+        try {
+            String url = String.format("http://localhost:8080/api/user/getUserDTO?token=%s",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
+
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);
+            ApiResponse body = response.getBody();
+
+            if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
+                ObjectMapper mapper = new ObjectMapper();
+                UserDTO dto = mapper.convertValue(body.getData(), UserDTO.class);
+                return dto.getIsAdmin();
+            }
+        } catch (Exception e) {
+            System.out.println("Failed to fetch user info: " + e.getMessage());
+        }
+        return false;
     }
 }
