@@ -3,14 +3,15 @@ package workshop.demo.DomainLayer.User;
 import java.util.List;
 
 import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public interface IUserRepo {
+
+    // added for tests
+    public boolean guestExist(int id);
 
     /**
      *
@@ -102,6 +103,8 @@ public interface IUserRepo {
     public void checkAdmin_ThrowException(int userId) throws UIException;
 
     public UserDTO getUserDTO(int userId);
+
+    List<String> getAllUsernames();
 
     public Registered getRegisteredUserByName(String name);
 }

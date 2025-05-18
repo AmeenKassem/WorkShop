@@ -124,10 +124,10 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     public void closeStore(int storeId) throws Exception {
         this.data.closeStore(storeId);
     }
-
+ // changed userid to storeid
     @Override
     public boolean manipulateItem(int userId, int storeId, Permission permission) throws Exception {
-        Node Worker = getWorkerInStoreById(userId, userId);
+        Node Worker = getWorkerInStoreById(storeId, userId);
         if (Worker == null) {
             throw new Exception("this user is not a worker in this store");
         }
@@ -170,5 +170,9 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     @Override
     public OfferDTO getOffer(int storeId, int senderId, int reciverId) throws Exception {
         return this.data.getOffer(storeId, senderId, reciverId);
+    }
+    @Override
+    public List<Integer> getStoresIdForUser(int userId){
+        return this.data.getStoresIdForUser(userId);
     }
 }

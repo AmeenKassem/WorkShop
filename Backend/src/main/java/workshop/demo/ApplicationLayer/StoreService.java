@@ -1,5 +1,6 @@
 package workshop.demo.ApplicationLayer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.atmosphere.config.service.Message;
@@ -280,4 +281,24 @@ public class StoreService {
         storeRepo.checkStoreExistance(storeId);
         return storeRepo.getStoreDTO(storeId);
     }
+
+    public List<StoreDTO> getStoresOwnedByUser(String token) throws Exception, UIException {
+        List<StoreDTO> result = new ArrayList<>();
+        logger.info("trying to get the stores of the user");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        List<Integer> storesId= suConnectionRepo.getStoresIdForUser(userId);
+        logger.info("got the stores Id for user:{}" + userId);
+        for (int storeId : storesId) {
+        storeRepo.checkStoreExistance(storeId);
+            StoreDTO dto = storeRepo.getStoreDTO(storeId);
+            result.add(dto);
+        }
+        return result;
+    }
 }
+
+
+
+

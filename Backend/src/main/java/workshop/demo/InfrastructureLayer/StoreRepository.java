@@ -158,5 +158,8 @@ public class StoreRepository implements IStoreRepo {
         }
         return store.getStoreDTO();
     }
+   public  void clear() {
+    counterSId.set(1);
+} 
 
 }

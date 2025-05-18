@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 
@@ -22,7 +23,7 @@ public class TreeTests {
     private Node manager1;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws UIException {
         tree = new Tree(0, false, -1);
         root = tree.getRoot();
         owner1 = new Node(1, false, 0);
