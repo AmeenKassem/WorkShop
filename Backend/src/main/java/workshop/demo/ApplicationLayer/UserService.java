@@ -49,11 +49,11 @@ public class UserService {
         return authRepo.generateGuestToken(id);
     }
 
-    public void register(String token, String username, String password,int age) throws UIException {
+    public boolean register(String token, String username, String password,int age) throws UIException {
         logger.info("register called for username={}", username);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         userRepo.registerUser(username, password,age);
-        
+        return true;
     }
 
     public String login(String token, String username, String pass) throws UIException {
