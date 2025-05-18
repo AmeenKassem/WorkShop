@@ -40,4 +40,6 @@ public interface IStoreRepo {
     void checkStoreIsActive(int storeId) throws DevException;
 
     public StoreDTO getStoreDTO(int storeId) throws UIException;
+
+
 }

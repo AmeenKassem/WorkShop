@@ -1,8 +1,11 @@
 package workshop.demo.InfrastructureLayer;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -12,16 +15,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ManagerDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingCart;
+import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 @Repository
 public class UserRepository implements IUserRepo {
@@ -281,5 +287,25 @@ public class UserRepository implements IUserRepo {
             throw new NoSuchElementException("No user found with username: " + name);
         }
         return user;
+    }
+
+
+    public ManagerDTO getManagerDTO(Node node, int storeId) throws Exception {
+        int id = node.getMyId();
+        String name = getRegisteredUser(id).getUsername();
+
+        Set<String> permissions = new HashSet<>();
+        if (node.getIsManager()) {
+            for (Map.Entry<Permission, Boolean> entry : node.getMyAuth().getMyAutho().entrySet()) {
+                if (entry.getValue()) {
+                    permissions.add(entry.getKey().name());
+                }
+            }
+        } else {
+            for (Permission p : Permission.values()) {
+                permissions.add(p.name()); //if its owner add all permessions
+            }
+        }
+        return new ManagerDTO(id,name,storeId,permissions);
     }
 }

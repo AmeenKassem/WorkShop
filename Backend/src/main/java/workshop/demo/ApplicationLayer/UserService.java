@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ManagerDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.SpecialCartItemDTO;
@@ -19,6 +20,8 @@ import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
+import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.InfrastructureLayer.UserRepository;
@@ -32,6 +35,8 @@ public class UserService {
     private IAuthRepo authRepo;
     private IStockRepo stockRepo;
     private final AdminInitilizer adminInitilizer;
+    private ISUConnectionRepo suConnectionRepo;
+    
 
     @Autowired
     public UserService(IUserRepo userRepo, IAuthRepo authRepo,IStockRepo stockRepo,AdminInitilizer adminInitilizer) {
@@ -158,7 +163,6 @@ public class UserService {
 
         System.out.println(" Admin registered and promoted: " + username);
         System.out.println(" All registered usernames: " + userRepo.getAllUsernames().get(0));
-
     }
 
 

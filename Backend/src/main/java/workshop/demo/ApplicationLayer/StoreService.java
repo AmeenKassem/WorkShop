@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.vaadin.flow.component.notification.Notification;
 
+import workshop.demo.DTOs.ManagerDTO;
 import workshop.demo.DTOs.NotificationDTO;
 import workshop.demo.DTOs.NotificationDTO.NotificationType;
 import workshop.demo.DTOs.OrderDTO;
@@ -25,12 +26,14 @@ import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import workshop.demo.DTOs.OfferDTO;
+import workshop.demo.DomainLayer.StoreUserConnection.Node;
 
 @Service
 public class StoreService {
@@ -269,8 +272,17 @@ public class StoreService {
         return storeId;
     }
 
-    public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws Exception {
-        throw new UnsupportedOperationException("Not implemented yet");
+    public List<ManagerDTO> ViewRolesAndPermissions(int storeId) throws Exception {
+        List<ManagerDTO> result = new ArrayList<>();
+        logger.info("viewing roles and permissions for store {}", storeId);
+        storeRepo.checkStoreExistance(storeId);
+        Tree tree = suConnectionRepo.getData().getWorkersTreeInStore(storeId);
+        logger.info("got the workers for store:{}" + storeId);
+        for (Node node : tree) {
+            ManagerDTO dto = userRepo.getManagerDTO(node, storeId);
+            result.add(dto);
+        }
+        return result;
     }
 
     public StoreDTO getStoreDTO(String token, int storeId) throws UIException {
@@ -294,6 +306,26 @@ public class StoreService {
         storeRepo.checkStoreExistance(storeId);
             StoreDTO dto = storeRepo.getStoreDTO(storeId);
             result.add(dto);
+        }
+        return result;
+    }
+
+    public List<StoreDTO> getAllStores() throws Exception {
+        logger.info("Fetching all stores in the system");
+        return storeRepo.viewAllStores(); 
+    }
+
+    public List<ManagerDTO> getManagersAddedByUser(String token, int storeId) throws Exception {
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        storeRepo.checkStoreExistance(storeId);
+        
+        List<Integer> managerIds = suConnectionRepo.getManagersAddedByUser(storeId, userId);
+        List<ManagerDTO> result = new ArrayList<>();
+        for (int id : managerIds) {
+            Node node = suConnectionRepo.getWorkerInStoreById(storeId, id);
+            result.add(userRepo.getManagerDTO(node, storeId));
         }
         return result;
     }

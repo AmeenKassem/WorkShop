@@ -304,4 +304,29 @@ public class SuperDataStructure {
 
         return result;
     }
+
+    public List<Integer> getManagersAddedByUser(int storeId, int userId) throws Exception {
+        ReentrantLock lock = storeLocks.computeIfAbsent(storeId, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            Tree tree = employees.get(storeId);
+            Node me = tree.getNodeById(userId);
+            if (me == null) {
+                throw new Exception("user is not part of this store");
+            }
+            List<Integer> result = new LinkedList<>();
+            for (Node child : me.getChildren()) {
+                if (child.getIsManager()) {
+                    result.add(child.getMyId());
+                }
+            }
+            return result;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    
+
+    
 }

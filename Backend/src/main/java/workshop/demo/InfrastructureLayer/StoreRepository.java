@@ -86,8 +86,11 @@ public class StoreRepository implements IStoreRepo {
 
     @Override
     public List<StoreDTO> viewAllStores() {// here must check it view it with products??
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'viewAllStores'");
+        List<StoreDTO> result = new LinkedList<>();
+        for (Store store : stores) {
+            result.add(store.getStoreDTO());
+        }
+        return result;
     }
 
     public String getStoreNameById(int storeId) throws UIException {
@@ -161,5 +164,6 @@ public class StoreRepository implements IStoreRepo {
    public  void clear() {
     counterSId.set(1);
 } 
+
 
 }

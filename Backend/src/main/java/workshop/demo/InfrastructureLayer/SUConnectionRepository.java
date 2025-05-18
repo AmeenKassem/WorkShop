@@ -175,4 +175,10 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     public List<Integer> getStoresIdForUser(int userId){
         return this.data.getStoresIdForUser(userId);
     }
+
+    @Override
+    public List<Integer> getManagersAddedByUser(int storeId, int userId) throws Exception {
+        return this.data.getManagersAddedByUser(storeId, userId);
+    }
+
 }

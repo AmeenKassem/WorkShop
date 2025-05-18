@@ -3,10 +3,12 @@ package workshop.demo.DomainLayer.User;
 import java.util.List;
 
 import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ManagerDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.StoreUserConnection.Node;
 
 public interface IUserRepo {
 
@@ -107,4 +109,6 @@ public interface IUserRepo {
     List<String> getAllUsernames();
 
     public Registered getRegisteredUserByName(String name);
+
+    public ManagerDTO getManagerDTO(Node node, int storeId) throws Exception ;
 }

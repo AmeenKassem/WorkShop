@@ -45,4 +45,7 @@ public interface ISUConnectionRepo {
     // for tests
     SuperDataStructure getData();
 
+    List<Integer> getManagersAddedByUser(int storeId, int userId) throws Exception;
+
+
 }
