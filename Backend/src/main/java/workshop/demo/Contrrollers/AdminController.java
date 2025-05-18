@@ -26,7 +26,7 @@ public class AdminController {
 
     @Autowired
     public AdminController(Repos repos) {
-        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo,repos.adminInitilizer);
+        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer);
         this.orderService = new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
         this.userSuspensionService = new UserSuspensionService(repos.UserSuspensionRepo, repos.userRepo, repos.auth);
     }
@@ -35,7 +35,6 @@ public class AdminController {
     public void beforeEveryRequest(HttpServletRequest request) {
         System.out.println("Checking admin access...");
     }
-   
 
     @GetMapping("/viewSystemPurchaseHistory")
     public String viewSystemPurchaseHistory(@RequestParam String token) {
@@ -80,51 +79,51 @@ public class AdminController {
     // return res.toJson();
     // }
 
-   @PostMapping("/suspendUser")
-public String suspendUser(@RequestParam Integer userId,
-                          @RequestParam int minutes,
-                          @RequestParam String token) {
-    ApiResponse<Boolean> res;
-    try {
-        userSuspensionService.suspendRegisteredUser(userId, minutes, token);
-        res = new ApiResponse<>(true, null);
-    } catch (UIException ex) {
-        res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
-    } catch (Exception e) {
-        res = new ApiResponse<>(null, e.getMessage(), -1);
+    @PostMapping("/suspendUser")
+    public String suspendUser(@RequestParam Integer userId,
+            @RequestParam int minutes,
+            @RequestParam String token) {
+        ApiResponse<Boolean> res;
+        try {
+            userSuspensionService.suspendRegisteredUser(userId, minutes, token);
+            res = new ApiResponse<>(true, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
     }
-    return res.toJson();
-}
 
-@PostMapping("/pauseSuspension")
-public String pauseSuspension(@RequestParam Integer userId,
-                              @RequestParam String token) {
-    ApiResponse<Boolean> res;
-    try {
-        userSuspensionService.pauseSuspension(userId, token);
-        res = new ApiResponse<>(true, null);
-    } catch (UIException ex) {
-        res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
-    } catch (Exception e) {
-        res = new ApiResponse<>(null, e.getMessage(), -1);
+    @PostMapping("/pauseSuspension")
+    public String pauseSuspension(@RequestParam Integer userId,
+            @RequestParam String token) {
+        ApiResponse<Boolean> res;
+        try {
+            userSuspensionService.pauseSuspension(userId, token);
+            res = new ApiResponse<>(true, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
     }
-    return res.toJson();
-}
 
-@PostMapping("/resumeSuspension")
-public String resumeSuspension(@RequestParam Integer userId,
-                               @RequestParam String token) {
-    ApiResponse<Boolean> res;
-    try {
-        userSuspensionService.resumeSuspension(userId, token);
-        res = new ApiResponse<>(true, null);
-    } catch (UIException ex) {
-        res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
-    } catch (Exception e) {
-        res = new ApiResponse<>(null, e.getMessage(), -1);
+    @PostMapping("/resumeSuspension")
+    public String resumeSuspension(@RequestParam Integer userId,
+            @RequestParam String token) {
+        ApiResponse<Boolean> res;
+        try {
+            userSuspensionService.resumeSuspension(userId, token);
+            res = new ApiResponse<>(true, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
     }
-    return res.toJson();
-}
 
     // Additional admin methods can be added here...
 }
