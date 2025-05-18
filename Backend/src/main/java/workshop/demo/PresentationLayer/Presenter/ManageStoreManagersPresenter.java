@@ -1,138 +1,81 @@
 package workshop.demo.PresentationLayer.Presenter;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.vaadin.flow.server.VaadinSession;
-
-import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.DTOs.ManagerDTO;
-import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.PresentationLayer.View.ManageStoreManagersView;
 
 public class ManageStoreManagersPresenter {
 
     private final ManageStoreManagersView view;
     private final RestTemplate restTemplate = new RestTemplate();
+    private final String baseUrl = "http://localhost:8080/api/store-managers";
 
     public ManageStoreManagersPresenter(ManageStoreManagersView view) {
         this.view = view;
     }
 
-    public void loadManagers(int storeId) {
-        String token = getToken();
-        if (token == null) {
-            view.showError("Token not found in session.");
-            return;
-        }
-
-        String url = "http://localhost:8080/api/store-managers/getManagers?token=" + token + "&storeId=" + storeId;
-
+    public void loadStores() {
         try {
-            ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);
-            ApiResponse res = response.getBody();
+            String token = getToken();
+            String url = baseUrl + "/get-owned-stores?token=" + token;
+            ResponseEntity<String[]> response = restTemplate.getForEntity(url, String[].class);
 
-            if (res != null && res.getErrorMsg() == null) {
-                ObjectMapper mapper = new ObjectMapper();
-                ManagerDTO[] managers = mapper.convertValue(res.getData(), ManagerDTO[].class);
-                view.displayManagers(Arrays.asList(managers));
+            if (response.getStatusCode().is2xxSuccessful()) {
+                view.populateStores(Arrays.asList(Objects.requireNonNull(response.getBody())));
             } else {
-                view.showError("Failed to load managers: " + (res != null ? res.getErrorMsg() : "Unknown"));
+                view.showError("Failed to load stores.");
             }
         } catch (Exception e) {
-            view.showError("Server error: " + e.getMessage());
+            view.showError("Error loading stores: " + e.getMessage());
         }
     }
 
-    public void loadOwnedStores() {
-        String token = getToken();
-        if (token == null) {
-            view.showError("Token not found in session.");
-            return;
-        }
-
-        String url = "http://localhost:8080/api/stores/owned?token=" + token;
-
+    public void loadManagers(String storeId) {
         try {
-            ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);
-            ApiResponse res = response.getBody();
+            String token = getToken();
+            String url = baseUrl + "/get-store-managers?token=" + token + "&storeId=" + storeId;
+            ResponseEntity<ManagerDTO[]> response = restTemplate.getForEntity(url, ManagerDTO[].class);
 
-            if (res != null && res.getErrorMsg() == null) {
-                ObjectMapper mapper = new ObjectMapper();
-                StoreDTO[] stores = mapper.convertValue(res.getData(), StoreDTO[].class);
-                Map<String, Integer> storeMap = new HashMap<>();
-                for (StoreDTO store  : stores) {
-                    storeMap.put(store.getStoreName(), store.getStoreId());
-                }
-
-                view.setStores(storeMap);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                view.updateManagerGrid(Arrays.asList(Objects.requireNonNull(response.getBody())));
             } else {
-                view.showError("Failed to load store list: " + (res != null ? res.getErrorMsg() : "Unknown"));
+                view.showError("Failed to fetch managers.");
             }
         } catch (Exception e) {
-            view.showError("Server error: " + e.getMessage());
+            view.showError("Error loading managers: " + e.getMessage());
         }
     }
 
-    public void updatePermissions(ManagerDTO manager) {
-        String token = getToken();
-        if (token == null) {
-            view.showError("Token not found.");
-            return;
-        }
-
-        String url = "http://localhost:8080/api/store-managers/change-permissions?token=" + token;
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<ManagerDTO> entity = new HttpEntity<>(manager, headers);
-
+    public void updateManagerPermissions(String token, String storeId, int userId, Set<Permission> permissions) {
         try {
-            ResponseEntity<ApiResponse> response = restTemplate.postForEntity(
-                    url,
-                    entity,
-                    ApiResponse.class);
-
-            ApiResponse res = response.getBody();
-            if (res != null && res.getErrorMsg() == null) {
-                view.showSuccess("Permissions updated.");
-            } else {
-                view.showError("Error: " + (res != null ? res.getErrorMsg() : "Unknown error"));
-            }
+            String url = baseUrl + "/update-manager-permissions?token=" + token + "&storeId=" + storeId + "&userId=" + userId;
+            restTemplate.put(url, permissions);
+            view.showSuccess("Permissions updated.");
+            loadManagers(storeId);
         } catch (Exception e) {
-            view.showError("Server error: " + e.getMessage());
+            view.showError("Error updating permissions: " + e.getMessage());
         }
     }
 
-    public void removeManager(int storeId, int managerId) {
-        String token = getToken();
-        if (token == null) {
-            view.showError("Token not found.");
-            return;
-        }
-
-        String url = "http://localhost:8080/api/store-managers/remove?token=" + token +
-                "&storeId=" + storeId + "&managerId=" + managerId;
-
+    public void removeManager(String token, String storeId, int userId) {
         try {
+            String url = baseUrl + "/remove-manager?token=" + token + "&storeId=" + storeId + "&userId=" + userId;
             restTemplate.delete(url);
             view.showSuccess("Manager removed.");
-            view.refresh(); 
+            loadManagers(storeId);
         } catch (Exception e) {
-            view.showError("Failed to remove manager: " + e.getMessage());
+            view.showError("Error removing manager: " + e.getMessage());
         }
     }
 
     private String getToken() {
-        return (String) VaadinSession.getCurrent().getAttribute("auth-token");}
+        return (String) com.vaadin.flow.server.VaadinSession.getCurrent().getAttribute("auth-token");
+    }
 }
