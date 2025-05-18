@@ -36,7 +36,7 @@ public class MyStoresPresenter {
     public void loadMyStores() {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         if (token == null || token.isBlank()) {
-            view.showError("You must be logged in to view your stores.");
+            NotificationView.showError("You must be logged in to view your stores.");
             UI.getCurrent().navigate(""); // navigate to home
             return;
         }
