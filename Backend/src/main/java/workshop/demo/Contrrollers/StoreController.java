@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.StoreDTO;
-import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
@@ -184,7 +183,6 @@ public class StoreController {
     @PostMapping("/deactivate")
     public ResponseEntity<?> deactivateStore(@RequestParam int storeId,
             @RequestParam String token) {
-        ApiResponse<String> res;
         try {
             storeService.deactivateteStore(storeId, token);
             return ResponseEntity.ok(new ApiResponse<>("Store deactivated successfully", null));

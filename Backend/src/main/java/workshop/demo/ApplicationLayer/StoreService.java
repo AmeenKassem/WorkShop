@@ -3,19 +3,16 @@ package workshop.demo.ApplicationLayer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.atmosphere.config.service.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.vaadin.flow.component.notification.Notification;
-
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import workshop.demo.DTOs.NotificationDTO;
-import workshop.demo.DTOs.NotificationDTO.NotificationType;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.StoreDTO;
-import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -27,10 +24,6 @@ import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import workshop.demo.DTOs.OfferDTO;
 
 @Service
 public class StoreService {
@@ -100,7 +93,10 @@ public class StoreService {
         logger.info("Making an offer to be a store owner from {} to {}", ownerId, newOwnerId);
         String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
         String storeName = this.storeRepo.getStoreNameById(storeId);
-        String Message = "In store:{}, the owner:{} is offering you:{} to be an owner of this store" + storeName + owner + newOwnerName;
+        String Message = String.format(
+                "In store: %s, the owner: %s is offering you: %s to become an owner of this store.",
+                storeName, owner, newOwnerName
+        );
         String jssonMessage = convertNotificationToJson(Message, newOwnerName, NotificationDTO.NotificationType.OFFER, true, owner, storeId);
         this.notiRepo.sendDelayedMessageToUser(newOwnerName, jssonMessage);
         suConnectionRepo.makeOffer(storeId, ownerId, ownerId, true, null, Message);
@@ -158,10 +154,13 @@ public class StoreService {
         String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
         String nameNew = this.userRepo.getRegisteredUser(managerId).getUsername();
         String storeName = this.storeRepo.getStoreNameById(storeId);
-        String Message = "In store:{}, the owner:{} is offering you: {} to be a manager of this store" + storeName + owner + nameNew;
-        String jssonMessage = convertNotificationToJson(Message, nameNew, NotificationDTO.NotificationType.OFFER, false, owner, storeId);
+        String message = String.format(
+                "In store: %s, the owner: %s is offering you: %s to be a manager of this store.",
+                storeName, owner, nameNew
+        );
+        String jssonMessage = convertNotificationToJson(message, nameNew, NotificationDTO.NotificationType.OFFER, false, owner, storeId);
         this.notiRepo.sendDelayedMessageToUser(nameNew, jssonMessage);
-        suConnectionRepo.makeOffer(storeId, ownerId, ownerId, false, authorization, Message);
+        suConnectionRepo.makeOffer(storeId, ownerId, ownerId, false, authorization, message);
     }
 
     public int AddManagerToStore(int storeId, int ownerId, int managerId, boolean decide) throws Exception {
@@ -241,7 +240,7 @@ public class StoreService {
         ///we have to notify the employees here
          for (int userId : toNotify) {
             String userName = this.userRepo.getRegisteredUser(userId).getUsername();
-            String message = "The store:{} has been closed, you are no longer an employee here" + storeName;
+            String message = String.format("The store: %s is deactivated ✅", storeName);
             this.notiRepo.sendDelayedMessageToUser(userName, message);
         }
         return storeId;
@@ -263,7 +262,8 @@ public class StoreService {
         //also notify the employees
         for (int userId : toNotify) {
             String userName = this.userRepo.getRegisteredUser(userId).getUsername();
-            String message = "The store:{} has been closed, you are no longer an employee here" + storeName;
+            String message = String.format("The store: %s has been closed, you are no longer an employee there.", storeName);
+
             this.notiRepo.sendDelayedMessageToUser(userName, message);
         }
 
@@ -273,7 +273,6 @@ public class StoreService {
     public List<Integer> ViewRolesAndPermissions(int storeId) throws Exception {
         return suConnectionRepo.getWorkersInStore(storeId);
     }
-     
 
     public StoreDTO getStoreDTO(String token, int storeId) throws UIException {
         logger.info("User attempting to get StoreDTO for store {}", storeId);
@@ -290,17 +289,13 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
-        List<Integer> storesId= suConnectionRepo.getStoresIdForUser(userId);
+        List<Integer> storesId = suConnectionRepo.getStoresIdForUser(userId);
         logger.info("got the stores Id for user:{}" + userId);
         for (int storeId : storesId) {
-        storeRepo.checkStoreExistance(storeId);
+            storeRepo.checkStoreExistance(storeId);
             StoreDTO dto = storeRepo.getStoreDTO(storeId);
             result.add(dto);
         }
         return result;
     }
 }
-
-
-
-

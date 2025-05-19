@@ -1,6 +1,9 @@
 package workshop.demo.PresentationLayer.View;
 
+import java.util.List;
+
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
@@ -19,6 +22,7 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
 
     //private int storeId;
     private ManageStorePresenter presenter;
+    private int myStoreId = -1;
 
     public ManageStoreView() {
         this.presenter = new ManageStorePresenter(this);
@@ -32,7 +36,7 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
         }
         System.out.println("🚀 setParameter called with storeId = " + storeId);
 
-        //this.storeId = storeIdTemp;
+        this.myStoreId = storeId;
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         if (token == null) {
             add(new Span("⚠️ You must be logged in to manage your store."));
@@ -50,16 +54,35 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
         add(new Paragraph("Rating: " + store.getFinalRating()));
 
         Button viewEmployeesBtn = new Button("👥 View Employees", e -> Notification.show("Coming soon!"));
-        Button viewReviewsBtn = new Button("📝 View Reviews", e -> Notification.show("Coming soon!"));
+        Button changeAuthBtn = new Button("👥 View store's history", e -> presenter.fetchOrdersByStore(myStoreId));
+        Button viewReviewsBtn = new Button("📝 View Store Reviews", e -> presenter.viewStoreReviews(myStoreId));
         Button makeOfferBtn = new Button("➕ Manage my owners", e -> Notification.show("Coming soon!"));
         Button deleteUserBtn = new Button("➕ Manage my managers", e -> Notification.show("Coming soon!"));
-        Button changeAuthBtn = new Button("👥 View store's history", e -> Notification.show("Coming soon!"));
-        Button deactivateStoreBtn = new Button("📴 Deactivate Store", e -> Notification.show("Coming soon!"));
+        Button deactivateStoreBtn = new Button("📴 Deactivate Store", e -> presenter.deactivateStore(myStoreId));
 
         add(viewEmployeesBtn, viewReviewsBtn, makeOfferBtn, deleteUserBtn, changeAuthBtn, deactivateStoreBtn);
     }
 
-    public void showError(String msg) {
-        Notification.show("❌ " + msg, 5000, Notification.Position.BOTTOM_CENTER);
+    public void showDialog(List<String> reviews) {
+        Dialog dialog = new Dialog();
+
+        VerticalLayout content = new VerticalLayout();
+        content.setPadding(false);
+        content.setSpacing(true);
+        content.setWidth("400px");
+
+        if (reviews == null || reviews.isEmpty()) {
+            content.add(new Paragraph("There nothing here yet."));
+        } else {
+            for (String review : reviews) {
+                content.add(new Paragraph(review));
+            }
+        }
+        Button closeBtn = new Button("Close", e -> dialog.close());
+        dialog.getFooter().add(closeBtn);
+
+        dialog.add(content);
+        dialog.open();
     }
+
 }
