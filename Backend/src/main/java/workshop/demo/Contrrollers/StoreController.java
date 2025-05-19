@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import workshop.demo.ApplicationLayer.StoreService;
-import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
@@ -143,17 +142,16 @@ public class StoreController {
         }
     }
 
-    @GetMapping("/viewHistory")
-    public ResponseEntity<?> viewStoreHistory(@RequestParam int storeId) {
-        try {
-            List<OrderDTO> history = storeService.veiwStoreHistory(storeId);
-            return ResponseEntity.ok(new ApiResponse<>(history, null));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(null, e.getMessage(), -1));
-        }
-    }
-
+    // @GetMapping("/viewHistory")
+    // public ResponseEntity<?> viewStoreHistory(@RequestParam int storeId) {
+    //     try {
+    //         List<OrderDTO> history = storeService.veiwStoreHistory(storeId);
+    //         return ResponseEntity.ok(new ApiResponse<>(history, null));
+    //     } catch (Exception e) {
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //                 .body(new ApiResponse<>(null, e.getMessage(), -1));
+    //     }
+    // }
     @PostMapping("/rankStore")
     public ResponseEntity<?> rankStore(@RequestParam String token,
             @RequestParam int storeId,
@@ -219,22 +217,19 @@ public class StoreController {
 
     }
 
-    @GetMapping("/storeOrders")
-    public ResponseEntity<?> getAllOrdersByStore(@RequestParam int storeId,
-            @RequestParam String token) {
-
-        try {
-            List<OrderDTO> orders = storeService.veiwStoreHistory(storeId);
-            return ResponseEntity.ok(new ApiResponse<>(orders, null));
-        } catch (UIException ex) {
-            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(null, e.getMessage(), -1));
-        }
-
-    }
-
+    // @GetMapping("/storeOrders")
+    // public ResponseEntity<?> getAllOrdersByStore(@RequestParam int storeId,
+    //         @RequestParam String token) {
+    //     try {
+    //         List<OrderDTO> orders = storeService.veiwStoreHistory(storeId);
+    //         return ResponseEntity.ok(new ApiResponse<>(orders, null));
+    //     } catch (UIException ex) {
+    //         return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+    //     } catch (Exception e) {
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //                 .body(new ApiResponse<>(null, e.getMessage(), -1));
+    //     }
+    // }
     @GetMapping("/allStores")
     public ResponseEntity<?> getAllStoresToshow() {
         throw new UnsupportedOperationException("This operation is not supported.");

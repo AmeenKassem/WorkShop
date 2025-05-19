@@ -10,6 +10,9 @@ public class OrderDTO {
     private List<ReceiptProduct> productsList;
     private double finalPrice;
 
+    public OrderDTO() {
+    }
+
     public OrderDTO(int userId, int storeId, String date, List<ReceiptProduct> productsList, double finalPrice) {
         this.userId = userId;
         this.storeId = storeId;
@@ -59,18 +62,16 @@ public class OrderDTO {
         this.finalPrice = finalPrice;
     }
 
-    public String toFormattedString(String storeName) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("🧾 Order from store: ").append(storeName).append("\n");
-        sb.append("User ID: ").append(userId).append("\n");
-        sb.append("Date: ").append(date).append("\n");
-        sb.append("Final Price: ").append(finalPrice).append("\n");
-        sb.append("Products:\n");
-
-        for (ReceiptProduct p : productsList) {
-            sb.append("- ").append(p.toString()).append("\n"); // customize if needed
-        }
-
-        return sb.toString();
-    }
+    // public String toFormattedString(String storeName) {
+    //     StringBuilder sb = new StringBuilder();
+    //     sb.append("🧾 Order from store: ").append(storeName).append("\n");
+    //     sb.append("User ID: ").append(userId).append("\n");
+    //     sb.append("Date: ").append(date).append("\n");
+    //     sb.append("Final Price: ").append(finalPrice).append("\n");
+    //     sb.append("Products:\n");
+    //     for (ReceiptProduct p : productsList) {
+    //         sb.append("- ").append(p.toString()).append("\n"); // customize if needed
+    //     }
+    //     return sb.toString();
+    // }
 }

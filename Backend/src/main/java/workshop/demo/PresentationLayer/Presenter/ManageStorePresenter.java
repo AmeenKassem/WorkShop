@@ -22,6 +22,7 @@ import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.ManageStoreView;
 import workshop.demo.PresentationLayer.View.NotificationView;
@@ -142,30 +143,26 @@ public class ManageStorePresenter {
     }
 
     public void fetchOrdersByStore(int storeId) {
-        String url = String.format("http://localhost:8080/api/order/getOrdersByStore?storeId=%d", storeId);
+        String url = String.format("http://localhost:8080/api/history/getOrdersByStore?storeId=%d", storeId);
 
         HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
         try {
-            ResponseEntity<ApiResponse<List>> response = restTemplate.exchange(
+            ResponseEntity<ApiResponse<List<OrderDTO>>> response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     entity,
-                    new ParameterizedTypeReference<ApiResponse<List>>() {
+                    new ParameterizedTypeReference<ApiResponse<List<OrderDTO>>>() {
             }
             );
 
-            ApiResponse body = response.getBody();
+            ApiResponse<List<OrderDTO>> body = response.getBody();
 
             if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
-                ObjectMapper mapper = new ObjectMapper();
-                List<?> rawList = (List<?>) body.getData();
-
-                List<OrderDTO> orders = rawList.stream()
-                        .map(obj -> mapper.convertValue(obj, OrderDTO.class))
-                        .collect(Collectors.toList());
+                List<OrderDTO> orders = body.getData();
 
                 List<String> formattedOrders = new ArrayList<>();
 
@@ -186,12 +183,25 @@ public class ManageStorePresenter {
                 }
 
                 view.showDialog(formattedOrders);
-            } else if (body != null && body.getErrNumber() != -1) {
-                NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+            } else if (body != null && body.getErrNumber() == ErrorCodes.STORE_NOT_FOUND) {
+                NotificationView.showError("EMPTY HISTORY you got no orders yet!");
+            }
+
+        } catch (HttpClientErrorException e) {
+            try {
+                String responseBody = e.getResponseBodyAsString();
+                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
+                if (errorBody.getErrNumber() != -1) {
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                } else {
+                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
+                }
+            } catch (Exception parsingEx) {
+                NotificationView.showError("HTTP error: " + e.getMessage());
             }
 
         } catch (Exception e) {
-            NotificationView.showError("Unexpected error fetching store history: " + e.getMessage());
+            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
         }
     }
 

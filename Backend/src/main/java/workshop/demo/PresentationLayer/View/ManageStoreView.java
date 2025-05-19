@@ -2,6 +2,7 @@ package workshop.demo.PresentationLayer.View;
 
 import java.util.List;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H2;
@@ -56,11 +57,13 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
         Button viewEmployeesBtn = new Button("👥 View Employees", e -> Notification.show("Coming soon!"));
         Button changeAuthBtn = new Button("👥 View store's history", e -> presenter.fetchOrdersByStore(myStoreId));
         Button viewReviewsBtn = new Button("📝 View Store Reviews", e -> presenter.viewStoreReviews(myStoreId));
-        Button makeOfferBtn = new Button("➕ Manage my owners", e -> Notification.show("Coming soon!"));
+        Button makeOfferBtn = new Button("➕ Manage my owners", e
+                -> UI.getCurrent().navigate("manageMyOwners/" + myStoreId));
         Button deleteUserBtn = new Button("➕ Manage my managers", e -> Notification.show("Coming soon!"));
+        Button acceptBidBtn = new Button("➕ Accept Bid", e -> Notification.show("Coming soon!"));
         Button deactivateStoreBtn = new Button("📴 Deactivate Store", e -> presenter.deactivateStore(myStoreId));
 
-        add(viewEmployeesBtn, viewReviewsBtn, makeOfferBtn, deleteUserBtn, changeAuthBtn, deactivateStoreBtn);
+        add(viewEmployeesBtn, viewReviewsBtn, makeOfferBtn, deleteUserBtn, changeAuthBtn, acceptBidBtn, deactivateStoreBtn);
     }
 
     public void showDialog(List<String> reviews) {

@@ -108,5 +108,5 @@ public interface IUserRepo {
 
     List<String> getAllUsernames();
 
-    public Registered getRegisteredUserByName(String name);
+    public Registered getRegisteredUserByName(String name) throws UIException;
 }

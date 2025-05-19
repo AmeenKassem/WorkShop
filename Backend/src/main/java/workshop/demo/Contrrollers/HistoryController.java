@@ -44,7 +44,7 @@ public class HistoryController {
     }
 
     @GetMapping("/getOrdersByStore")
-    public ResponseEntity<?> getOrdersByStore(@RequestParam int storeId) {
+    public ResponseEntity<ApiResponse<List<OrderDTO>>> getOrdersByStore(@RequestParam int storeId) {
         ApiResponse<List<OrderDTO>> res;
         try {
             List<OrderDTO> orders = orderService.getAllOrderByStore(storeId);
