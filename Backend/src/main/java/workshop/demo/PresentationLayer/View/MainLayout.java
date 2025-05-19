@@ -20,7 +20,6 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.PresentationLayer.Presenter.InitPresenter;
-import workshop.demo.PresentationLayer.Presenter.InitPresenter;
 
 @Route
 @CssImport("./Theme/main-layout.css")
@@ -190,7 +189,7 @@ public class MainLayout extends AppLayout {
 
         Paragraph subtitle = new Paragraph(
                 "Welcome to our market. We bring the best stores and products to your fingertips.\n"
-                        + "Join us and be an owner of your own store in a few clicks.");
+                + "Join us and be an owner of your own store in a few clicks.");
         subtitle.addClassName("market-subtitle");
 
         VerticalLayout titleLayout = new VerticalLayout(logo, subtitle);
@@ -203,27 +202,6 @@ public class MainLayout extends AppLayout {
         header.setAlignItems(FlexComponent.Alignment.CENTER);
         header.addClassName("app-header");
         header.setHeight("120px");
-
-        // Object userType = VaadinSession.getCurrent().getAttribute("user-type");
-        // boolean isLoggedIn = userType != null && !"guest".equals(userType);
-        // if (isLoggedIn) {
-        // Button billButton = new Button("🧾 Notifications");
-        // billButton.addClickListener(e -> {
-        // UI.getCurrent().getChildren()
-        // .filter(c -> c instanceof NotificationView)
-        // .map(c -> (NotificationView) c)
-        // .findFirst()
-        // .ifPresent(NotificationView::openNotificationBill);
-        // });
-        // billButton.getStyle()
-        // .set("position", "absolute")
-        // .set("bottom", "0")
-        // .set("left", "0")
-        // .set("margin", "10px");
-        // header.getElement().getStyle().set("position", "relative"); // anchor
-        // container
-        // header.add(billButton);
-        // }
         addToNavbar(header);
     }
 

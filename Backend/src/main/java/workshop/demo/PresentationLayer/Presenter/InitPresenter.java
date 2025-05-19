@@ -143,7 +143,8 @@ public class InitPresenter {
         VaadinSession.getCurrent().getSession().invalidate();
         // Navigate to home page and re-init MainLayout
         // Force hard refresh to homepage (will also reload MainLayout cleanly)
-        UI.getCurrent().navigate("");
+        //UI.getCurrent().navigate("");
+        UI.getCurrent().getPage().setLocation("/");
         //UI.getCurrent().getPage().reload(); // Force hard refresh to reinitialize MainLayout
     }
 
@@ -156,7 +157,7 @@ public class InitPresenter {
 
         try {
             String url = String.format(
-                    "http://localhost:8080/history/getreceipts?token=%s",
+                    "http://localhost:8080/api/history/getreceipts?token=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
             HttpHeaders headers = new HttpHeaders();
@@ -169,7 +170,7 @@ public class InitPresenter {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<ApiResponse<List<ReceiptDTO>>>() {
-                    });
+            });
 
             ApiResponse<List<ReceiptDTO>> responseBody = response.getBody();
 
@@ -179,17 +180,31 @@ public class InitPresenter {
 
                 System.out.println("ok2");
                 PurchaseView.showReceiptDialog(receipts);
-                
+
             } else {
 
                 NotificationView.showError(ExceptionHandlers.getErrorMessage(responseBody.getErrNumber()));
             }
+            // } catch (Exception e) {
+            //     NotificationView.showError("Failed getting receipts : " + e.getMessage());
+            // }
+        } catch (HttpClientErrorException e) {
+            try {
+                String responseBody = e.getResponseBodyAsString();
+                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
+                if (errorBody.getErrNumber() != -1) {
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                } else {
+                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
+                }
+            } catch (Exception parsingEx) {
+                NotificationView.showError("HTTP error: " + e.getMessage());
+            }
 
-        } catch (
-
-        Exception e) {
-            NotificationView.showError("Failed getting receipts : " + e.getMessage());
+        } catch (Exception e) {
+            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
         }
 
     }
+
 }

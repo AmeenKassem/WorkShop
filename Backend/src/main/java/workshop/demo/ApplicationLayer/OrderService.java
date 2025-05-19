@@ -36,6 +36,7 @@ public class OrderService {
         logger.info("created Order/history service");
     }
 
+    //no nneed this in service:
     public void setOrderToStore(int storeId, int userId, ReceiptDTO receiptDTO) throws UIException {
         logger.info("about to set an order to the history");
         Store store = this.storeRepo.findStoreByID(storeId);

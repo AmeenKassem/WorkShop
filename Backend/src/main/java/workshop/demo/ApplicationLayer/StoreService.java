@@ -93,7 +93,10 @@ public class StoreService {
         logger.info("Making an offer to be a store owner from {} to {}", ownerId, newOwnerId);
         String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
         String storeName = this.storeRepo.getStoreNameById(storeId);
-        String Message = "In store:{}, the owner:{} is offering you:{} to be an owner of this store" + storeName + owner + newOwnerName;
+        String Message = String.format(
+                "In store: %s, the owner: %s is offering you: %s to become an owner of this store.",
+                storeName, owner, newOwnerName
+        );
         String jssonMessage = convertNotificationToJson(Message, newOwnerName, NotificationDTO.NotificationType.OFFER, true, owner, storeId);
         this.notiRepo.sendDelayedMessageToUser(newOwnerName, jssonMessage);
         suConnectionRepo.makeOffer(storeId, ownerId, ownerId, true, null, Message);
@@ -152,11 +155,13 @@ public class StoreService {
         String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
         String nameNew = this.userRepo.getRegisteredUser(managerId).getUsername();
         String storeName = this.storeRepo.getStoreNameById(storeId);
-        String Message = "In store:{}, the owner:{} is offering you: {} to be a manager of this store" + storeName + owner + nameNew;
-        String jssonMessage = convertNotificationToJson(Message, nameNew, NotificationDTO.NotificationType.OFFER, false, owner, storeId);
+        String message = String.format(
+                "In store: %s, the owner: %s is offering you: %s to be a manager of this store.",
+                storeName, owner, nameNew
+        );
+        String jssonMessage = convertNotificationToJson(message, nameNew, NotificationDTO.NotificationType.OFFER, false, owner, storeId);
         this.notiRepo.sendDelayedMessageToUser(nameNew, jssonMessage);
-        suConnectionRepo.makeOffer(storeId, ownerId, managerId, false, authorization, Message);
-
+        suConnectionRepo.makeOffer(storeId, ownerId, ownerId, false, authorization, message);
     }
 
     public int AddManagerToStore(int storeId, int ownerId, int managerId, boolean decide) throws Exception {
@@ -237,7 +242,7 @@ public class StoreService {
         ///we have to notify the employees here
          for (int userId : toNotify) {
             String userName = this.userRepo.getRegisteredUser(userId).getUsername();
-            String message = "The store:{} has been closed, you are no longer an employee here" + storeName;
+            String message = String.format("The store: %s is deactivated ✅", storeName);
             this.notiRepo.sendDelayedMessageToUser(userName, message);
         }
         return storeId;
@@ -259,7 +264,8 @@ public class StoreService {
         //also notify the employees
         for (int userId : toNotify) {
             String userName = this.userRepo.getRegisteredUser(userId).getUsername();
-            String message = "The store:{} has been closed, you are no longer an employee here" + storeName;
+            String message = String.format("The store: %s has been closed, you are no longer an employee there.", storeName);
+
             this.notiRepo.sendDelayedMessageToUser(userName, message);
         }
 

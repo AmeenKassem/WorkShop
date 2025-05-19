@@ -15,7 +15,7 @@ import workshop.demo.DTOs.ReviewDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 @RestController
-@RequestMapping("/Review")
+@RequestMapping("/api/Review")
 public class ReviewController {
 
     private ReviewService reviewService;
