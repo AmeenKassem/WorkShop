@@ -171,11 +171,11 @@ public class StockController {
             @RequestParam(required = false) Integer storeId,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
-            @RequestParam(required = false) Double minStoreRating,
-            @RequestParam(required = false) Double maxStoreRating) {
+            @RequestParam(required = false) Double minProductRating,
+            @RequestParam(required = false) Double maxProductRating) {
         ApiResponse<ItemStoreDTO[]> res;
         try {
-            ItemStoreDTO[] items = stockService.searchProducts(token, new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter, storeId, minPrice, maxPrice, minStoreRating, maxStoreRating));
+            ItemStoreDTO[] items = stockService.searchProducts(token, new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter, storeId, minPrice, maxPrice, minProductRating, maxProductRating));
             res = new ApiResponse<>(items, null);
         } catch (UIException ex) {
             res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
