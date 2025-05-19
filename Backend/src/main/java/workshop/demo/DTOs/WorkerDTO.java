@@ -19,4 +19,20 @@ public class WorkerDTO {
     }
 
     
+    public String getUsername() {
+        return username;
+    }
+
+    public boolean isManager() {
+        return isManager;
+    }
+
+    public boolean isOwner() {
+        return isOwner;
+    }
+
+    public String getStoreName() {
+        return storeName;
+    }
+    
 }
