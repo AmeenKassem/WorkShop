@@ -112,7 +112,7 @@ public class StoreSTests {
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1);
+        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1,"Laptop");
 
         // ======================= SECOND GUEST SETUP =======================
     }
@@ -183,7 +183,7 @@ public class StoreSTests {
         stockService.removeItem(1, NOToken, 1);
 
         // Assert
-        assertTrue(stockService.getProductsInStore(1).get(0).quantity == 0);
+        assertTrue(stockService.getProductsInStore(1)[0].quantity == 0);
     }
 
     @Test
@@ -192,7 +192,7 @@ public class StoreSTests {
         assertDoesNotThrow(()
                 -> stockService.updatePrice(1, NOToken, 1, 10)
         );
-        assertTrue(stockService.getProductsInStore(1).get(0).getPrice() == 10);
+        assertTrue(stockService.getProductsInStore(1)[0].getPrice() == 10);
     }
 
     @Test
@@ -201,7 +201,7 @@ public class StoreSTests {
         assertDoesNotThrow(()
                 -> stockService.updateQuantity(1, NOToken, 1, 1)
         );
-        assertTrue(stockService.getProductsInStore(1).get(0).quantity == 1);
+        assertTrue(stockService.getProductsInStore(1)[0].quantity == 1);
 
     }
 

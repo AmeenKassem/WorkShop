@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
@@ -160,6 +161,15 @@ public class StoreRepository implements IStoreRepo {
     }
    public  void clear() {
     counterSId.set(1);
-} 
+}
+
+   @Override
+   public void fillWithStoreName(ItemStoreDTO[] items) {
+    for (ItemStoreDTO itemStoreDTO : items) {
+        int storeId = itemStoreDTO.storeId;
+        Store store =this.findStoreByID(storeId);
+        itemStoreDTO.storeName=store.getStoreName();
+    }
+   } 
 
 }
