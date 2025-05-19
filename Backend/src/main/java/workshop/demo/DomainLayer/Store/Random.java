@@ -127,7 +127,7 @@ public class Random {
     }
 
     public boolean userIsWinner(int userId) {
-       return isActive && winner.userId==userId;
+       return winner.userId==userId;
     }
 
     public ParticipationInRandomDTO getWinner() {

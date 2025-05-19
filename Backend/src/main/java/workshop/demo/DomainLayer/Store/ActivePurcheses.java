@@ -293,4 +293,15 @@ public class ActivePurcheses {
                 return -1;
         }
     }
+    public void clear() {
+    activeBid.clear();
+    activeRandom.clear();
+    activeAuction.clear();
+
+    // Optionally reset static ID generators if needed
+    bidIdGen.set(0);
+    auctionIdGen.set(0);
+    randomIdGen.set(0);
+}
+
 }

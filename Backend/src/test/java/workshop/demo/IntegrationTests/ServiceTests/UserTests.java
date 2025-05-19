@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import workshop.demo.ApplicationLayer.AdminService;
+import workshop.demo.ApplicationLayer.AdminService;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
@@ -50,8 +51,8 @@ public class UserTests {
     AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
     UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
     UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),new AdminService(orderRepository, storeRepository, userRepo, authRepo));
-    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo,
+ AdminService adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
+    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo,
             sIsuConnectionRepo, suspensionRepo);
     StoreService storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo,
             orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
@@ -77,9 +78,8 @@ public class UserTests {
         adminInitilizer = new AdminInitilizer("123321");
         userRepo = new UserRepository(encoder, adminInitilizer);
         suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-         userService =  new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),new AdminService(orderRepository, storeRepository, userRepo, authRepo));
-    
-        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo,
+  adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
+     userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo,
                 suspensionRepo);
         storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository,
                 sIsuConnectionRepo, stockRepository, suspensionRepo);

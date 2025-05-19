@@ -18,26 +18,7 @@ public class OrderDTO {
         this.finalPrice = finalPrice;
     }
     // ADDED GETTERS FOR TESTS
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public int getStoreId() {
-        return storeId;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public List<ReceiptProduct> getProductsList() {
-        return productsList;
-    }
-
-    public double getFinalPrice() {
-        return finalPrice;
-    }
+    
 
  
     public void setUserId(int userId) {

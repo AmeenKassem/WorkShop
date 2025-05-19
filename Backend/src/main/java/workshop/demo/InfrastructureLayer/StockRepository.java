@@ -330,10 +330,10 @@ public class StockRepository implements IStockRepo {
         if (storeStocks.get(storeId) == null) {
             throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
         }
-        double requiredPrice = getProductPrice(storeId, randomId);
-        if (amountPaid < requiredPrice) {
-            throw new DevException("Insufficient payment");
-        }
+        // double requiredPrice = getProductPrice(storeId, randomId);// total price
+        // if (amountPaid > requiredPrice) {
+        //     throw new DevException("Insufficient payment");
+        // }
         return this.storeId2ActivePurchases.get(storeId).participateInRandom(userId, randomId, amountPaid);
     }
 
@@ -436,20 +436,25 @@ public class StockRepository implements IStockRepo {
     public ParticipationInRandomDTO getRandomCard(int storeId, int specialId, int randomId)throws UIException  {
        return  getActivePurchases(storeId).getCardWithId(specialId,randomId);
     }
-   public void clear() {
+  public void clear() {
+    // Reset product ID generator
     idGen.set(1);
-    
-    if (storeId2ActivePurchases != null) {
-        storeId2ActivePurchases.clear();
+
+    // Clear all store-level active purchase data
+    for (ActivePurcheses ap : storeId2ActivePurchases.values()) {
+        ap.clear(); // delegate internal clearing to the class itself
     }
-    
+    storeId2ActivePurchases.clear();
+
+    // Clear product/category maps
     if (allProducts != null) {
         allProducts.clear();
     }
-    
+
     if (storeStocks != null) {
         storeStocks.clear();
     }
-} 
+}
+
 
 }

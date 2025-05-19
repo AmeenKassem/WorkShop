@@ -23,10 +23,10 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 @Repository
 public class StoreRepository implements IStoreRepo {
 
-    private final List<Store> stores;
+    private List<Store> stores;
 
     // switch it when use database!!
-    private static final AtomicInteger counterSId = new AtomicInteger(1);
+    private static  AtomicInteger counterSId = new AtomicInteger(1);
 
     public static int generateId() {
         return counterSId.getAndIncrement();
@@ -160,6 +160,8 @@ public class StoreRepository implements IStoreRepo {
     }
    public  void clear() {
     counterSId.set(1);
+    this.stores = Collections.synchronizedList(new LinkedList<>());
+
 } 
 
 }
