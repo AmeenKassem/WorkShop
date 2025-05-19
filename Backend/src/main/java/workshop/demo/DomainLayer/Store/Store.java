@@ -75,8 +75,8 @@ public class Store {
         return true;
     }
 
-    public int getFinalRateInStore(int storeId) {
-        logger.debug("Calculating final rank for store {}", storeId);
+    public int getFinalRateInStore() {
+        logger.debug("Calculating final rank for store {}", storeID);
 
         int totalVotes = 0;
         int WRank = 0;
@@ -95,7 +95,7 @@ public class Store {
     }
 
     public StoreDTO getStoreDTO() {
-        return new StoreDTO(storeID, storeName, category, active, getFinalRateInStore(storeID));
+        return new StoreDTO(storeID, storeName, category, active, getFinalRateInStore());
     }
 
 }

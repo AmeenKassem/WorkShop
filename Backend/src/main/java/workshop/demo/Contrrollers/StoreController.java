@@ -239,7 +239,15 @@ public class StoreController {
 
     @GetMapping("/allStores")
     public ResponseEntity<?> getAllStoresToshow() {
-        throw new UnsupportedOperationException("This operation is not supported.");
+        try {
+            List<StoreDTO> orders = storeService.getAllStores();
+            return ResponseEntity.ok(new ApiResponse<>(orders, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
     }
 
     @GetMapping("/getstoreDTO")

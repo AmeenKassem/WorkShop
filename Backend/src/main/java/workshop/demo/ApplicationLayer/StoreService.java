@@ -20,6 +20,7 @@ import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
@@ -293,5 +294,14 @@ public class StoreService {
             result.add(dto);
         }
         return result;
+    }
+
+    public List<StoreDTO> getAllStores() {
+        List<Store> stores =  storeRepo.getStores();
+        List<StoreDTO> res = new ArrayList<>();
+        for (Store store : stores) {
+            res.add(store.getStoreDTO());
+        }
+        return res;
     }
 }
