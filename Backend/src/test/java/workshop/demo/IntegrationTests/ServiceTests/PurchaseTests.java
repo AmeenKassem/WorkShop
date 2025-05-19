@@ -232,7 +232,7 @@ suspensionService.suspendRegisteredUser(2, 1, Admin);
                 stockService.addRegularBid(NGToken, 1, 1, 30.0)
         );
 
-        assertEquals("suspended user trying to make something", ex.getMessage());
+        assertEquals("Suspended user trying to perform an action", ex.getMessage());
     }
 
     @Test
@@ -346,7 +346,7 @@ purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails)     
                 stockService.addBidOnAucction(NGToken, 1, 1, 60.0)
         );
 
-        assertEquals("suspended user trying to make something", ex.getMessage());
+        assertEquals("Suspended user trying to perform an action", ex.getMessage());
     }
 
     @Test
@@ -453,7 +453,7 @@ purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails)     
                purchaseService.participateInRandom(NGToken,1 , 1, 100, paymentDetails)
         );
 
-        assertEquals("suspended user trying to make something", ex.getMessage());
+        assertEquals("Suspended user trying to perform an action", ex.getMessage());
     }
 
     

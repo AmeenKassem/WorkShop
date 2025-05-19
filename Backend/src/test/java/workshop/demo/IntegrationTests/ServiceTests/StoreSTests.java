@@ -122,7 +122,7 @@ public class StoreSTests {
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1,"");
+        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1);
 
        
 
@@ -271,7 +271,6 @@ public class StoreSTests {
 
         // === Act ===
         storeService.AddOwnershipToStore(1, 3, 5,true);
-
 
         // shouldnt work without offer
        assertFalse( storeService.ViewRolesAndPermissions(1).size()==2);

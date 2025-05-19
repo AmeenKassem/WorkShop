@@ -44,4 +44,34 @@ public class OrderDTO {
     public void setFinalPrice(double finalPrice) {
         this.finalPrice = finalPrice;
     }
+
+
+
+    public int getUserId() {
+        return userId;
+    }
+
+
+
+    public int getStoreId() {
+        return storeId;
+    }
+
+
+
+    public String getDate() {
+        return date;
+    }
+
+
+
+    public List<ReceiptProduct> getProductsList() {
+        return productsList;
+    }
+
+
+
+    public double getFinalPrice() {
+        return finalPrice;
+    }
 }

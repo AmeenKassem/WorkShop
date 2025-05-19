@@ -29,7 +29,7 @@ import java.util.List;
 @RequestMapping("/admin")
 public class AdminController {
 
-    // private final UserService userService;
+     private final UserService userService;
     private final OrderService orderService;
     private final UserSuspensionService userSuspensionService;
     private AdminService adminService;
