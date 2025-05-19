@@ -97,25 +97,25 @@ public class StoreStock {
         return this.stock;
     }
 
-    //display products in store 
-    public List<ItemStoreDTO> getProductsInStore() {
-        List<ItemStoreDTO> itemStoreDTOList = new ArrayList<>();
-        for (item i : stock.values()) {
-            // If item is mutable and accessed by multiple threads, synchronize on the item
-            synchronized (i) {
-                ItemStoreDTO toAdd = new ItemStoreDTO(
-                        i.getProductId(),
-                        i.getQuantity(),
-                        i.getPrice(),
-                        i.getCategory(),
-                        i.getFinalRank(),
-                        storeID
-                );
-                itemStoreDTOList.add(toAdd);
-            }
-        }
-        return itemStoreDTOList;
-    }
+    // //display products in store 
+    // public List<ItemStoreDTO> getProductsInStore() {
+    //     List<ItemStoreDTO> itemStoreDTOList = new ArrayList<>();
+    //     for (item i : stock.values()) {
+    //         // If item is mutable and accessed by multiple threads, synchronize on the item
+    //         synchronized (i) {
+    //             ItemStoreDTO toAdd = new ItemStoreDTO(
+    //                     i.getProductId(),
+    //                     i.getQuantity(),
+    //                     i.getPrice(),
+    //                     i.getCategory(),
+    //                     i.getFinalRank(),
+    //                     storeID
+    //             );
+    //             itemStoreDTOList.add(toAdd);
+    //         }
+    //     }
+    //     return itemStoreDTOList;
+    // }
 
     //may be changed later:
     public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems, boolean isGuest, int storeid) throws UIException {

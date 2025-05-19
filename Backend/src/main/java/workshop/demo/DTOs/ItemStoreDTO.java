@@ -12,14 +12,14 @@ public class ItemStoreDTO {
     public String storeName;
 
     
-    public ItemStoreDTO(int id, int quantity, int price, Category category, int rank, int storeId) {
+    public ItemStoreDTO(int id, int quantity, int price, Category category, int rank, int storeId,String productName) {
         this.id = id;
         this.quantity = quantity;
         this.price = price;
         this.category = category;
         this.rank = rank;
         this.storeId = storeId;
-
+        this.productName=productName;
     }
 
     public int getId() {

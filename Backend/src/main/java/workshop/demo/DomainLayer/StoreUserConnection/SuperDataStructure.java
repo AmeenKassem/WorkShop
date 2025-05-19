@@ -81,6 +81,10 @@ public class SuperDataStructure {
             if (!employees.containsKey(storeID)) {
                 throw new Exception("store does not exist in superDS");
             }
+            Node child = employees.get(storeID).getNodeById(newOnwerId);
+            if (child != null && !child.getIsManager()) {
+                throw new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION);
+            }
             this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(newOnwerId, false, ownerId));
         } finally {
             lock.unlock();
@@ -119,6 +123,12 @@ public class SuperDataStructure {
             }
             if (this.employees.get(storeID).getNodeById(ownerId) == null) {
                 throw new Exception("this user is not the owner of this store");
+            }
+            Node child = employees.get(storeID).getNodeById(newManagerId);
+            System.out.println(ownerId);
+            System.out.print(newManagerId);
+            if (child != null && child.getIsManager()) {
+                throw new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION);
             }
             this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(newManagerId, true, ownerId));
         } finally {
@@ -252,7 +262,7 @@ public class SuperDataStructure {
         synchronized (offers) {
             List<OfferDTO> storeOffers = offers.get(storeId);
             if (storeOffers == null) {
-                return null; // no offers for this store
+                throw new Exception("store offers is null");
             }
 
             Iterator<OfferDTO> iterator = storeOffers.iterator();

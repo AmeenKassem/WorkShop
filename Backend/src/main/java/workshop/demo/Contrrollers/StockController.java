@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import workshop.demo.ApplicationLayer.StockService;
+import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -25,7 +26,8 @@ public class StockController {
 
     @Autowired
     public StockController(Repos repos) {
-        this.stockService = new StockService(repos.stockrepo, repos.storeRepo, repos.auth, repos.userRepo, repos.sUConnectionRepo, repos.UserSuspensionRepo);
+        this.stockService = new StockService(repos.stockrepo, repos.storeRepo, repos.auth, repos.userRepo,
+                repos.sUConnectionRepo, repos.UserSuspensionRepo);
     }
 
     @GetMapping("/getProductInfo")
@@ -45,9 +47,9 @@ public class StockController {
 
     @GetMapping("/getProductsInStore")
     public String getProductsInStore(@RequestParam int storeId) {
-        ApiResponse<List<ItemStoreDTO>> res;
+        ApiResponse<ItemStoreDTO[]> res;
         try {
-            List<ItemStoreDTO> products = stockService.getProductsInStore(storeId);
+            ItemStoreDTO[] products = stockService.getProductsInStore(storeId);
             res = new ApiResponse<>(products, null);
         } catch (UIException ex) {
             res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
@@ -163,10 +165,17 @@ public class StockController {
 
     @GetMapping("/searchProducts")
     public String searchProducts(@RequestParam String token,
-            @RequestBody ProductSearchCriteria criteria) {
+            @RequestParam(required = false) String productNameFilter,
+            @RequestParam(required = false) Category categoryFilter,
+            @RequestParam(required = false) String keywordFilter,
+            @RequestParam(required = false) Integer storeId,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) Double minProductRating,
+            @RequestParam(required = false) Double maxProductRating) {
         ApiResponse<ItemStoreDTO[]> res;
         try {
-            ItemStoreDTO[] items = stockService.searchProducts(token, criteria);
+            ItemStoreDTO[] items = stockService.searchProducts(token, new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter, storeId, minPrice, maxPrice, minProductRating, maxProductRating));
             res = new ApiResponse<>(items, null);
         } catch (UIException ex) {
             res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());

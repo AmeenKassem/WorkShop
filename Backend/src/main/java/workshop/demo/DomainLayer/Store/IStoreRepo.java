@@ -2,6 +2,7 @@ package workshop.demo.DomainLayer.Store;
 
 import java.util.List;
 
+import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
@@ -40,4 +41,6 @@ public interface IStoreRepo {
     void checkStoreIsActive(int storeId) throws DevException;
 
     public StoreDTO getStoreDTO(int storeId) throws UIException;
+
+    void fillWithStoreName(ItemStoreDTO[] items);
 }
