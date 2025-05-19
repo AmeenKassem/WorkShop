@@ -116,7 +116,7 @@ public class StoreRepository implements IStoreRepo {
         if (store == null) {
             throw new UIException("Store does not exist", ErrorCodes.STORE_NOT_FOUND);
         }
-        return store.getFinalRateInStore(storeId);
+        return store.getFinalRateInStore();
 
     }
 
