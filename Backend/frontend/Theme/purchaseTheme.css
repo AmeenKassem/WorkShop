@@ -1,0 +1,36 @@
+.purchase-view {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.purchase-view h1 {
+    font-size: 2em;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.purchase-view vaadin-text-field {
+    width: 300px;
+    margin: 10px 0;
+}
+
+.purchase-view vaadin-button {
+    background-color: #007bff;
+    color: white;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+.purchase-view vaadin-button:hover {
+    background-color: #0056b3;
+}
+
+.purchase-view vaadin-vertical-layout {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+}

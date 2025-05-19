@@ -1,13 +1,17 @@
 package workshop.demo.InfrastructureLayer;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -15,6 +19,7 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 @Repository
 public class StoreRepository implements IStoreRepo {
@@ -150,9 +155,21 @@ public class StoreRepository implements IStoreRepo {
     public StoreDTO getStoreDTO(int storeId) throws UIException {
         Store store = findStoreByID(storeId);
         if (store == null) {
-            throw new UIException("Store not found for ID: " + storeId, ErrorCodes.STORE_NOT_FOUND); 
-        } 
+            throw new UIException("Store not found for ID: " + storeId, ErrorCodes.STORE_NOT_FOUND);
+        }
         return store.getStoreDTO();
     }
+   public  void clear() {
+    counterSId.set(1);
+}
+
+   @Override
+   public void fillWithStoreName(ItemStoreDTO[] items) {
+    for (ItemStoreDTO itemStoreDTO : items) {
+        int storeId = itemStoreDTO.storeId;
+        Store store =this.findStoreByID(storeId);
+        itemStoreDTO.storeName=store.getStoreName();
+    }
+   } 
 
 }

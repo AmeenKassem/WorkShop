@@ -19,6 +19,11 @@ public class PaymentDetails {
     public static PaymentDetails testPayment() {
         return new PaymentDetails("4111111111111111", "Test User", "12/30", "123");
     }
+        //added this for tests
+
+     public static PaymentDetails test_fail_Payment() throws Exception {
+throw new Exception("Payment failed");
+    }
 
      public static PaymentDetails getPaymentDetailsFromJSON(String json) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
