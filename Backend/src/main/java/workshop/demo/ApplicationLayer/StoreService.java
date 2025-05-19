@@ -114,8 +114,8 @@ public class StoreService {
     public int AddOwnershipToStore(int storeId, int ownerId, int newOwnerId, boolean decide) throws Exception {
         userRepo.checkUserRegister_ThrowException(newOwnerId);
         if (decide) {
-            suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
             suConnectionRepo.getOffer(storeId, ownerId, newOwnerId);
+            suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
             suConnectionRepo.deleteOffer(storeId, ownerId, newOwnerId);
             logger.info("Successfully added user {} as owner to store {} by user {}", newOwnerId, storeId, ownerId);
             return newOwnerId;
@@ -150,6 +150,7 @@ public class StoreService {
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         suConnectionRepo.checkToAddManager(storeId, ownerId, managerId);
+
         logger.info("Making an offer to be a store manager from {} to {}", ownerId, managerId);
         String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
         String nameNew = this.userRepo.getRegisteredUser(managerId).getUsername();
@@ -164,6 +165,7 @@ public class StoreService {
     public int AddManagerToStore(int storeId, int ownerId, int managerId, boolean decide) throws Exception {
         userRepo.checkUserRegister_ThrowException(managerId);
         if (decide) {
+            suConnectionRepo.getOffer(storeId, ownerId, managerId);
             suConnectionRepo.AddManagerToStore(storeId, ownerId, managerId);
             List<Permission> authorization = suConnectionRepo.deleteOffer(storeId, ownerId, managerId);
             suConnectionRepo.changePermissions(ownerId, managerId, storeId, authorization);
