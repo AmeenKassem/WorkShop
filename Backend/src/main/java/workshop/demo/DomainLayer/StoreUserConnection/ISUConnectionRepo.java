@@ -7,13 +7,13 @@ import workshop.demo.DomainLayer.Exceptions.DevException;
 
 public interface ISUConnectionRepo {
 
-    void addNewStoreOwner(int storeId, int bossID);
+    boolean addNewStoreOwner(int storeId, int bossID);
 
-    void checkToAddOwner(int storeID, int ownerID, int newOwnerId) throws Exception;
+    boolean checkToAddOwner(int storeID, int ownerID, int newOwnerId) throws Exception;
 
     void checkToAddManager(int storeID, int ownerID, int newOwnerId) throws Exception;
 
-    void AddOwnershipToStore(int storeID, int ownerID, int newOwnerId) throws Exception;
+    boolean AddOwnershipToStore(int storeID, int ownerID, int newOwnerId) throws Exception;
 
     void DeleteOwnershipFromStore(int storeID, int ownerID, int OwnerToDelete) throws Exception;
 

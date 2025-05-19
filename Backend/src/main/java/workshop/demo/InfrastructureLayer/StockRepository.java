@@ -233,19 +233,21 @@ public class StockRepository implements IStockRepo {
     }
 
     @Override
-    public void updateQuantity(int storeId, int productId, int newQuantity) throws UIException, DevException {
+    public boolean updateQuantity(int storeId, int productId, int newQuantity) throws UIException, DevException {
         if (storeStocks.get(storeId) == null) {
             throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
         }
         this.storeStocks.get(storeId).changeQuantity(productId, newQuantity);
+        return true;
     }
 
     @Override
-    public void updatePrice(int storeId, int productId, int newPrice) throws UIException, DevException {
+    public boolean updatePrice(int storeId, int productId, int newPrice) throws UIException, DevException {
         if (storeStocks.get(storeId) == null) {
             throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
         }
         this.storeStocks.get(storeId).updatePrice(productId, newPrice);
+        return true;
     }
 
     @Override
