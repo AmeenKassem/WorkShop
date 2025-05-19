@@ -13,7 +13,7 @@ public class BaseNotifier {
 
 
     @Autowired
-    private SocketHandler socketHandler;
+    private SocketHandler socketHandler ;
 
     public void send(String user, String message) {
         try {

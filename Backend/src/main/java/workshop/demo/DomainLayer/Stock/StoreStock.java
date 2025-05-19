@@ -118,7 +118,7 @@ public class StoreStock {
     }
 
     //may be changed later:
-    public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems, boolean isGuest, String storeName) throws UIException {
+    public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems, boolean isGuest, int storeid) throws UIException {
         List<ReceiptProduct> boughtItems = new ArrayList<>();
         for (ItemCartDTO dto : cartItems) {
             CartItem item = new CartItem(dto);
@@ -136,7 +136,7 @@ public class StoreStock {
                     item.getName(),
                     item.getCategory(),
                     item.getDescription(),
-                    storeName,
+                    "storid",
                     item.getQuantity(),
                     item.getPrice()
             ));

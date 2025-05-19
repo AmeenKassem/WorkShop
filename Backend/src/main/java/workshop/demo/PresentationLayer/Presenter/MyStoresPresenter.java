@@ -14,12 +14,14 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.MyStoresView;
+import workshop.demo.PresentationLayer.View.NotificationView;
 
 public class MyStoresPresenter {
 
@@ -33,7 +35,11 @@ public class MyStoresPresenter {
 
     public void loadMyStores() {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-
+        if (token == null || token.isBlank()) {
+            NotificationView.showError("You must be logged in to view your stores.");
+            UI.getCurrent().navigate(""); // navigate to home
+            return;
+        }
         String url = String.format("http://localhost:8080/api/store/myStores?token=%s",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
@@ -63,7 +69,7 @@ public class MyStoresPresenter {
                 view.displayStores(stores);
 
             } else if (body != null && body.getErrNumber() != -1) {
-                view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+                NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
             }
 
         } catch (HttpClientErrorException e) {
@@ -71,18 +77,22 @@ public class MyStoresPresenter {
                 String responseBody = e.getResponseBodyAsString();
                 ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
                 if (errorBody.getErrNumber() != -1) {
-                    view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
                 } else {
-                    view.showError("FAILED: " + errorBody.getErrorMsg());
+                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
                 }
             } catch (Exception parsingEx) {
-                view.showError("HTTP error: " + e.getMessage());
+                NotificationView.showError("HTTP error: " + e.getMessage());
             }
 
         } catch (Exception e) {
-            view.showError("UNEXPECTED ERROR: " + e.getMessage());
+            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
         }
 
     }
 
+    public void viewEmployeesBtn(int storeId) {
+        String url = String.format("http://localhost:8080//api/store/viewRoles?storeId=%d", storeId);
+
+    }
 }
