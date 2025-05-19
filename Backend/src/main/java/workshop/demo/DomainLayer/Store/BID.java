@@ -113,11 +113,10 @@ public class BID {
         return getBid(bidId2).isAccepted();
     }
 
-   
-    public SingleBid getBid(int bidId) {
-        return getBid(bidId);
-    }
-
+   // was infinite loop PLEASE CHANGE IT TO THIS
+   public SingleBid getBid(int bidId) {
+    return bids.get(bidId);
+}
     public int getProductId() {
         return productId;
     }

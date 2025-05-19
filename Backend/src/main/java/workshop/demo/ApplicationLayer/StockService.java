@@ -181,6 +181,19 @@ public class StockService {
         logger.info("Bid accepted. User: {} is the winner.", winner.getUserId());
         return winner;
     }
+    public void rejectBid(String token, int storeId, int bidId, int bidTorejectId) throws Exception, DevException {
+        logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidTorejectId, bidId, storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        storeRepo.checkStoreExistance(storeId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+            throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
+        }
+
+        stockRepo.rejectBid(storeId, bidId, bidTorejectId);
+    }
 
     public int setProductToRandom(String token, int productId, int quantity, double productPrice, int storeId,long RandomTime) throws UIException, DevException {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);

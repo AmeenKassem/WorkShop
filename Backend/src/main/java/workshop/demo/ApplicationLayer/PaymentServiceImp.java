@@ -22,7 +22,8 @@ public class PaymentServiceImp implements IPaymentService {
 
             throw new UIException("Invalid payment details.", ErrorCodes.PAYMENT_ERROR);
         }
-        if (totalPrice <= 0) {
+        // changed this beacuse random price is 0
+        if (totalPrice < 0) {
             logger.error("Payment failed: invalid amount {}", totalPrice);
 
             throw new UIException("Invalid payment amount.", ErrorCodes.PAYMENT_ERROR);
