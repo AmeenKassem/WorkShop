@@ -14,9 +14,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public class Node {
 
-        private static final Logger logger = LoggerFactory.getLogger(Node.class);
-
-
+    private static final Logger logger = LoggerFactory.getLogger(Node.class);
     private int myId;
     private Authorization myAuth; // null if owner
     private boolean isManager; // false → owner

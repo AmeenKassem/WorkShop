@@ -12,7 +12,6 @@ import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-
 public class SuperDataStructure {
 
     private Map<Integer, Tree> employees;
@@ -229,7 +228,21 @@ public class SuperDataStructure {
             lock.unlock();
         }
     }
+/* 
+    public List<WorkerDTO> getWorkerDTOsInStore(int storeId) throws Exception {
+    ReentrantLock lock = storeLocks.computeIfAbsent(storeId, k -> new ReentrantLock());
+    lock.lock();
+    try {
+        if (!employees.containsKey(storeId)) {
+            throw new Exception("store does not exist in superDS");
+        }
+        Tree tree = employees.get(storeId);
+        List<WorkerDTO> result = new ArrayList<>();
+        Node root = tree.getRoot();
+        int ownerId = root.getMyId();
+        int parentId = root.getParentId();
 
+    }*/
     public void closeStore(int storeID) throws Exception {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeID, k -> new ReentrantLock());
         lock.lock();
@@ -341,4 +354,40 @@ public class SuperDataStructure {
         }
         return userId;
     }
+
+    public List<Node> getAllWorkers(int storeId) throws Exception {
+        ReentrantLock lock = storeLocks.computeIfAbsent(storeId, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            if (!employees.containsKey(storeId)) {
+                throw new Exception("Store does not exist");
+            }
+            Tree tree = employees.get(storeId);
+            List<Node> result = new ArrayList<>();
+            TreeIterator iterator = new TreeIterator(tree.getRoot());
+            while (iterator.hasNext()) {
+                Node node = iterator.next();
+                result.add(node);
+            }
+            return result;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public Permission[] getPermissions(Node node) {
+        if (node.getIsManager() && node.getMyAuth() != null) {
+            List<Permission> allowedPermissions = new ArrayList<>();
+            for (Map.Entry<Permission, Boolean> entry : node.getMyAuth().getMyAutho().entrySet()) {
+                if (entry.getValue()) {
+                    allowedPermissions.add(entry.getKey());
+                }
+            }
+        return allowedPermissions.toArray(new Permission[0]);
+        } else {
+            return null; // Owner have no permessions
+        }
+    }
 }
+
+

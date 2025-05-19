@@ -45,7 +45,11 @@ public interface ISUConnectionRepo {
 
     public int removeUserAccordingly(int userId) throws Exception;
 
+    public Permission[] getPermissions(Node node);
+
+    public List<Node> getAllWorkers(int storeId) throws Exception;
     // for tests
     SuperDataStructure getData();
+
 
 }

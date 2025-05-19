@@ -13,6 +13,7 @@ import elemental.json.JsonObject;
 import workshop.demo.DTOs.NotificationDTO;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -21,6 +22,7 @@ import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
+import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
@@ -266,8 +268,21 @@ public class StoreService {
         return storeId;
     }
 
-    public List<Integer> ViewRolesAndPermissions(int storeId) throws Exception {
-        return suConnectionRepo.getWorkersInStore(storeId);
+    //return the workers in specific store
+    public List<WorkerDTO> ViewRolesAndPermissions(String token , int storeId) throws Exception {
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        List<Node> nodes = suConnectionRepo.getAllWorkers(storeId);  //return this as nodes 
+        String storeName = storeRepo.getStoreNameById(storeId);         
+        List<WorkerDTO> result = new ArrayList<>();
+        for (Node node : nodes) {
+            String username = userRepo.getRegisteredUser(node.getMyId()).getUsername(); 
+            boolean isManager = node.getIsManager();
+            Permission[] permissions = suConnectionRepo.getPermissions(node);
+            boolean setByMe = node.getParentId() == userId;
+            result.add(new WorkerDTO(userId,username, isManager, !isManager, storeName, permissions, setByMe));
+        }
+        return result;
     }
 
     public StoreDTO getStoreDTO(String token, int storeId) throws UIException {

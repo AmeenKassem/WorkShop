@@ -98,7 +98,8 @@ public class UserService {
 
     }
 
-    public boolean addToUserCart(String token, ItemStoreDTO itemToAdd,int quantity) throws UIException {
+
+  public boolean addToUserCart(String token, ItemStoreDTO itemToAdd,int quantity) throws UIException {
         logger.info("addToUserCart called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         ItemCartDTO item = new ItemCartDTO(itemToAdd,quantity);
@@ -191,6 +192,7 @@ public class UserService {
         System.out.println(" All registered usernames: " + userRepo.getAllUsernames().get(0));
 
     }
+
 
 
 }

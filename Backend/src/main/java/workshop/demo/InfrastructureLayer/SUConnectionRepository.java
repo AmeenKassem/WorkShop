@@ -182,4 +182,15 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     public int removeUserAccordingly(int userId) throws Exception {
         return this.data.removeUserAccordingly(userId);
     }
+
+        @Override
+    public Permission[] getPermissions(Node node) {
+        return this.data.getPermissions(node);
+    }
+
+    @Override
+    public List<Node> getAllWorkers(int storeId) throws Exception {
+        return this.data.getAllWorkers(storeId);
+    }
+
 }

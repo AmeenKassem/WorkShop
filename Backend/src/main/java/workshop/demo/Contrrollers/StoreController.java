@@ -208,22 +208,21 @@ public class StoreController {
         }
     }
 
-    @GetMapping("/viewRoles")
-    public ResponseEntity<?> viewRoles(@RequestParam int storeId) {
-
+    @GetMapping("/viewRolesAndPermissions")
+    public ResponseEntity<?> viewRolesAndPermissions(@RequestParam String token,@RequestParam int storeId) {
         try {
-            List<Integer> roles = storeService.ViewRolesAndPermissions(storeId);
-            return ResponseEntity.ok(new ApiResponse<>(roles, null));
+            List<WorkerDTO> workers = storeService.ViewRolesAndPermissions(token, storeId);
+            return ResponseEntity.ok(new ApiResponse<>(workers, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-
     }
 
     @GetMapping("/storeOrders")
-    public ResponseEntity<?> getAllOrdersByStore(@RequestParam int storeId,
-            @RequestParam String token) {
+    public ResponseEntity<?> getAllOrdersByStore(@RequestParam int storeId,@RequestParam String token) {
 
         try {
             List<OrderDTO> orders = storeService.veiwStoreHistory(storeId);
