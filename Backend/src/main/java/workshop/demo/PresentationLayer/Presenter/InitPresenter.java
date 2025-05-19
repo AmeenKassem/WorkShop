@@ -143,7 +143,8 @@ public class InitPresenter {
         VaadinSession.getCurrent().getSession().invalidate();
         // Navigate to home page and re-init MainLayout
         // Force hard refresh to homepage (will also reload MainLayout cleanly)
-        UI.getCurrent().navigate("");
+        //UI.getCurrent().navigate("");
+        UI.getCurrent().getPage().setLocation("/");
         //UI.getCurrent().getPage().reload(); // Force hard refresh to reinitialize MainLayout
     }
 
