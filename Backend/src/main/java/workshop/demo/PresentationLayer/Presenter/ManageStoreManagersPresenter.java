@@ -1,3 +1,4 @@
+// Updated ManageStoreManagersPresenter.java with addManager and loadStores
 package workshop.demo.PresentationLayer.Presenter;
 
 import java.net.URI;
@@ -23,6 +24,7 @@ import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.DTOs.ManagerDTO;
+import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.ManageStoreManagersView;
@@ -44,13 +46,77 @@ public class ManageStoreManagersPresenter {
         loadManagers();
     }
 
-    public void addManager() {
-        VaadinSession.getCurrent().setAttribute("selected-store", storeId);
-        UI.getCurrent().navigate("add-manager");
-    }
-
     public void back() {
         UI.getCurrent().navigate("manager-home");
+    }
+
+    public void addManager(String username, Map<Permission, Checkbox> checkboxMap) {
+        try {
+            Set<Permission> selectedPermissions = checkboxMap.entrySet().stream()
+                    .filter(e -> e.getValue().getValue())
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toSet());
+
+            String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+            int storeIdInt = Integer.parseInt(storeId);
+
+            URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/makeOfferManager")
+                    .queryParam("storeId", storeIdInt)
+                    .queryParam("token", token)
+                    .queryParam("managerName", username)
+                    .build().toUri();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Set<Permission>> entity = new HttpEntity<>(selectedPermissions, headers);
+
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(uri, HttpMethod.POST, entity, ApiResponse.class);
+            ApiResponse body = response.getBody();
+
+            if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
+                view.showSuccess("Manager offer sent successfully");
+                loadManagers();
+            } else if (body != null) {
+                view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+            } else {
+                view.showError("Unexpected error: Empty response");
+            }
+
+        } catch (HttpClientErrorException e) {
+            try {
+                String responseBody = e.getResponseBodyAsString();
+                ApiResponse errorBody = objectMapper.readValue(responseBody, ApiResponse.class);
+                view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+            } catch (Exception parsingEx) {
+                view.showError("HTTP error: " + e.getMessage());
+            }
+        } catch (Exception e) {
+            view.showError("UNEXPECTED ERROR: " + e.getMessage());
+        }
+    }
+
+    public void loadStores() {
+        try {
+            String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+            URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/myStores")
+                    .queryParam("token", token)
+                    .build().toUri();
+
+            ResponseEntity<ApiResponse> response = restTemplate.getForEntity(uri, ApiResponse.class);
+            ApiResponse body = response.getBody();
+
+            if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
+                List<StoreDTO> stores = objectMapper.convertValue(body.getData(), new TypeReference<>() {});
+                view.updateStoreDropdown(stores);
+            } else if (body != null) {
+                view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+            } else {
+                view.showError("Unexpected error: Empty response");
+            }
+
+        } catch (Exception e) {
+            view.showError("Error loading stores: " + e.getMessage());
+        }
     }
 
     public void savePermissions(int managerId, Map<Permission, Checkbox> checkboxMap) {
