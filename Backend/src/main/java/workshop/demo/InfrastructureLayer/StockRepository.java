@@ -1,8 +1,6 @@
 package workshop.demo.InfrastructureLayer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -486,6 +484,22 @@ public class StockRepository implements IStockRepo {
             }
         }
         return matchesCategoryProduct;
+    }
+
+    @Override
+    public ProductDTO[] getAllProducts() {
+        List<ProductDTO> allProductDTOs = new ArrayList<>();
+        for (List<Product> productList : allProducts.values()) {
+            for (Product product : productList) {
+                allProductDTOs.add(new ProductDTO(
+                    product.getProductId(),
+                    product.getName(),
+                    product.getCategory(),
+                    product.getDescription()
+                ));
+            }
+        }
+        return allProductDTOs.toArray(new ProductDTO[0]);
     }
 
  

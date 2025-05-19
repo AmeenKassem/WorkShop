@@ -1,7 +1,5 @@
 package workshop.demo.ApplicationLayer;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -312,5 +310,14 @@ public class StockService {
         this.stockRepo.rankProduct(storeId, productId, newRank);
         logger.info("the rank updated successfully for product {} in store {}", productId, storeId);
         return productId;
+    }
+
+    public ProductDTO[] getAllProducts(String token) throws Exception {
+        logger.info("fetching all the products in the system");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        return stockRepo.getAllProducts();
     }
 }
