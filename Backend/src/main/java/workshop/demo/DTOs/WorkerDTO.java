@@ -1,22 +1,27 @@
 package workshop.demo.DTOs;
+import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public class WorkerDTO {
 
-    private String username;
-    private boolean isManager;
-    private boolean isOwner;
-    private String storeName;
+    public String Username;
+    public boolean isManager;
+    public boolean isOwner;
+    public String storeName;
+    public Permission[] permessions;
+    public boolean setByMe;
+    public int workerId;
 
-    public WorkerDTO(String username, boolean isManager, boolean isOwner, String storeName) {
-        this.username = username;
-        this.isManager = isManager;
-        this.isOwner = isOwner;
-        this.storeName = storeName;
+    //change
+    public WorkerDTO(int workerid ,String username, boolean isManager, boolean isOwner, String storeName,Permission[] permissions, boolean setByMe) {
+    this.Username=username;
+    this.isManager = isManager;
+    this.isOwner = isOwner;
+    this.storeName = storeName;
+    this.permessions = permissions;
+    this.setByMe = setByMe;
+    this.workerId=workerid;
     }
 
-    public String getUsername() {
-        return username;
-    }
 
     public boolean isManager() {
         return isManager;
@@ -29,4 +34,5 @@ public class WorkerDTO {
     public String getStoreName() {
         return storeName;
     }
+    
 }

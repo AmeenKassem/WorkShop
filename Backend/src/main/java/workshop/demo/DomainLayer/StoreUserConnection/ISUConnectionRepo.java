@@ -2,17 +2,18 @@ package workshop.demo.DomainLayer.StoreUserConnection;
 
 import java.util.List;
 
+import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 
 public interface ISUConnectionRepo {
 
-    void addNewStoreOwner(int storeId, int bossID);
+    boolean addNewStoreOwner(int storeId, int bossID);
 
-    void checkToAddOwner(int storeID, int ownerID, int newOwnerId) throws Exception;
+    boolean checkToAddOwner(int storeID, int ownerID, int newOwnerId) throws Exception;
 
     void checkToAddManager(int storeID, int ownerID, int newOwnerId) throws Exception;
 
-    void AddOwnershipToStore(int storeID, int ownerID, int newOwnerId) throws Exception;
+    boolean AddOwnershipToStore(int storeID, int ownerID, int newOwnerId) throws Exception;
 
     void DeleteOwnershipFromStore(int storeID, int ownerID, int OwnerToDelete) throws Exception;
 
@@ -34,7 +35,21 @@ public interface ISUConnectionRepo {
 
     void checkMainOwnerToDeactivateStore_ThrowException(int storeId, int userId) throws DevException;
 
+    void makeOffer(int storeId, int senderId, int reciverId, boolean toBeOwner, List<Permission> per, String Message) throws Exception;
+
+    public List<Permission> deleteOffer(int storeId, int senderId, int reciverId) throws Exception;
+
+    public OfferDTO getOffer(int storeId, int senderId, int reciverId) throws Exception;
+
+    public List<Integer> getStoresIdForUser(int userId);
+
+    public int removeUserAccordingly(int userId) throws Exception;
+
+    public Permission[] getPermissions(Node node);
+
+    public List<Node> getAllWorkers(int storeId) throws Exception;
     // for tests
     SuperDataStructure getData();
+
 
 }

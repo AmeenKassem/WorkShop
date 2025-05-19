@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
@@ -22,28 +23,31 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     }
 
     @Override
-    public void addNewStoreOwner(int storeId, int bossID) {
+    public boolean addNewStoreOwner(int storeId, int bossID) {
         data.addNewStore(storeId, bossID);
+        return true;
 
     }
 
     @Override
-    public void checkToAddOwner(int storeID, int ownerID, int newOwnerId) throws Exception {// for owner
+    public boolean checkToAddOwner(int storeID, int ownerID, int newOwnerId) throws Exception {// for owner
         try {
             this.data.checkToAddOwner(storeID, ownerID, newOwnerId);
         } catch (Exception e) {
             throw e;
         }
+        return true;
     }
 
     @Override
-    public void AddOwnershipToStore(int storeID, int ownerID, int newOwnerId) throws Exception {
+    public boolean AddOwnershipToStore(int storeID, int ownerID, int newOwnerId) throws Exception {
         try {
             this.data.addNewOwner(storeID, ownerID, newOwnerId);
 
         } catch (Exception e) {
             throw e;
         }
+        return true;
 
     }
 
@@ -123,6 +127,7 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     public void closeStore(int storeId) throws Exception {
         this.data.closeStore(storeId);
     }
+    // changed userid to storeid
 
     @Override
     public boolean manipulateItem(int userId, int storeId, Permission permission) throws Exception {
@@ -153,4 +158,42 @@ public class SUConnectionRepository implements ISUConnectionRepo {
             throw new DevException("failed to check ownership for this userid: " + e.getMessage());
         }
     }
+
+    @Override
+    public void makeOffer(int storeId, int senderId, int reciverId, boolean toBeOwner, List<Permission> per,
+            String Message) throws Exception {
+        OfferDTO offer = new OfferDTO(senderId, reciverId, toBeOwner, per, Message);
+        this.data.makeOffer(offer, storeId);
+    }
+
+    @Override
+    public List<Permission> deleteOffer(int storeId, int senderId, int reciverId) throws Exception {
+        return this.data.deleteOffer(storeId, senderId, reciverId);
+    }
+
+    @Override
+    public OfferDTO getOffer(int storeId, int senderId, int reciverId) throws Exception {
+        return this.data.getOffer(storeId, senderId, reciverId);
+    }
+
+    @Override
+    public List<Integer> getStoresIdForUser(int userId) {
+        return this.data.getStoresIdForUser(userId);
+    }
+
+    @Override
+    public int removeUserAccordingly(int userId) throws Exception {
+        return this.data.removeUserAccordingly(userId);
+    }
+
+        @Override
+    public Permission[] getPermissions(Node node) {
+        return this.data.getPermissions(node);
+    }
+
+    @Override
+    public List<Node> getAllWorkers(int storeId) throws Exception {
+        return this.data.getAllWorkers(storeId);
+    }
+
 }

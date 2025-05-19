@@ -15,10 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.UserService;
+import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.User.AdminInitilizer;
 
 @RestController
 @RequestMapping("/api/users")
@@ -28,9 +29,9 @@ public class UserController {
     private OrderService orderService;
 
     @Autowired
-    public UserController(UserService userService, OrderService orderService) {
-        this.userService = userService;
-        this.orderService = orderService;
+    public UserController(Repos repos) {
+        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer, repos.adminService);
+        this.orderService = new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
     }
 
     @ModelAttribute
@@ -56,9 +57,9 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<Boolean>> register(@RequestParam String token,
-                           @RequestParam String username,
-                           @RequestParam String password,
-                           @RequestParam int age) {
+            @RequestParam String username,
+            @RequestParam String password,
+            @RequestParam int age) {
         ApiResponse<Boolean> res;
         try {
             userService.register(token, username, password, age);
@@ -98,18 +99,19 @@ public class UserController {
     }
 
     @DeleteMapping("/destroyGuest")
-    public String destroyGuest(@RequestParam String token
-    ) {
-        ApiResponse<Boolean> res;
+    public ResponseEntity<?> destroyGuest(@RequestParam String token) {
         try {
             userService.destroyGuest(token);
-            res = new ApiResponse<>(true, null);
+            return ResponseEntity.ok(new ApiResponse<>(true, null));
         } catch (UIException ex) {
-            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
     @PostMapping("/logout")
@@ -128,36 +130,44 @@ public class UserController {
     }
 
     @PostMapping("/setAdmin")
-    public String setAdmin(@RequestParam String token,
+    public ResponseEntity<?> setAdmin(
+            @RequestParam String token,
             @RequestParam String adminKey
     ) {
-        ApiResponse<Boolean> res;
         try {
             boolean data = userService.setAdmin(token, adminKey, 2);
-            res = new ApiResponse<>(data, null);
+            return ResponseEntity.ok(new ApiResponse<>(data, null));
         } catch (UIException ex) {
-            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
     @PostMapping("/addToCart")
-    public String addToUserCart(@RequestParam String token,
-            @RequestBody ItemStoreDTO itemToAdd
+    public ResponseEntity<?> addToUserCart(
+            @RequestParam String token,
+            @RequestBody ItemStoreDTO itemToAdd,
+            @RequestBody int quantity
     ) {
-        ApiResponse<Boolean> res;
         try {
-
-            res = new ApiResponse<>(userService.addToUserCart(token, itemToAdd), null);
+            boolean data = userService.addToUserCart(token, itemToAdd, quantity);
+            return ResponseEntity.ok(new ApiResponse<>(data, null));
         } catch (UIException ex) {
-            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
+
 
     // @PutMapping("/updateProfile")
     // public String updateProfile(@RequestParam String token) {
@@ -172,17 +182,48 @@ public class UserController {
     //     }
     //     return res.toJson();
     // }''
-
-    @GetMapping("/getuserdto")
-    public String getUserDTO(@RequestParam String token) {
-        ApiResponse<UserDTO> res;
+    @GetMapping("/getUserDTO")
+    public ResponseEntity<?> getUserDTO(@RequestParam String token) {
         try {
             UserDTO dto = userService.getUserDTO(token);
-            res = new ApiResponse<>(dto, null);
-        }catch (UIException e) {
+            return ResponseEntity.ok(new ApiResponse<>(dto, null));
+        } catch (UIException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @GetMapping("/getspecialcart")
+    public String getSpecialCart(@RequestParam String token) {
+        ApiResponse<SpecialCartItemDTO[]> res;
+        try {
+            SpecialCartItemDTO[] cartItems = userService.getSpecialCart(token);
+            res = new ApiResponse<>(cartItems, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
         }
         return res.toJson();
     }
 
+    @GetMapping("/getregularcart")
+    public String getRegularCart(@RequestParam String token) {
+        ApiResponse<ItemCartDTO[]> res;
+        try {
+            ItemCartDTO[] cartItems = userService.getRegularCart(token);
+            res = new ApiResponse<>(cartItems, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
+    }
+    
 }
