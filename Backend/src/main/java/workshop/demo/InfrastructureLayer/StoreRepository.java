@@ -142,7 +142,7 @@ public class StoreRepository implements IStoreRepo {
         return this.stores;
     }
 
-    public void checkStoreIsActive(int storeId) throws DevException {
+    public boolean checkStoreIsActive(int storeId) throws DevException {
         Store store = findStoreByID(storeId);
         if (store == null) {
             throw new DevException("Store not found with ID: " + storeId);
@@ -150,6 +150,7 @@ public class StoreRepository implements IStoreRepo {
         if (!store.isActive()) {
             throw new DevException(" store is not active");
         }
+        return true;
     }
 
     public StoreDTO getStoreDTO(int storeId) throws UIException {

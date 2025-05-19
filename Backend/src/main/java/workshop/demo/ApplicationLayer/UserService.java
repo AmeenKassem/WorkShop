@@ -47,12 +47,13 @@ public class UserService {
         return authRepo.generateGuestToken(id);
     }
 
-    public void register(String token, String username, String password,int age) throws UIException {
+    public boolean register(String token, String username, String password,int age) throws UIException {
         logger.info("register called for username={}", username);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         userRepo.registerUser(username, password,age);
         //Hmode
         adminService.recordRegisterEvent();
+        return true;
         //HmodeEnd
         
     }
@@ -69,12 +70,13 @@ public class UserService {
       
     }
 
-    public void destroyGuest(String token) throws UIException {
+    public Boolean destroyGuest(String token) throws UIException {
         logger.info("destroyGuest called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int id = authRepo.getUserId(token);
         logger.info("Destroyed guest with ID={}", id);
         userRepo.destroyGuest(id);
+        return true;
 
     }
 
