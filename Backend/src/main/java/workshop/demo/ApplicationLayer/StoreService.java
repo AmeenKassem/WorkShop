@@ -115,6 +115,7 @@ public class StoreService {
         userRepo.checkUserRegister_ThrowException(newOwnerId);
         if (decide) {
             suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
+            suConnectionRepo.getOffer(storeId, ownerId, newOwnerId);
             suConnectionRepo.deleteOffer(storeId, ownerId, newOwnerId);
             logger.info("Successfully added user {} as owner to store {} by user {}", newOwnerId, storeId, ownerId);
             return newOwnerId;
