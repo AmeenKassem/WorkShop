@@ -1,34 +1,74 @@
 package workshop.demo.PresentationLayer.Presenter;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.*;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.server.VaadinSession;
+
 import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.DTOs.ManagerDTO;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.ManageStoreManagersView;
 
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Set;
-
 public class ManageStoreManagersPresenter {
 
     private final ManageStoreManagersView view;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private String storeId;
 
     public ManageStoreManagersPresenter(ManageStoreManagersView view) {
         this.view = view;
     }
 
-    public void loadManagers(String storeId) {
+    public void setStoreId(String storeId) {
+        this.storeId = storeId;
+        VaadinSession.getCurrent().setAttribute("selected-store", storeId);
+        loadManagers();
+    }
+
+    public void addManager() {
+        VaadinSession.getCurrent().setAttribute("selected-store", storeId);
+        UI.getCurrent().navigate("add-manager");
+    }
+
+    public void back() {
+        UI.getCurrent().navigate("manager-home");
+    }
+
+    public void savePermissions(int managerId, Map<Permission, Checkbox> checkboxMap) {
+        Set<Permission> selected = checkboxMap.entrySet().stream()
+                .filter(e -> e.getValue().getValue())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        updateManagerPermissions(token, storeId, managerId, selected);
+    }
+
+    public void deleteManager(int managerId) {
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        removeManager(token, storeId, managerId);
+    }
+
+    public void loadManagers() {
         try {
             URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/viewRoles")
                     .queryParam("storeId", storeId)
@@ -38,7 +78,8 @@ public class ManageStoreManagersPresenter {
             ApiResponse body = response.getBody();
 
             if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
-                List<ManagerDTO> managers = objectMapper.convertValue(body.getData(), new TypeReference<>() {});
+                List<ManagerDTO> managers = objectMapper.convertValue(body.getData(), new TypeReference<>() {
+                });
                 view.updateManagerList(managers);
             } else if (body != null) {
                 view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
@@ -70,7 +111,8 @@ public class ManageStoreManagersPresenter {
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Set<Permission>> entity = new HttpEntity<>(permissions, headers);
 
-            ResponseEntity<ApiResponse> response = restTemplate.exchange(uri, HttpMethod.POST, entity, ApiResponse.class);
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(uri, HttpMethod.POST, entity,
+                    ApiResponse.class);
             ApiResponse body = response.getBody();
 
             if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
@@ -106,12 +148,13 @@ public class ManageStoreManagersPresenter {
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-            ResponseEntity<ApiResponse> response = restTemplate.exchange(uri, HttpMethod.POST, entity, ApiResponse.class);
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(uri, HttpMethod.POST, entity,
+                    ApiResponse.class);
             ApiResponse body = response.getBody();
 
             if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
                 view.showSuccess("Manager deleted");
-                loadManagers(storeId); // Refresh
+                loadManagers();
             } else if (body != null) {
                 view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
             } else {
