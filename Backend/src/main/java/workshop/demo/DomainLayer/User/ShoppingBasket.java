@@ -27,4 +27,13 @@ public class ShoppingBasket {
         return storeId;
     }
 
+    public void ModifyCartAddQToBuy(int productId, int quantity) {
+        for (ItemCartDTO item : itemsOnCart) {
+            if (item.productId == productId) {
+                item.quantity = quantity;
+                return;
+            }
+        }
+    }
+
 }

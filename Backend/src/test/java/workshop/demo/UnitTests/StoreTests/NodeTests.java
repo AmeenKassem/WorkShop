@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
@@ -25,7 +26,7 @@ public class NodeTests {
     private Node owner123;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws UIException {
 
         owner1 = new Node(1, false, 0);
         owner12 = new Node(2, false, 1);//child of owner1

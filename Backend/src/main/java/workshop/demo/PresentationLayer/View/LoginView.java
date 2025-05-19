@@ -54,6 +54,14 @@ public class LoginView extends VerticalLayout {
 
     }
 
+    public void refreshLayoutButtons() {
+        getParent().ifPresent(parent -> {
+            if (parent instanceof MainLayout layout) {
+                layout.refreshButtons();
+            }
+        });
+    }
+
     public String getUsername() {
         return usernameField.getValue();
     }
@@ -62,11 +70,11 @@ public class LoginView extends VerticalLayout {
         return passwordField.getValue();
     }
 
-    public void showSuccess(String msg) {
-        Notification.show("✅ " + msg, 3000, Notification.Position.MIDDLE);
+    public void showError(String msg) {
+        Notification.show("❌ " + msg, 5000, Notification.Position.BOTTOM_CENTER);
     }
 
-    public void showError(String msg) {
-        Notification.show("❌ " + msg, 5000, Notification.Position.MIDDLE);
+    public void showSuccess(String msg) {
+        Notification.show("✅ " + msg, 3000, Notification.Position.BOTTOM_CENTER);
     }
 }
