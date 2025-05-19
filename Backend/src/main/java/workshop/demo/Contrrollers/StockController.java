@@ -1,7 +1,5 @@
 package workshop.demo.Contrrollers;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import workshop.demo.ApplicationLayer.StockService;
-import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ProductDTO;
@@ -309,6 +307,20 @@ public class StockController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
+    }
+
+    @GetMapping("/getAllProducts")
+    public String getAllProducts(@RequestParam String token) {
+        ApiResponse<ProductDTO[]> res;
+        try {
+            ProductDTO[] products = stockService.getAllProducts(token);
+            res = new ApiResponse<>(products, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
     }
 
 }
