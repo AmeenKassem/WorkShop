@@ -117,6 +117,14 @@ public class UserService {
         return result.toArray(new SpecialCartItemDTO[0]);
     }
 
+    public ItemCartDTO[] getRegularCart(String token)throws UIException{
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        List<ItemCartDTO> regularCartItems = userRepo.getUserCart(userId).getAllCart();
+        return regularCartItems.toArray(new ItemCartDTO[0]);
+    }
+
 
     public UserDTO getUserDTO(String token) throws UIException {
         logger.info("getUserDTO");

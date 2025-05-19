@@ -1,4 +1,5 @@
 package workshop.demo.DTOs;
+import workshop.demo.DomainLayer.StoreUserConnection.Authorization;
 
 public class WorkerDTO {
 
@@ -6,6 +7,7 @@ public class WorkerDTO {
     private boolean isManager;
     private boolean isOwner;
     private String storeName;
+    private Authorization autho;// is null if I am an owner or empty
 
     public WorkerDTO(String username, boolean isManager, boolean isOwner, String storeName) {
         this.username = username;
