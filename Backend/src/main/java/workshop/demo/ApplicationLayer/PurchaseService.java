@@ -83,7 +83,7 @@ public class PurchaseService {
             throws Exception {
         logger.info("buyRegisteredCart called with token");
 
-       authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         return processCart(userId, false, paymentdetails, supplydetails);
@@ -109,9 +109,12 @@ public class PurchaseService {
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
         for (ShoppingBasket basket : cart.getBaskets().values()) {
             logger.info("Processing basket for storeId={}", basket.getStoreId());
-
+            String storeName = storeRepo.getStoreNameById(basket.getStoreId());
             List<ReceiptProduct> boughtItems = stockRepo.processCartItemsForStore(basket.getStoreId(),
                     basket.getItems(), isGuest);
+            for (ReceiptProduct product : boughtItems) {
+                product.setstoreName(storeName); // need to change
+            }
             double total = stockRepo.calculateTotalPrice(boughtItems);
             paymentService.processPayment(payment, total);
             supplyService.processSupply(supply);
@@ -123,7 +126,7 @@ public class PurchaseService {
     public ParticipationInRandomDTO participateInRandom(String token, int randomId, int storeId, double amountPaid,
             PaymentDetails paymentDetails) throws Exception {
         logger.info("participateInRandom called with randomId={}, storeId={}", randomId, storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger); 
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
@@ -141,33 +144,34 @@ public class PurchaseService {
         int userId = authRepo.getUserId(token);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         logger.info("The user " + userId + " finalizing the special cart.");
-        List<SingleBid> winningBids =new ArrayList<>(); // Auction wins and Bid wins
-        List<ParticipationInRandomDTO> winingRandoms =new ArrayList<>();
+        List<SingleBid> winningBids = new ArrayList<>(); // Auction wins and Bid wins
+        List<ParticipationInRandomDTO> winingRandoms = new ArrayList<>();
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
         for (UserSpecialItemCart specialItem : userRepo.getAllSpecialItems(userId)) {
-            if(specialItem.type==SpecialType.Random){
-                ParticipationInRandomDTO card = stockRepo.getRandomCardIfWinner(specialItem.storeId,specialItem.specialId,userId);
-                if(card != null) winingRandoms.add(card);
-            }else{
-                SingleBid bid = stockRepo.getBidIfWinner(specialItem.storeId,specialItem.specialId,specialItem.bidId,specialItem.type);
-                if(bid!=null) winningBids.add(bid);
+            if (specialItem.type == SpecialType.Random) {
+                ParticipationInRandomDTO card = stockRepo.getRandomCardIfWinner(specialItem.storeId,
+                        specialItem.specialId, userId);
+                if (card != null)
+                    winingRandoms.add(card);
+            } else {
+                SingleBid bid = stockRepo.getBidIfWinner(specialItem.storeId, specialItem.specialId, specialItem.bidId,
+                        specialItem.type);
+                if (bid != null)
+                    winningBids.add(bid);
             }
         }
         double sumToPay = setRecieptMapForBids(winningBids, storeToProducts);
         setRecieptMapForRandoms(storeToProducts, winingRandoms);
-        if(supplyService.processSupply(supply) && paymentService.processPayment(payment,sumToPay )){
+        if (supplyService.processSupply(supply) && paymentService.processPayment(payment, sumToPay)) {
             return saveReceipts(userId, storeToProducts);
         }
         throw new DevException("something went wrong with supply or payment");
 
-        
     }
 
-
-   
-
-    private double setRecieptMapForBids(List<SingleBid> winningBids,Map<Integer, List<ReceiptProduct>>  res) throws Exception{
-       double price=0;
+    private double setRecieptMapForBids(List<SingleBid> winningBids, Map<Integer, List<ReceiptProduct>> res)
+            throws Exception {
+        double price = 0;
 
         // Handle Auction & Accepted Bids
         for (SingleBid bid : winningBids) {
@@ -178,8 +182,8 @@ public class PurchaseService {
             }
 
             String storeName = storeRepo.getStoreNameById(bid.getStoreId());
-            price+=bid.getBidPrice();
-          
+            price += bid.getBidPrice();
+
             ReceiptProduct receiptProduct = new ReceiptProduct(
                     product.getName(),
                     product.getCategory(),
@@ -195,8 +199,9 @@ public class PurchaseService {
         return price;
     }
 
-    private void setRecieptMapForRandoms(Map<Integer, List<ReceiptProduct>> storeToProducts , List<ParticipationInRandomDTO> pars) throws Exception{
-        for (ParticipationInRandomDTO card :pars) {
+    private void setRecieptMapForRandoms(Map<Integer, List<ReceiptProduct>> storeToProducts,
+            List<ParticipationInRandomDTO> pars) throws Exception {
+        for (ParticipationInRandomDTO card : pars) {
             stockRepo.validateAndDecreaseStock(card.storeId, card.productId, 1);
             Product product = stockRepo.findByIdInSystem_throwException(card.productId);
             String storeName = storeRepo.getStoreNameById(card.storeId);
@@ -210,9 +215,6 @@ public class PurchaseService {
         }
     }
 
-
-  
-  
     private ReceiptDTO[] saveReceipts(int userId, Map<Integer, List<ReceiptProduct>> storeToProducts)
             throws UIException {
         logger.info("saveReceipts called for userId={}", userId);

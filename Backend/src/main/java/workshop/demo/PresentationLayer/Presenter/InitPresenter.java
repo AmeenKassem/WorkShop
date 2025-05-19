@@ -1,5 +1,10 @@
 package workshop.demo.PresentationLayer.Presenter;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -8,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
@@ -19,9 +25,11 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.MainLayout;
 import workshop.demo.PresentationLayer.View.NotificationView;
+import workshop.demo.PresentationLayer.View.PurchaseView;
 
 public class InitPresenter {
 
@@ -55,7 +63,7 @@ public class InitPresenter {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<ApiResponse<String>>() {
-                    });
+            });
             ApiResponse body = response.getBody();
             if (body != null && body.getErrorMsg() == null) {
                 String guestToken = (String) body.getData();
@@ -128,12 +136,75 @@ public class InitPresenter {
 
         // Clear session and redirect
         // guest token -> main layout it wil generated aoyomaticlly
+        // Remove session attributes
         VaadinSession.getCurrent().setAttribute("auth-token", null);
         VaadinSession.getCurrent().setAttribute("user-type", "guest");
         UI.getCurrent().getPage().executeJs("window.closeNotificationSocket();");
         VaadinSession.getCurrent().getSession().invalidate();
-        // UI.getCurrent().navigate("");
-        UI.getCurrent().getPage().reload(); // Force hard refresh to reinitialize MainLayout
+        // Navigate to home page and re-init MainLayout
+        // Force hard refresh to homepage (will also reload MainLayout cleanly)
+        //UI.getCurrent().navigate("");
+        UI.getCurrent().getPage().setLocation("/");
+        //UI.getCurrent().getPage().reload(); // Force hard refresh to reinitialize MainLayout
+    }
+
+    public void handleReceiptsDisplay() {
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        if (token == null) {
+            NotificationView.showError(ExceptionHandlers.getErrorMessage(1001));
+            return;
+        }
+
+        try {
+            String url = String.format(
+                    "http://localhost:8080/api/history/getreceipts?token=%s",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<ApiResponse<List<ReceiptDTO>>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<ApiResponse<List<ReceiptDTO>>>() {
+            });
+
+            ApiResponse<List<ReceiptDTO>> responseBody = response.getBody();
+
+            if (responseBody != null && responseBody.getErrNumber() == -1) {
+                List<ReceiptDTO> receiptList = responseBody.getData();
+                ReceiptDTO[] receipts = receiptList.toArray(new ReceiptDTO[0]);
+
+                System.out.println("ok2");
+                PurchaseView.showReceiptDialog(receipts);
+
+            } else {
+
+                NotificationView.showError(ExceptionHandlers.getErrorMessage(responseBody.getErrNumber()));
+            }
+            // } catch (Exception e) {
+            //     NotificationView.showError("Failed getting receipts : " + e.getMessage());
+            // }
+        } catch (HttpClientErrorException e) {
+            try {
+                String responseBody = e.getResponseBodyAsString();
+                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
+                if (errorBody.getErrNumber() != -1) {
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                } else {
+                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
+                }
+            } catch (Exception parsingEx) {
+                NotificationView.showError("HTTP error: " + e.getMessage());
+            }
+
+        } catch (Exception e) {
+            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+        }
+
     }
 
 }

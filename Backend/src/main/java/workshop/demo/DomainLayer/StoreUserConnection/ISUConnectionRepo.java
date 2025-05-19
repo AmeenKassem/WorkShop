@@ -41,6 +41,10 @@ public interface ISUConnectionRepo {
 
     public OfferDTO getOffer(int storeId, int senderId, int reciverId) throws Exception;
 
+    public List<Integer> getStoresIdForUser(int userId);
+
+    public int removeUserAccordingly(int userId) throws Exception;
+
     // for tests
     SuperDataStructure getData();
 

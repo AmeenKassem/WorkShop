@@ -1,7 +1,5 @@
 package workshop.demo.PresentationLayer.Presenter;
 
-import java.nio.charset.StandardCharsets;
-
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -9,7 +7,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
@@ -35,9 +32,9 @@ public class OpenStorePresenter {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         String url = String.format(
                 "http://localhost:8080/api/store/addStore?token=%s&storeName=%s&category=%s",
-                UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
-                UriUtils.encodeQueryParam(storeName, StandardCharsets.UTF_8),
-                UriUtils.encodeQueryParam(category, StandardCharsets.UTF_8)
+                token,
+                storeName,
+                category
         );
 
         HttpHeaders headers = new HttpHeaders();

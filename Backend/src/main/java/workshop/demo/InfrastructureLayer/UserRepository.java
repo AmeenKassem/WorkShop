@@ -1,7 +1,7 @@
 package workshop.demo.InfrastructureLayer;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -44,6 +42,19 @@ public class UserRepository implements IUserRepo {
         users = new ConcurrentHashMap<>();
         guests = new ConcurrentHashMap<>();
         idToUsername = new ConcurrentHashMap<>();
+//        int a=generateGuest();
+//        try{
+//            registerUser("name","pass",30);
+//            int x=login("name","pass");
+//            setUserAsAdmin(x,"123321");
+//        }
+//         catch (UIException e) {
+//            throw new RuntimeException(e);
+//        }
+    }
+
+    public List<String> getAllUsernames() {
+        return new ArrayList<>(users.keySet());
     }
 
     @Override
@@ -103,9 +114,16 @@ public class UserRepository implements IUserRepo {
         return users.containsKey(username);
     }
 
-    private boolean guestExist(int id) {
+    private boolean userExist(int userid) {
+        return idToUsername.containsKey(userid);
+    }
+// changed from private to public
+
+    public boolean guestExist(int id) {
         return guests.containsKey(id);
     }
+// changed it to handle users as well
+// added fucntion userexists that takes userid and returns name
 
     @Override
     public void addItemToGeustCart(int guestId, ItemCartDTO item) throws UIException {
@@ -113,8 +131,27 @@ public class UserRepository implements IUserRepo {
             Guest geust = guests.get(guestId);
             geust.addToCart(item);
             logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProdutId(), guestId});
+        } else if (userExist(guestId)) {
+            getRegisteredUser(guestId).addToCart(item);
+            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProdutId(), guestId});
         } else {
             throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
+
+        }
+    }
+
+    @Override
+    public void ModifyCartAddQToBuy(int guestId, int productId, int quantity) throws UIException {
+        if (guestExist(guestId)) {
+            Guest geust = guests.get(guestId);
+            geust.ModifyCartAddQToBuy(productId, quantity);
+            logger.log(Level.INFO, "Item modified in guest cart: {0} for guest id: {1}", new Object[]{productId, guestId});
+        } else if (userExist(guestId)) {
+            getRegisteredUser(guestId).ModifyCartAddQToBuy(productId, quantity);
+            logger.log(Level.INFO, "Item modified in guest cart: {0} for guest id: {1}", new Object[]{productId, guestId});
+        } else {
+            throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
+
         }
     }
 
@@ -168,8 +205,18 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public void removeItemFromGeustCart(int guestId, int productId) {
-        throw new UnsupportedOperationException("Unimplemented method 'removeItemFromGeustCart'");
+    public void removeItemFromGeustCart(int guestId, int productId) throws UIException {
+        if (guestExist(guestId)) {
+            Guest geust = guests.get(guestId);
+            geust.removeItem(productId);
+            logger.log(Level.INFO, "Item removed from guest cart: {0} for guest id: {1}", new Object[]{productId, guestId});
+        } else if (userExist(guestId)) {
+            getRegisteredUser(guestId).removeItem(productId);
+            logger.log(Level.INFO, "Item removed from guest cart: {0} for guest id: {1}", new Object[]{productId, guestId});
+        } else {
+            throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
+
+        }
     }
 
     @Override
@@ -236,11 +283,26 @@ public class UserRepository implements IUserRepo {
         }
     }
 
+    public void clear() {
+        if (guests != null) {
+            guests.clear();
+        }
+        if (users != null) {
+            users.clear();
+        }
+        if (idToUsername != null) {
+            idToUsername.clear();
+        }
+        if (idGen != null) {
+            idGen.set(1); // Reset to starting ID
+        }
+    }
+
     @Override
-    public Registered getRegisteredUserByName(String name) {
+    public Registered getRegisteredUserByName(String name) throws UIException {
         Registered user = users.get(name);
         if (user == null) {
-            throw new NoSuchElementException("No user found with username: " + name);
+            throw new UIException("No user found with username: " + name, ErrorCodes.USER_NOT_FOUND);
         }
         return user;
     }

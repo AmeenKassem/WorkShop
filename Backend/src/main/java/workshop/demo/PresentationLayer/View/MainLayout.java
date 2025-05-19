@@ -84,17 +84,6 @@ public class MainLayout extends AppLayout {
         });
     }
 
-    // @Override
-    // protected void onDetach(DetachEvent detachEvent) {
-    // presenter.handleOnDetach();
-    // private void createHeader() { // this should be in the presenter
-    // H1 logo = new H1("🛒 MarketAppMarket App");
-    // RouterLink login = new RouterLink("Login", LoginView.class);
-    // RouterLink register = new RouterLink("Register", RegisterView.class);
-    // HorizontalLayout header = new HorizontalLayout(logo, login, register);
-    // header.addClassName("app-header");
-    // addToNavbar(header);
-    // }
     private void addRightSideButtons() {
         // Determine user type
         String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
@@ -128,7 +117,7 @@ public class MainLayout extends AppLayout {
             login.addClassName("right-button");
             signUp.addClassName("right-button");
             buttonColumn.add(login, signUp);
-        } else if (userType.equals("user")) {
+        } else if (userType.equals("user") || userType.equals("admin")) {
             // Logged-in user buttons: myStores and log out, notification, open my own store
             RouterLink myStore = new RouterLink("My Stores", MyStoresView.class);
             myStore.addClassName("right-button");
@@ -150,8 +139,10 @@ public class MainLayout extends AppLayout {
                     .set("margin", "10px");
 
             billButton.addClassName("right-button"); // consistent styling
+            buttonColumn.add(billButton);
             buttonColumn.add(billButton); // ✅ Add to layout normally
-            // header.getElement().getStyle().set("position", "relative"); // anchor container
+            // header.getElement().getStyle().set("position", "relative"); // anchor
+            // container
             // header.add(billButton);
             // open my own store
             RouterLink openStore = new RouterLink("Open My Store", OpenStoreView.class);
@@ -165,9 +156,28 @@ public class MainLayout extends AppLayout {
             logout.addClassName("right-button");
             logout.getStyle().set("cursor", "pointer");
             logout.addClickListener(e -> presenter.handleLogout());
-
             buttonColumn.add(logout);
+            Button showReceipts = new Button("🧾 My Receipts");
+            showReceipts.addClickListener(e -> {
+                presenter.handleReceiptsDisplay();
+            });
+            showReceipts.addClassName("right-button");
+            buttonColumn.add(showReceipts);
 
+        }
+        if (userType.equals("admin")) {
+            //here must add a butoon for the admin activites
+            Button adminButton = new Button("Admin Panel", e -> UI.getCurrent().navigate("admin"));
+
+            adminButton.getStyle()
+                    .set("background-color", "#007bff")
+                    .set("color", "white")
+                    .set("font-weight", "bold")
+                    .set("border-radius", "8px")
+                    .set("padding", "0.5rem 1.5rem")
+                    .set("margin", "1rem 0");
+
+            buttonColumn.add(adminButton);
         }
         addToNavbar(buttonColumn);
 
@@ -192,26 +202,6 @@ public class MainLayout extends AppLayout {
         header.setAlignItems(FlexComponent.Alignment.CENTER);
         header.addClassName("app-header");
         header.setHeight("120px");
-
-        // Object userType = VaadinSession.getCurrent().getAttribute("user-type");
-        // boolean isLoggedIn = userType != null && !"guest".equals(userType);
-        // if (isLoggedIn) {
-        //     Button billButton = new Button("🧾 Notifications");
-        //     billButton.addClickListener(e -> {
-        //         UI.getCurrent().getChildren()
-        //                 .filter(c -> c instanceof NotificationView)
-        //                 .map(c -> (NotificationView) c)
-        //                 .findFirst()
-        //                 .ifPresent(NotificationView::openNotificationBill);
-        //     });
-        //     billButton.getStyle()
-        //             .set("position", "absolute")
-        //             .set("bottom", "0")
-        //             .set("left", "0")
-        //             .set("margin", "10px");
-        //     header.getElement().getStyle().set("position", "relative"); // anchor container
-        //     header.add(billButton);
-        // }
         addToNavbar(header);
     }
 

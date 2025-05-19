@@ -3,14 +3,15 @@ package workshop.demo.DomainLayer.User;
 import java.util.List;
 
 import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public interface IUserRepo {
+
+    // added for tests
+    public boolean guestExist(int id);
 
     /**
      *
@@ -62,6 +63,8 @@ public interface IUserRepo {
 
     public void removeItemFromGeustCart(int guestId, int productId) throws UIException;
 
+    public void ModifyCartAddQToBuy(int guestId, int productId, int quantity) throws UIException;
+
     public boolean isAdmin(int id) throws UIException;
 
     public boolean isRegistered(int id) throws UIException;
@@ -103,5 +106,7 @@ public interface IUserRepo {
 
     public UserDTO getUserDTO(int userId);
 
-    public Registered getRegisteredUserByName(String name);
+    List<String> getAllUsernames();
+
+    public Registered getRegisteredUserByName(String name) throws UIException;
 }

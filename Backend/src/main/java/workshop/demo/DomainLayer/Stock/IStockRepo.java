@@ -25,7 +25,7 @@ public interface IStockRepo {
 
         Product findByIdInSystem_throwException(int productId) throws Exception;
 
-        public ProductDTO[] getMatchesProducts(ProductSearchCriteria filter);
+        // public ProductDTO[] getMatchesProducts(ProductSearchCriteria filter);
 
         public ProductDTO GetProductInfo(int productId) throws UIException;
 
@@ -63,7 +63,7 @@ public interface IStockRepo {
         // stock management
         void addStore(int storeId);
 
-        List<ItemStoreDTO> getProductsInStore(int storeId) throws UIException, DevException;
+        ItemStoreDTO[] getProductsInStore(int storeId) throws UIException, DevException;
 
         item addItem(int storeId, int productId, int quantity, int price, Category category)
                         throws UIException, DevException;
@@ -94,7 +94,7 @@ public interface IStockRepo {
         List<ReceiptProduct> processCartItemsForStore(int storeId, List<ItemCartDTO> cartItems, boolean isGuest)
                         throws Exception;
 
-        ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) throws Exception;
+        // ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) throws Exception;
 
         void checkProductExists_ThrowException(int productId) throws UIException;
 
@@ -107,4 +107,6 @@ public interface IStockRepo {
         String GetProductNameForBid(int storeId, int specialId, SpecialType type)throws UIException ;
 
         ParticipationInRandomDTO getRandomCard(int storeId, int specialId, int specialId2)throws UIException ;
+
+        public ItemStoreDTO[] search(ProductSearchCriteria criteria) throws UIException;
 }
