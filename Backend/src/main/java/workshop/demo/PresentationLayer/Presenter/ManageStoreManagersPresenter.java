@@ -1,4 +1,3 @@
-// Updated ManageStoreManagersPresenter.java with addManager and loadStores
 package workshop.demo.PresentationLayer.Presenter;
 
 import java.net.URI;
@@ -18,19 +17,16 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
-import workshop.demo.DTOs.ManagerDTO;
-import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.ManageStoreManagersView;
 
 public class ManageStoreManagersPresenter {
-
     private final ManageStoreManagersView view;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -42,96 +38,7 @@ public class ManageStoreManagersPresenter {
 
     public void setStoreId(String storeId) {
         this.storeId = storeId;
-        VaadinSession.getCurrent().setAttribute("selected-store", storeId);
         loadManagers();
-    }
-
-    public void back() {
-        UI.getCurrent().navigate("manager-home");
-    }
-
-    public void addManager(String username, Map<Permission, Checkbox> checkboxMap) {
-        try {
-            Set<Permission> selectedPermissions = checkboxMap.entrySet().stream()
-                    .filter(e -> e.getValue().getValue())
-                    .map(Map.Entry::getKey)
-                    .collect(Collectors.toSet());
-
-            String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-            int storeIdInt = Integer.parseInt(storeId);
-
-            URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/makeOfferManager")
-                    .queryParam("storeId", storeIdInt)
-                    .queryParam("token", token)
-                    .queryParam("managerName", username)
-                    .build().toUri();
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<Set<Permission>> entity = new HttpEntity<>(selectedPermissions, headers);
-
-            ResponseEntity<ApiResponse> response = restTemplate.exchange(uri, HttpMethod.POST, entity, ApiResponse.class);
-            ApiResponse body = response.getBody();
-
-            if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
-                view.showSuccess("Manager offer sent successfully");
-                loadManagers();
-            } else if (body != null) {
-                view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
-            } else {
-                view.showError("Unexpected error: Empty response");
-            }
-
-        } catch (HttpClientErrorException e) {
-            try {
-                String responseBody = e.getResponseBodyAsString();
-                ApiResponse errorBody = objectMapper.readValue(responseBody, ApiResponse.class);
-                view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-            } catch (Exception parsingEx) {
-                view.showError("HTTP error: " + e.getMessage());
-            }
-        } catch (Exception e) {
-            view.showError("UNEXPECTED ERROR: " + e.getMessage());
-        }
-    }
-
-    public void loadStores() {
-        try {
-            String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-            URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/myStores")
-                    .queryParam("token", token)
-                    .build().toUri();
-
-            ResponseEntity<ApiResponse> response = restTemplate.getForEntity(uri, ApiResponse.class);
-            ApiResponse body = response.getBody();
-
-            if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
-                List<StoreDTO> stores = objectMapper.convertValue(body.getData(), new TypeReference<>() {});
-                view.updateStoreDropdown(stores);
-            } else if (body != null) {
-                view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
-            } else {
-                view.showError("Unexpected error: Empty response");
-            }
-
-        } catch (Exception e) {
-            view.showError("Error loading stores: " + e.getMessage());
-        }
-    }
-
-    public void savePermissions(int managerId, Map<Permission, Checkbox> checkboxMap) {
-        Set<Permission> selected = checkboxMap.entrySet().stream()
-                .filter(e -> e.getValue().getValue())
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toSet());
-
-        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-        updateManagerPermissions(token, storeId, managerId, selected);
-    }
-
-    public void deleteManager(int managerId) {
-        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-        removeManager(token, storeId, managerId);
     }
 
     public void loadManagers() {
@@ -144,7 +51,7 @@ public class ManageStoreManagersPresenter {
             ApiResponse body = response.getBody();
 
             if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
-                List<ManagerDTO> managers = objectMapper.convertValue(body.getData(), new TypeReference<>() {
+                List<WorkerDTO> managers = objectMapper.convertValue(body.getData(), new TypeReference<>() {
                 });
                 view.updateManagerList(managers);
             } else if (body != null) {
@@ -152,21 +59,61 @@ public class ManageStoreManagersPresenter {
             } else {
                 view.showError("Unexpected error: Empty response");
             }
+
         } catch (HttpClientErrorException e) {
-            try {
-                String responseBody = e.getResponseBodyAsString();
-                ApiResponse errorBody = objectMapper.readValue(responseBody, ApiResponse.class);
-                view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-            } catch (Exception parsingEx) {
-                view.showError("HTTP error: " + e.getMessage());
-            }
+            handleHttpClientException(e);
         } catch (Exception e) {
             view.showError("UNEXPECTED ERROR: " + e.getMessage());
         }
     }
 
-    public void updateManagerPermissions(String token, String storeId, int managerId, Set<Permission> permissions) {
+    public void addManager(String username, Map<Permission, Checkbox> checkboxMap) {
         try {
+            Set<Permission> selectedPermissions = checkboxMap.entrySet().stream()
+                    .filter(e -> e.getValue().getValue())
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toSet());
+
+            String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+            URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/makeOfferManager")
+                    .queryParam("storeId", storeId)
+                    .queryParam("token", token)
+                    .queryParam("managerName", username)
+                    .build().toUri();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Set<Permission>> entity = new HttpEntity<>(selectedPermissions, headers);
+
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(uri, HttpMethod.POST, entity,
+                    ApiResponse.class);
+            ApiResponse body = response.getBody();
+
+            if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
+                view.showSuccess("Manager offer sent successfully");
+                loadManagers();
+            } else if (body != null) {
+                view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+            } else {
+                view.showError("Unexpected error: Empty response");
+            }
+
+        } catch (HttpClientErrorException e) {
+            handleHttpClientException(e);
+        } catch (Exception e) {
+            view.showError("UNEXPECTED ERROR: " + e.getMessage());
+        }
+    }
+
+    public void savePermissions(int managerId, Map<Permission, Checkbox> checkboxMap) {
+        try {
+            Set<Permission> selected = checkboxMap.entrySet().stream()
+                    .filter(e -> e.getValue().getValue())
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toSet());
+
+            String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+
             URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/changePermissions")
                     .queryParam("token", token)
                     .queryParam("managerId", managerId)
@@ -175,7 +122,7 @@ public class ManageStoreManagersPresenter {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<Set<Permission>> entity = new HttpEntity<>(permissions, headers);
+            HttpEntity<Set<Permission>> entity = new HttpEntity<>(selected, headers);
 
             ResponseEntity<ApiResponse> response = restTemplate.exchange(uri, HttpMethod.POST, entity,
                     ApiResponse.class);
@@ -190,20 +137,16 @@ public class ManageStoreManagersPresenter {
             }
 
         } catch (HttpClientErrorException e) {
-            try {
-                String responseBody = e.getResponseBodyAsString();
-                ApiResponse errorBody = objectMapper.readValue(responseBody, ApiResponse.class);
-                view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-            } catch (Exception parsingEx) {
-                view.showError("HTTP error: " + e.getMessage());
-            }
+            handleHttpClientException(e);
         } catch (Exception e) {
             view.showError("UNEXPECTED ERROR: " + e.getMessage());
         }
     }
 
-    public void removeManager(String token, String storeId, int managerId) {
+    public void deleteManager(int managerId) {
         try {
+            String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+
             URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/deleteManager")
                     .queryParam("token", token)
                     .queryParam("managerId", managerId)
@@ -226,17 +169,20 @@ public class ManageStoreManagersPresenter {
             } else {
                 view.showError("Unexpected error: Empty response");
             }
-
         } catch (HttpClientErrorException e) {
-            try {
-                String responseBody = e.getResponseBodyAsString();
-                ApiResponse errorBody = objectMapper.readValue(responseBody, ApiResponse.class);
-                view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-            } catch (Exception parsingEx) {
-                view.showError("HTTP error: " + e.getMessage());
-            }
+            handleHttpClientException(e);
         } catch (Exception e) {
             view.showError("UNEXPECTED ERROR: " + e.getMessage());
+        }
+    }
+
+    private void handleHttpClientException(HttpClientErrorException e) {
+        try {
+            String responseBody = e.getResponseBodyAsString();
+            ApiResponse errorBody = objectMapper.readValue(responseBody, ApiResponse.class);
+            view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+        } catch (Exception parsingEx) {
+            view.showError("HTTP error: " + e.getMessage());
         }
     }
 }

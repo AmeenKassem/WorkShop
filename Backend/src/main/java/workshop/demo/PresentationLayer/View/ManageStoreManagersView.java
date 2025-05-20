@@ -1,57 +1,58 @@
 package workshop.demo.PresentationLayer.View;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
-import workshop.demo.DTOs.ManagerDTO;
+import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.PresentationLayer.Presenter.ManageStoreManagersPresenter;
 
-@Route(value = "manage-store-managers/:storeId", layout = MainLayout.class)
-@CssImport("./Theme/manageStoreManagersTheme.css")
+@Route("manage-store-managers")
+// @CssImport("./Theme/manageStoreTheme.css")
 public class ManageStoreManagersView extends VerticalLayout implements HasUrlParameter<Integer> {
+
     private final ManageStoreManagersPresenter presenter;
-    private final VerticalLayout managerListContainer = new VerticalLayout();
-    private final Button addManagerButton = new Button("Add new manager");
-    private final Button backButton = new Button("Back to manager home");
+    private final VerticalLayout managersListLayout = new VerticalLayout();
+    private final Dialog addManagerDialog = new Dialog();
+    private final TextField usernameField = new TextField("Username");
+    private final Map<Permission, Checkbox> addDialogPermissionCheckboxes = new HashMap<>();
+    private int myStoreId = -1;
 
     public ManageStoreManagersView() {
-        addClassName("manage-store-view");
-
         this.presenter = new ManageStoreManagersPresenter(this);
 
+        addClassName("add-manager-view");
+        setSizeFull();
+        setJustifyContentMode(JustifyContentMode.CENTER);
+        setAlignItems(Alignment.CENTER);
+
         H1 title = new H1("Manage Store Managers");
-        title.addClassName("manager-page-title");
+        title.addClassName("title");
 
-        managerListContainer.addClassName("manager-list");
+        Button addManagerBtn = new Button("Add Manager", event -> openAddManagerDialog());
+        addManagerBtn.addClassName("add-manager-button");
 
-        addManagerButton.addClassName("add-manager-button");
-        addManagerButton.addClickListener(e -> presenter.addManager());
+        managersListLayout.addClassName("manager-form-container");
 
-        backButton.addClassName("back-to-manager-home-button");
-        backButton.addClickListener(e -> presenter.back());
+        configureAddManagerDialog();
 
-        HorizontalLayout bottomButtons = new HorizontalLayout(addManagerButton, backButton);
-        bottomButtons.addClassName("bottom-button-row");
-
-        VerticalLayout form = new VerticalLayout(title, managerListContainer, bottomButtons);
-        form.addClassName("manager-form-container");
-
-        add(form);
+        add(title, addManagerBtn, managersListLayout);
     }
 
     @Override
@@ -61,7 +62,7 @@ public class ManageStoreManagersView extends VerticalLayout implements HasUrlPar
             return;
         }
 
-        System.out.println("🚀 setParameter called with storeId = " + storeId);
+        this.myStoreId = storeId;
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         if (token == null) {
             showError("⚠️ You must be logged in to manage your store.");
@@ -71,65 +72,92 @@ public class ManageStoreManagersView extends VerticalLayout implements HasUrlPar
         presenter.setStoreId(String.valueOf(storeId));
     }
 
-    public void updateManagerList(List<ManagerDTO> managers) {
-        managerListContainer.removeAll();
+    private void configureAddManagerDialog() {
+        VerticalLayout dialogLayout = new VerticalLayout();
+        dialogLayout.addClassName("manager-form-container");
 
-        for (ManagerDTO manager : managers) {
-            VerticalLayout card = new VerticalLayout();
-            card.addClassName("manager-card");
+        VerticalLayout inputSection = new VerticalLayout();
+        inputSection.addClassName("input-section");
+        usernameField.setWidthFull();
+        inputSection.add(usernameField);
 
-            HorizontalLayout nameRow = new HorizontalLayout();
-            nameRow.addClassName("manager-card-header");
+        VerticalLayout permissionsLayout = new VerticalLayout();
+        permissionsLayout.addClassName("permission-section");
 
-            Span nameLabel = new Span("Manager name:");
-            Span nameValue = new Span(manager.getUsername());
-            nameValue.addClassName("manager-username");
+        for (Permission permission : Permission.values()) {
+            Checkbox checkbox = new Checkbox(permission.name());
+            checkbox.addClassName("permission-checkbox");
+            addDialogPermissionCheckboxes.put(permission, checkbox);
+            permissionsLayout.add(checkbox);
+        }
 
-            nameRow.add(nameLabel, nameValue);
+        HorizontalLayout buttonRow = new HorizontalLayout();
+        buttonRow.addClassName("button-row");
 
-            VerticalLayout permissionList = new VerticalLayout();
-            permissionList.addClassName("permission-list");
+        Button sendBtn = new Button("Send", event -> {
+            try {
+                presenter.addManager(usernameField.getValue(), addDialogPermissionCheckboxes);
+                addManagerDialog.close();
+            } catch (Exception e) {
+                showError("Failed to add manager: " + e.getMessage());
+            }
+        });
+        sendBtn.addClassName("add-manager-button");
+
+        buttonRow.add(sendBtn);
+
+        dialogLayout.add(inputSection, permissionsLayout, buttonRow);
+        addManagerDialog.add(dialogLayout);
+    }
+
+    private void openAddManagerDialog() {
+        usernameField.clear();
+        addDialogPermissionCheckboxes.values().forEach(cb -> cb.setValue(false));
+        addManagerDialog.open();
+    }
+
+    public void updateManagerList(List<WorkerDTO> managers) {
+        managersListLayout.removeAll();
+
+        for (WorkerDTO manager : managers) {
+            VerticalLayout managerBlock = new VerticalLayout();
+            managerBlock.getStyle().set("border", "1px solid #ddd").set("border-radius", "8px").set("padding", "1.5rem")
+                    .set("background", "#fff");
+
+            Paragraph name = new Paragraph(manager.username);
+            name.getStyle().set("font-weight", "bold").set("margin-bottom", "0.8rem");
+
             Map<Permission, Checkbox> checkboxMap = new HashMap<>();
-            for (Permission p : Permission.values()) {
-                Checkbox cb = new Checkbox(getPermissionLabel(p));
-                cb.setValue(manager.getPermissions().contains(p));
-                checkboxMap.put(p, cb);
-                permissionList.add(cb);
+            VerticalLayout permissions = new VerticalLayout();
+            permissions.setSpacing(false);
+            permissions.setPadding(false);
+
+            for (Permission permission : Permission.values()) {
+                Checkbox checkbox = new Checkbox(permission.name());
+                checkbox.setValue(Arrays.asList(manager.permissions).contains(permission));
+                checkboxMap.put(permission, checkbox);
+                permissions.add(checkbox);
             }
 
-            Button saveBtn = new Button("Save changes", e -> {
-                presenter.savePermissions(manager.getUserId(), checkboxMap);
-            });
+            Button saveBtn = new Button("Save", e -> presenter.savePermissions(manager.workerId, checkboxMap));
             saveBtn.addClassName("save-permissions-button");
-            Button deleteBtn = new Button("Delete", e -> {
-                presenter.deleteManager(manager.getUserId());
-            });
+
+            Button deleteBtn = new Button("Delete", e -> presenter.deleteManager(manager.workerId));
             deleteBtn.addClassName("delete-manager-button");
 
-            HorizontalLayout actions = new HorizontalLayout(saveBtn, deleteBtn);
-            actions.addClassName("card-actions");
+            HorizontalLayout actionRow = new HorizontalLayout(saveBtn, deleteBtn);
+            actionRow.addClassName("button-row");
 
-            card.add(nameRow, permissionList, actions);
-            managerListContainer.add(card);
+            managerBlock.add(name, permissions, actionRow);
+            managersListLayout.add(managerBlock);
         }
     }
 
-    private String getPermissionLabel(Permission p) {
-        return switch (p) {
-            case ViewAllProducts -> "View all products";
-            case AddToStock -> "Add new Product to the store";
-            case DeleteFromStock -> "Delete existing product from the store";
-            case UpdateQuantity -> "Handle customer complaints";
-            case UpdatePrice -> "Change the price of products";
-            case SpecialType -> "Manage other managers";
-        };
+    public void showSuccess(String message) {
+        Notification.show(message, 3000, Notification.Position.BOTTOM_START);
     }
 
-    public void showSuccess(String msg) {
-        Notification.show("✅ " + msg, 3000, Notification.Position.BOTTOM_CENTER);
-    }
-
-    public void showError(String msg) {
-        Notification.show("❌ " + msg, 5000, Notification.Position.BOTTOM_CENTER);
+    public void showError(String message) {
+        Notification.show(message, 3000, Notification.Position.BOTTOM_START);
     }
 }
