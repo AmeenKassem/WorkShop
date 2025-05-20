@@ -10,16 +10,16 @@ import org.springframework.stereotype.Service;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import workshop.demo.DTOs.NotificationDTO;
-import workshop.demo.DTOs.OrderDTO;
-import workshop.demo.DTOs.StoreDTO;
-import workshop.demo.DTOs.WorkerDTO;
+import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Store.Discount;
+import workshop.demo.DomainLayer.Store.DiscountFactory;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
@@ -322,4 +322,25 @@ public class StoreService {
         }
         return res;
     }
+    public void addDiscountToStore(int storeId, String token, CreateDiscountDTO dto) throws UIException, DevException {
+        logger.info("User attempting to add a discount to store {}", storeId);
+
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+
+        storeRepo.checkStoreExistance(storeId);
+        storeRepo.checkStoreIsActive(storeId);
+        boolean hasPermission = suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_STORE_POLICY);
+        if (!hasPermission) {
+            throw new UIException("You do not have permission to add discounts to this store", ErrorCodes.NO_PERMISSION);
+        }
+
+        Store store = storeRepo.getStores().get(storeId);
+        Discount discount = DiscountFactory.fromDTO(dto);
+        store.addDiscount(discount);
+        logger.info("Discount '{}' added successfully to store {}", discount.getName(), storeId);
+    }
+
 }

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import workshop.demo.ApplicationLayer.StoreService;
+import workshop.demo.DTOs.CreateDiscountDTO;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
@@ -264,6 +265,21 @@ public class StoreController {
         try {
             List<StoreDTO> stores = storeService.getStoresOwnedByUser(token);
             return ResponseEntity.ok(new ApiResponse<>(stores, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+    @PostMapping("/addDiscount")
+    public ResponseEntity<?> addDiscountToStore(
+            @RequestParam int storeId,
+            @RequestParam String token,
+            @RequestBody CreateDiscountDTO dto) {
+        try {
+            storeService.addDiscountToStore(storeId, token,dto); // assumes permission check is inside service
+            return ResponseEntity.ok(new ApiResponse<>("Discount added successfully", null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {

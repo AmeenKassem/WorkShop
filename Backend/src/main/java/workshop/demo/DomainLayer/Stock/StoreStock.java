@@ -138,7 +138,7 @@ public class StoreStock {
                     item.getDescription(),
                     "storid",
                     item.getQuantity(),
-                    item.getPrice()
+                    item.getPrice(), item.productId
             ));
         }
         return boughtItems;
