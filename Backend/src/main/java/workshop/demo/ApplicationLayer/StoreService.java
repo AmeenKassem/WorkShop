@@ -3,16 +3,14 @@ package workshop.demo.ApplicationLayer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.atmosphere.config.service.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.vaadin.flow.component.notification.Notification;
-
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import workshop.demo.DTOs.NotificationDTO;
-import workshop.demo.DTOs.NotificationDTO.NotificationType;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
@@ -23,14 +21,12 @@ import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
+import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import workshop.demo.DTOs.OfferDTO;
 
 @Service
 public class StoreService {
@@ -118,7 +114,9 @@ public class StoreService {
     }
 
     public int AddOwnershipToStore(int storeId, int ownerId, int newOwnerId, boolean decide) throws Exception {
+        userRepo.checkUserRegister_ThrowException(newOwnerId);
         if (decide) {
+            suConnectionRepo.getOffer(storeId, ownerId, newOwnerId);
             suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
             suConnectionRepo.deleteOffer(storeId, ownerId, newOwnerId);
             logger.info("Successfully added user {} as owner to store {} by user {}", newOwnerId, storeId, ownerId);
@@ -154,6 +152,7 @@ public class StoreService {
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         suConnectionRepo.checkToAddManager(storeId, ownerId, managerId);
+
         logger.info("Making an offer to be a store manager from {} to {}", ownerId, managerId);
         String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
         String nameNew = this.userRepo.getRegisteredUser(managerId).getUsername();
@@ -161,11 +160,14 @@ public class StoreService {
         String Message = "In store:{}, the owner:{} is offering you: {} to be a manager of this store" + storeName + owner + nameNew;
         String jssonMessage = convertNotificationToJson(Message, nameNew, NotificationDTO.NotificationType.OFFER, false, owner, storeId);
         this.notiRepo.sendDelayedMessageToUser(nameNew, jssonMessage);
-        suConnectionRepo.makeOffer(storeId, ownerId, ownerId, false, authorization, Message);
+        suConnectionRepo.makeOffer(storeId, ownerId, managerId, false, authorization, Message);
+
     }
 
     public int AddManagerToStore(int storeId, int ownerId, int managerId, boolean decide) throws Exception {
+        userRepo.checkUserRegister_ThrowException(managerId);
         if (decide) {
+            suConnectionRepo.getOffer(storeId, ownerId, managerId);
             suConnectionRepo.AddManagerToStore(storeId, ownerId, managerId);
             List<Permission> authorization = suConnectionRepo.deleteOffer(storeId, ownerId, managerId);
             suConnectionRepo.changePermissions(ownerId, managerId, storeId, authorization);
@@ -270,10 +272,22 @@ public class StoreService {
         return storeId;
     }
 
-    public List<Integer> ViewRolesAndPermissions(int storeId) throws Exception {
-        return suConnectionRepo.getWorkersInStore(storeId);
+    //return the workers in specific store
+    public List<WorkerDTO> ViewRolesAndPermissions(String token , int storeId) throws Exception {
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        List<Node> nodes = suConnectionRepo.getAllWorkers(storeId);  //return this as nodes 
+        String storeName = storeRepo.getStoreNameById(storeId);         
+        List<WorkerDTO> result = new ArrayList<>();
+        for (Node node : nodes) {
+            String username = userRepo.getRegisteredUser(node.getMyId()).getUsername(); 
+            boolean isManager = node.getIsManager();
+            Permission[] permissions = suConnectionRepo.getPermissions(node);
+            boolean setByMe = node.getParentId() == userId;
+            result.add(new WorkerDTO(userId,username, isManager, !isManager, storeName, permissions, setByMe));
+        }
+        return result;
     }
-     
 
     public StoreDTO getStoreDTO(String token, int storeId) throws UIException {
         logger.info("User attempting to get StoreDTO for store {}", storeId);
@@ -290,17 +304,22 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
-        List<Integer> storesId= suConnectionRepo.getStoresIdForUser(userId);
+        List<Integer> storesId = suConnectionRepo.getStoresIdForUser(userId);
         logger.info("got the stores Id for user:{}" + userId);
         for (int storeId : storesId) {
-        storeRepo.checkStoreExistance(storeId);
+            storeRepo.checkStoreExistance(storeId);
             StoreDTO dto = storeRepo.getStoreDTO(storeId);
             result.add(dto);
         }
         return result;
     }
+
+    public List<StoreDTO> getAllStores() {
+        List<Store> stores =  storeRepo.getStores();
+        List<StoreDTO> res = new ArrayList<>();
+        for (Store store : stores) {
+            res.add(store.getStoreDTO());
+        }
+        return res;
+    }
 }
-
-
-
-

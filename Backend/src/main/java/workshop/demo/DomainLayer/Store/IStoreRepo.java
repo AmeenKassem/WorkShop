@@ -2,6 +2,7 @@ package workshop.demo.DomainLayer.Store;
 
 import java.util.List;
 
+import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
@@ -37,7 +38,9 @@ public interface IStoreRepo {
 
     //another: messages to response->4.12
     //another: getting info about the history of purcheses in a specific store -> dpne in order
-    void checkStoreIsActive(int storeId) throws DevException;
+    boolean checkStoreIsActive(int storeId) throws DevException;
 
     public StoreDTO getStoreDTO(int storeId) throws UIException;
+
+    void fillWithStoreName(ItemStoreDTO[] items);
 }

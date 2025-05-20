@@ -12,7 +12,6 @@ import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-
 public class SuperDataStructure {
 
     private Map<Integer, Tree> employees;
@@ -81,6 +80,10 @@ public class SuperDataStructure {
             if (!employees.containsKey(storeID)) {
                 throw new Exception("store does not exist in superDS");
             }
+            Node child = employees.get(storeID).getNodeById(newOnwerId);
+            if (child != null && !child.getIsManager()) {
+                throw new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION);
+            }
             this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(newOnwerId, false, ownerId));
         } finally {
             lock.unlock();
@@ -119,6 +122,12 @@ public class SuperDataStructure {
             }
             if (this.employees.get(storeID).getNodeById(ownerId) == null) {
                 throw new Exception("this user is not the owner of this store");
+            }
+            Node child = employees.get(storeID).getNodeById(newManagerId);
+            System.out.println(ownerId);
+            System.out.print(newManagerId);
+            if (child != null && child.getIsManager()) {
+                throw new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION);
             }
             this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(newManagerId, true, ownerId));
         } finally {
@@ -219,7 +228,21 @@ public class SuperDataStructure {
             lock.unlock();
         }
     }
+/* 
+    public List<WorkerDTO> getWorkerDTOsInStore(int storeId) throws Exception {
+    ReentrantLock lock = storeLocks.computeIfAbsent(storeId, k -> new ReentrantLock());
+    lock.lock();
+    try {
+        if (!employees.containsKey(storeId)) {
+            throw new Exception("store does not exist in superDS");
+        }
+        Tree tree = employees.get(storeId);
+        List<WorkerDTO> result = new ArrayList<>();
+        Node root = tree.getRoot();
+        int ownerId = root.getMyId();
+        int parentId = root.getParentId();
 
+    }*/
     public void closeStore(int storeID) throws Exception {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeID, k -> new ReentrantLock());
         lock.lock();
@@ -252,7 +275,7 @@ public class SuperDataStructure {
         synchronized (offers) {
             List<OfferDTO> storeOffers = offers.get(storeId);
             if (storeOffers == null) {
-                return null; // no offers for this store
+                throw new Exception("store offers is null");
             }
 
             Iterator<OfferDTO> iterator = storeOffers.iterator();
@@ -337,5 +360,43 @@ public class SuperDataStructure {
     }
     offers.clear();
     storeLocks.clear();
+
+
+
+    public List<Node> getAllWorkers(int storeId) throws Exception {
+        ReentrantLock lock = storeLocks.computeIfAbsent(storeId, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            if (!employees.containsKey(storeId)) {
+                throw new Exception("Store does not exist");
+            }
+            Tree tree = employees.get(storeId);
+            List<Node> result = new ArrayList<>();
+            TreeIterator iterator = new TreeIterator(tree.getRoot());
+            while (iterator.hasNext()) {
+                Node node = iterator.next();
+                result.add(node);
+            }
+            return result;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public Permission[] getPermissions(Node node) {
+        if (node.getIsManager() && node.getMyAuth() != null) {
+            List<Permission> allowedPermissions = new ArrayList<>();
+            for (Map.Entry<Permission, Boolean> entry : node.getMyAuth().getMyAutho().entrySet()) {
+                if (entry.getValue()) {
+                    allowedPermissions.add(entry.getKey());
+                }
+            }
+        return allowedPermissions.toArray(new Permission[0]);
+        } else {
+            return null; // Owner have no permessions
+        }
+    }
+
 }
-}
+
+

@@ -79,12 +79,4 @@ public class MyStoresView extends VerticalLayout {
         add(storeContainer);
     }
 
-    public void showSuccess(String msg) {
-        Notification.show("✅ " + msg, 3000, Notification.Position.BOTTOM_CENTER);
-    }
-
-    public void showError(String msg) {
-        Notification.show("❌ " + msg, 5000, Notification.Position.BOTTOM_CENTER);
-    }
-
 }

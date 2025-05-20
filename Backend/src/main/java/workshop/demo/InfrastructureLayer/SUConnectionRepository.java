@@ -23,28 +23,31 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     }
 
     @Override
-    public void addNewStoreOwner(int storeId, int bossID) {
+    public boolean addNewStoreOwner(int storeId, int bossID) {
         data.addNewStore(storeId, bossID);
+        return true;
 
     }
 
     @Override
-    public void checkToAddOwner(int storeID, int ownerID, int newOwnerId) throws Exception {// for owner
+    public boolean checkToAddOwner(int storeID, int ownerID, int newOwnerId) throws Exception {// for owner
         try {
             this.data.checkToAddOwner(storeID, ownerID, newOwnerId);
         } catch (Exception e) {
             throw e;
         }
+        return true;
     }
 
     @Override
-    public void AddOwnershipToStore(int storeID, int ownerID, int newOwnerId) throws Exception {
+    public boolean AddOwnershipToStore(int storeID, int ownerID, int newOwnerId) throws Exception {
         try {
             this.data.addNewOwner(storeID, ownerID, newOwnerId);
 
         } catch (Exception e) {
             throw e;
         }
+        return true;
 
     }
 
@@ -187,5 +190,15 @@ public class SUConnectionRepository implements ISUConnectionRepo {
         data.clearData();
     }
 
+
+        @Override
+    public Permission[] getPermissions(Node node) {
+        return this.data.getPermissions(node);
+    }
+
+    @Override
+    public List<Node> getAllWorkers(int storeId) throws Exception {
+        return this.data.getAllWorkers(storeId);
+    }
 
 }

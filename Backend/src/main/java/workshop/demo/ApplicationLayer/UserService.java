@@ -47,12 +47,13 @@ public class UserService {
         return authRepo.generateGuestToken(id);
     }
 
-    public void register(String token, String username, String password,int age) throws UIException {
+    public boolean register(String token, String username, String password,int age) throws UIException {
         logger.info("register called for username={}", username);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         userRepo.registerUser(username, password,age);
         //Hmode
         adminService.recordRegisterEvent();
+        return true;
         //HmodeEnd
         
     }
@@ -69,12 +70,13 @@ public class UserService {
       
     }
 
-    public void destroyGuest(String token) throws UIException {
+    public Boolean destroyGuest(String token) throws UIException {
         logger.info("destroyGuest called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int id = authRepo.getUserId(token);
         logger.info("Destroyed guest with ID={}", id);
         userRepo.destroyGuest(id);
+        return true;
 
     }
 
@@ -98,7 +100,8 @@ public class UserService {
 
     }
 
-    public boolean addToUserCart(String token, ItemStoreDTO itemToAdd,int quantity) throws UIException {
+
+  public boolean addToUserCart(String token, ItemStoreDTO itemToAdd,int quantity) throws UIException {
         logger.info("addToUserCart called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         ItemCartDTO item = new ItemCartDTO(itemToAdd,quantity);
@@ -145,6 +148,14 @@ public class UserService {
         return result.toArray(new SpecialCartItemDTO[0]);
     }
 
+    public ItemCartDTO[] getRegularCart(String token)throws UIException{
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        List<ItemCartDTO> regularCartItems = userRepo.getUserCart(userId).getAllCart();
+        return regularCartItems.toArray(new ItemCartDTO[0]);
+    }
+
 
     public UserDTO getUserDTO(String token) throws UIException {
         logger.info("getUserDTO");
@@ -183,6 +194,7 @@ public class UserService {
         System.out.println(" All registered usernames: " + userRepo.getAllUsernames().get(0));
 
     }
+
 
 
 }

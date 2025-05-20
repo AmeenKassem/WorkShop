@@ -107,7 +107,7 @@ public class GuestTests {
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1);
+        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1,"Laptop");
 
         // ======================= SECOND GUEST SETUP =======================
 
@@ -184,19 +184,19 @@ public class GuestTests {
     @Test
     void testGuestGetStoreProducts() throws Exception {
 
-        List<ItemStoreDTO> items = stockService.getProductsInStore(1);
-        assertTrue(items.size() == 1);
-        assertTrue(items.get(0).getId() == 1);
+        ItemStoreDTO[] items = stockService.getProductsInStore(1);
+        assertTrue(items.length == 1);
+        assertTrue(items[0].getId() == 1);
     }
 
     @Test
     void testGuestViewEmptyStore() throws Exception {
         storeService.addStoreToSystem(NOToken, "failure", "HOME");
 
-        List<ItemStoreDTO> products = stockService.getProductsInStore(2);
+        ItemStoreDTO[] products = stockService.getProductsInStore(2);
 
         // ===== ASSERT =====
-        assertTrue(products.isEmpty());
+        assertTrue(products.length==0);
     }
 
     @Test
@@ -283,7 +283,7 @@ public class GuestTests {
     @Test
     void testGuestBuyCart_ProductNotAvailable() throws Exception {
 
-        userService.addToUserCart(GToken, new ItemStoreDTO(0, 0, 0, null, 0, 0), 1);
+        userService.addToUserCart(GToken, new ItemStoreDTO(0, 0, 0, null, 0, 0,""), 1);
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();

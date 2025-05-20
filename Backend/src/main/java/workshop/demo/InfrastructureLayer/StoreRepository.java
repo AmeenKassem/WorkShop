@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
@@ -115,7 +116,7 @@ public class StoreRepository implements IStoreRepo {
         if (store == null) {
             throw new UIException("Store does not exist", ErrorCodes.STORE_NOT_FOUND);
         }
-        return store.getFinalRateInStore(storeId);
+        return store.getFinalRateInStore();
 
     }
 
@@ -141,7 +142,7 @@ public class StoreRepository implements IStoreRepo {
         return this.stores;
     }
 
-    public void checkStoreIsActive(int storeId) throws DevException {
+    public boolean checkStoreIsActive(int storeId) throws DevException {
         Store store = findStoreByID(storeId);
         if (store == null) {
             throw new DevException("Store not found with ID: " + storeId);
@@ -149,6 +150,7 @@ public class StoreRepository implements IStoreRepo {
         if (!store.isActive()) {
             throw new DevException(" store is not active");
         }
+        return true;
     }
 
     public StoreDTO getStoreDTO(int storeId) throws UIException {
@@ -163,5 +165,15 @@ public class StoreRepository implements IStoreRepo {
     this.stores = Collections.synchronizedList(new LinkedList<>());
 
 } 
+
+
+   @Override
+   public void fillWithStoreName(ItemStoreDTO[] items) {
+    for (ItemStoreDTO itemStoreDTO : items) {
+        int storeId = itemStoreDTO.storeId;
+        Store store =this.findStoreByID(storeId);
+        itemStoreDTO.storeName=store.getStoreName();
+    }
+   } 
 
 }
