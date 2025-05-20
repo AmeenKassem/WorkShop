@@ -1,9 +1,13 @@
 package workshop.demo.PresentationLayer.View;
+
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -11,147 +15,143 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
+import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.PresentationLayer.Presenter.ManageStoreProductsPresenter;
 
-import java.util.List;
+import java.util.Map;
 
-@Route(value = "manage-products", layout = MainLayout.class)
+@Route(value = "manage-store-products", layout = MainLayout.class)
+@CssImport("./styles/manage-products.css")
 public class ManageStoreProductsView extends VerticalLayout implements HasUrlParameter<Integer> {
 
     private final ManageStoreProductsPresenter presenter;
-    private final VerticalLayout productList;
-    private int storeId;
+    private final VerticalLayout productList = new VerticalLayout();
     private String token;
+    private int storeId;
 
     public ManageStoreProductsView() {
         this.presenter = new ManageStoreProductsPresenter(this);
-        this.productList = new VerticalLayout();
 
-        Button addProductButton = new Button("+ Add Product", e -> openAddProductDialog());
-        add(addProductButton, productList);
+        // Overall layout container
+        addClassName("manage-products-container");
+
+        // Top title
+        Span title = new Span("Manage Products Page:");
+        title.addClassName("page-title");
+
+        // Product display area (centered)
+        productList.addClassName("product-list");
+
+        Div productSection = new Div(productList);
+        productSection.addClassName("products-section");
+
+        // Footer buttons
+        Button addProductBtn = new Button("+ Add Product", e -> openAddProductDialog());
+        addProductBtn.addClassName("add-product-btn");
+
+        Button backBtn = new Button("⬅ Back", e -> getUI().ifPresent(ui -> ui.navigate(""))); // Navigate home or back
+        backBtn.addClassName("back-btn");
+
+        HorizontalLayout footer = new HorizontalLayout(backBtn, addProductBtn);
+        footer.addClassName("footer-buttons");
+        footer.setWidthFull();
+
+        // Add all to layout
+        add(title, productSection, footer);
     }
 
     @Override
     public void setParameter(BeforeEvent event, Integer storeId) {
-        if (storeId == null) {
-            add(new Span("❌ No store ID provided."));
-            return;
-        }
-        this.storeId = storeId;
         this.token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        this.storeId = storeId;
         if (token == null) {
-            add(new Span("⚠️ You must be logged in to manage your store."));
+            Notification.show("⚠️ You must be logged in.");
             return;
         }
         presenter.loadProducts(storeId, token);
     }
 
-    public void showProducts(List<ItemStoreDTO> products) {
+    public void showProducts(Map<ItemStoreDTO, ProductDTO> products) {
         productList.removeAll();
+        for (Map.Entry<ItemStoreDTO, ProductDTO> entry : products.entrySet()) {
+            ItemStoreDTO item = entry.getKey();
+            ProductDTO product = entry.getValue();
 
-        for (ItemStoreDTO item : products) {
-            VerticalLayout card = new VerticalLayout();
-            HorizontalLayout header = new HorizontalLayout(
-                    new Span("🛒 " + item.getProductName()),
-                    createEditButton(item),
-                    createDeleteButton(item),
-                    // createSpecialButton(item)
+            VerticalLayout card = new VerticalLayout(
+                    new Span("🛒 " + product.getName()),
+                    new Span("📦 Quantity: " + item.getQuantity()),
+                    new Span("💲 Price: " + item.getPrice())
             );
+            card.addClassName("product-card");
 
-            card.add(
-                header,
-                new Span("📦 Quantity: " + item.getQuantity()),
-                new Span("💲 Price: " + item.getPrice()),
-                new Span("📄 Description: " + item.getDescription())
-            );
-            card.getStyle().set("border", "1px solid #ccc").set("border-radius", "10px").set("padding", "10px");
+            Button edit = new Button("✏️ Edit", e -> openEditDialog(item, product.getDescription()));
+            Button delete = new Button("🗑️ Delete", e -> presenter.deleteProduct(storeId, token, item.getId()));
+
+            HorizontalLayout actions = new HorizontalLayout(edit, delete);
+            actions.addClassName("button-row");
+
+            card.add(actions);
             productList.add(card);
         }
     }
 
-    private Button createEditButton(ItemStoreDTO item) {
-        return new Button("✏️", e -> openEditDialog(item));
-    }
-
-    private Button createDeleteButton(ItemStoreDTO item) {
-        return new Button("🗑️", e -> presenter.deleteProduct(storeId, token, item.getId()));
-    }
-
-    // private Button createSpecialButton(ItemStoreDTO item) {
-    //     return new Button("🛍️", e -> openSpecialDialog(item));
-    // }
-
     private void openAddProductDialog() {
         Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("Add Product to Store");
+        dialog.setHeaderTitle("Add Product");
 
-        TextField productIdField = new TextField("Product ID");
-        TextField quantityField = new TextField("Quantity");
-        TextField priceField = new TextField("Price");
-        TextField categoryField = new TextField("Category");
-        TextField descriptionField = new TextField("Description");
+        TextField name = new TextField("Product Name");
+        TextField description = new TextField("Description");
+        ComboBox<Category> category = new ComboBox<>("Category");
+        category.setItems(Category.values());
+        TextField keywords = new TextField("Keywords (comma-separated)");
+        TextField price = new TextField("Price");
+        TextField quantity = new TextField("Quantity");
 
-        Button submit = new Button("Add", e -> {
-            presenter.handleAddProductFlow(
-                storeId, token,
-                productIdField.getValue(),
-                quantityField.getValue(),
-                priceField.getValue(),
-                categoryField.getValue(),
-                descriptionField.getValue(),
-                dialog
-            );
+        Button add = new Button("Add", e -> {
+            presenter.addProductToStore(storeId, token,
+                    name.getValue(),
+                    description.getValue(),
+                    category.getValue(),
+                    keywords.getValue(),
+                    price.getValue(),
+                    quantity.getValue(),
+                    dialog);
         });
-        dialog.add(productIdField, quantityField, priceField, categoryField, descriptionField, submit);
+
+        dialog.add(name, description, category, keywords, price, quantity, add);
         dialog.open();
     }
 
-    private void openEditDialog(ItemStoreDTO item) {
+    private void openEditDialog(ItemStoreDTO item, String description) {
         Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("Edit Product: " + item.getProductName());
+        dialog.setHeaderTitle("Edit Product");
 
-        TextField quantityField = new TextField("New Quantity");
-        TextField priceField = new TextField("New Price");
-        TextField descriptionField = new TextField("New Description");
+        TextField quantityField = new TextField("Quantity");
+        quantityField.setValue(String.valueOf(item.getQuantity()));
+
+        TextField priceField = new TextField("Price");
+        priceField.setValue(String.valueOf(item.getPrice()));
 
         Button save = new Button("Save", e -> {
             presenter.updateProduct(storeId, token, item.getId(),
-                quantityField.getValue(), priceField.getValue(), descriptionField.getValue());
+                    quantityField.getValue(),
+                    priceField.getValue(),
+                    description);
             dialog.close();
         });
-        dialog.add(quantityField, priceField, descriptionField, save);
+
+        dialog.add(quantityField, priceField, save);
         dialog.open();
     }
 
-    // private void openSpecialDialog(ItemStoreDTO item) {
-    //     Dialog dialog = new Dialog();
-    //     dialog.setHeaderTitle("Add to Special Purchase: " + item.getProductName());
-
-    //     TextField typeField = new TextField("Type (Auction / Lottery / Bid)");
-    //     TextField param1 = new TextField("Param 1");
-    //     TextField param2 = new TextField("Param 2 (optional)");
-
-    //     Button add = new Button("Add", e -> {
-    //         presenter.addToSpecialPurchase(token, storeId, item.getId(),
-    //             typeField.getValue(), param1.getValue(), param2.getValue());
-    //         dialog.close();
-    //     });
-    //     dialog.add(typeField, param1, param2, add);
-    //     dialog.open();
-    // }
-
     public void showSuccess(String msg) {
-        Notification.show("✅ " + msg, 3000, Notification.Position.BOTTOM_CENTER);
+        Notification.show("✅ " + msg);
         presenter.loadProducts(storeId, token);
     }
 
     public void showError(String msg) {
-        Notification.show("❌ " + msg, 3000, Notification.Position.BOTTOM_CENTER);
+        Notification.show("❌ " + msg);
     }
-
-    public void reopenAddProductDialogWithValues(String productId, String quantity, String price, String category, String description) {
-        // reuse dialog or recreate with values
-        openAddProductDialog(); // simplified for now, can be enhanced with parameters
-    }
-} 
+}
