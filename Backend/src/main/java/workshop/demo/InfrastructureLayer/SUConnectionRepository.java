@@ -15,7 +15,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 @Repository
 public class SUConnectionRepository implements ISUConnectionRepo {
 
-    private final SuperDataStructure data;
+    private SuperDataStructure data;
 
     @Autowired
     public SUConnectionRepository() {
@@ -185,6 +185,11 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     public int removeUserAccordingly(int userId) throws Exception {
         return this.data.removeUserAccordingly(userId);
     }
+ public void clear() {
+        this.data= new SuperDataStructure(); 
+        data.clearData();
+    }
+
 
         @Override
     public Permission[] getPermissions(Node node) {

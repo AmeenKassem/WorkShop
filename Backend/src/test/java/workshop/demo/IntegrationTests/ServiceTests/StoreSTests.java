@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import workshop.demo.ApplicationLayer.AdminService;
+import workshop.demo.ApplicationLayer.AdminService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
 import workshop.demo.ApplicationLayer.StockService;
@@ -63,8 +64,9 @@ public class StoreSTests {
     AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
     UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
     UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"), new AdminService(orderRepository, storeRepository, userRepo, authRepo));
-    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
+ AdminService adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
+    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
+
     StoreService storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
     PurchaseService purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
     String NOToken;
@@ -87,9 +89,10 @@ public class StoreSTests {
         adminInitilizer = new AdminInitilizer("123321");
         userRepo = new UserRepository(encoder, adminInitilizer);
         suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-        userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"), new AdminService(orderRepository, storeRepository, userRepo, authRepo));
-        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
-        storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
+
+  adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
+     userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
+      storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
         purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
 
         GToken = userService.generateGuest();
@@ -105,7 +108,9 @@ public class StoreSTests {
         // ======================= STORE CREATION =======================
 
         int created1 = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
-        assertEquals(created1, 1);
+
+        assertEquals(created1,1);
+
 
         // ======================= PRODUCT & ITEM ADDITION =======================
         String[] keywords = {"Laptop", "Lap", "top"};
@@ -240,6 +245,7 @@ public class StoreSTests {
         String token1 = userService.login(token, "token", "token");
 
         // === Act ===
+
         //must make an offer before:
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
         storeService.AddOwnershipToStore(1, 3, 5, true);
@@ -343,10 +349,9 @@ public class StoreSTests {
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, authRepo.getUserName(token1), a);
-
-        storeService.AddManagerToStore(1, 3, 5, true);
-        // when decide true some list is null (i think its permissions list)
-        assertTrue(storeService.ViewRolesAndPermissions(1).size() == 2);
+        storeService.AddManagerToStore(1, 3, 5,true);
+        // when decide equals true some list is null (i think its permissions list)
+       assertTrue( storeService.ViewRolesAndPermissions(1).size()==2);
 
     }
 

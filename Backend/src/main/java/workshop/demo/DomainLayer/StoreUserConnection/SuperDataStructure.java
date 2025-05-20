@@ -354,6 +354,14 @@ public class SuperDataStructure {
         }
         return userId;
     }
+    public void clearData() {
+    if (employees != null) {
+        employees.clear();
+    }
+    offers.clear();
+    storeLocks.clear();
+
+
 
     public List<Node> getAllWorkers(int storeId) throws Exception {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeId, k -> new ReentrantLock());
@@ -388,6 +396,7 @@ public class SuperDataStructure {
             return null; // Owner have no permessions
         }
     }
+
 }
 
 

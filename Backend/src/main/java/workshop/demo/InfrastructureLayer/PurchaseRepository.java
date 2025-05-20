@@ -64,11 +64,9 @@ public class PurchaseRepository implements IPurchaseRepo {
         return randomParticipationByUser.getOrDefault(userId, Collections.emptyList());
     }
    public void clear() {
-        if (bidsByUser != null) {
             bidsByUser.clear();
-        }
-        if (randomParticipationByUser != null) {
+        
             randomParticipationByUser.clear();
-        }
+    
 }
 }

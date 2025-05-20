@@ -87,6 +87,7 @@ public class Auction {
 
         // TODO set a time date for ending product.
         res.auctionId = this.auctionId;
+        res.bids=arrayBids; // this line wasnt here , so bids was always null 
         return res;
     }
 
