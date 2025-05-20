@@ -186,8 +186,9 @@ public class SUConnectionRepository implements ISUConnectionRepo {
         return this.data.removeUserAccordingly(userId);
     }
  public void clear() {
+            data.clearData();
+
         this.data= new SuperDataStructure(); 
-        data.clearData();
     }
 
 

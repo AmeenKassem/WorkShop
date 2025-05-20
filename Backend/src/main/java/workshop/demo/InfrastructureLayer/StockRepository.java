@@ -418,7 +418,9 @@ public class StockRepository implements IStockRepo {
 
     public void clear() {
         idGen.set(1);
-
+    for (ActivePurcheses activePurchases : storeId2ActivePurchases.values()) {
+        activePurchases.clear(); 
+    }
         if (storeId2ActivePurchases != null) {
             storeId2ActivePurchases.clear();
         }

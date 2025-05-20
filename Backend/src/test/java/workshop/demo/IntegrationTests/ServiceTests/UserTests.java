@@ -346,6 +346,7 @@ public class UserTests {
         storeService.addStoreToSystem(NOToken, "failure", "HOME");
 
         ItemStoreDTO[] products = stockService.getProductsInStore(2);
+// ask bhaa i dont know what is happening , how are we getting an item please help help help
 
         // ===== ASSERT =====
         assertTrue(products.length==0);

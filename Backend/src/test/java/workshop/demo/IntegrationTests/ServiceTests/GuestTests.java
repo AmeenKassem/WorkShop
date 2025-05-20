@@ -194,7 +194,7 @@ public class GuestTests {
         storeService.addStoreToSystem(NOToken, "failure", "HOME");
 
         ItemStoreDTO[] products = stockService.getProductsInStore(2);
-
+// ask bhaa i dont know what is happening , how are we getting an item please help help help
         // ===== ASSERT =====
         assertTrue(products.length==0);
     }
@@ -342,9 +342,9 @@ public class GuestTests {
         String[] keywords = { "Laptop", "Lap", "top" };
         System.out.println(storeService.getFinalRateInStore(1));
 
-        ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.ELECTRONICS, null, 1, 0, 2000, 0,
-                2);
-
+        ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.ELECTRONICS, keywords[0], 1, 0, 3000, 0,
+                5);
+// ask bhaa for help 
         // --- Step 5: Call the system under test ---
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
 
