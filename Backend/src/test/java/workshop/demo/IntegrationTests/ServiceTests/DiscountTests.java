@@ -1,5 +1,6 @@
 package workshop.demo.IntegrationTests.ServiceTests;
 
+import com.vaadin.flow.component.html.Pre;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -27,6 +28,7 @@ import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Discount;
 import workshop.demo.DomainLayer.Store.DiscountScope;
+import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.Store.VisibleDiscount;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
@@ -158,23 +160,29 @@ public class DiscountTests {
     }
         @Test
     void add_discount() throws Exception {
-    Predicate<DiscountScope> condition=scope->scope.containsCategory(Category.ELECTRONICS.toString());
-Discount discount = new VisibleDiscount("10% off ELECTRONICS", 0.10, condition);
-
-List<ItemStoreDTO> items = List.of(
-        itemStoreDTO = new ItemStoreDTO(1, 4, 2000, Category.ELECTRONICS, 0, 1, "Laptop")
-    );
-    storeService.addDiscountToStore(0, GToken, null);
-    userService.addToUserCart(GToken, itemStoreDTO,1);
-       PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
-        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
-        ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
-        System.out.println(receipts[0].getFinalPrice());
-        assertTrue(receipts[0].getFinalPrice()==2000); //
-        CreateDiscountDTO dd=new CreateDiscountDTO(); 
-        
-
-
+//    Predicate<DiscountScope> condition=scope->scope.containsCategory(Category.ELECTRONICS.toString());
+//    Discount discount = new VisibleDiscount("10% off ELECTRONICS", 0.10, condition);
+//
+//    List<ItemStoreDTO> items = List.of(
+//        itemStoreDTO = new ItemStoreDTO(1, 4, 2000, Category.ELECTRONICS, 0, 1, "Laptop")
+//        );
+//    storeService.addDiscountToStore(, NOToken, null);
+//    userService.addToUserCart(GToken, itemStoreDTO,1);
+//       PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+//        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+//        ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
+//        System.out.println(receipts[0].getFinalPrice());
+//        assertTrue(receipts[0].getFinalPrice()==2000); //
+//        CreateDiscountDTO dd=new CreateDiscountDTO();
+//
+    Store store = new Store(9,"AmeenIsCrazyStore","CrazyStores");
+    Predicate<DiscountScope> cond = scope -> scope.containsCategory("ELECTRONICS");
+    Discount discount = new VisibleDiscount("10% off elec", 0.10, cond);
+    store.addDiscount(discount);
+    List<ItemStoreDTO> items = List.of(new ItemStoreDTO(1, 2, 100, Category.ELECTRONICS, 0, 1, "Laptop"));
+    DiscountScope scope = new DiscountScope(items);
+            assertTrue(store.getDiscount().isApplicable(scope));
+            assertEquals(20.0, store.getDiscount().apply(scope), 0.001);
     }
 
 }
