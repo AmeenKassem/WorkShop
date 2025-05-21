@@ -23,7 +23,7 @@ public class ReviewController {
     private ReviewService reviewService;
 
     public ReviewController(Repos repo) {
-        this.reviewService = new ReviewService(repo.reviewRepo, repo.auth, repo.userRepo, repo.storeRepo);
+        this.reviewService = new ReviewService(repo.reviewRepo, repo.auth, repo.userRepo, repo.storeRepo,repo.stockrepo);
     }
 
     @PostMapping("/addToProduct")

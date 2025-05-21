@@ -354,7 +354,7 @@ public class StoreService {
             throw new UIException("You do not have permission to add discounts to this store", ErrorCodes.NO_PERMISSION);
         }
 
-        Store store = storeRepo.getStores().get(storeId);
+        Store store = storeRepo.findStoreByID(storeId);
         Discount discount = DiscountFactory.fromDTO(dto);
         store.addDiscount(discount);
         logger.info("Discount '{}' added successfully to store {}", discount.getName(), storeId);
@@ -373,7 +373,7 @@ public class StoreService {
             throw new UIException("You do not have permission to remove discounts", ErrorCodes.NO_PERMISSION);
         }
 
-        Store store = storeRepo.getStores().get(storeId);
+        Store store = storeRepo.findStoreByID(storeId);
         boolean removed = store.removeDiscountByName(discountName);
         if (!removed) {
             throw new UIException("Discount not found: " + discountName, ErrorCodes.DISCOUNT_NOT_FOUND);
