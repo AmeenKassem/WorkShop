@@ -164,13 +164,16 @@ public class PurchaseTests {
         int bidId = stockService.setProductToBid(NOToken, 1, 1, 1);
 
         boolean a = stockService.addRegularBid(NGToken, bidId, 1, 10);
+        for (BidDTO iterable_element : stockService.getAllBidsStatus(NOToken, 1)) {
+            System.err.println(iterable_element.bidId);
+        }
         assertTrue(a);
-        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_PENDING));
-        assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
-        stockService.acceptBid(NOToken, 1, bidId, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getId());
-        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_ACCEPTED));
+        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[1].bids[0].getStatus().equals(Status.BID_PENDING));
+        assertFalse(stockService.getAllBidsStatus(NOToken, 1)[1].isAccepted);
+        stockService.acceptBid(NOToken, 1, bidId, stockService.getAllBidsStatus(NOToken, 1)[1].bids[0].getId());
+        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[1].bids[0].getStatus().equals(Status.BID_ACCEPTED));
 
-        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
+        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[1].isAccepted);
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
         ReceiptDTO[] receipts = purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
