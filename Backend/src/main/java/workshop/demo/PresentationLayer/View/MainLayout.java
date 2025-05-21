@@ -10,7 +10,6 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -78,12 +77,6 @@ public class MainLayout extends AppLayout {
         // presenter.handleOnDetach();
     }
 
-    public void showError(String msg) {
-        UI.getCurrent().access(() -> {
-            Notification.show("❌ " + msg, 4000, Notification.Position.MIDDLE);
-        });
-    }
-
     private void addRightSideButtons() {
         // Determine user type
         String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
@@ -140,15 +133,7 @@ public class MainLayout extends AppLayout {
 
             billButton.addClassName("right-button"); // consistent styling
             buttonColumn.add(billButton);
-            buttonColumn.add(billButton); // ✅ Add to layout normally
-            // header.getElement().getStyle().set("position", "relative"); // anchor
-            // container
-            // header.add(billButton);
-            // open my own store
-            RouterLink openStore = new RouterLink("Open My Store", OpenStoreView.class);
-            // view
-            openStore.addClassName("right-button");
-            buttonColumn.add(openStore);
+            buttonColumn.add(billButton);
 
             // logout: Logout as a clickable Div (since RouterLink is for navigation)
             Div logout = new Div();

@@ -10,6 +10,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLink;
 
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.PresentationLayer.Presenter.MyStoresPresenter;
@@ -22,16 +23,20 @@ public class MyStoresView extends VerticalLayout {
 
     public MyStoresView() {
         this.presenter = new MyStoresPresenter(this);
+        addOpenStoreButton();
         presenter.loadMyStores();
+
     }
 
     public void displayStores(List<StoreDTO> stores) {
         removeAll();
+        addOpenStoreButton();
+
         if (stores == null || stores.isEmpty()) {
             add(new Span("📭 You do not have any store YET!"));
             return;
         }
-        add(new H2("📋 Your Stores:"));
+        add(new H2("Your Stores:"));
         FlexLayout storeContainer = new FlexLayout();
         storeContainer.getStyle().set("flex-wrap", "wrap");
         storeContainer.setJustifyContentMode(JustifyContentMode.START);
@@ -67,5 +72,15 @@ public class MyStoresView extends VerticalLayout {
             storeContainer.add(card);
         }
         add(storeContainer);
+    }
+
+    private void addOpenStoreButton() {
+        RouterLink openStoreLink = new RouterLink();
+        Button openStoreBtn = new Button("Open My Store");
+        openStoreLink.setRoute(OpenStoreView.class);
+        openStoreLink.add(openStoreBtn);
+
+        openStoreBtn.addClassName("right-button");
+        add(openStoreLink);
     }
 }

@@ -100,7 +100,7 @@ public class InitPresenter {
 
                 ApiResponse body = response.getBody();
                 if (body != null && body.getErrNumber() != -1) {
-                    view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
 
                 }
                 // Clear session and redirect
@@ -113,16 +113,16 @@ public class InitPresenter {
                     ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
 
                     if (errorBody.getErrNumber() != -1) {
-                        view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                        NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
                     } else {
-                        view.showError("FAILED: " + errorBody.getErrorMsg());
+                        NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
                     }
                 } catch (Exception parsingEx) {
-                    view.showError("HTTP error: " + e.getMessage());
+                    NotificationView.showError("HTTP error: " + e.getMessage());
                 }
 
             } catch (Exception e) {
-                view.showError("UNEXPECTED ERROR: " + e.getMessage());
+                NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
 
             }
         }
