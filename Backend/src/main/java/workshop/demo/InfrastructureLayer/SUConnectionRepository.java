@@ -15,7 +15,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 @Repository
 public class SUConnectionRepository implements ISUConnectionRepo {
 
-    private final SuperDataStructure data;
+    private SuperDataStructure data;
 
     @Autowired
     public SUConnectionRepository() {
@@ -185,4 +185,37 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     public int removeUserAccordingly(int userId) throws Exception {
         return this.data.removeUserAccordingly(userId);
     }
+ public void clear() {
+            data.clearData();
+
+        this.data= new SuperDataStructure(); 
+    }
+
+
+        @Override
+    public Permission[] getPermissions(Node node) {
+        return this.data.getPermissions(node);
+    }
+
+    @Override
+    public List<Node> getAllWorkers(int storeId) throws Exception {
+        return this.data.getAllWorkers(storeId);
+    }
+    @Override
+    public boolean hasPermission(int userId, int storeId, Permission permission) {
+        try {
+            Node worker = getWorkerInStoreById(storeId, userId);
+            if (worker == null) return false;
+
+            // If the user is an owner, allow all
+            if (!worker.getIsManager()) return true;
+
+            // If the user is a manager, check for specific permission
+            return worker.getMyAuth().hasAutho(permission);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+
 }

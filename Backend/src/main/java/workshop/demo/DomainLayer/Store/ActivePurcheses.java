@@ -283,14 +283,25 @@ public class ActivePurcheses {
 
     public int getProductIdForSpecial(int specialId,SpecialType type){
         switch (type) {
-            case SpecialType.Auction:
+            case Auction:
                 return activeAuction.get(specialId).getProductId();
-            case SpecialType.BID:
+            case BID:
                 return activeBid.get(specialId).getProductId();
-            case SpecialType.Random:
+            case Random:
                 return activeRandom.get(specialId).getProductId();
             default:
                 return -1;
         }
     }
+    public void clear() {
+    activeBid.clear();
+    activeRandom.clear();
+    activeAuction.clear();
+
+    // Optionally reset static ID generators if needed
+    bidIdGen.set(0);
+    auctionIdGen.set(0);
+    randomIdGen.set(0);
+}
+
 }

@@ -101,7 +101,7 @@ public class PurcheseContoller {
         ApiResponse<ParticipationInRandomDTO> res;
         try {
             ParticipationInRandomDTO result = purchaseService.participateInRandom(token, randomId, storeId, amountPaid,
-                    payment);
+payment);
             res = new ApiResponse<>(result, null);
         } catch (UIException e) {
             res = new ApiResponse<>(null, e.getMessage(), e.getNumber());

@@ -1,7 +1,5 @@
 package workshop.demo.ApplicationLayer;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -183,6 +181,19 @@ public class StockService {
         logger.info("Bid accepted. User: {} is the winner.", winner.getUserId());
         return winner;
     }
+    public void rejectBid(String token, int storeId, int bidId, int bidTorejectId) throws Exception, DevException {
+        logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidTorejectId, bidId, storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        storeRepo.checkStoreExistance(storeId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+            throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
+        }
+
+        stockRepo.rejectBid(storeId, bidId, bidTorejectId);
+    }
 
     public int setProductToRandom(String token, int productId, int quantity, double productPrice, int storeId,
             long RandomTime) throws UIException, DevException {
@@ -227,10 +238,14 @@ public class StockService {
     public int addItem(int storeId, String token, int productId, int quantity, int price, Category category)
             throws Exception, DevException {
         logger.info("User attempting to add item {} to store {}", productId, storeId);
+         if (quantity <= 0) {
+        throw new UIException("Quantity must be greater than zero.", ErrorCodes.INVALID_QUANTITY); 
+    }
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        logger.info("HmodeID is:{}",storeId);
         storeRepo.checkStoreExistance(storeId);
         if (!suConnectionRepo.manipulateItem(userId, storeId, Permission.AddToStock)) {
             throw new UIException("This worker is not authorized!", ErrorCodes.NO_PERMISSION);
@@ -312,5 +327,14 @@ public class StockService {
         this.stockRepo.rankProduct(storeId, productId, newRank);
         logger.info("the rank updated successfully for product {} in store {}", productId, storeId);
         return productId;
+    }
+
+    public ProductDTO[] getAllProducts(String token) throws Exception {
+        logger.info("fetching all the products in the system");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        return stockRepo.getAllProducts();
     }
 }

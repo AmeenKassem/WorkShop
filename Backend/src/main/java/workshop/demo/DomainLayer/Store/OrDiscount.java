@@ -1,17 +1,20 @@
 package workshop.demo.DomainLayer.Store;
 
-import workshop.demo.DomainLayer.User.ShoppingCart;
-
-public class OrDiscount extends CompositeDiscount{
-    public OrDiscount(String name){
+public class OrDiscount extends CompositeDiscount {
+    public OrDiscount(String name) {
         super(name);
     }
+
     @Override
-    public double apply(ShoppingCart shoppingCart) {
-        double total = 0.0;
-        for (Discount discount : subDiscounts) {
-            total += discount.apply(shoppingCart);
-        }
-        return total;
+    public boolean isApplicable(DiscountScope scope) {
+        return discounts.stream().anyMatch(d -> d.isApplicable(scope));
+    }
+
+    @Override
+    public double apply(DiscountScope scope) {
+        return discounts.stream()
+                .filter(d -> d.isApplicable(scope))
+                .mapToDouble(d -> d.apply(scope))
+                .sum();
     }
 }
