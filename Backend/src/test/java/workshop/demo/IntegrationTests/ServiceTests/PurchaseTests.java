@@ -106,7 +106,7 @@ public class PurchaseTests  {
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 5, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1,"LapAsus");
+        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1,"Laptop");
                 stockService.setProductToRandom(NOToken,1,1,2000,1,5000);
                         stockService.setProductToBid(NOToken,1,1,1); 
                                stockService.setProductToAuction(NOToken,1,1,1,1000,2);
@@ -134,60 +134,65 @@ public class PurchaseTests  {
             orderRepository.clear();
             suspensionRepo.clear();
             purchaseRepository.clear();
+            sIsuConnectionRepo.clear();
+
+
+
     }
     //Needs Fixing!
     //AddBID
-//    @Test
-//    void Add_BidProductToSpecialCart_Success_acceptBID() throws Exception {
-//
-//        // Act
-//        System.out.println("hfjklhasdfjlhfjklgrf"+stockService.getAllBidsStatus(NOToken, 1)[0].bidId);
-//        stockService.addRegularBid(NGToken, 1, 1, 10);
-//        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_PENDING));
-//        assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
-//        stockService.acceptBid(NOToken, 1, 1, 1);
-//                assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_ACCEPTED));
-//
-//
-//         assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
-//         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
-//        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
-//      ReceiptDTO[] receipts =   purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
-//
-//  assertNotNull(receipts);
-//        assertEquals(1, receipts.length);
-//        assertEquals("TestStore", receipts[0].getStoreName());
-//        assertEquals(10,
-//                receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
-//
-//        List<ReceiptDTO> result = orderService.getReceiptDTOsByUser(NGToken);
-//
-//        assertEquals(1, result.size());
-//        ReceiptDTO r = result.get(0);
-//        assertEquals("TestStore", r.getStoreName());
-//        assertEquals(10, r.getFinalPrice());
-//
-//
-//        // Assert
-//    }
-    //Needs Fixing!
-//     @Test
-//    void Add_BidProductToSpecialCart_Success_rejectBID() throws Exception {
-//    //  stockService.setProductToBid(NOToken,1,1,1);
-//
-//        // Act
-//        stockService.addRegularBid(NGToken, 1, 1, 10);
-//                stockService.addRegularBid(NGToken, 1, 1, 10);
-//
-//        assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
-//        stockService.rejectBid(NOToken, 1, 1, 2);
-//
-//
-//         assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
-//
-//
-//        // Assert
-//    }
+    @Test
+    void Add_BidProductToSpecialCart_Success_acceptBID() throws Exception {
+       
+        // Act
+              stockService.setProductToBid(NOToken,1,1,1); 
+
+        stockService.addRegularBid(NGToken, 1, 1, 10);
+        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_PENDING));
+        assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
+        stockService.acceptBid(NOToken, 1, 1, 1);
+                assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_ACCEPTED));
+
+
+         assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
+         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+      ReceiptDTO[] receipts =   purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
+
+  assertNotNull(receipts);
+        assertEquals(1, receipts.length);
+        assertEquals("TestStore", receipts[0].getStoreName());
+        assertEquals(10,
+                receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice());
+
+        List<ReceiptDTO> result = orderService.getReceiptDTOsByUser(NGToken);
+
+        assertEquals(1, result.size());
+        ReceiptDTO r = result.get(0);
+        assertEquals("TestStore", r.getStoreName());
+        assertEquals(10, r.getFinalPrice());
+
+
+        // Assert
+    }
+     @Test
+    void Add_BidProductToSpecialCart_Success_rejectBID() throws Exception {
+      stockService.setProductToBid(NOToken,1,1,1); 
+
+        // Act
+        
+        stockService.addRegularBid(NGToken, 1, 1, 10);
+                stockService.addRegularBid(NGToken, 1, 1, 10);
+
+        assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
+        stockService.rejectBid(NOToken, 1, 1, 2);
+
+
+         assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
+        
+
+        // Assert
+    }
 
 
     @Test

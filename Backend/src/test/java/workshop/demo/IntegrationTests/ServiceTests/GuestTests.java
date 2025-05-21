@@ -189,16 +189,16 @@ public class GuestTests {
         assertTrue(items.length == 1);
         assertTrue(items[0].getId() == 1);
     }
-    //Needs Fixing!
-//    @Test
-//    void testGuestViewEmptyStore() throws Exception {
-//        storeService.addStoreToSystem(NOToken, "failure", "HOME");
-//
-//        ItemStoreDTO[] products = stockService.getProductsInStore(2);
-//
-//        // ===== ASSERT =====
-//        assertTrue(products.length==0);
-//    }
+
+    @Test
+    void testGuestViewEmptyStore() throws Exception {
+        storeService.addStoreToSystem(NOToken, "failure", "HOME");
+
+        ItemStoreDTO[] products = stockService.getProductsInStore(2);
+// ask bhaa i dont know what is happening , how are we getting an item please help help help
+        // ===== ASSERT =====
+        assertTrue(products.length==0);
+    }
 
     @Test
     void testGuestGetProductInfo() throws Exception {
@@ -335,30 +335,30 @@ public class GuestTests {
         assertEquals(1, result[0].getStoreId());
         assertEquals(Category.ELECTRONICS, result[0].getCategory());
     }
-    //Needs Fixing!
-//    @Test
-//    void testGuestSearchProducts_Success() throws Exception {
-//
-//        // --- Step 2: Prepare search criteria ---
-//        String[] keywords = { "Laptop", "Lap", "top" };
-//        System.out.println(storeService.getFinalRateInStore(1));
-//
-//        ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.ELECTRONICS, null, 1, 0, 2000, 0,
-//                2);
-//
-//        // --- Step 5: Call the system under test ---
-//        ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
-//
-//        // --- Step 6: Assert results ---
-//        assertNotNull(result);
-//        assertEquals(1, result.length);
-//        assertEquals(1, result[0].getId());
-//        assertEquals(2000, result[0].getPrice());
-//        assertEquals(1, result[0].getStoreId());
-//
-//        // --- Step 7: Verify mocks ---
-//
-//    }
+
+    @Test
+    void testGuestSearchProducts_Success() throws Exception {
+
+        // --- Step 2: Prepare search criteria ---
+        String[] keywords = { "Laptop", "Lap", "top" };
+        System.out.println(storeService.getFinalRateInStore(1));
+
+        ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.ELECTRONICS, keywords[0], 1, 0, 3000, 0,
+                5);
+// ask bhaa for help 
+        // --- Step 5: Call the system under test ---
+        ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
+
+        // --- Step 6: Assert results ---
+        assertNotNull(result);
+        assertEquals(1, result.length);
+        assertEquals(1, result[0].getId());
+        assertEquals(2000, result[0].getPrice());
+        assertEquals(1, result[0].getStoreId());
+
+        // --- Step 7: Verify mocks ---
+
+    }
 
     @Test
     void testSearchProducts_InvalidToken() throws Exception {

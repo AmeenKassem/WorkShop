@@ -342,16 +342,17 @@ public class UserTests {
         assertTrue(items[0].getId() == 1);
 
     }
-    //Needs Fixing!
-//    @Test
-//    void testUserViewEmptyStore() throws Exception {
-//        storeService.addStoreToSystem(NOToken, "failure", "HOME");
-//
-//        ItemStoreDTO[] products = stockService.getProductsInStore(2);
-//
-//        // ===== ASSERT =====
-//        assertTrue(products.length==0);
-//    }
+
+    @Test
+    void testUserViewEmptyStore() throws Exception {
+        storeService.addStoreToSystem(NOToken, "failure", "HOME");
+
+        ItemStoreDTO[] products = stockService.getProductsInStore(2);
+// ask bhaa i dont know what is happening , how are we getting an item please help help help
+
+        // ===== ASSERT =====
+        assertTrue(products.length==0);
+    }
 
     @Test
     void testUserViewInvalidStore() throws Exception {
