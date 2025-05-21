@@ -238,6 +238,9 @@ public class StockService {
     public int addItem(int storeId, String token, int productId, int quantity, int price, Category category)
             throws Exception, DevException {
         logger.info("User attempting to add item {} to store {}", productId, storeId);
+         if (quantity <= 0) {
+        throw new UIException("Quantity must be greater than zero.", ErrorCodes.INVALID_QUANTITY); 
+    }
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
