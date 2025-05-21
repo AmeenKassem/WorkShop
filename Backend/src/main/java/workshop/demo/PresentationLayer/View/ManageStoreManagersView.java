@@ -23,7 +23,7 @@ import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.PresentationLayer.Presenter.ManageStoreManagersPresenter;
 
-@Route("manage-store-managers")
+@Route(value = "manage-store-managers", layout = MainLayout.class)
 // @CssImport("./Theme/manageStoreTheme.css")
 public class ManageStoreManagersView extends VerticalLayout implements HasUrlParameter<Integer> {
 
@@ -120,11 +120,15 @@ public class ManageStoreManagersView extends VerticalLayout implements HasUrlPar
         managersListLayout.removeAll();
 
         for (WorkerDTO manager : managers) {
+            if (!manager.isManager() && !manager.isSetByMe()) {
+                continue;
+            }
+
             VerticalLayout managerBlock = new VerticalLayout();
             managerBlock.getStyle().set("border", "1px solid #ddd").set("border-radius", "8px").set("padding", "1.5rem")
                     .set("background", "#fff");
 
-            Paragraph name = new Paragraph(manager.Username);
+            Paragraph name = new Paragraph(manager.getUsername());
             name.getStyle().set("font-weight", "bold").set("margin-bottom", "0.8rem");
 
             Map<Permission, Checkbox> checkboxMap = new HashMap<>();
@@ -134,15 +138,15 @@ public class ManageStoreManagersView extends VerticalLayout implements HasUrlPar
 
             for (Permission permission : Permission.values()) {
                 Checkbox checkbox = new Checkbox(permission.name());
-                checkbox.setValue(Arrays.asList(manager.permessions).contains(permission));
+                checkbox.setValue(Arrays.asList(manager.getPermessions()).contains(permission));
                 checkboxMap.put(permission, checkbox);
                 permissions.add(checkbox);
             }
 
-            Button saveBtn = new Button("Save", e -> presenter.savePermissions(manager.workerId, checkboxMap));
+            Button saveBtn = new Button("Save", e -> presenter.savePermissions(manager.getWorkerId(), checkboxMap));
             saveBtn.addClassName("save-permissions-button");
 
-            Button deleteBtn = new Button("Delete", e -> presenter.deleteManager(manager.workerId));
+            Button deleteBtn = new Button("Delete", e -> presenter.deleteManager(manager.getWorkerId()));
             deleteBtn.addClassName("delete-manager-button");
 
             HorizontalLayout actionRow = new HorizontalLayout(saveBtn, deleteBtn);

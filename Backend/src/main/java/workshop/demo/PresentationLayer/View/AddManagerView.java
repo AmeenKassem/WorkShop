@@ -114,12 +114,22 @@ public class AddManagerView extends VerticalLayout implements HasUrlParameter<In
 
     private String getPermissionLabel(Permission p) {
         return switch (p) {
-            case ViewAllProducts -> "View all products";
-            case AddToStock -> "Add new Product to the store";
-            case DeleteFromStock -> "Delete existing product from the store";
-            case UpdateQuantity -> "Handle customer complaints";
-            case UpdatePrice -> "Change the price of products";
-            case SpecialType -> "Manage other managers";
+            case ViewAllProducts ->
+                "View all products";
+            case AddToStock ->
+                "Add new Product to the store";
+            case DeleteFromStock ->
+                "Delete existing product from the store";
+            case UpdateQuantity ->
+                "Handle customer complaints";
+            case UpdatePrice ->
+                "Change the price of products";
+            case SpecialType ->
+                "Manage other managers";
+            case MANAGE_STORE_POLICY ->
+                throw new UnsupportedOperationException("Unimplemented case: " + p);
+            default ->
+                throw new IllegalArgumentException("Unexpected value: " + p);
         };
     }
 

@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.ManageOwnersView;
 import workshop.demo.PresentationLayer.View.NotificationView;
@@ -28,9 +29,58 @@ public class ManageOwnersPresenter {
     }
 
     public void loadOwners(int storeId) {
-        //here must call the function that not implemented yet
-        //just to see
-        view.buildManageUI(List.of());
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        String url = String.format(
+                "http://localhost:8080/api/store/viewRolesAndPermissions?storeId=%d&token=%s",
+                storeId,
+                token
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    ApiResponse.class
+            );
+
+            ApiResponse raw = response.getBody();
+            if (raw == null || raw.getData() == null) {
+                NotificationView.showError("Could not load owners: No data received.");
+                view.buildManageUI(List.of());
+                return;
+            }
+
+            ObjectMapper mapper = new ObjectMapper();
+            List<WorkerDTO> allWorkers = mapper.convertValue(
+                    raw.getData(),
+                    mapper.getTypeFactory().constructCollectionType(List.class, WorkerDTO.class)
+            );
+
+            // Filter only owners
+            List<WorkerDTO> owners = allWorkers.stream()
+                    .filter(worker -> worker.isOwner() && worker.isSetByMe())
+                    .toList();
+
+            view.buildManageUI(owners);
+
+        } catch (HttpClientErrorException e) {
+            try {
+                String responseBody = e.getResponseBodyAsString();
+                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
+                NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+            } catch (Exception ex) {
+                NotificationView.showError("HTTP error: " + e.getMessage());
+            }
+            view.buildManageUI(List.of());
+
+        } catch (Exception e) {
+            NotificationView.showError("❌ Failed to load owners: " + e.getMessage());
+            view.buildManageUI(List.of());
+        }
 
     }
 
@@ -105,7 +155,7 @@ public class ManageOwnersPresenter {
 
             ApiResponse body = response.getBody();
             if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
-                NotificationView.showSuccess("✅ Offer sent to " + newOwnerUsername);
+                NotificationView.showSuccess("Offer sent to " + newOwnerUsername);
                 loadOwners(storeId);
             } else if (body.getErrNumber() != -1) {
                 NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));

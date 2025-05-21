@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.DTOs.CreateDiscountDTO;
 import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
@@ -232,10 +233,10 @@ public class StoreController {
     //     }
     // }
     @GetMapping("/allStores")
-    public ResponseEntity<?> getAllStoresToshow() {
+    public ResponseEntity<ApiResponse<List<StoreDTO>>> getAllStoresToshow() {
         try {
-            List<StoreDTO> orders = storeService.getAllStores();
-            return ResponseEntity.ok(new ApiResponse<>(orders, null));
+            List<StoreDTO> stores = storeService.getAllStores();
+            return ResponseEntity.ok(new ApiResponse<>(stores, null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(null, e.getMessage(), -1));

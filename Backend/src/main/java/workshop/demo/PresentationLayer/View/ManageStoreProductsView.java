@@ -1,5 +1,7 @@
 package workshop.demo.PresentationLayer.View;
 
+import java.util.Map;
+
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -7,7 +9,6 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -15,15 +16,14 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
+
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.PresentationLayer.Presenter.ManageStoreProductsPresenter;
 
-import java.util.Map;
-
 @Route(value = "manage-store-products", layout = MainLayout.class)
-@CssImport("./styles/manage-products.css")
+@CssImport("./Theme/manage-products.css")
 public class ManageStoreProductsView extends VerticalLayout implements HasUrlParameter<Integer> {
 
     private final ManageStoreProductsPresenter presenter;

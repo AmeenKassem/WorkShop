@@ -65,8 +65,9 @@ public class StoreSTests {
     AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
     UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
     UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
- AdminService adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
+    AdminService adminService = new AdminService(orderRepository, storeRepository, userRepo, authRepo);
+    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"), adminService);
+    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
 
     StoreService storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
     PurchaseService purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
@@ -91,9 +92,10 @@ public class StoreSTests {
         userRepo = new UserRepository(encoder, adminInitilizer);
         suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
 
-  adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-     userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
-      storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
+        adminService = new AdminService(orderRepository, storeRepository, userRepo, authRepo);
+        userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"), adminService);
+        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
+        storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
         purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
 
         GToken = userService.generateGuest();
@@ -110,15 +112,14 @@ public class StoreSTests {
 
         int created1 = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
 
-        assertEquals(created1,1);
-
+        assertEquals(created1, 1);
 
         // ======================= PRODUCT & ITEM ADDITION =======================
         String[] keywords = {"Laptop", "Lap", "top"};
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1,"Laptop");
+        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1, "Laptop");
 
         // ======================= SECOND GUEST SETUP =======================
     }
@@ -232,9 +233,8 @@ public class StoreSTests {
 
         // === Act ===
         storeService.AddOwnershipToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 2);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
         // ask bhaa i dont know what is happening ,  help help help
-
 
         // === Assert ===
         // assertEquals(sotre);
@@ -248,14 +248,13 @@ public class StoreSTests {
         String token1 = userService.login(token, "token", "token");
 
         // === Act ===
-
         //must make an offer before:
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
         storeService.AddOwnershipToStore(1, 3, 5, true);
         // ask bhaa i dont know what is happening ,  help help help
 
         // shouldnt work without offer
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 2);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
 
         // === Assert ===
         // assertEquals(sotre);
@@ -271,9 +270,9 @@ public class StoreSTests {
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
         storeService.AddOwnershipToStore(1, 3, 5, true);
 
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 2);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
         UIException ex = assertThrows(UIException.class, ()
-                ->                 storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token")
+                -> storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token")
         );
 
         assertEquals("This worker is already an owner/manager", ex.getMessage());
@@ -308,7 +307,7 @@ public class StoreSTests {
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
 
         storeService.AddOwnershipToStore(1, 3, 5, false);
-        assertTrue(storeService.ViewRolesAndPermissions(token1,1).size() == 1);
+        assertTrue(storeService.ViewRolesAndPermissions(token1, 1).size() == 1);
 
     }
 
@@ -322,10 +321,10 @@ public class StoreSTests {
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
 
         storeService.AddOwnershipToStore(1, 3, 5, true);
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 2);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
 
         assertDoesNotThrow(() -> storeService.DeleteOwnershipFromStore(1, NOToken, 5));
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 1);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 1);
 
     }
 
@@ -352,9 +351,9 @@ public class StoreSTests {
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, authRepo.getUserName(token1), a);
-        storeService.AddManagerToStore(1, 3, 5,true);
+        storeService.AddManagerToStore(1, 3, 5, true);
         // when decide equals true some list is null (i think its permissions list)
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 2);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
 
     }
 
@@ -369,7 +368,7 @@ public class StoreSTests {
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
         storeService.AddManagerToStore(1, 3, 5, false);
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 1);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 1);
 
     }
 
@@ -452,9 +451,9 @@ public class StoreSTests {
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
         storeService.AddManagerToStore(1, 3, authRepo.getUserId(token1), true);
-        
+
         storeService.deleteManager(1, NOToken, 5);
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 1);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 1);
     }
 
     @Test
@@ -508,7 +507,6 @@ public class StoreSTests {
 //    void testOwner_ManageStoreManagerPermissions_Failure_NotAManagerFlag() throws Exception {
 //        throw new Exception("need to impl view roles and permissons");
 //    }
-
     @Test
     void testOwner_DeactivateStore() throws Exception {
         int result = storeService.deactivateteStore(1, NOToken);
@@ -564,75 +562,64 @@ public class StoreSTests {
 
     }
 
-   @Test
-   void testOwner_RequestStoreRolesInfoAndPermission() throws Exception {
-  List<WorkerDTO> workers=storeService.ViewRolesAndPermissions(NOToken, 1);
-  assertTrue(workers.size()==1);
-  assertTrue(workers.get(0).isOwner==true);
-    assertTrue(workers.get(0).workerId==authRepo.getUserId(NOToken));
-        assertTrue(workers.get(0).Username.equals( authRepo.getUserName(NOToken)));
+    @Test
+    void testOwner_RequestStoreRolesInfoAndPermission() throws Exception {
+        List<WorkerDTO> workers = storeService.ViewRolesAndPermissions(NOToken, 1);
+        assertTrue(workers.size() == 1);
+        assertTrue(workers.get(0).isOwner() == true);
+        assertTrue(workers.get(0).getWorkerId() == authRepo.getUserId(NOToken));
+        assertTrue(workers.get(0).getUsername().equals(authRepo.getUserName(NOToken)));
 
+    }
 
+    @Test
+    void testOwner_AddPurchasePolicy() throws Exception {
+        //throw new Exception("need to impl view roles and permissons");
+    }
 
-   }
+    @Test
+    void testOwner_AddPurchasePolicy_Failure_InvalidPolicy() throws Exception {
+        //throw new Exception("need to impl view roles and permissons");
+    }
 
-   @Test
-   void testOwner_AddPurchasePolicy() throws Exception {
-       //throw new Exception("need to impl view roles and permissons");
-   }
+    @Test
+    void testOwner_AddPurchasePolicy_Failure_NotOwner() throws Exception {
+        //  throw new Exception("need to impl view roles and permissons");
 
-   @Test
-   void testOwner_AddPurchasePolicy_Failure_InvalidPolicy() throws Exception {
-       //throw new Exception("need to impl view roles and permissons");
-   }
+    }
 
-   @Test
-   void testOwner_AddPurchasePolicy_Failure_NotOwner() throws Exception {
-     //  throw new Exception("need to impl view roles and permissons");
+    @Test
+    void testOwner_DeletePurchasePolicy() throws Exception {
+        // throw new Exception("need to impl view roles and permissons");
 
-   }
+    }
 
+    @Test
+    void testOwner_DeletePurchasePolicy_Failure_NotFound() throws Exception {
+        //   throw new Exception("need to impl view roles and permissons");
+    }
 
-   @Test
-   void testOwner_DeletePurchasePolicy() throws Exception {
-      // throw new Exception("need to impl view roles and permissons");
-
-   }
-
-   @Test
-   void testOwner_DeletePurchasePolicy_Failure_NotFound() throws Exception {
-    //   throw new Exception("need to impl view roles and permissons");
-   }
-
-
-   @Test
-   void testOwner_DeletePurchasePolicy_Failure_NoPermission() throws Exception {
-    //   throw new Exception("need to impl view roles and permissons");
-   }
+    @Test
+    void testOwner_DeletePurchasePolicy_Failure_NoPermission() throws Exception {
+        //   throw new Exception("need to impl view roles and permissons");
+    }
 
 //    @Test
 //    void testOwner_ReplyToMessage() throws Exception {
 //        throw new Exception("need to impl view roles and permissons");
-
 //    }
-
-
 //    @Test
 //    void testOwner_ReplyToMessage_Failure_UserNotFound() throws Exception {
 //        throw new Exception("need to impl view roles and permissons");
 //    }
-
-
 //    @Test
 //    void testOwner_ReplyToMessage_Failure_MessageNotFound() throws Exception {
 //        throw new Exception("need to impl view roles and permissons");
 //    }
-
 //    @Test
 //    void testOwner_ReopenStore() throws Exception {
 //        throw new Exception("need to impl view roles and permissons");
 //    }
-
     //todo:this case is not checked
     @Test
     void testOwner_DeleteProductFromStock_Failure_ProductNotFound() throws Exception {

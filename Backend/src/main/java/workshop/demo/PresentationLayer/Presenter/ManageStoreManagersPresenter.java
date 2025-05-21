@@ -25,8 +25,10 @@ import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.ManageStoreManagersView;
+import workshop.demo.PresentationLayer.View.NotificationView;
 
 public class ManageStoreManagersPresenter {
+
     private final ManageStoreManagersView view;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -53,18 +55,19 @@ public class ManageStoreManagersPresenter {
             ApiResponse body = response.getBody();
 
             if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
-                List<WorkerDTO> managers = objectMapper.convertValue(body.getData(), new TypeReference<>() {});
+                List<WorkerDTO> managers = objectMapper.convertValue(body.getData(), new TypeReference<>() {
+                });
                 view.updateManagerList(managers);
             } else if (body != null) {
-                view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+                NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
             } else {
-                view.showError("Unexpected error: Empty response");
+                NotificationView.showError("Unexpected error: Empty response");
             }
 
         } catch (HttpClientErrorException e) {
             handleHttpClientException(e);
         } catch (Exception e) {
-            view.showError("UNEXPECTED ERROR: " + e.getMessage());
+            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
         }
     }
 

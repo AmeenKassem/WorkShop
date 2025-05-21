@@ -2,6 +2,7 @@ package workshop.demo.PresentationLayer.Presenter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.ManageStoreView;
@@ -250,4 +252,57 @@ public class ManageStorePresenter {
         }
     }
 
+    public List<WorkerDTO> viewEmployees(int storeId) {
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        if (token == null) {
+            NotificationView.showError("You must be logged in.");
+            return null;
+        }
+
+        try {
+            String url = String.format(
+                    "http://localhost:8080/api/store/viewRolesAndPermissions?storeId=%d&token=%s",
+                    storeId,
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<ApiResponse<List<WorkerDTO>>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<ApiResponse<List<WorkerDTO>>>() {
+            }
+            );
+
+            ApiResponse<List<WorkerDTO>> responseBody = response.getBody();
+
+            if (responseBody != null && responseBody.getErrNumber() == -1) {
+                return responseBody.getData() != null ? responseBody.getData() : Collections.emptyList();
+            } else {
+                NotificationView.showError(ExceptionHandlers.getErrorMessage(responseBody.getErrNumber()));
+                return Collections.emptyList();
+            }
+        } catch (HttpClientErrorException e) {
+            try {
+                String responseBody = e.getResponseBodyAsString();
+                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
+                if (errorBody.getErrNumber() != -1) {
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                } else {
+                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
+                }
+            } catch (Exception parsingEx) {
+                NotificationView.showError("HTTP error: " + e.getMessage());
+            }
+            return null;
+
+        } catch (Exception e) {
+            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+        }
+        return null;
+    }
 }

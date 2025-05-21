@@ -1,38 +1,59 @@
 package workshop.demo.DTOs;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public class WorkerDTO {
 
-    public String Username;
-    public boolean isManager;
-    public boolean isOwner;
-    public String storeName;
-    public Permission[] permessions;
-    public boolean setByMe;
-    public int workerId;
+    private String username;
+    private boolean manager;
+    private boolean owner;
+    private String storeName;
+    private Permission[] permessions;
+    private boolean setByMe;
+    private int workerId;
 
-    //change
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public WorkerDTO(int workerid, String username, boolean isManager, boolean isOwner, String storeName, Permission[] permissions, boolean setByMe) {
-        this.Username = username;
-        this.isManager = isManager;
-        this.isOwner = isOwner;
+        this.username = username;
+        this.manager = isManager;
+        this.owner = isOwner;
         this.storeName = storeName;
         this.permessions = permissions;
         this.setByMe = setByMe;
         this.workerId = workerid;
     }
 
+    public WorkerDTO() {
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
     public boolean isManager() {
-        return isManager;
+        return manager;
     }
 
     public boolean isOwner() {
-        return isOwner;
+        return owner;
     }
 
     public String getStoreName() {
         return storeName;
+    }
+
+    public Permission[] getPermessions() {
+        return permessions;
+    }
+
+    public boolean isSetByMe() {
+        return setByMe;
+    }
+
+    public int getWorkerId() {
+        return workerId;
     }
 
 }

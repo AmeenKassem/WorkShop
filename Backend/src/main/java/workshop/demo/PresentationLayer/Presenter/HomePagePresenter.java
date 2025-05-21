@@ -1,29 +1,31 @@
 package workshop.demo.PresentationLayer.Presenter;
 
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.HomePage;
-
+import workshop.demo.PresentationLayer.View.NotificationView;
 
 public class HomePagePresenter {
 
@@ -36,14 +38,50 @@ public class HomePagePresenter {
     }
 
     public List<StoreDTO> fetchStores() {
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         try {
-            ResponseEntity<StoreDTO[]> response = restTemplate.getForEntity(
-                    "http://localhost:8080/api/stores/allStores", StoreDTO[].class);
-            StoreDTO[] body = response.getBody();
-            return body != null ? Arrays.asList(body) : Collections.emptyList();
+            String url = String.format(
+                    "http://localhost:8080/api/store/allStores?token=%s",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<ApiResponse<List<StoreDTO>>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<ApiResponse<List<StoreDTO>>>() {
+            });
+
+            ApiResponse<List<StoreDTO>> responseBody = response.getBody();
+
+            if (responseBody != null && responseBody.getErrNumber() == -1) {
+                return responseBody.getData() != null ? responseBody.getData() : Collections.emptyList();
+            } else {
+                NotificationView.showError(ExceptionHandlers.getErrorMessage(responseBody.getErrNumber()));
+                return Collections.emptyList();
+            }
+
+        } catch (HttpClientErrorException e) {
+            try {
+                String responseBody = e.getResponseBodyAsString();
+                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
+
+                if (errorBody.getErrNumber() != -1) {
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                } else {
+                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
+                }
+            } catch (Exception parsingEx) {
+                NotificationView.showError("HTTP error: " + e.getMessage());
+            }
+            return null;
         } catch (Exception e) {
-            Notification.show("❌ Failed to load stores: " + e.getMessage());
-            return Collections.emptyList();
+            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+            return null;
         }
     }
 
