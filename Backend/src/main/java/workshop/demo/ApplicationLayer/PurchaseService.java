@@ -223,7 +223,7 @@ public class PurchaseService {
         }
     }
 
-    private ReceiptDTO[] saveReceipts(int userId, Map<Integer, List<ReceiptProduct>> storeToProducts)
+    private ReceiptDTO[] saveReceipts(int userId, Map<Integer, List<ReceiptProduct>> storeToProducts   )
             throws UIException {
         logger.info("saveReceipts called for userId={}", userId);
 
