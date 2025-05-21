@@ -22,26 +22,6 @@ public class OrderDTO {
     }
     // ADDED GETTERS FOR TESTS
 
-    public int getUserId() {
-        return userId;
-    }
-
-    public int getStoreId() {
-        return storeId;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public List<ReceiptProduct> getProductsList() {
-        return productsList;
-    }
-
-    public double getFinalPrice() {
-        return finalPrice;
-    }
-
     public void setUserId(int userId) {
         this.userId = userId;
     }
@@ -62,16 +42,23 @@ public class OrderDTO {
         this.finalPrice = finalPrice;
     }
 
-    // public String toFormattedString(String storeName) {
-    //     StringBuilder sb = new StringBuilder();
-    //     sb.append("🧾 Order from store: ").append(storeName).append("\n");
-    //     sb.append("User ID: ").append(userId).append("\n");
-    //     sb.append("Date: ").append(date).append("\n");
-    //     sb.append("Final Price: ").append(finalPrice).append("\n");
-    //     sb.append("Products:\n");
-    //     for (ReceiptProduct p : productsList) {
-    //         sb.append("- ").append(p.toString()).append("\n"); // customize if needed
-    //     }
-    //     return sb.toString();
-    // }
+    public int getUserId() {
+        return userId;
+    }
+
+    public int getStoreId() {
+        return storeId;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public List<ReceiptProduct> getProductsList() {
+        return productsList;
+    }
+
+    public double getFinalPrice() {
+        return finalPrice;
+    }
 }

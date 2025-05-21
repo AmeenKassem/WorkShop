@@ -1,8 +1,6 @@
 package workshop.demo.InfrastructureLayer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -233,19 +231,21 @@ public class StockRepository implements IStockRepo {
     }
 
     @Override
-    public void updateQuantity(int storeId, int productId, int newQuantity) throws UIException, DevException {
+    public boolean updateQuantity(int storeId, int productId, int newQuantity) throws UIException, DevException {
         if (storeStocks.get(storeId) == null) {
             throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
         }
         this.storeStocks.get(storeId).changeQuantity(productId, newQuantity);
+        return true;
     }
 
     @Override
-    public void updatePrice(int storeId, int productId, int newPrice) throws UIException, DevException {
+    public boolean updatePrice(int storeId, int productId, int newPrice) throws UIException, DevException {
         if (storeStocks.get(storeId) == null) {
             throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
         }
         this.storeStocks.get(storeId).updatePrice(productId, newPrice);
+        return true;
     }
 
     @Override
@@ -307,10 +307,10 @@ public class StockRepository implements IStockRepo {
         if (storeStocks.get(storeId) == null) {
             throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
         }
-        double requiredPrice = getProductPrice(storeId, randomId);
-        if (amountPaid < requiredPrice) {
-            throw new DevException("Insufficient payment");
-        }
+        // double requiredPrice = getProductPrice(storeId, randomId);// total price
+        // if (amountPaid > requiredPrice) {
+        //     throw new DevException("Insufficient payment");
+        // }
         return this.storeId2ActivePurchases.get(storeId).participateInRandom(userId, randomId, amountPaid);
     }
 
@@ -415,9 +415,12 @@ public class StockRepository implements IStockRepo {
         return getActivePurchases(storeId).getCardWithId(specialId, randomId);
     }
 
+
     public void clear() {
         idGen.set(1);
-
+    for (ActivePurcheses activePurchases : storeId2ActivePurchases.values()) {
+        activePurchases.clear(); 
+    }
         if (storeId2ActivePurchases != null) {
             storeId2ActivePurchases.clear();
         }
@@ -484,6 +487,22 @@ public class StockRepository implements IStockRepo {
             }
         }
         return matchesCategoryProduct;
+    }
+
+    @Override
+    public ProductDTO[] getAllProducts() {
+        List<ProductDTO> allProductDTOs = new ArrayList<>();
+        for (List<Product> productList : allProducts.values()) {
+            for (Product product : productList) {
+                allProductDTOs.add(new ProductDTO(
+                    product.getProductId(),
+                    product.getName(),
+                    product.getCategory(),
+                    product.getDescription()
+                ));
+            }
+        }
+        return allProductDTOs.toArray(new ProductDTO[0]);
     }
 
  

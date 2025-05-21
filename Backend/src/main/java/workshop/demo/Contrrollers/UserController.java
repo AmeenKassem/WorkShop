@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.UserService;
+import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
@@ -166,6 +168,7 @@ public class UserController {
         }
     }
 
+
     // @PutMapping("/updateProfile")
     // public String updateProfile(@RequestParam String token) {
     //     Response<String> res;
@@ -195,4 +198,32 @@ public class UserController {
         }
     }
 
+    @GetMapping("/getspecialcart")
+    public String getSpecialCart(@RequestParam String token) {
+        ApiResponse<SpecialCartItemDTO[]> res;
+        try {
+            SpecialCartItemDTO[] cartItems = userService.getSpecialCart(token);
+            res = new ApiResponse<>(cartItems, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
+    }
+
+    @GetMapping("/getregularcart")
+    public String getRegularCart(@RequestParam String token) {
+        ApiResponse<ItemCartDTO[]> res;
+        try {
+            ItemCartDTO[] cartItems = userService.getRegularCart(token);
+            res = new ApiResponse<>(cartItems, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
+    }
+    
 }

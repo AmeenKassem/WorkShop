@@ -72,9 +72,9 @@ public interface IStockRepo {
 
         void decreaseQuantitytoBuy(int storeId, int productId, int quantity) throws UIException, DevException;
 
-        void updateQuantity(int storeId, int productId, int newQuantity) throws UIException, DevException;
+        boolean updateQuantity(int storeId, int productId, int newQuantity) throws UIException, DevException;
 
-        void updatePrice(int storeId, int productId, int newPrice) throws UIException, DevException;
+        boolean updatePrice(int storeId, int productId, int newPrice) throws UIException, DevException;
 
         void rankProduct(int storeId, int productId, int newRank) throws UIException, DevException;
 
@@ -109,4 +109,6 @@ public interface IStockRepo {
         ParticipationInRandomDTO getRandomCard(int storeId, int specialId, int specialId2)throws UIException ;
 
         public ItemStoreDTO[] search(ProductSearchCriteria criteria) throws UIException;
+
+        ProductDTO[] getAllProducts();
 }

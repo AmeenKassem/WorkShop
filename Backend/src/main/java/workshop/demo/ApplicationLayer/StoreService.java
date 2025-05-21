@@ -10,17 +10,20 @@ import org.springframework.stereotype.Service;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import workshop.demo.DTOs.NotificationDTO;
-import workshop.demo.DTOs.OrderDTO;
-import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Store.Discount;
+import workshop.demo.DomainLayer.Store.DiscountFactory;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
+import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
@@ -99,7 +102,9 @@ public class StoreService {
         );
         String jssonMessage = convertNotificationToJson(Message, newOwnerName, NotificationDTO.NotificationType.OFFER, true, owner, storeId);
         this.notiRepo.sendDelayedMessageToUser(newOwnerName, jssonMessage);
-        suConnectionRepo.makeOffer(storeId, ownerId, ownerId, true, null, Message);
+
+        suConnectionRepo.makeOffer(storeId, ownerId, newOwnerId, true, null, Message); // changed from ownerid, ownerid to ownerid,new ownerid
+
     }
 
     public void reciveAnswerToOffer(int storeId, String senderName, String recievierName, boolean answer, boolean toBeOwner) throws Exception {
@@ -116,6 +121,7 @@ public class StoreService {
     public int AddOwnershipToStore(int storeId, int ownerId, int newOwnerId, boolean decide) throws Exception {
         userRepo.checkUserRegister_ThrowException(newOwnerId);
         if (decide) {
+            suConnectionRepo.getOffer(storeId, ownerId, newOwnerId);
             suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
             suConnectionRepo.deleteOffer(storeId, ownerId, newOwnerId);
             logger.info("Successfully added user {} as owner to store {} by user {}", newOwnerId, storeId, ownerId);
@@ -151,6 +157,7 @@ public class StoreService {
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         suConnectionRepo.checkToAddManager(storeId, ownerId, managerId);
+
         logger.info("Making an offer to be a store manager from {} to {}", ownerId, managerId);
         String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
         String nameNew = this.userRepo.getRegisteredUser(managerId).getUsername();
@@ -167,6 +174,7 @@ public class StoreService {
     public int AddManagerToStore(int storeId, int ownerId, int managerId, boolean decide) throws Exception {
         userRepo.checkUserRegister_ThrowException(managerId);
         if (decide) {
+            suConnectionRepo.getOffer(storeId, ownerId, managerId);
             suConnectionRepo.AddManagerToStore(storeId, ownerId, managerId);
             List<Permission> authorization = suConnectionRepo.deleteOffer(storeId, ownerId, managerId);
             suConnectionRepo.changePermissions(ownerId, managerId, storeId, authorization);
@@ -272,8 +280,21 @@ public class StoreService {
         return storeId;
     }
 
-    public List<Integer> ViewRolesAndPermissions(int storeId) throws Exception {
-        return suConnectionRepo.getWorkersInStore(storeId);
+    //return the workers in specific store
+    public List<WorkerDTO> ViewRolesAndPermissions(String token , int storeId) throws Exception {
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        List<Node> nodes = suConnectionRepo.getAllWorkers(storeId);  //return this as nodes 
+        String storeName = storeRepo.getStoreNameById(storeId);         
+        List<WorkerDTO> result = new ArrayList<>();
+        for (Node node : nodes) {
+            String username = userRepo.getRegisteredUser(node.getMyId()).getUsername(); 
+            boolean isManager = node.getIsManager();
+            Permission[] permissions = suConnectionRepo.getPermissions(node);
+            boolean setByMe = node.getParentId() == userId;
+            result.add(new WorkerDTO(userId,username, isManager, !isManager, storeName, permissions, setByMe));
+        }
+        return result;
     }
 
     public StoreDTO getStoreDTO(String token, int storeId) throws UIException {
@@ -300,4 +321,56 @@ public class StoreService {
         }
         return result;
     }
+
+    public List<StoreDTO> getAllStores() {
+        List<Store> stores =  storeRepo.getStores();
+        List<StoreDTO> res = new ArrayList<>();
+        for (Store store : stores) {
+            res.add(store.getStoreDTO());
+        }
+        return res;
+    }
+    public void addDiscountToStore(int storeId, String token, CreateDiscountDTO dto) throws UIException, DevException {
+        logger.info("User attempting to add a discount to store {}", storeId);
+
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+
+        storeRepo.checkStoreExistance(storeId);
+        storeRepo.checkStoreIsActive(storeId);
+        boolean hasPermission = suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_STORE_POLICY);
+        if (!hasPermission) {
+            throw new UIException("You do not have permission to add discounts to this store", ErrorCodes.NO_PERMISSION);
+        }
+
+        Store store = storeRepo.getStores().get(storeId);
+        Discount discount = DiscountFactory.fromDTO(dto);
+        store.addDiscount(discount);
+        logger.info("Discount '{}' added successfully to store {}", discount.getName(), storeId);
+    }
+    public void removeDiscountFromStore(String token, int storeId, String discountName) throws UIException, DevException {
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+
+        storeRepo.checkStoreExistance(storeId);
+        storeRepo.checkStoreIsActive(storeId);
+
+        if (!suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_STORE_POLICY)) {
+            throw new UIException("You do not have permission to remove discounts", ErrorCodes.NO_PERMISSION);
+        }
+
+        Store store = storeRepo.getStores().get(storeId);
+        boolean removed = store.removeDiscountByName(discountName);
+        if (!removed) {
+            throw new UIException("Discount not found: " + discountName, ErrorCodes.DISCOUNT_NOT_FOUND);
+        }
+
+        logger.info("Discount '{}' removed from store {}", discountName, storeId);
+    }
+
+
 }

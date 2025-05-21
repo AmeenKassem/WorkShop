@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import workshop.demo.ApplicationLayer.StoreService;
+import workshop.demo.DTOs.CreateDiscountDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
@@ -204,17 +205,17 @@ public class StoreController {
         }
     }
 
-    @GetMapping("/viewRoles")
-    public ResponseEntity<?> viewRoles(@RequestParam int storeId) {
-
+    @GetMapping("/viewRolesAndPermissions")
+    public ResponseEntity<?> viewRolesAndPermissions(@RequestParam String token, @RequestParam int storeId) {
         try {
-            List<Integer> roles = storeService.ViewRolesAndPermissions(storeId);
-            return ResponseEntity.ok(new ApiResponse<>(roles, null));
+            List<WorkerDTO> workers = storeService.ViewRolesAndPermissions(token, storeId);
+            return ResponseEntity.ok(new ApiResponse<>(workers, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-
     }
 
     // @GetMapping("/storeOrders")
@@ -232,7 +233,13 @@ public class StoreController {
     // }
     @GetMapping("/allStores")
     public ResponseEntity<?> getAllStoresToshow() {
-        throw new UnsupportedOperationException("This operation is not supported.");
+        try {
+            List<StoreDTO> orders = storeService.getAllStores();
+            return ResponseEntity.ok(new ApiResponse<>(orders, null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
     }
 
     @GetMapping("/getstoreDTO")
@@ -259,4 +266,37 @@ public class StoreController {
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
     }
+
+    @PostMapping("/addDiscount")
+    public ResponseEntity<?> addDiscountToStore(
+            @RequestParam int storeId,
+            @RequestParam String token,
+            @RequestBody CreateDiscountDTO dto) {
+        try {
+            storeService.addDiscountToStore(storeId, token, dto); // assumes permission check is inside service
+            return ResponseEntity.ok(new ApiResponse<>("Discount added successfully", null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @PostMapping("/removeDiscountByName")
+    public ResponseEntity<?> removeDiscountByName(
+            @RequestParam String token,
+            @RequestParam int storeId,
+            @RequestParam String discountName) {
+        try {
+            storeService.removeDiscountFromStore(token, storeId, discountName);
+            return ResponseEntity.ok(new ApiResponse<>("Discount removed", null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
 }

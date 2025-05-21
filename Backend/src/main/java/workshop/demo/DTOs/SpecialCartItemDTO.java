@@ -27,4 +27,32 @@ public class SpecialCartItemDTO {
         this.isWinner = isWinner;
         this.isEnded = isEnded;
     }
+
+    public int getStoreId() {
+        return storeId;
+    }
+
+    public int getSpecialId() {
+        return specialId;
+    }
+
+    public int getBidId() {
+        return bidId;
+    }
+
+    public SpecialType getType() {
+        return type;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public boolean isWinner() {
+        return isWinner;
+    }
+
+    public boolean isEnded() {
+        return isEnded;
+    }
 }

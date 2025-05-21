@@ -1,22 +1,28 @@
 package workshop.demo.DomainLayer.Store;
 
-import workshop.demo.DomainLayer.User.ShoppingCart;
+import java.util.ArrayList;
+import java.util.List;
 
-public class XorDiscount extends CompositeDiscount{
-    public XorDiscount(String name){
+public class XorDiscount extends CompositeDiscount {
+    public XorDiscount(String name) {
         super(name);
     }
-    @Override //CHECK THIS !
-    public double apply(ShoppingCart shoppingCart) {
-        double best = 0.0;
-        int count = 0;
-        for (Discount discount : subDiscounts) {
-            double val = discount.apply(shoppingCart);
-            if (val > 0.0) {
-                count++;
-                if (val > best) best = val;
+
+    @Override
+    public boolean isApplicable(DiscountScope scope) {
+        return discounts.stream().filter(d -> d.isApplicable(scope)).count() == 1;
+    }
+
+    @Override
+    public double apply(DiscountScope scope) {
+        List<Discount> applicable = new ArrayList<>();
+        for (Discount d : discounts) {
+            if (d.isApplicable(scope)) {
+                applicable.add(d);
             }
         }
-        return best;
+
+        if (applicable.size() != 1) return 0.0;
+        return applicable.get(0).apply(scope);
     }
 }
