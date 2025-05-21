@@ -117,8 +117,8 @@ public class PurchaseService {
                 ));
             }
             DiscountScope scope = new DiscountScope(itemStoreDTOS);
-            System.out.println("fgsnjklsfghjfklsg"+basket.getStoreId());
             Store store = storeRepo.findStoreByID(basket.getStoreId()); // changed the  get list to use this function instead
+
             Discount discount = store.getDiscount();
             double discountAmount = (discount!=null)? discount.apply(scope): 0.0;
             double total = stockRepo.calculateTotalPrice(boughtItems);

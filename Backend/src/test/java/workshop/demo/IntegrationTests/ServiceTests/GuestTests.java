@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.boot.test.context.SpringBootTest;
 import workshop.demo.ApplicationLayer.AdminService;
+
+import workshop.demo.ApplicationLayer.AdminService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
 import workshop.demo.ApplicationLayer.StockService;
@@ -17,6 +19,8 @@ import workshop.demo.ApplicationLayer.UserSuspensionService;
 import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+
+import workshop.demo.DomainLayer.Notification.DelayedNotificationDecorator;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
@@ -30,8 +34,10 @@ import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest
 public class GuestTests {
     PaymentServiceImp payment = new PaymentServiceImp();
@@ -49,8 +55,9 @@ public class GuestTests {
     AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
     UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
     UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-    AdminService adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);
+    AdminService adminService = new AdminService(orderRepository, storeRepository, userRepo, authRepo);
+    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),
+            adminService);
     StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo,
             sIsuConnectionRepo, suspensionRepo);
     StoreService storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo,
@@ -76,8 +83,9 @@ public class GuestTests {
         adminInitilizer = new AdminInitilizer("123321");
         userRepo = new UserRepository(encoder, adminInitilizer);
         suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-  adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-     userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo,
+        adminService = new AdminService(orderRepository, storeRepository, userRepo, authRepo);
+        userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"), adminService);
+        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo,
                 suspensionRepo);
         storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository,
                 sIsuConnectionRepo, stockRepository, suspensionRepo);
@@ -104,8 +112,7 @@ public class GuestTests {
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 10, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, 1,"Laptop");
-
+        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, 1, "Laptop");
 
     }
 
@@ -191,7 +198,7 @@ public class GuestTests {
 
         ItemStoreDTO[] products = stockService.getProductsInStore(2);
 
-        assertTrue(products.length==0);
+        assertTrue(products.length == 0);
     }
 
     @Test
@@ -258,7 +265,6 @@ public class GuestTests {
         assertEquals(2000.0,
                 receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
 
-
     }
 
     @Test
@@ -277,7 +283,7 @@ public class GuestTests {
     @Test
     void testGuestBuyCart_ProductNotAvailable() throws Exception {
 
-        userService.addToUserCart(GToken, new ItemStoreDTO(0, 0, 0, null, 0, 0,""), 1);
+        userService.addToUserCart(GToken, new ItemStoreDTO(0, 0, 0, null, 0, 0, ""), 1);
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
@@ -406,16 +412,16 @@ public class GuestTests {
         assertEquals(0, result.length);
     }
 
-   @Test
-   void testGuestModifyCartAddQToBuy() throws Exception {
-    userService.addToUserCart(GToken, itemStoreDTO, 1);
+    @Test
+    void testGuestModifyCartAddQToBuy() throws Exception {
+        userService.addToUserCart(GToken, itemStoreDTO, 1);
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
-    userService.ModifyCartAddQToBuy(GToken, 1, 3);
-        ReceiptDTO[] re= purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
-        assertTrue(re[0].getFinalPrice()==6000);
+        userService.ModifyCartAddQToBuy(GToken, 1, 3);
+        ReceiptDTO[] re = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
+        assertTrue(re[0].getFinalPrice() == 6000);
 
-   }
+    }
 
 }

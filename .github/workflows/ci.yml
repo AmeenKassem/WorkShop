@@ -30,4 +30,8 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Build with Maven
+<<<<<<< HEAD
         run: mvn -B verify --file pom.xml
+=======
+        run: mvn -B verify --file Backend/pom.xml
+>>>>>>> development
