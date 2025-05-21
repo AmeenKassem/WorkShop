@@ -49,32 +49,36 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 public class PurchaseTests  {
 
-    PaymentServiceImp payment = new PaymentServiceImp();
-    SupplyServiceImp serviceImp = new SupplyServiceImp();
-    @Autowired
-    PurchaseRepository purchaseRepository;
-    @Autowired
-    UserSuspensionRepo suspensionRepo ;
 
-    
-    @Autowired
-    NotificationRepository notificationRepository;
-    @Autowired
-    OrderRepository orderRepository;
-    @Autowired
-    StoreRepository storeRepository ;
-    @Autowired
-    StockRepository stockRepository ;
-    @Autowired
-    SUConnectionRepository sIsuConnectionRepo;
-    @Autowired
-    AuthenticationRepo authRepo = new AuthenticationRepo();
+
+    @Autowired private NotificationRepository notificationRepository;
+    @Autowired private StoreRepository storeRepository;
+    @Autowired private StockRepository stockRepository;
+    @Autowired private OrderRepository orderRepository;
+    @Autowired private PurchaseRepository purchaseRepository;
+    @Autowired private UserSuspensionRepo suspensionRepo;
+    @Autowired private AuthenticationRepo authRepo;
+
+        PaymentServiceImp payment = new PaymentServiceImp();
+    SupplyServiceImp serviceImp = new SupplyServiceImp();
+//    PurchaseRepository purchaseRepository = new PurchaseRepository();
+//    UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
+//
+//
+//    @Autowired
+//    NotificationRepository notificationRepository;
+////    OrderRepository orderRepository = new OrderRepository();
+////    StoreRepository storeRepository = new StoreRepository();
+////    StockRepository stockRepository = new StockRepository();
+    SUConnectionRepository sIsuConnectionRepo = new SUConnectionRepository();
+//    AuthenticationRepo authRepo = new AuthenticationRepo();
     Encoder encoder = new Encoder();
     AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
     UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
     UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
  AdminService adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
+    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);
+    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
     StoreService storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
     PurchaseService purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
         OrderService orderService = new OrderService(orderRepository, storeRepository, authRepo, userRepo);
