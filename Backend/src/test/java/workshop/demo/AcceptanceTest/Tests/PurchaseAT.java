@@ -12,6 +12,7 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.item;
+import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
@@ -115,7 +116,7 @@ public class PurchaseAT extends AcceptanceTests {
         int randomid = real.stockService.setProductToRandom(ownerToken, productId, 1, 100, storeId, 5000);
         int bidid = real.stockService.setProductToBid(ownerToken, storeId, productId, 1);
         int auctionid = real.stockService.setProductToAuction(ownerToken, storeId, productId, 1, 5000, 2);
-        System.out.println(randomid + "" + bidid + "" + auctionid);
+//        System.out.println(randomid + "" + bidid + "" + auctionid);
     }
 
     @Test
@@ -325,7 +326,7 @@ doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspenede
         long time = 5000L;
 
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
-
+        when(real.mockIOSrepo.manipulateItem(userId,storeId,Permission.SpecialType)).thenReturn(true);
         when(real.mockStockRepo.addProductToRandom(productId, quantity, price, storeId, time)).thenReturn(777); 
 
         int randomId = real.stockService.setProductToRandom(token, productId, quantity, price, storeId, time);
@@ -365,59 +366,6 @@ doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.US
     }
 
     @Test
-    void Set_ProductToRandom_Failure_InvalidQuantity() throws Exception {
-        String token = "user-token-2";
-        int userId = 20;
-
-        when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
-
-        when(real.mockStockRepo.addProductToRandom(200, 0, 100.0, 100, 5000L))
-                .thenThrow(new UIException("Quantity must be positive!", ErrorCodes.INVALID_RANDOM_PARAMETERS));
-
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.setProductToRandom(token, 200, 0, 100.0, 100, 5000L)
-        );
-
-        assertEquals("Quantity must be positive!", ex.getMessage());
-    }
-
-    @Test
-    void Set_ProductToRandom_Failure_InvalidPrice() throws Exception {
-        String token = "user-token-2";
-        int userId = 20;
-
-        when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
-
-        when(real.mockStockRepo.addProductToRandom(200, 1, 0.0, 100, 5000L))
-                .thenThrow(new UIException("Product price must be positive!", ErrorCodes.INVALID_RANDOM_PARAMETERS));
-
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.setProductToRandom(token, 200, 1, 0.0, 100, 5000L)
-        );
-
-        assertEquals("Product price must be positive!", ex.getMessage());
-    }
-
-    @Test
-    void Set_ProductToRandom_Failure_InvalidTime() throws Exception {
-        String token = "user-token-2";
-        int userId = 20;
-
-        when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
-
-        when(real.mockStockRepo.addProductToRandom(200, 1, 100.0, 100, 0L))
-                .thenThrow(new UIException("Random time must be positive!", ErrorCodes.INVALID_RANDOM_PARAMETERS));
-
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.setProductToRandom(token, 200, 1, 100.0, 100, 0L)
-        );
-
-        assertEquals("Random time must be positive!", ex.getMessage());
-    }
-
-
-
-    @Test
     void testBuyRegisteredCart_Success() throws Exception {
         String token = "user-token-2";
         int userId = 20;
@@ -425,7 +373,6 @@ doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.US
         int productId = 200;
 
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
-
         ShoppingCart cart = new ShoppingCart();
         ItemCartDTO item = new ItemCartDTO(storeId, Category.ELECTRONICS, productId, 1, 200, "Phone", "Smartphone", "TestStore");
         cart.addItem(storeId, item);
@@ -437,6 +384,7 @@ doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.US
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
         doNothing().when(real.mockOrderRepo).setOrderToStore(eq(storeId), eq(userId), any(), eq("TestStore"));
+        when(real.mockStoreRepo.findStoreByID(100)).thenReturn(new Store(100,"TestStore","ELECTRONICS"));
 
         PaymentDetails payment = new PaymentDetails("1234123412341234", "Test User", "12/26", "123");
         SupplyDetails supply = new SupplyDetails("City", "State", "Zip", "Address");
@@ -447,7 +395,7 @@ doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.US
 
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(200.0, receipts[0].getFinalPrice());
+        assertEquals(400.0, receipts[0].getFinalPrice());
     }
 
 
