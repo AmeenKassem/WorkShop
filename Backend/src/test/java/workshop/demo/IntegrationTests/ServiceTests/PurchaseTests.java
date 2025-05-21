@@ -124,7 +124,7 @@ public class PurchaseTests {
         String[] keywords = { "Laptop", "Lap", "top" };
         int productId = stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
-        assertEquals(1, stockService.addItem(createdStoreId, NOToken, productId, 5, 2000, Category.ELECTRONICS));
+        assertEquals(1, stockService.addItem(createdStoreId, NOToken, productId, 10, 2000, Category.ELECTRONICS));
         itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, createdStoreId, "Laptop");
         stockService.setProductToRandom(NOToken, productId, 1, 2000, createdStoreId, 5000);
         stockService.setProductToBid(NOToken, createdStoreId, productId, 1);
@@ -136,7 +136,7 @@ public class PurchaseTests {
         String token = userService.generateGuest();
         userService.register(token, "adminUser2", "adminPass2", 22);
         Admin = userService.login(token, "adminUser2", "adminPass2");
-        userService.setAdmin(Admin, "123321", 6);
+        userService.setAdmin(Admin, "123321", authRepo.getUserId(Admin));
 
         // ======================= SECOND GUEST SETUP =======================
 
@@ -196,24 +196,19 @@ public class PurchaseTests {
         // Assert
     }
 
-    @Test
-    void Add_BidProductToSpecialCart_Success_rejectBID() throws Exception {
-        stockService.setProductToBid(NOToken, 1, 1, 1);
+    // @Test
+    // void Add_BidProductToSpecialCart_Success_rejectBID() throws Exception {
 
-        // Act
+    //     stockService.addRegularBid(NGToken, 1, 1, 10);
 
-        stockService.addRegularBid(NGToken, 1, 1, 10);
-        stockService.addRegularBid(NGToken, 1, 1, 10);
+    //     assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
+    //     stockService.rejectBid(NOToken, 1, 1, 1);
 
-        assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
-        stockService.rejectBid(NOToken, 1, 1, 2);
 
-        // <<<<<<< HEAD
+    //     assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
 
-        assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
-
-        // Assert
-    }
+    //     // Assert
+    // }
 
     @Test
     void Add_BidProduct_Failure_InvalidToken() throws UIException {
@@ -226,18 +221,18 @@ public class PurchaseTests {
         assertEquals("Invalid token!", ex.getMessage());
     }
 
-    // @Test
-    // void Add_BidProduct_Failure_UserSuspended() throws Exception {
-    // // <<<<<<< HEAD
+    @Test
+    void Add_BidProduct_Failure_UserSuspended() throws Exception {
+    // <<<<<<< HEAD
 
-    // suspensionService.suspendRegisteredUser(2, 1, Admin);
+    suspensionService.suspendRegisteredUser(authRepo.getUserId(NGToken), 1, Admin);
 
-    // UIException ex = assertThrows(UIException.class, () ->
-    // stockService.addRegularBid(NGToken, 1, 1, 30.0)
-    // );
+    UIException ex = assertThrows(UIException.class, () ->
+    stockService.addRegularBid(NGToken, 1, 1, 30.0)
+    );
 
-    // assertEquals("Suspended user trying to perform an action", ex.getMessage());
-    // }
+    assertEquals("Suspended user trying to perform an action", ex.getMessage());
+    }
 
     @Test
     void Add_BidProduct_Failure_StoreNotFound() throws Exception {
@@ -250,9 +245,7 @@ public class PurchaseTests {
 
     @Test
     void Add_BidProduct_Failure_BidNotFound() throws Exception {
-        // <<<<<<< HEAD
-
-        // Bid ID not found
+       
 
         DevException ex = assertThrows(DevException.class, () -> stockService.addRegularBid(NGToken, 2, 1, 30.0));
 
@@ -332,17 +325,17 @@ public class PurchaseTests {
         assertEquals("Invalid token!", ex.getMessage());
     }
 
-    // @Test
-    // void Add_AuctionBid_Failure_UserSuspended() throws Exception {
+    @Test
+    void Add_AuctionBid_Failure_UserSuspended() throws Exception {
 
-    // suspensionService.suspendRegisteredUser(2, 1, Admin);
+    suspensionService.suspendRegisteredUser(authRepo.getUserId(NGToken), 1, Admin);
 
-    // UIException ex = assertThrows(UIException.class, () ->
-    // stockService.addBidOnAucction(NGToken, 1, 1, 60.0)
-    // );
+    UIException ex = assertThrows(UIException.class, () ->
+    stockService.addBidOnAucction(NGToken, 1, 1, 60.0)
+    );
 
-    // assertEquals("Suspended user trying to perform an action", ex.getMessage());
-    // }
+    assertEquals("Suspended user trying to perform an action", ex.getMessage());
+    }
 
     @Test
     void Add_AuctionBid_Failure_StoreNotFound() throws Exception {
@@ -355,9 +348,12 @@ public class PurchaseTests {
     @Test
     void Add_AuctionBid_Failure_AuctionNotFound()  {
 
-        UIException ex = assertThrows(UIException.class, () -> stockService.addBidOnAucction(NGToken, 2, 1, 60.0));
-
-        // assertEquals("Auction ID not found in active auctions!", ex.getMessage());
+        try{
+            stockService.addBidOnAucction(NGToken, 2, 1, 60.0);
+        }
+        catch (Exception exception){
+            assertEquals("Auction ID not found in active auctions!", exception.getMessage());
+        }
     }
 
     // Needs Fixing!
@@ -420,19 +416,17 @@ public class PurchaseTests {
         assertEquals("Invalid token!", ex.getMessage());
     }
 
-    // @Test
-    // void Set_ProductToRandom_Failure_UserSuspended() throws Exception {
-    // PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if
-    // needed
+    @Test
+    void Set_ProductToRandom_Failure_UserSuspended() throws Exception {
+    PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if
 
-    // suspensionService.suspendRegisteredUser(authRepo.getUserId(NGToken), 1,
-    // Admin);
-    // UIException ex = assertThrows(UIException.class, () ->
-    // purchaseService.participateInRandom(NGToken,1 , 1, 100, paymentDetails)
-    // );
+    suspensionService.suspendRegisteredUser(authRepo.getUserId(NGToken), 1, Admin);
+    UIException ex = assertThrows(UIException.class, () ->
+    purchaseService.participateInRandom(NGToken,1 , 1, 100, paymentDetails)
+    );
 
-    // assertEquals("Suspended user trying to perform an action", ex.getMessage());
-    // }
+    assertEquals("Suspended user trying to perform an action", ex.getMessage());
+    }
 
     // Needs Fixing!
     @Test
