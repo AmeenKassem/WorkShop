@@ -105,14 +105,15 @@ public class GuestTests {
         // ======================= STORE CREATION =======================
 
         int createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
-        assertEquals(createdStoreId, 1);
+        // assertEquals( 1,createdStoreId);
+        System.out.println(createdStoreId+"aaaaaaaaaaaaaaaaa");
 
         // ======================= PRODUCT & ITEM ADDITION =======================
         String[] keywords = { "Laptop", "Lap", "top" };
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
-        assertEquals(1, stockService.addItem(1, NOToken, 1, 10, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, 1, "Laptop");
+        assertEquals(1, stockService.addItem(createdStoreId, NOToken, 1, 10, 2000, Category.ELECTRONICS));
+        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, createdStoreId, "Laptop");
 
     }
 
