@@ -4,7 +4,6 @@ import java.util.Map;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
@@ -23,43 +22,40 @@ import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.PresentationLayer.Presenter.ManageStoreProductsPresenter;
 
 @Route(value = "manage-store-products", layout = MainLayout.class)
-@CssImport("./Theme/manage-products.css")
+// @CssImport("./Theme/manage-products.css")
 public class ManageStoreProductsView extends VerticalLayout implements HasUrlParameter<Integer> {
 
     private final ManageStoreProductsPresenter presenter;
     private final VerticalLayout productList = new VerticalLayout();
+    private final Span errorMessage = new Span();
     private String token;
     private int storeId;
 
     public ManageStoreProductsView() {
         this.presenter = new ManageStoreProductsPresenter(this);
-
-        // Overall layout container
         addClassName("manage-products-container");
 
-        // Top title
         Span title = new Span("Manage Products Page:");
         title.addClassName("page-title");
 
-        // Product display area (centered)
-        productList.addClassName("product-list");
+        errorMessage.addClassName("error-message");
+        errorMessage.setVisible(false);
 
+        productList.addClassName("product-list");
         Div productSection = new Div(productList);
         productSection.addClassName("products-section");
 
-        // Footer buttons
         Button addProductBtn = new Button("+ Add Product", e -> openAddProductDialog());
         addProductBtn.addClassName("add-product-btn");
 
-        Button backBtn = new Button("⬅ Back", e -> getUI().ifPresent(ui -> ui.navigate(""))); // Navigate home or back
+        Button backBtn = new Button("⬅ Back", e -> getUI().ifPresent(ui -> ui.navigate("my stores")));
         backBtn.addClassName("back-btn");
 
         HorizontalLayout footer = new HorizontalLayout(backBtn, addProductBtn);
         footer.addClassName("footer-buttons");
         footer.setWidthFull();
 
-        // Add all to layout
-        add(title, productSection, footer);
+        add(title, errorMessage, productSection, footer);
     }
 
     @Override
@@ -75,6 +71,13 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
     public void showProducts(Map<ItemStoreDTO, ProductDTO> products) {
         productList.removeAll();
+        errorMessage.setVisible(false);
+
+        if (products == null || products.isEmpty()) {
+            showEmptyPage("📭 No products in this store yet.");
+            return;
+        }
+
         for (Map.Entry<ItemStoreDTO, ProductDTO> entry : products.entrySet()) {
             ItemStoreDTO item = entry.getKey();
             ProductDTO product = entry.getValue();
@@ -82,8 +85,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             VerticalLayout card = new VerticalLayout(
                     new Span("🛒 " + product.getName()),
                     new Span("📦 Quantity: " + item.getQuantity()),
-                    new Span("💲 Price: " + item.getPrice())
-            );
+                    new Span("💲 Price: " + item.getPrice()));
             card.addClassName("product-card");
 
             Button edit = new Button("✏️ Edit", e -> openEditDialog(item, product.getDescription()));
@@ -109,16 +111,14 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         TextField price = new TextField("Price");
         TextField quantity = new TextField("Quantity");
 
-        Button add = new Button("Add", e -> {
-            presenter.addProductToStore(storeId, token,
-                    name.getValue(),
-                    description.getValue(),
-                    category.getValue(),
-                    keywords.getValue(),
-                    price.getValue(),
-                    quantity.getValue(),
-                    dialog);
-        });
+        Button add = new Button("Add", e -> presenter.addProductToStore(storeId, token,
+                name.getValue(),
+                description.getValue(),
+                category.getValue(),
+                keywords.getValue(),
+                price.getValue(),
+                quantity.getValue(),
+                dialog));
 
         dialog.add(name, description, category, keywords, price, quantity, add);
         dialog.open();
@@ -148,10 +148,17 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
     public void showSuccess(String msg) {
         Notification.show("✅ " + msg);
-        presenter.loadProducts(storeId, token);
     }
 
     public void showError(String msg) {
         Notification.show("❌ " + msg);
+        errorMessage.setText(msg);
+        errorMessage.setVisible(true);
+    }
+
+    public void showEmptyPage(String msg) {
+        productList.removeAll();
+        errorMessage.setText(msg);
+        errorMessage.setVisible(true);
     }
 }
