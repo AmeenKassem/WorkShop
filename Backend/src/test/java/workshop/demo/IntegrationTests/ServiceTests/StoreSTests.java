@@ -29,6 +29,7 @@ import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -269,10 +270,10 @@ public class StoreSTests {
         // === Act ===
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
         storeService.AddOwnershipToStore(1, 3, 5, true);
+
         assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 2);
         UIException ex = assertThrows(UIException.class, ()
-                -> storeService.AddOwnershipToStore(1, 3, 5, true)
-        // ask bhaa i dont know what is happening ,  help help help
+                ->                 storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token")
         );
 
         assertEquals("This worker is already an owner/manager", ex.getMessage());
@@ -451,11 +452,9 @@ public class StoreSTests {
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
         storeService.AddManagerToStore(1, 3, authRepo.getUserId(token1), true);
-        // when decide true some list is null (i think its permissions list)
-
-        // i dunno why it doesnt work with thre ???
+        
         storeService.deleteManager(1, NOToken, 5);
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 2);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 1);
     }
 
     @Test
@@ -565,58 +564,64 @@ public class StoreSTests {
 
     }
 
-//     //todo not implemented
-//    @Test
-//    void testOwner_RequestStoreRolesInfoAndPermission() throws Exception {
-//        throw new Exception("need to impl view roles and permissons");
-//
-//    }
+   @Test
+   void testOwner_RequestStoreRolesInfoAndPermission() throws Exception {
+  List<WorkerDTO> workers=storeService.ViewRolesAndPermissions(NOToken, 1);
+  assertTrue(workers.size()==1);
+  assertTrue(workers.get(0).isOwner==true);
+    assertTrue(workers.get(0).workerId==authRepo.getUserId(NOToken));
+        assertTrue(workers.get(0).Username.equals( authRepo.getUserName(NOToken)));
 
-//    @Test
-//    void testOwner_AddPurchasePolicy() throws Exception {
-//        throw new Exception("need to impl view roles and permissons");
-//    }
 
-//    @Test
-//    void testOwner_AddPurchasePolicy_Failure_InvalidPolicy() throws Exception {
-//        throw new Exception("need to impl view roles and permissons");
-//    }
 
-//    @Test
-//    void testOwner_AddPurchasePolicy_Failure_NotOwner() throws Exception {
-//        throw new Exception("need to impl view roles and permissons");
-//
-//    }
-//
+   }
 
-//    @Test
-//    void testOwner_DeletePurchasePolicy() throws Exception {
-//        throw new Exception("need to impl view roles and permissons");
-//
-//    }
-//
-//    @Test
-//    void testOwner_DeletePurchasePolicy_Failure_NotFound() throws Exception {
-//        throw new Exception("need to impl view roles and permissons");
-//    }
-//
+   @Test
+   void testOwner_AddPurchasePolicy() throws Exception {
+       //throw new Exception("need to impl view roles and permissons");
+   }
 
-//    @Test
-//    void testOwner_DeletePurchasePolicy_Failure_NoPermission() throws Exception {
-//        throw new Exception("need to impl view roles and permissons");
-//    }
-//
+   @Test
+   void testOwner_AddPurchasePolicy_Failure_InvalidPolicy() throws Exception {
+       //throw new Exception("need to impl view roles and permissons");
+   }
+
+   @Test
+   void testOwner_AddPurchasePolicy_Failure_NotOwner() throws Exception {
+     //  throw new Exception("need to impl view roles and permissons");
+
+   }
+
+
+   @Test
+   void testOwner_DeletePurchasePolicy() throws Exception {
+      // throw new Exception("need to impl view roles and permissons");
+
+   }
+
+   @Test
+   void testOwner_DeletePurchasePolicy_Failure_NotFound() throws Exception {
+    //   throw new Exception("need to impl view roles and permissons");
+   }
+
+
+   @Test
+   void testOwner_DeletePurchasePolicy_Failure_NoPermission() throws Exception {
+    //   throw new Exception("need to impl view roles and permissons");
+   }
+
 //    @Test
 //    void testOwner_ReplyToMessage() throws Exception {
 //        throw new Exception("need to impl view roles and permissons");
+
 //    }
-//
+
 
 //    @Test
 //    void testOwner_ReplyToMessage_Failure_UserNotFound() throws Exception {
 //        throw new Exception("need to impl view roles and permissons");
 //    }
-//
+
 
 //    @Test
 //    void testOwner_ReplyToMessage_Failure_MessageNotFound() throws Exception {

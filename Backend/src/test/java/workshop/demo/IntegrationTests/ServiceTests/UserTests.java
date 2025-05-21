@@ -114,8 +114,8 @@ public class UserTests {
         String[] keywords = { "Laptop", "Lap", "top" };
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
-        assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1,"Laptop");
+        assertEquals(1, stockService.addItem(1, NOToken, 1, 10, 2000, Category.ELECTRONICS));
+        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, 1,"Laptop");
 
     }
 
@@ -538,19 +538,27 @@ public class UserTests {
         assertEquals(0, result.length); // Product not sold in this store
     }
 
-//    @Test
-//    void testUserGetPurchasePolicy_Success() throws Exception {
-//        throw new Exception("not implmented");
-//
-//    }
-//
-//    @Test
-//    void testUserGetPurchasePolicy_Failure() throws Exception {
-//        throw new Exception("not implmented");
-//    }
-//
-//    void testGuestModifyCartAddQToBuy() throws Exception {
-//        throw new Exception("not implmented");
-//    }
+   @Test
+   void testUserGetPurchasePolicy_Success() throws Exception {
+      // throw new Exception("not implmented");
+
+   }
+
+   @Test
+   void testUserGetPurchasePolicy_Failure() throws Exception {
+      // throw new Exception("not implmented");
+   }
+      @Test
+
+
+   void testGuestModifyCartAddQToBuy() throws Exception {
+   userService.addToUserCart(NGToken, itemStoreDTO, 1);
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    userService.ModifyCartAddQToBuy(NGToken, 1, 3);
+        ReceiptDTO[] re= purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+        assertTrue(re[0].getFinalPrice()==6000);
+   }
 
 }

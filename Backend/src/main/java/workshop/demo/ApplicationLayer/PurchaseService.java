@@ -117,7 +117,8 @@ public class PurchaseService {
                 ));
             }
             DiscountScope scope = new DiscountScope(itemStoreDTOS);
-            Store store = storeRepo.getStores().get(basket.getStoreId());
+            Store store = storeRepo.findStoreByID(basket.getStoreId()); // changed the  get list to use this function instead
+
             Discount discount = store.getDiscount();
             double discountAmount = (discount!=null)? discount.apply(scope): 0.0;
             double total = stockRepo.calculateTotalPrice(boughtItems);
@@ -231,8 +232,10 @@ public class PurchaseService {
             int storeId = entry.getKey();
             String storeName = storeRepo.getStoreNameById(storeId);
             List<ReceiptProduct> items = entry.getValue();
-            double total = items.stream().mapToDouble(ReceiptProduct::getPrice).sum();
-
+double total = items.stream()
+    .mapToDouble(item -> item.getPrice() * item.getQuantity())
+    .sum();
+    // changed this to do price*qunatity instead of just price itself
             ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, total);
             receipts.add(receipt);
             orderRepo.setOrderToStore(storeId, userId, receipt, storeName);

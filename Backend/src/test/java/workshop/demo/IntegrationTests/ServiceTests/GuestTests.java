@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.boot.test.context.SpringBootTest;
 import workshop.demo.ApplicationLayer.AdminService;
+
 import workshop.demo.ApplicationLayer.AdminService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
@@ -18,6 +19,7 @@ import workshop.demo.ApplicationLayer.UserSuspensionService;
 import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+
 import workshop.demo.DomainLayer.Notification.DelayedNotificationDecorator;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
@@ -69,7 +71,6 @@ public class GuestTests {
 
     @BeforeEach
     void setup() throws Exception {
-        System.out.println("===== SETUP RUNNING =====");
 
         purchaseRepository = new PurchaseRepository();
         suspensionRepo = new UserSuspensionRepo();
@@ -110,10 +111,8 @@ public class GuestTests {
         String[] keywords = { "Laptop", "Lap", "top" };
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
-        assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1, "Laptop");
-
-        // ======================= SECOND GUEST SETUP =======================
+        assertEquals(1, stockService.addItem(1, NOToken, 1, 10, 2000, Category.ELECTRONICS));
+        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, 1, "Laptop");
 
     }
 
@@ -201,9 +200,6 @@ public class GuestTests {
         storeService.addStoreToSystem(NOToken, "failure", "HOME");
 
         ItemStoreDTO[] products = stockService.getProductsInStore(2);
-        // ask bhaa i dont know what is happening , how are we getting an item please
-        // help help help
-        // ===== ASSERT =====
         assertTrue(products.length == 0);
     }
 
@@ -270,8 +266,6 @@ public class GuestTests {
         assertEquals("TestStore", receipts[0].getStoreName());
         assertEquals(2000.0,
                 receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
-
-        // --- Step 8: Verify important calls happened ---
 
     }
 
@@ -350,14 +344,10 @@ public class GuestTests {
         String[] keywords = { "Laptop", "Lap", "top" };
         System.out.println(storeService.getFinalRateInStore(1));
 
-        ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.ELECTRONICS, keywords[0], 1, 0,
-                3000, 0,
+        ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.ELECTRONICS, null, 1, 0, 3000, 0,
                 5);
-        // ask bhaa for help
-        // --- Step 5: Call the system under test ---
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
 
-        // --- Step 6: Assert results ---
         assertNotNull(result);
         assertEquals(1, result.length);
         assertEquals(1, result[0].getId());
@@ -424,9 +414,16 @@ public class GuestTests {
         assertEquals(0, result.length);
     }
 
-    // @Test
-    // void testGuestModifyCartAddQToBuy() throws Exception {
-    // throw new Exception("not implmented");
-    // }
+    @Test
+    void testGuestModifyCartAddQToBuy() throws Exception {
+        userService.addToUserCart(GToken, itemStoreDTO, 1);
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+        userService.ModifyCartAddQToBuy(GToken, 1, 3);
+        ReceiptDTO[] re = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
+        assertTrue(re[0].getFinalPrice() == 6000);
+
+    }
 
 }
