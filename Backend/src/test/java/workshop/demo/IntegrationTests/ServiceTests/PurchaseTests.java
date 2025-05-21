@@ -161,10 +161,10 @@ public class PurchaseTests {
     void Add_BidProductToSpecialCart_Success_acceptBID() throws Exception {
 
         // Act
-        int bidId =  stockService.setProductToBid(NOToken, 1, 1, 1);
+        int bidId = stockService.setProductToBid(NOToken, 1, 1, 1);
 
-         boolean a =stockService.addRegularBid(NGToken, bidId, 1, 10);
-         assertTrue(a);
+        boolean a = stockService.addRegularBid(NGToken, bidId, 1, 10);
+        assertTrue(a);
         assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_PENDING));
         assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
         stockService.acceptBid(NOToken, 1, bidId, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getId());
@@ -350,7 +350,7 @@ public class PurchaseTests {
     }
 
     @Test
-    void Add_AuctionBid_Failure_AuctionNotFound() throws Exception {
+    void Add_AuctionBid_Failure_AuctionNotFound()  {
 
         UIException ex = assertThrows(UIException.class, () -> stockService.addBidOnAucction(NGToken, 2, 1, 60.0));
 
