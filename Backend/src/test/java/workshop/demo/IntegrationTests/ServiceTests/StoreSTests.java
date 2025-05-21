@@ -647,7 +647,7 @@ public class StoreSTests {
    void testOwner_ReplyToMessage() throws Exception {
 //       throw new Exception("need to impl view roles and permissons");
 
-   }
+  }
 
 
    @Test

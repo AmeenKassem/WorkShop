@@ -82,6 +82,7 @@ public class ProductSearchCriteria {
                 return false;
             }
         }
+        
 
         return true;
     }
@@ -106,9 +107,13 @@ public class ProductSearchCriteria {
         }
 
         // Keyword match
-        if (keywordFilter != null && (product.getKeywords() == null
-                || product.getKeywords().stream()
-                        .noneMatch(k -> k.toLowerCase().contains(keywordFilter.toLowerCase())))) {
+
+        if (keywordFilter != null && (product.getKeywords() == new String[0])) {
+            for (String keyString : product.getKeywords()) {
+                if(keyString.toLowerCase().contains(keywordFilter.toLowerCase())){
+                    return true;
+                }
+            }
             return false;
         }
 
@@ -125,6 +130,7 @@ public class ProductSearchCriteria {
 
     public boolean specificStore() {
         return storeId!=-1;    // IT WAS FILTER CHECK IT NEEDS TO BE STORE CHECK
+
     }
 
 }

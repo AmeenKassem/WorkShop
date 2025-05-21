@@ -12,13 +12,14 @@ public class Product {
     private int productId;
     private String description;
     private Category category;  // Using enum Category
-    private List<String> keywords; // List of keywords for the product
+    private String[] keywords; // List of keywords for the product
 
     public Product(String name, int id, Category category, String description, String[] keywords) {
         this.name = name;
         this.productId = id;
         this.category = category;
         this.description = description;
+        this.keywords = keywords; 
     }
 
     public String getName() {
@@ -53,19 +54,16 @@ public class Product {
         this.category = category;
     }
 
-    public List<String> getKeywords() {
+    public String[] getKeywords() {
         return keywords;
     }
 
-    public synchronized void setKeywords(List<String> keywords) {
+    public synchronized void setKeywords(String[] keywords) {
         this.keywords = keywords;
     }
 
-    public void addKeyword(String keyword) {
-        if (this.keywords == null) {
-            this.keywords = new ArrayList<>();
-        }
-        this.keywords.add(keyword);
-    }
+    // public void addKeyword(String keyword) {
+    //     List<String> keys = new ArrayList<>(keywords);
+    // }
 
 }

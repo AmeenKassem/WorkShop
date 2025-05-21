@@ -89,6 +89,7 @@ public class PurchaseTests  {
                 userService.register(GToken, "user", "user", 25);
                         NGToken = userService.login(GToken, "user", "user");
 
+
         String OToken = userService.generateGuest();
         userService.register(OToken, "owner", "owner", 25);
 
@@ -99,7 +100,6 @@ public class PurchaseTests  {
         // ======================= STORE CREATION =======================
 
         int createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
-        //assertEquals(createdStoreId, 1);
 
         // ======================= PRODUCT & ITEM ADDITION =======================
         String[] keywords = { "Laptop", "Lap", "top" };
@@ -118,6 +118,7 @@ public class PurchaseTests  {
        userService.register(token, "adminUser2", "adminPass2",22);
         Admin = userService.login(token, "adminUser2", "adminPass2");
        userService.setAdmin(Admin, "123321", 6);
+
 
 
 
@@ -147,6 +148,7 @@ public class PurchaseTests  {
         // Act
               stockService.setProductToBid(NOToken,1,1,1); 
 
+
         stockService.addRegularBid(NGToken, 1, 1, 10);
         assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_PENDING));
         assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
@@ -172,6 +174,7 @@ public class PurchaseTests  {
         assertEquals("TestStore", r.getStoreName());
         assertEquals(10, r.getFinalPrice());
 
+// <<<<<<< HEAD
 
         // Assert
     }
@@ -184,9 +187,11 @@ public class PurchaseTests  {
         stockService.addRegularBid(NGToken, 1, 1, 10);
                 stockService.addRegularBid(NGToken, 1, 1, 10);
 
+
         assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
         stockService.rejectBid(NOToken, 1, 1, 2);
 
+// <<<<<<< HEAD
 
          assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
         
@@ -199,17 +204,20 @@ public class PurchaseTests  {
     void Add_BidProduct_Failure_InvalidToken() throws UIException {
         String token = "bad-token";
 
+// <<<<<<< HEAD
        
 
         UIException ex = assertThrows(UIException.class, () ->
                 stockService.addRegularBid(token, 0, 100, 30.0)
         );
 
+
         assertEquals("Invalid token!", ex.getMessage());
     }
 
     @Test
     void Add_BidProduct_Failure_UserSuspended() throws Exception {
+// <<<<<<< HEAD
        
 
 suspensionService.suspendRegisteredUser(2, 1, Admin);
@@ -224,16 +232,19 @@ suspensionService.suspendRegisteredUser(2, 1, Admin);
 
     @Test
     void Add_BidProduct_Failure_StoreNotFound() throws Exception {
+// <<<<<<< HEAD
        
         UIException ex = assertThrows(UIException.class, () ->
                 stockService.addRegularBid(NGToken, 0, 2, 30.0)
         );
+
 
         assertEquals("store not found on active purchases hashmap", ex.getMessage());
     }
 
     @Test
     void Add_BidProduct_Failure_BidNotFound() throws Exception {
+// <<<<<<< HEAD
         
         // Bid ID not found
         
@@ -241,6 +252,7 @@ suspensionService.suspendRegisteredUser(2, 1, Admin);
         DevException ex = assertThrows(DevException.class, () ->
                 stockService.addRegularBid(NGToken, 2, 1, 30.0)
         );
+
 
         assertEquals("Bid ID not found in active bids!", ex.getMessage());
     }

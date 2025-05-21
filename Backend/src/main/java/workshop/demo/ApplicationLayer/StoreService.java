@@ -99,7 +99,9 @@ public class StoreService {
         String Message = "In store:{}, the owner:{} is offering you:{} to be an owner of this store" + storeName + owner + newOwnerName;
         String jssonMessage = convertNotificationToJson(Message, newOwnerName, NotificationDTO.NotificationType.OFFER, true, owner, storeId);
         this.notiRepo.sendDelayedMessageToUser(newOwnerName, jssonMessage);
+
         suConnectionRepo.makeOffer(storeId, ownerId, newOwnerId, true, null, Message); // changed from ownerid, ownerid to ownerid,new ownerid
+
     }
 
     public void reciveAnswerToOffer(int storeId, String senderName, String recievierName, boolean answer, boolean toBeOwner) throws Exception {
