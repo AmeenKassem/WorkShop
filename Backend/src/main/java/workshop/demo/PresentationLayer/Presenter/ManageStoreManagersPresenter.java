@@ -43,7 +43,9 @@ public class ManageStoreManagersPresenter {
 
     public void loadManagers() {
         try {
-            URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/viewRoles")
+            String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+            URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/viewRolesAndPermissions")
+                    .queryParam("token", token)
                     .queryParam("storeId", storeId)
                     .build().toUri();
 
@@ -51,8 +53,7 @@ public class ManageStoreManagersPresenter {
             ApiResponse body = response.getBody();
 
             if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
-                List<WorkerDTO> managers = objectMapper.convertValue(body.getData(), new TypeReference<>() {
-                });
+                List<WorkerDTO> managers = objectMapper.convertValue(body.getData(), new TypeReference<>() {});
                 view.updateManagerList(managers);
             } else if (body != null) {
                 view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
@@ -85,8 +86,7 @@ public class ManageStoreManagersPresenter {
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Set<Permission>> entity = new HttpEntity<>(selectedPermissions, headers);
 
-            ResponseEntity<ApiResponse> response = restTemplate.exchange(uri, HttpMethod.POST, entity,
-                    ApiResponse.class);
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(uri, HttpMethod.POST, entity, ApiResponse.class);
             ApiResponse body = response.getBody();
 
             if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
@@ -124,8 +124,7 @@ public class ManageStoreManagersPresenter {
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Set<Permission>> entity = new HttpEntity<>(selected, headers);
 
-            ResponseEntity<ApiResponse> response = restTemplate.exchange(uri, HttpMethod.POST, entity,
-                    ApiResponse.class);
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(uri, HttpMethod.POST, entity, ApiResponse.class);
             ApiResponse body = response.getBody();
 
             if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
@@ -157,8 +156,7 @@ public class ManageStoreManagersPresenter {
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-            ResponseEntity<ApiResponse> response = restTemplate.exchange(uri, HttpMethod.POST, entity,
-                    ApiResponse.class);
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(uri, HttpMethod.POST, entity, ApiResponse.class);
             ApiResponse body = response.getBody();
 
             if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {

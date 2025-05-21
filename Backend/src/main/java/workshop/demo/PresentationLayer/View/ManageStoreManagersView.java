@@ -124,7 +124,7 @@ public class ManageStoreManagersView extends VerticalLayout implements HasUrlPar
             managerBlock.getStyle().set("border", "1px solid #ddd").set("border-radius", "8px").set("padding", "1.5rem")
                     .set("background", "#fff");
 
-            Paragraph name = new Paragraph(manager.username);
+            Paragraph name = new Paragraph(manager.Username);
             name.getStyle().set("font-weight", "bold").set("margin-bottom", "0.8rem");
 
             Map<Permission, Checkbox> checkboxMap = new HashMap<>();
@@ -134,7 +134,7 @@ public class ManageStoreManagersView extends VerticalLayout implements HasUrlPar
 
             for (Permission permission : Permission.values()) {
                 Checkbox checkbox = new Checkbox(permission.name());
-                checkbox.setValue(Arrays.asList(manager.permissions).contains(permission));
+                checkbox.setValue(Arrays.asList(manager.permessions).contains(permission));
                 checkboxMap.put(permission, checkbox);
                 permissions.add(checkbox);
             }
