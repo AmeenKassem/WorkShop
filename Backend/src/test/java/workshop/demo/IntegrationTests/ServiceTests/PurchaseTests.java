@@ -59,29 +59,20 @@ public class PurchaseTests  {
     @Autowired private UserSuspensionRepo suspensionRepo;
     @Autowired private AuthenticationRepo authRepo;
 
-        PaymentServiceImp payment = new PaymentServiceImp();
-    SupplyServiceImp serviceImp = new SupplyServiceImp();
-//    PurchaseRepository purchaseRepository = new PurchaseRepository();
-//    UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
-//
-//
-//    @Autowired
-//    NotificationRepository notificationRepository;
-////    OrderRepository orderRepository = new OrderRepository();
-////    StoreRepository storeRepository = new StoreRepository();
-////    StockRepository stockRepository = new StockRepository();
-    SUConnectionRepository sIsuConnectionRepo = new SUConnectionRepository();
-//    AuthenticationRepo authRepo = new AuthenticationRepo();
-    Encoder encoder = new Encoder();
-    AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
-    UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
-    UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
- AdminService adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);
-    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
-    StoreService storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
-    PurchaseService purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
-        OrderService orderService = new OrderService(orderRepository, storeRepository, authRepo, userRepo);
+    @Autowired PaymentServiceImp payment ;
+    @Autowired SupplyServiceImp serviceImp;
+
+    @Autowired SUConnectionRepository sIsuConnectionRepo;
+
+    @Autowired Encoder encoder ;
+    @Autowired UserRepository userRepo;
+    @Autowired UserSuspensionService suspensionService;
+    @Autowired AdminService adminService;
+    @Autowired UserService userService;
+    @Autowired StockService stockService;
+    @Autowired StoreService storeService;
+    @Autowired PurchaseService purchaseService;
+    @Autowired OrderService orderService ;
 
     String NOToken;
     String NGToken;
@@ -94,35 +85,11 @@ public class PurchaseTests  {
     void setup() throws Exception {
         System.out.println("===== SETUP RUNNING =====");
 
-        purchaseRepository = new PurchaseRepository();
-        suspensionRepo = new UserSuspensionRepo();
-        orderRepository = new OrderRepository();
-        storeRepository = new StoreRepository();
-        stockRepository = new StockRepository();
-        sIsuConnectionRepo = new SUConnectionRepository();
-        authRepo = new AuthenticationRepo();
-        encoder = new Encoder();
-        adminInitilizer = new AdminInitilizer("123321");
-        userRepo = new UserRepository(encoder, adminInitilizer);
-        suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-  adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-     userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo,
-                suspensionRepo);
-        storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository,
-                sIsuConnectionRepo, stockRepository, suspensionRepo);
-        purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository,
-                orderRepository, payment, serviceImp, suspensionRepo);
-         orderService = new OrderService(orderRepository, storeRepository, authRepo, userRepo);
-
-
         GToken = userService.generateGuest();
                 userService.register(GToken, "user", "user", 25);
                         NGToken = userService.login(GToken, "user", "user");
 
-
-
         String OToken = userService.generateGuest();
-
         userService.register(OToken, "owner", "owner", 25);
 
         // --- Login ---
