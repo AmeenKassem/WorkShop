@@ -343,7 +343,7 @@ public class PurchaseTests {
     @Test
     void Add_AuctionBid_Failure_AuctionNotFound() throws Exception {
 
-        DevException ex = assertThrows(DevException.class, () -> stockService.addBidOnAucction(NGToken, 2, 1, 60.0));
+        UIException ex = assertThrows(UIException.class, () -> stockService.addBidOnAucction(NGToken, 2, 1, 60.0));
 
         assertEquals("Auction ID not found in active auctions!", ex.getMessage());
     }
