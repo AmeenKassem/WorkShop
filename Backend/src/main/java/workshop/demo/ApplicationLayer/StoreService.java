@@ -342,5 +342,27 @@ public class StoreService {
         store.addDiscount(discount);
         logger.info("Discount '{}' added successfully to store {}", discount.getName(), storeId);
     }
+    public void removeDiscountFromStore(String token, int storeId, String discountName) throws UIException, DevException {
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+
+        storeRepo.checkStoreExistance(storeId);
+        storeRepo.checkStoreIsActive(storeId);
+
+        if (!suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_STORE_POLICY)) {
+            throw new UIException("You do not have permission to remove discounts", ErrorCodes.NO_PERMISSION);
+        }
+
+        Store store = storeRepo.getStores().get(storeId);
+        boolean removed = store.removeDiscountByName(discountName);
+        if (!removed) {
+            throw new UIException("Discount not found: " + discountName, ErrorCodes.DISCOUNT_NOT_FOUND);
+        }
+
+        logger.info("Discount '{}' removed from store {}", discountName, storeId);
+    }
+
 
 }

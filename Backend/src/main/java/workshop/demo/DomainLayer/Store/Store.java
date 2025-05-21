@@ -118,5 +118,15 @@ public class Store {
             this.discount = combo;
         }
     }
+    public boolean removeDiscountByName(String name) {
+        if (discount instanceof CompositeDiscount composite) {
+            return composite.removeDiscountByName(name);
+        } else if (discount != null && discount.getName().equals(name)) {
+            this.discount = null;
+            return true;
+        }
+        return false;
+    }
+
 
 }

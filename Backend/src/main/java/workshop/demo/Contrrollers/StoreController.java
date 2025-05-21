@@ -287,4 +287,20 @@ public class StoreController {
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
     }
+    @PostMapping("/removeDiscountByName")
+    public ResponseEntity<?> removeDiscountByName(
+            @RequestParam String token,
+            @RequestParam int storeId,
+            @RequestParam String discountName) {
+        try {
+            storeService.removeDiscountFromStore(token, storeId, discountName);
+            return ResponseEntity.ok(new ApiResponse<>("Discount removed", null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
 }
