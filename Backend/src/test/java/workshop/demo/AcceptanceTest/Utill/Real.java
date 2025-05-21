@@ -11,6 +11,7 @@ import workshop.demo.ApplicationLayer.StockService;
 import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.*;
 import workshop.demo.DTOs.Category;
+import workshop.demo.DomainLayer.Review.IReviewRepo;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
@@ -31,8 +32,10 @@ public class Real implements Bridge {
 
     public ISUConnectionRepo mockIOSrepo = Mockito.mock(ISUConnectionRepo.class);
     public UserSuspensionRepo mockSusRepo = Mockito.mock(UserSuspensionRepo.class);
-    //public SuperDataStructure mockserviceios=new SuperDataStructure();
+    public IReviewRepo mockReviewRepo=Mockito.mock(ReviewRepository.class);
 
+
+    //public SuperDataStructure mockserviceios=new SuperDataStructure();
     //    public SingleBid mockSingleBid = Mockito.mock(SingleBid.class);
 //    public ShoppingCart mockShoppingCart = Mockito.mock(ShoppingCart.class);
     public PaymentServiceImp mockPay = Mockito.mock(PaymentServiceImp.class);
@@ -44,7 +47,7 @@ public class Real implements Bridge {
     public NotificationService notificationService;
     public PurchaseService purchaseService;
     public OrderService orderService;
-
+    public ReviewService reviewService;
     public Real() {
         initServices();
         //setupDefaultMocks();
@@ -59,7 +62,7 @@ AdminService admin=new AdminService(mockOrderRepo, mockStoreRepo, mockUserRepo, 
         notificationService = new NotificationService(mockNotiRepo, mockUserRepo);
         purchaseService = new PurchaseService(mockAuthRepo, mockStockRepo, mockStoreRepo, mockUserRepo,
                 mockPurchaseRepo, mockOrderRepo, mockPay, mockSupply, mockSusRepo);
-
+        reviewService=new ReviewService(mockReviewRepo,mockAuthRepo,mockUserRepo,mockStoreRepo,mockStockRepo);
     }
 
     /////////////////////// System /////////////////////////////
