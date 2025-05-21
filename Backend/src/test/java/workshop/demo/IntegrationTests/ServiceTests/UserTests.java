@@ -554,7 +554,7 @@ public class UserTests {
       @Test
 
 
-   void testGuestModifyCartAddQToBuy() throws Exception {
+   void testGuestModifyCartAddQToBuy_sucess() throws Exception {
    userService.addToUserCart(NGToken, itemStoreDTO, 1);
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
@@ -562,6 +562,16 @@ public class UserTests {
     userService.ModifyCartAddQToBuy(NGToken, 1, 3);
         ReceiptDTO[] re= purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
         assertTrue(re[0].getFinalPrice()==6000);
+   }
+   @Test
+      void testGuestModifyCartAddQToBuy_failure() throws Exception {
+   userService.addToUserCart(NGToken, itemStoreDTO, 1);
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+UIException ex = assertThrows(UIException.class, () ->
+                userService.ModifyCartAddQToBuy("INVALID", 1, 2)
+        );        ReceiptDTO[] re= purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
    }
 
 }
