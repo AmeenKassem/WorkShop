@@ -8,7 +8,7 @@ public class ReceiptProduct {
     private String storename;
     private int quantity;
     private int price;
-
+    private int productId;
     public ReceiptProduct(String productName, Category category, String description, String storename, int quantity, int price) {
         this.productName = productName;
         this.category = category;
@@ -16,6 +16,16 @@ public class ReceiptProduct {
         this.storename = storename;
         this.quantity = quantity;
         this.price = price;
+    }
+    public ReceiptProduct(String productName, Category category, String description, String storename
+            , int quantity, int price,int productId) {
+        this.productName = productName;
+        this.category = category;
+        this.description = description;
+        this.storename = storename;
+        this.quantity = quantity;
+        this.price = price;
+        this.productId = productId;
     }
 
     public String getProductName() {
@@ -40,5 +50,16 @@ public class ReceiptProduct {
 
     public int getPrice() {
         return price;
+    }
+    public void setstoreName(String storeName){
+        this.storename = storeName;
+    }
+
+    public int getProductId() {
+        return productId;
+    }
+
+    public void setProductId(int productId) {
+        this.productId = productId;
     }
 }

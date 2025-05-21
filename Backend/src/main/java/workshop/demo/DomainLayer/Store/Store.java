@@ -1,6 +1,7 @@
 package workshop.demo.DomainLayer.Store;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -8,22 +9,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import workshop.demo.DTOs.AuctionDTO;
-import workshop.demo.DTOs.BidDTO;
-import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ItemStoreDTO;
-// import workshop.demo.DTOs.MessageDTO;
-import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.RandomDTO;
-import workshop.demo.DTOs.ReceiptProduct;
-import workshop.demo.DTOs.SingleBid;
-import workshop.demo.DomainLayer.Exceptions.DevException;
-import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
-import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.User.CartItem;
+import workshop.demo.DTOs.OfferDTO;
+import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public class Store {
+
     private static final Logger logger = LoggerFactory.getLogger(Store.class);
 
     private int storeID;
@@ -33,7 +24,7 @@ public class Store {
     private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
     //must add something for messages
     private List<String> messgesInStore;
-    
+    private Discount discount;
 
     public Store(int storeID, String storeName, String category) {
         logger.debug("Creating store: ID={}, Name={}, Category={}", storeID, storeName, category);
@@ -84,8 +75,8 @@ public class Store {
         return true;
     }
 
-    public int getFinalRateInStore(int storeId) {
-        logger.debug("Calculating final rank for store {}", storeId);
+    public int getFinalRateInStore() {
+        logger.debug("Calculating final rank for store {}", storeID);
 
         int totalVotes = 0;
         int WRank = 0;
@@ -103,60 +94,39 @@ public class Store {
 
     }
 
-    // //must be deleted ALL OF THAT:
-    // public SingleBid bidOnAuctionProduct(int auctionId, int userId, double price) throws DevException, UIException {
-    //     return activePurchases.addUserBidToAuction(auctionId, userId, price);
-    // }
-    // public int addProductToAuction(int userid, int productId, int quantity, double startPrice, long time) throws UIException {
-    //     // checkPermessionForSpecialSell(userid);
-    //     decreaseFromQuantity(quantity, productId);
-    //     return activePurchases.addProductToAuction(productId, quantity, time);
-    // }
-    // // private void checkPermessionForSpecialSell(int userid) {
-    // //     throw new UnsupportedOperationException("Unimplemented method 'checkPermessionForSpecialSell'");
-    // // }
-    // public int addProductToBid(int userid, int productId, int quantity) throws DevException, UIException {
-    //     // checkPermessionForSpecialSell(userid);
-    //     decreaseFromQuantity(quantity, productId);
-    //     return activePurchases.addProductToBid(productId, quantity);
-    // }
-    // public SingleBid bidOnBid(int bidId, int userid, double price) throws DevException, UIException {
-    //     return activePurchases.addUserBidToBid(bidId, userid, price);
-    // }
-    // public BidDTO[] getAllBids() {
-    //     return activePurchases.getBids();
-    // }
-    // public AuctionDTO[] getAllAuctions() {
-    //     return activePurchases.getAuctions();
-    // }
-    // public SingleBid acceptBid(int bidId, int userBidId) throws DevException, UIException {
-    //     return activePurchases.acceptBid(userBidId, bidId);
-    // }
-    // //====================== random
-    // public int addProductToRandom(int productId, int quantity, double productPrice, int storeId, long RandomTime) throws UIException {
-    //     decreaseFromQuantity(quantity, productId);
-    //     return activePurchases.addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
-    // }
-    // public ParticipationInRandomDTO participateInRandom(int userId, int randomid, double amountPaid) throws UIException {
-    //     return activePurchases.participateInRandom(userId, randomid, amountPaid);
-    // }
-    // public ParticipationInRandomDTO end(int randomId) throws DevException, UIException {
-    //     return activePurchases.endRandom(randomId);
-    // }
-    // public RandomDTO[] getRandoms() {
-    //     return activePurchases.getRandoms();
-    // }
-    // public double getProductPrice(int randomId) throws DevException {
-    //     return activePurchases.getProductPrice(randomId);
-    // }
-    // public boolean rejectBid(int bidId, int userBidId) throws DevException, UIException {
-    //     activePurchases.rejectBid(userBidId, bidId);
-    //     return true;
-    // }
-    // public double getStoreRating() {
-    //     return getFinalRateInStore(storeID);
-    // }
-    // public Random getRandom(int randomId) throws DevException, UIException {
-    //     return activePurchases.getRandom(randomId);
-    // }
+    public StoreDTO getStoreDTO() {
+        return new StoreDTO(storeID, storeName, category, active, getFinalRateInStore());
+    }
+
+    public Discount getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Discount discount) {
+        this.discount = discount;
+    }
+    public void addDiscount(Discount d) {
+        if (discount instanceof CompositeDiscount) {
+            ((CompositeDiscount) discount).addDiscount(d);
+        } else if (discount == null) {
+            this.discount = d;
+        } else {
+            // wrap old and new discount into MaxDiscount by default
+            MaxDiscount combo = new MaxDiscount("Auto-wrapped discounts");
+            combo.addDiscount(discount);
+            combo.addDiscount(d);
+            this.discount = combo;
+        }
+    }
+    public boolean removeDiscountByName(String name) {
+        if (discount instanceof CompositeDiscount composite) {
+            return composite.removeDiscountByName(name);
+        } else if (discount != null && discount.getName().equals(name)) {
+            this.discount = null;
+            return true;
+        }
+        return false;
+    }
+
+
 }

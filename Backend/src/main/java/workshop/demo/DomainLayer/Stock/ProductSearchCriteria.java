@@ -10,14 +10,33 @@ public class ProductSearchCriteria {
     private int storeId;
     private double minPrice;
     private double maxPrice;
-    private double minStoreRating;
-    private double maxStoreRating;
+    private double minProductRating;
+    private double maxProductRating;
 
     public ProductSearchCriteria(
             String productNameFilter,
             Category categoryFilter,
             String keywordFilter,
-            int storeId,
+            Integer storeId,
+            Double minPrice,
+            Double maxPrice,
+            Double minStoreRating,
+            Double maxStoreRating) {
+        this.productNameFilter = productNameFilter;
+        this.categoryFilter = categoryFilter;
+        this.keywordFilter = keywordFilter;
+        this.storeId = storeId == null ? -1 : storeId;
+        this.minPrice = minPrice == null ? -1.0 : minPrice;
+        this.maxPrice = maxPrice == null ? -1.0 : maxPrice;
+        this.minProductRating = minStoreRating == null ? -1.0 : minStoreRating;
+        this.maxProductRating = maxStoreRating == null ? -1.0 : maxStoreRating;
+    }
+
+    public ProductSearchCriteria(
+            String productNameFilter,
+            Category categoryFilter,
+            String keywordFilter,
+            Integer storeId,
             double minPrice,
             double maxPrice,
             double minStoreRating,
@@ -25,11 +44,11 @@ public class ProductSearchCriteria {
         this.productNameFilter = productNameFilter;
         this.categoryFilter = categoryFilter;
         this.keywordFilter = keywordFilter;
-        this.storeId = storeId;
+        this.storeId = storeId == null ? -1 : storeId;
         this.minPrice = minPrice;
         this.maxPrice = maxPrice;
-        this.minStoreRating = minStoreRating;
-        this.maxStoreRating = maxStoreRating;
+        this.minProductRating = minStoreRating;
+        this.maxProductRating = maxStoreRating;
     }
 
     public boolean matchesForStore(item item) {
@@ -43,23 +62,23 @@ public class ProductSearchCriteria {
         }
 
         // Price range check (minPrice ≤ price ≤ maxPrice)
-        if (minPrice > 0 || maxPrice > 0) {
+        if (minPrice >= 0 || maxPrice >= 0) {
             int price = item.getPrice();
-            if (minPrice > 0 && price < minPrice) {
+            if (minPrice >= 0 && price <= minPrice) {
                 return false;
             }
-            if (maxPrice > 0 && price > maxPrice) {
+            if (maxPrice >= 0 && price >= maxPrice) {
                 return false;
             }
         }
 
         // Store rating check
-        if (minStoreRating > 0 || maxStoreRating > 0) {
+        if (minProductRating >= 0 || maxProductRating >= 0) {
             double rank = item.getFinalRank();
-            if (minStoreRating > 0 && rank < minStoreRating) {
+            if (minProductRating >= 0 && rank <= minProductRating) {
                 return false;
             }
-            if (maxStoreRating > 0 && rank > maxStoreRating) {
+            if (maxProductRating >= 0 && rank >= maxProductRating) {
                 return false;
             }
         }
@@ -88,7 +107,8 @@ public class ProductSearchCriteria {
 
         // Keyword match
         if (keywordFilter != null && (product.getKeywords() == null
-                || product.getKeywords().stream().noneMatch(k -> k.toLowerCase().contains(keywordFilter.toLowerCase())))) {
+                || product.getKeywords().stream()
+                        .noneMatch(k -> k.toLowerCase().contains(keywordFilter.toLowerCase())))) {
             return false;
         }
 
@@ -101,6 +121,10 @@ public class ProductSearchCriteria {
 
     public int getStoreId() {
         return this.storeId;
+    }
+
+    public boolean specificStore() {
+        return storeId!=-1;    // IT WAS FILTER CHECK IT NEEDS TO BE STORE CHECK
     }
 
 }

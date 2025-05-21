@@ -1,23 +1,26 @@
-
 package workshop.demo.DomainLayer.StoreUserConnection;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-
 public class SuperDataStructure {
 
     private Map<Integer, Tree> employees;
+    private final Map<Integer, List<OfferDTO>> offers;//storeId, list of offers
     private final ConcurrentHashMap<Integer, ReentrantLock> storeLocks = new ConcurrentHashMap<>();
 
     public SuperDataStructure() {
         employees = new ConcurrentHashMap<>();
+        this.offers = new ConcurrentHashMap<>();
     }
 
     public void addNewStore(int storeID, int bossId) {
@@ -77,6 +80,10 @@ public class SuperDataStructure {
             if (!employees.containsKey(storeID)) {
                 throw new Exception("store does not exist in superDS");
             }
+            Node child = employees.get(storeID).getNodeById(newOnwerId);
+            if (child != null && !child.getIsManager()) {
+                throw new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION);
+            }
             this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(newOnwerId, false, ownerId));
         } finally {
             lock.unlock();
@@ -115,6 +122,12 @@ public class SuperDataStructure {
             }
             if (this.employees.get(storeID).getNodeById(ownerId) == null) {
                 throw new Exception("this user is not the owner of this store");
+            }
+            Node child = employees.get(storeID).getNodeById(newManagerId);
+            System.out.println(ownerId);
+            System.out.print(newManagerId);
+            if (child != null && child.getIsManager()) {
+                throw new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION);
             }
             this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(newManagerId, true, ownerId));
         } finally {
@@ -215,7 +228,21 @@ public class SuperDataStructure {
             lock.unlock();
         }
     }
+/* 
+    public List<WorkerDTO> getWorkerDTOsInStore(int storeId) throws Exception {
+    ReentrantLock lock = storeLocks.computeIfAbsent(storeId, k -> new ReentrantLock());
+    lock.lock();
+    try {
+        if (!employees.containsKey(storeId)) {
+            throw new Exception("store does not exist in superDS");
+        }
+        Tree tree = employees.get(storeId);
+        List<WorkerDTO> result = new ArrayList<>();
+        Node root = tree.getRoot();
+        int ownerId = root.getMyId();
+        int parentId = root.getParentId();
 
+    }*/
     public void closeStore(int storeID) throws Exception {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeID, k -> new ReentrantLock());
         lock.lock();
@@ -236,5 +263,140 @@ public class SuperDataStructure {
     public boolean checkStoreExist(int storeId) {
         return employees.containsKey(storeId);
     }
+
+    //make offer delete offer
+    public void makeOffer(OfferDTO offer, int storeId) {
+        synchronized (offers) {
+            offers.computeIfAbsent(storeId, k -> new ArrayList<>()).add(offer);
+        }
+    }
+
+    public List<Permission> deleteOffer(int storeId, int senderId, int reciverId) throws Exception {
+        synchronized (offers) {
+            List<OfferDTO> storeOffers = offers.get(storeId);
+            if (storeOffers == null) {
+                throw new Exception("store offers is null");
+            }
+
+            Iterator<OfferDTO> iterator = storeOffers.iterator();
+            while (iterator.hasNext()) {
+                OfferDTO offer = iterator.next();
+                if (offer.getSenderId() == senderId && offer.getReceiverId() == reciverId) {
+                    List<Permission> permissions = offer.getPermissions();
+                    iterator.remove();
+
+                    // Clean up empty list
+                    if (storeOffers.isEmpty()) {
+                        offers.remove(storeId);
+                    }
+
+                    return permissions;
+                }
+            }
+        }
+
+        return null; // offer not found
+    }
+
+    public OfferDTO getOffer(int storeId, int senderId, int receiverId) throws Exception {
+        List<OfferDTO> storeOffers = offers.get(storeId);
+        if (storeOffers == null) {
+            throw new Exception("No offers found for store ID: " + storeId);
+        }
+
+        for (OfferDTO offer : storeOffers) {
+            if (offer.getSenderId() == senderId && offer.getReceiverId() == receiverId) {
+                return offer;
+            }
+        }
+
+        throw new Exception("No offer found from sender " + senderId + " to receiver " + receiverId + " in store " + storeId);
+    }
+
+    public List<Integer> getStoresIdForUser(int userId) {
+        List<Integer> result = new ArrayList<>();
+
+        for (Map.Entry<Integer, Tree> entry : employees.entrySet()) {
+            int storeId = entry.getKey();
+            Tree tree = entry.getValue();
+
+            if (tree.getNodeById(userId) != null) {
+                result.add(storeId);
+            }
+        }
+
+        return result;
+    }
+
+    public int removeUserAccordingly(int userId) throws Exception {
+        boolean userFound = false;
+
+        // Remove user from all trees
+        for (Tree tree : employees.values()) {
+            if (tree.getNodeById(userId) != null) {
+                tree.deleteNode(userId);
+                userFound = true;
+            }
+        }
+
+        // Remove offers where user is sender or receiver
+        for (List<OfferDTO> offerList : offers.values()) {
+            boolean removed = offerList.removeIf(
+                    offer -> offer.getSenderId() == userId || offer.getReceiverId() == userId
+            );
+            if (removed) {
+                userFound = true;
+            }
+        }
+
+        if (!userFound) {
+            return -1;
+        }
+        return userId;
+    }
+    public void clearData() {
+        if (employees != null) {
+            employees.clear();
+        }
+        offers.clear();
+        storeLocks.clear();
+    }
+
+
+    public List<Node> getAllWorkers(int storeId) throws Exception {
+        ReentrantLock lock = storeLocks.computeIfAbsent(storeId, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            if (!employees.containsKey(storeId)) {
+                throw new Exception("Store does not exist");
+            }
+            Tree tree = employees.get(storeId);
+            List<Node> result = new ArrayList<>();
+            TreeIterator iterator = new TreeIterator(tree.getRoot());
+            while (iterator.hasNext()) {
+                Node node = iterator.next();
+                result.add(node);
+            }
+            return result;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public Permission[] getPermissions(Node node) {
+        if (node.getIsManager() && node.getMyAuth() != null) {
+            List<Permission> allowedPermissions = new ArrayList<>();
+            for (Map.Entry<Permission, Boolean> entry : node.getMyAuth().getMyAutho().entrySet()) {
+                if (entry.getValue()) {
+                    allowedPermissions.add(entry.getKey());
+                }
+            }
+        return allowedPermissions.toArray(new Permission[0]);
+        } else {
+            return null; // Owner have no permessions
+        }
+    }
+
 }
+
 

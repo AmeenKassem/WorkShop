@@ -5,5 +5,5 @@ public enum Permission {
     AddToStock,
     DeleteFromStock,
     UpdateQuantity,
-    UpdatePrice, SpecialType;
+    UpdatePrice, SpecialType, MANAGE_STORE_POLICY;
 }

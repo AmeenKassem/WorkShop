@@ -1,9 +1,9 @@
 package workshop.demo.DomainLayer.Store;
 
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Timer;
 import java.util.TimerTask;
+
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -22,7 +22,6 @@ public class Random {
     private final Object lock = new Object();
     private Timer timer;
     private boolean isActive = true;
-    private static AtomicInteger idGen = new AtomicInteger();
 
     public Random(int productId, int quantity, double productPrice, int id, int storeId, long randomTime) {
         this.productId = productId;
@@ -125,5 +124,21 @@ public class Random {
 
     public double getAmountLeft() {
         return amountLeft;
+    }
+
+    public boolean userIsWinner(int userId) {
+       return winner.userId==userId;
+    }
+
+    public ParticipationInRandomDTO getWinner() {
+        return winner;
+    }
+
+    public ParticipationInRandomDTO getCard(int userId) {
+        return usersParticipations.get(userId);
+    }
+
+    public int getProductId() {
+        return productId;
     }
 }

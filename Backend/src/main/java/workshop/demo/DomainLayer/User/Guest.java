@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.UserDTO;
 
 public class Guest {
     private static final Logger logger = LoggerFactory.getLogger(Guest.class);
@@ -51,6 +52,25 @@ public class Guest {
 
     public ShoppingCart geCart() {
         return cart;
+    }
+
+    public UserDTO getUserDTO() {
+        return new UserDTO(this.id);
+    }
+
+    public void ModifyCartAddQToBuy(int productId, int quantity) {
+        logger.debug("ModifyCartAddQToBuy called for guestId={}, productId={}, quantity={}", id, productId, quantity);
+
+        cart.ModifyCartAddQToBuy(productId, quantity);
+    }
+
+    public void removeItem(int productId) {
+        logger.debug("removeItem called for guestId={}, productId={}", id, productId);
+
+        cart.getBaskets().values().forEach(basket -> {
+            basket.getItems().removeIf(item -> item.productId == productId);
+        });
+        
     }
 
 }

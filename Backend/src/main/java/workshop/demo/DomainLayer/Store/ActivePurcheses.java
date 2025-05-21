@@ -1,6 +1,9 @@
 package workshop.demo.DomainLayer.Store;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -11,6 +14,7 @@ import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -40,7 +44,6 @@ public class ActivePurcheses {
 
         if (quantity <= 0 || time <= 0) {
             logger.error("Invalid auction parameters: quantity={}, time={}", quantity, time);
-
             throw new UIException("Quantity and time must be positive!", ErrorCodes.INVALID_AUCTION_PARAMETERS);
         }
         int id = auctionIdGen.incrementAndGet();
@@ -231,4 +234,74 @@ public class ActivePurcheses {
         }
         return activeRandom.get(randomId).getProductPrice();
     }
+
+   
+
+    public ParticipationInRandomDTO getRandomCardIfWinner(int specialId, int userId) {
+        if (activeRandom.containsKey(specialId)) {
+            Random random = activeRandom.get(specialId);
+            if (random.userIsWinner(userId))
+                return random.getWinner();
+        }
+        return null;
+    }
+
+    public SingleBid getBidIfWinner(int specialId, int bidId, SpecialType type) {
+        if (type == SpecialType.Auction) {
+            if (activeAuction.containsKey(specialId)) {
+                if(activeAuction.get(specialId).bidIsWinner(bidId)) return activeAuction.get(specialId).getWinner();
+            }
+        } else {
+            if (activeBid.containsKey(specialId)) {
+                if(activeBid.get(specialId).bidIsWinner(bidId)) return activeBid.get(specialId).getWinner();
+            }
+        }
+        return null;
+    }
+
+    public SingleBid getBidWithId(int specialId, int bidId, SpecialType type) {
+        if (type == SpecialType.Auction) {
+            if (activeAuction.containsKey(specialId)) {
+                return activeAuction.get(specialId).getBid(bidId);
+            }
+        } else {
+            if (activeBid.containsKey(specialId)) {
+                return activeBid.get(specialId).getBid(bidId);
+            }
+        }
+        return null;
+    }
+
+    public ParticipationInRandomDTO getCardWithId(int specialId, int cardId) {
+        if (activeRandom.containsKey(specialId)) {
+            Random random = activeRandom.get(specialId);
+            // if (random.userIsWinner())
+            return random.getCard(cardId);
+        }
+        return null;
+    }
+
+    public int getProductIdForSpecial(int specialId,SpecialType type){
+        switch (type) {
+            case Auction:
+                return activeAuction.get(specialId).getProductId();
+            case BID:
+                return activeBid.get(specialId).getProductId();
+            case Random:
+                return activeRandom.get(specialId).getProductId();
+            default:
+                return -1;
+        }
+    }
+    public void clear() {
+    activeBid.clear();
+    activeRandom.clear();
+    activeAuction.clear();
+
+    // Optionally reset static ID generators if needed
+    bidIdGen.set(0);
+    auctionIdGen.set(0);
+    randomIdGen.set(0);
+}
+
 }
