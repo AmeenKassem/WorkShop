@@ -201,5 +201,21 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     public List<Node> getAllWorkers(int storeId) throws Exception {
         return this.data.getAllWorkers(storeId);
     }
+    @Override
+    public boolean hasPermission(int userId, int storeId, Permission permission) {
+        try {
+            Node worker = getWorkerInStoreById(storeId, userId);
+            if (worker == null) return false;
+
+            // If the user is an owner, allow all
+            if (!worker.getIsManager()) return true;
+
+            // If the user is a manager, check for specific permission
+            return worker.getMyAuth().hasAutho(permission);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 
 }

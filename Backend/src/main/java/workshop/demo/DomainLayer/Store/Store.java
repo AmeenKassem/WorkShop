@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.atmosphere.config.service.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +24,7 @@ public class Store {
     private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
     //must add something for messages
     private List<String> messgesInStore;
+    private Discount discount;
 
     public Store(int storeID, String storeName, String category) {
         logger.debug("Creating store: ID={}, Name={}, Category={}", storeID, storeName, category);
@@ -97,5 +97,36 @@ public class Store {
     public StoreDTO getStoreDTO() {
         return new StoreDTO(storeID, storeName, category, active, getFinalRateInStore());
     }
+
+    public Discount getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Discount discount) {
+        this.discount = discount;
+    }
+    public void addDiscount(Discount d) {
+        if (discount instanceof CompositeDiscount) {
+            ((CompositeDiscount) discount).addDiscount(d);
+        } else if (discount == null) {
+            this.discount = d;
+        } else {
+            // wrap old and new discount into MaxDiscount by default
+            MaxDiscount combo = new MaxDiscount("Auto-wrapped discounts");
+            combo.addDiscount(discount);
+            combo.addDiscount(d);
+            this.discount = combo;
+        }
+    }
+    public boolean removeDiscountByName(String name) {
+        if (discount instanceof CompositeDiscount composite) {
+            return composite.removeDiscountByName(name);
+        } else if (discount != null && discount.getName().equals(name)) {
+            this.discount = null;
+            return true;
+        }
+        return false;
+    }
+
 
 }

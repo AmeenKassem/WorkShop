@@ -11,14 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.PaymentDetails;
-import workshop.demo.DTOs.ReceiptDTO;
-import workshop.demo.DTOs.ReceiptProduct;
-import workshop.demo.DTOs.SingleBid;
-import workshop.demo.DTOs.SpecialType;
-import workshop.demo.DTOs.SupplyDetails;
-import workshop.demo.DTOs.UserSpecialItemCart;
+import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -30,7 +23,10 @@ import workshop.demo.DomainLayer.Purchase.ISupplyService;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.item;
+import workshop.demo.DomainLayer.Store.Discount;
+import workshop.demo.DomainLayer.Store.DiscountScope;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
@@ -110,13 +106,24 @@ public class PurchaseService {
         for (ShoppingBasket basket : cart.getBaskets().values()) {
             logger.info("Processing basket for storeId={}", basket.getStoreId());
             String storeName = storeRepo.getStoreNameById(basket.getStoreId());
-            List<ReceiptProduct> boughtItems = stockRepo.processCartItemsForStore(basket.getStoreId(),
+            List<ReceiptProduct> boughtItems = stockRepo.processCartItemsForStore(basket.getStoreId(), //HERE!!!!ASDLKJSAD
                     basket.getItems(), isGuest);
             for (ReceiptProduct product : boughtItems) {
                 product.setstoreName(storeName); // need to change
             }
+            List<ItemStoreDTO> itemStoreDTOS = new ArrayList<>();
+            for(ReceiptProduct p : boughtItems){
+                itemStoreDTOS.add(new ItemStoreDTO(p.getProductId(), p.getQuantity(), p.getPrice(), p.getCategory(), 0, basket.getStoreId(), p.getProductName()
+                ));
+            }
+            DiscountScope scope = new DiscountScope(itemStoreDTOS);
+            Store store = storeRepo.getStores().get(basket.getStoreId());
+            Discount discount = store.getDiscount();
+            double discountAmount = (discount!=null)? discount.apply(scope): 0.0;
             double total = stockRepo.calculateTotalPrice(boughtItems);
-            paymentService.processPayment(payment, total);
+            double finalTotal = total-discountAmount;
+            logger.info("Store={}, Original={}, Discount={}, Final={}", storeName, total, discountAmount, finalTotal);
+            paymentService.processPayment(payment, finalTotal);
             supplyService.processSupply(supply);
             storeToProducts.put(basket.getStoreId(), boughtItems);
         }

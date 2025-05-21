@@ -50,6 +50,6 @@ public interface ISUConnectionRepo {
     public List<Node> getAllWorkers(int storeId) throws Exception;
     // for tests
     SuperDataStructure getData();
-
+    public boolean hasPermission(int userId, int storeId, Permission permission);
 
 }
