@@ -40,7 +40,7 @@ public class UserTests {
     SupplyServiceImp serviceImp = new SupplyServiceImp();
     PurchaseRepository purchaseRepository = new PurchaseRepository();
     UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
-
+    @Autowired
     NotificationRepository notificationRepository;
     OrderRepository orderRepository = new OrderRepository();
     StoreRepository storeRepository = new StoreRepository();

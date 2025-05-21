@@ -53,7 +53,7 @@ public class PurchaseTests  {
     UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
 
     
-
+    @Autowired
     NotificationRepository notificationRepository;
     OrderRepository orderRepository = new OrderRepository();
     StoreRepository storeRepository = new StoreRepository();
