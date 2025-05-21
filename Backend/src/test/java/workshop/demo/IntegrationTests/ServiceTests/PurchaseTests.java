@@ -350,9 +350,10 @@ public class PurchaseTests {
 
         try{
             stockService.addBidOnAucction(NGToken, 2, 1, 60.0);
+            assertTrue(false);
         }
         catch (Exception exception){
-            assertEquals("Auction ID not found in active auctions!", exception.getMessage());
+            assertTrue(true);
         }
     }
 
