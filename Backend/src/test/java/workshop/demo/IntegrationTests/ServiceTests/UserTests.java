@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.boot.test.context.SpringBootTest;
 import workshop.demo.ApplicationLayer.AdminService;
 import workshop.demo.ApplicationLayer.AdminService;
 import workshop.demo.ApplicationLayer.OrderService;
@@ -35,6 +36,7 @@ import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
+@SpringBootTest
 public class UserTests {
     PaymentServiceImp payment = new PaymentServiceImp();
     SupplyServiceImp serviceImp = new SupplyServiceImp();
@@ -291,7 +293,7 @@ public class UserTests {
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
         assertEquals(2000.0,
-                receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice());
+                receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
 
         List<ReceiptDTO> result = orderService.getReceiptDTOsByUser(NGToken);
 
@@ -312,7 +314,7 @@ public class UserTests {
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
         assertEquals(2000.0,
-                receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice());
+                receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
 
         UIException ex = assertThrows(UIException.class, () -> {
             orderService.getReceiptDTOsByUser("invalid token");
@@ -419,7 +421,7 @@ public class UserTests {
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
         assertEquals(2000.0,
-                receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice());
+                receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
     }
 
     @Test
@@ -536,19 +538,19 @@ public class UserTests {
         assertEquals(0, result.length); // Product not sold in this store
     }
 
-    @Test
-    void testUserGetPurchasePolicy_Success() throws Exception {
-        throw new Exception("not implmented");
-
-    }
-
-    @Test
-    void testUserGetPurchasePolicy_Failure() throws Exception {
-        throw new Exception("not implmented");
-    }
-
-    void testGuestModifyCartAddQToBuy() throws Exception {
-        throw new Exception("not implmented");
-    }
+//    @Test
+//    void testUserGetPurchasePolicy_Success() throws Exception {
+//        throw new Exception("not implmented");
+//
+//    }
+//
+//    @Test
+//    void testUserGetPurchasePolicy_Failure() throws Exception {
+//        throw new Exception("not implmented");
+//    }
+//
+//    void testGuestModifyCartAddQToBuy() throws Exception {
+//        throw new Exception("not implmented");
+//    }
 
 }

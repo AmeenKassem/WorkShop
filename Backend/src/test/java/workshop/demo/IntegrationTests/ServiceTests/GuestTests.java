@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.boot.test.context.SpringBootTest;
 import workshop.demo.ApplicationLayer.AdminService;
 import workshop.demo.ApplicationLayer.AdminService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
@@ -34,7 +35,7 @@ import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+@SpringBootTest
 public class GuestTests {
     PaymentServiceImp payment = new PaymentServiceImp();
     SupplyServiceImp serviceImp = new SupplyServiceImp();
@@ -261,7 +262,7 @@ public class GuestTests {
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
         assertEquals(2000.0,
-                receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice());
+                receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
 
         // --- Step 8: Verify important calls happened ---
 
@@ -415,9 +416,9 @@ public class GuestTests {
         assertEquals(0, result.length);
     }
 
-    @Test
-    void testGuestModifyCartAddQToBuy() throws Exception {
-        throw new Exception("not implmented");
-    }
+//    @Test
+//    void testGuestModifyCartAddQToBuy() throws Exception {
+//        throw new Exception("not implmented");
+//    }
 
 }

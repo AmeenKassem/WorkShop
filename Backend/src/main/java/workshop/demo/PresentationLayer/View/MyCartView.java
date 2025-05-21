@@ -95,12 +95,12 @@ public class MyCartView extends VerticalLayout {
         VerticalLayout details = new VerticalLayout();
         details.setClassName("cart-details");
 
-        details.add(new Label("🏪 Store: " + item.storeId));
-        details.add(new Label("📦 Product Name: " + item.name));
-        details.add(new Label("📝 Description: " + item.description));
-        details.add(new Label("💵 Price per unit: ₪" + item.price));
-        details.add(new Label("❄️ Quantity: " + item.quantity));
-        details.add(new Label("🔥 Subtotal: ₪" + (item.price * item.quantity)));
+        details.add(new Paragraph("🏪 Store: " + item.storeId));
+        details.add(new Paragraph("📦 Product Name: " + item.name));
+        details.add(new Paragraph("📝 Description: " + item.description));
+        details.add(new Paragraph("💵 Price per unit: ₪" + item.price));
+        details.add(new Paragraph("❄️ Quantity: " + item.quantity));
+        details.add(new Paragraph("🔥 Subtotal: ₪" + (item.price * item.quantity)));
 
         container.add(image, details);
         return container;
@@ -126,11 +126,11 @@ public class MyCartView extends VerticalLayout {
         VerticalLayout details = new VerticalLayout();
         details.setClassName("special-details");
 
-        details.add(new Label("📦 Product: " + item.getProductName()));
-        details.add(new Label("🏪 Store ID: " + item.getStoreId())); 
-        details.add(new Label("🧾 Type: " + item.getType()));
-        details.add(new Label("🏁 Ended: " + (item.isEnded() ? "Yes" : "No")));
-        details.add(new Label("🏆 You Won: " + (item.isWinner() ? "Yes" : "No")));
+        details.add(new Paragraph("📦 Product: " + item.getProductName()));
+        details.add(new Paragraph("🏪 Store ID: " + item.getStoreId()));
+        details.add(new Paragraph("🧾 Type: " + item.getType()));
+        details.add(new Paragraph("🏁 Ended: " + (item.isEnded() ? "Yes" : "No")));
+        details.add(new Paragraph("🏆 You Won: " + (item.isWinner() ? "Yes" : "No")));
 
         box.add(image, details);
         return box;
