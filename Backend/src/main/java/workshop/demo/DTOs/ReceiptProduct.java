@@ -51,6 +51,7 @@ public class ReceiptProduct {
     public int getPrice() {
         return price;
     }
+    public void setPrice(int price){this.price=price;}
     public void setstoreName(String storeName){
         this.storename = storeName;
     }

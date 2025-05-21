@@ -15,6 +15,8 @@ public class VisibleDiscount implements Discount {
 
     @Override
     public boolean isApplicable(DiscountScope scope) {
+        boolean x = condition == null || condition.test(scope);
+        System.out.println(x);
         return condition == null || condition.test(scope);
     }
 

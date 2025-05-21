@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,7 +103,8 @@ public class PurchaseService {
             throw new UIException("Not all items are available for guest purchase", ErrorCodes.PRODUCT_NOT_FOUND);
         }
 
-        Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
+        //Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
+        Map<Integer, Pair<List<ReceiptProduct>,Double>> storeToProducts = new HashMap<>();
         for (ShoppingBasket basket : cart.getBaskets().values()) {
             logger.info("Processing basket for storeId={}", basket.getStoreId());
             String storeName = storeRepo.getStoreNameById(basket.getStoreId());
@@ -126,9 +128,10 @@ public class PurchaseService {
             logger.info("Store={}, Original={}, Discount={}, Final={}", storeName, total, discountAmount, finalTotal);
             paymentService.processPayment(payment, finalTotal);
             supplyService.processSupply(supply);
-            storeToProducts.put(basket.getStoreId(), boughtItems);
+            //storeToProducts.put(basket.getStoreId(), boughtItems);
+            storeToProducts.put(basket.getStoreId(), Pair.of(boughtItems, finalTotal));
         }
-        return saveReceipts(userId, storeToProducts);
+        return saveReceiptsWithDiscount(userId, storeToProducts);
     }
 
     public ParticipationInRandomDTO participateInRandom(String token, int randomId, int storeId, double amountPaid,
@@ -223,7 +226,7 @@ public class PurchaseService {
         }
     }
 
-    private ReceiptDTO[] saveReceipts(int userId, Map<Integer, List<ReceiptProduct>> storeToProducts)
+    private ReceiptDTO[] saveReceipts(int userId, Map<Integer, List<ReceiptProduct>> storeToProducts   )
             throws UIException {
         logger.info("saveReceipts called for userId={}", userId);
 
@@ -237,6 +240,28 @@ double total = items.stream()
     .sum();
     // changed this to do price*qunatity instead of just price itself
             ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, total);
+            receipts.add(receipt);
+            orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
+            logger.info("Saved receipt for storeId={}, total={}", storeId, total);
+
+        }
+        return receipts.toArray(new ReceiptDTO[0]);
+    }
+    private ReceiptDTO[] saveReceiptsWithDiscount(int userId, Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts)
+            throws UIException {
+        logger.info("saveReceipts called for userId={}", userId);
+
+        List<ReceiptDTO> receipts = new ArrayList<>();
+        for (Map.Entry<Integer, Pair<List<ReceiptProduct>, Double>> entry : storeToProducts.entrySet()) {
+            int storeId = entry.getKey();
+            String storeName = storeRepo.getStoreNameById(storeId);
+            List<ReceiptProduct> items = entry.getValue().getLeft();
+            double discountedTotal = entry.getValue().getRight();
+            double total = items.stream()
+                    .mapToDouble(item -> item.getPrice() * item.getQuantity())
+                    .sum();
+            // changed this to do price*qunatity instead of just price itself
+            ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, discountedTotal);
             receipts.add(receipt);
             orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
             logger.info("Saved receipt for storeId={}, total={}", storeId, total);
