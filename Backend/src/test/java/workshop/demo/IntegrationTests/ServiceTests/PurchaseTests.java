@@ -167,7 +167,7 @@ public class PurchaseTests  {
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
         assertEquals(10,
-                receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice());
+                receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
 
         List<ReceiptDTO> result = orderService.getReceiptDTOsByUser(NGToken);
 
