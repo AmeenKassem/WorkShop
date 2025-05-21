@@ -161,7 +161,7 @@ public class StoreService {
         );
         String jssonMessage = convertNotificationToJson(message, nameNew, NotificationDTO.NotificationType.OFFER, false, owner, storeId);
         this.notiRepo.sendDelayedMessageToUser(nameNew, jssonMessage);
-        suConnectionRepo.makeOffer(storeId, ownerId, ownerId, false, authorization, message);
+        suConnectionRepo.makeOffer(storeId, ownerId, managerId, false, authorization, message);
     }
 
     public int AddManagerToStore(int storeId, int ownerId, int managerId, boolean decide) throws Exception {
