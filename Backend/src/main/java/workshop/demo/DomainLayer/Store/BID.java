@@ -3,6 +3,8 @@ package workshop.demo.DomainLayer.Store;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+// import org.hibernate.validator.internal.util.logging.Log_.logger;
+
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.SpecialType;
@@ -75,6 +77,7 @@ public class BID {
                 }
             }
             if (!bids.containsKey(userBidId) || winner == null) {
+                
                 throw new DevException("Trying to accept bid for non-existent ID.");
             }
             isAccepted = true;

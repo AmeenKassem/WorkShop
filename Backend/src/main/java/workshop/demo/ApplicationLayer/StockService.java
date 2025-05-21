@@ -245,6 +245,7 @@ public class StockService {
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        logger.info("HmodeID is:{}",storeId);
         storeRepo.checkStoreExistance(storeId);
         if (!suConnectionRepo.manipulateItem(userId, storeId, Permission.AddToStock)) {
             throw new UIException("This worker is not authorized!", ErrorCodes.NO_PERMISSION);
