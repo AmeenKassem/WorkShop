@@ -7,7 +7,6 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -51,14 +50,6 @@ public class HomePage extends VerticalLayout {
             }
         }
         add(title, storeContainer);
-    }
-
-    public void showSuccess(String msg) {
-        Notification.show("✅ " + msg, 3000, Notification.Position.MIDDLE);
-    }
-
-    public void showError(String msg) {
-        Notification.show("❌ " + msg, 5000, Notification.Position.MIDDLE);
     }
 
 }

@@ -90,11 +90,13 @@ public class HomePagePresenter {
         card.addClassName("store-card");
 
         H3 name = new H3(store.storeName);
-        Paragraph rank = new Paragraph("⭐ Rank: " + store.finalRating);
+        int filledStars = store.finalRating;
+        int emptyStars = 5 - filledStars;
+        String stars = "⭐".repeat(filledStars) + "☆".repeat(emptyStars);
+
+        Paragraph rank = new Paragraph("⭐ Rank: " + stars);
         Paragraph category = new Paragraph("🏷️ Category: " + store.category);
-
         card.add(name, rank, category);
-
         card.addClickListener(e
                 -> UI.getCurrent().navigate("store/" + store.storeId));
 
