@@ -161,12 +161,12 @@ public class PurchaseTests {
     void Add_BidProductToSpecialCart_Success_acceptBID() throws Exception {
 
         // Act
-        stockService.setProductToBid(NOToken, 1, 1, 1);
+        int bidId =  stockService.setProductToBid(NOToken, 1, 1, 1);
 
-        stockService.addRegularBid(NGToken, 1, 1, 10);
+         stockService.addRegularBid(NGToken, 1, 1, 10);
         assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_PENDING));
         assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
-        stockService.acceptBid(NOToken, 1, 1, 1);
+        stockService.acceptBid(NOToken, 1, bidId, 1);
         assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_ACCEPTED));
 
         assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
@@ -351,7 +351,7 @@ public class PurchaseTests {
     @Test
     void Add_AuctionBid_Failure_AuctionNotFound() throws Exception {
 
-        DevException ex = assertThrows(DevException.class, () -> stockService.addBidOnAucction(NGToken, 2, 1, 60.0));
+        UIException ex = assertThrows(UIException.class, () -> stockService.addBidOnAucction(NGToken, 2, 1, 60.0));
 
         assertEquals("Auction ID not found in active auctions!", ex.getMessage());
     }
