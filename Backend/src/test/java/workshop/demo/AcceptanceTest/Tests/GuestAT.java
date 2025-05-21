@@ -378,7 +378,7 @@ public class GuestAT extends AcceptanceTests {
         assertNotNull(receipts);
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(200.0, receipts[0].getProductsList().size() * receipts[0].getProductsList().getFirst().getPrice() * 2);
+        assertEquals(200.0, receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice() * 2);
 
         verify(real.mockUserRepo).getUserCart(guestId);
         verify(real.mockStockRepo).checkAvailability(any());
