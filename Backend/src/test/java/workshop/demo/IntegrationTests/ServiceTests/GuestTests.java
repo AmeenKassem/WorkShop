@@ -194,7 +194,7 @@ public class GuestTests {
     void testGuestViewEmptyStore() throws Exception {
         storeService.addStoreToSystem(NOToken, "failure", "HOME");
 
-        ItemStoreDTO[] products = stockService.getProductsInStore(2);
+        ItemStoreDTO[] products = stockService.getProductsInStore(1);
 // ask bhaa i dont know what is happening , how are we getting an item please help help help
         // ===== ASSERT =====
         assertTrue(products.length==0);
