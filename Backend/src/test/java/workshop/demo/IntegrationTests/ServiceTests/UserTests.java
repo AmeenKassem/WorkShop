@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.boot.test.context.SpringBootTest;
 import workshop.demo.ApplicationLayer.AdminService;
 import workshop.demo.ApplicationLayer.AdminService;
 import workshop.demo.ApplicationLayer.OrderService;
@@ -35,6 +36,7 @@ import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
+@SpringBootTest
 public class UserTests {
     PaymentServiceImp payment = new PaymentServiceImp();
     SupplyServiceImp serviceImp = new SupplyServiceImp();

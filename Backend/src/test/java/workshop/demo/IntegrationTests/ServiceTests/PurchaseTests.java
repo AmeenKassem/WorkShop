@@ -8,6 +8,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.boot.test.context.SpringBootTest;
 import workshop.demo.ApplicationLayer.AdminService;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
@@ -45,7 +46,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-
+@SpringBootTest
 public class PurchaseTests  {
         PaymentServiceImp payment = new PaymentServiceImp();
     SupplyServiceImp serviceImp = new SupplyServiceImp();
