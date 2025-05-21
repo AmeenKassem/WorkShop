@@ -53,7 +53,7 @@ public class PurchaseTests  {
     UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
 
     
-@Autowired
+
     NotificationRepository notificationRepository;
     OrderRepository orderRepository = new OrderRepository();
     StoreRepository storeRepository = new StoreRepository();
@@ -126,7 +126,7 @@ public class PurchaseTests  {
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 5, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1);
+        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1,"LapAsus");
                 stockService.setProductToRandom(NOToken,1,1,2000,1,5000);
                         stockService.setProductToBid(NOToken,1,1,1); 
                                stockService.setProductToAuction(NOToken,1,1,1,1000,2);

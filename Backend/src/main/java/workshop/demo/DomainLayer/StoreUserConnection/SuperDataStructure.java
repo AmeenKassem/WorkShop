@@ -355,12 +355,12 @@ public class SuperDataStructure {
         return userId;
     }
     public void clearData() {
-    if (employees != null) {
-        employees.clear();
+        if (employees != null) {
+            employees.clear();
+        }
+        offers.clear();
+        storeLocks.clear();
     }
-    offers.clear();
-    storeLocks.clear();
-
 
 
     public List<Node> getAllWorkers(int storeId) throws Exception {

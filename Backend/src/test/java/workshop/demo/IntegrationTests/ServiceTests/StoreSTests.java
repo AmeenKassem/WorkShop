@@ -231,7 +231,7 @@ public class StoreSTests {
 
         // === Act ===
         storeService.AddOwnershipToStore(1, 3, 5, true);
-        assertTrue(storeService.ViewRolesAndPermissions(1).size() == 2);
+        assertTrue(storeService.ViewRolesAndPermissions(token1,1).size() == 2);
 
         // === Assert ===
         // assertEquals(sotre);
@@ -251,8 +251,8 @@ public class StoreSTests {
         storeService.AddOwnershipToStore(1, 3, 5, true);
 
         // shouldnt work without offer
-        System.out.print(storeService.ViewRolesAndPermissions(1).size());
-        assertTrue(storeService.ViewRolesAndPermissions(1).size() == 2);
+        System.out.print(storeService.ViewRolesAndPermissions(token1,1).size());
+        assertTrue(storeService.ViewRolesAndPermissions(token1,1).size() == 2);
 
         // === Assert ===
         // assertEquals(sotre);
@@ -267,7 +267,7 @@ public class StoreSTests {
         // === Act ===
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
         storeService.AddOwnershipToStore(1, 3, 5, true);
-        assertTrue(storeService.ViewRolesAndPermissions(1).size() == 2);
+        assertTrue(storeService.ViewRolesAndPermissions(token1,1).size() == 2);
         UIException ex = assertThrows(UIException.class, ()
                 -> storeService.AddOwnershipToStore(1, 3, 5, true)
         //shouldnt be able to add the same owner twice
@@ -305,7 +305,7 @@ public class StoreSTests {
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
 
         storeService.AddOwnershipToStore(1, 3, 5, false);
-        assertTrue(storeService.ViewRolesAndPermissions(1).size() == 1);
+        assertTrue(storeService.ViewRolesAndPermissions(token1,1).size() == 1);
 
     }
 
@@ -319,10 +319,10 @@ public class StoreSTests {
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
 
         storeService.AddOwnershipToStore(1, 3, 5, true);
-        assertTrue(storeService.ViewRolesAndPermissions(1).size() == 2);
+        assertTrue(storeService.ViewRolesAndPermissions(token1,1).size() == 2);
 
         assertDoesNotThrow(() -> storeService.DeleteOwnershipFromStore(1, NOToken, 5));
-        assertTrue(storeService.ViewRolesAndPermissions(1).size() == 1);
+        assertTrue(storeService.ViewRolesAndPermissions(token1,1).size() == 1);
 
     }
 
@@ -351,7 +351,7 @@ public class StoreSTests {
         storeService.MakeOfferToAddManagerToStore(1, NOToken, authRepo.getUserName(token1), a);
         storeService.AddManagerToStore(1, 3, 5,true);
         // when decide equals true some list is null (i think its permissions list)
-       assertTrue( storeService.ViewRolesAndPermissions(1).size()==2);
+       assertTrue( storeService.ViewRolesAndPermissions(token1,1).size()==2);
 
     }
 
@@ -366,7 +366,7 @@ public class StoreSTests {
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
         storeService.AddManagerToStore(1, 3, 5, false);
-        assertTrue(storeService.ViewRolesAndPermissions(1).size() == 1);
+        assertTrue(storeService.ViewRolesAndPermissions(token1,1).size() == 1);
 
     }
 
@@ -453,7 +453,7 @@ public class StoreSTests {
 
         // i dunno why it doesnt work with thre ???
         storeService.deleteManager(1, NOToken, 5);
-        assertTrue(storeService.ViewRolesAndPermissions(1).size() == 1);
+        assertTrue(storeService.ViewRolesAndPermissions(token1,1).size() == 1);
     }
 
     @Test

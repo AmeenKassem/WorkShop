@@ -731,7 +731,7 @@ doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(manag
         int ownerId = 10;
         int storeId = 100;
         String ownerToken = "owner-token";
-        List<Integer> worker=real.storeService.ViewRolesAndPermissions(storeId);
+        List<WorkerDTO> worker=real.storeService.ViewRolesAndPermissions(ownerToken,storeId);
         assertTrue(worker.isEmpty());
     }
 
