@@ -4,7 +4,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -30,55 +29,64 @@ public class ManageStoreProductsPresenter {
         this.view = view;
     }
 
-    // Load all products in the store and fetch their system-level data (name/description)
     public void loadProducts(int storeId, String token) {
-        try {
-            String url = "http://localhost:8080/stock/getProductsInStore?storeId=" + storeId;
-            ResponseEntity<ApiResponse> response = restTemplate.exchange(url, HttpMethod.GET, null, ApiResponse.class);
-            ApiResponse body = response.getBody();
+    try {
+        System.out.println("Fetching products for storeId: " + storeId);
+        String url = "http://localhost:8080/stock/getProductsInStore?storeId=" + storeId;
+        ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);
+        ApiResponse body = response.getBody();
 
-            if (body != null && body.getErrNumber() == -1) {
-                ItemStoreDTO[] items = mapper.convertValue(body.getData(), ItemStoreDTO[].class);
+        if (body != null && body.getErrNumber() == -1) {
+            ItemStoreDTO[] items = mapper.convertValue(body.getData(), ItemStoreDTO[].class);
 
-                Map<ItemStoreDTO, ProductDTO> mapped = new LinkedHashMap<>();
-                for (ItemStoreDTO item : items) {
+            Map<ItemStoreDTO, ProductDTO> mapped = new LinkedHashMap<>();
+            for (ItemStoreDTO item : items) {
+                try {
                     ProductDTO product = fetchProductDetails(token, item.getId());
                     mapped.put(item, product);
+                } catch (Exception ex) {
+                    System.out.println("⚠️ Failed to fetch product info for itemId " + item.getId());
                 }
-
-                view.showProducts(mapped);
-            } else {
-                view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
             }
 
-        } catch (HttpClientErrorException e) {
-            handleHttpClientError(e);
-        } catch (Exception e) {
-            view.showError("Unexpected error: " + e.getMessage());
+            view.showProducts(mapped);
+        } else {
+            view.showEmptyPage("📭 No products in this store yet.");
+            view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
         }
+
+    } catch (HttpClientErrorException e) {
+        handleHttpClientError(e);
+        view.showEmptyPage("❌ Failed to load products due to server error.");
+    } catch (Exception e) {
+        view.showEmptyPage("❌ Unexpected error occurred.");
+        view.showError("Unexpected error: " + e.getMessage());
     }
+}
+
 
     private ProductDTO fetchProductDetails(String token, int productId) {
-        try {
-            String url = "http://localhost:8080/stock/getProductInfo?token=" +
-                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8) +
-                    "&productId=" + productId;
+    try {
+        String url = "http://localhost:8080/stock/getProductInfo?token=" +
+                UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8) +
+                "&productId=" + productId;
 
-            ResponseEntity<ApiResponse> response = restTemplate.exchange(url, HttpMethod.GET, null, ApiResponse.class);
-            ApiResponse body = response.getBody();
+        ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);
+        ApiResponse body = response.getBody();
 
-            if (body != null && body.getErrNumber() == -1) {
-                return mapper.convertValue(body.getData(), ProductDTO.class);
-            }
-        } catch (Exception ignored) {}
-
-        return new ProductDTO(productId, "(unknown)", null, "(no description)");
+        if (body != null && body.getErrNumber() == -1) {
+            return mapper.convertValue(body.getData(), ProductDTO.class);
+        }
+    } catch (Exception ex) {
+        System.out.println("⚠️ Could not fetch product info: " + ex.getMessage());
     }
 
-    // Add product to system if not exists, then add to store
+    return new ProductDTO(productId, "(unknown)", null, "(no description)");
+}
+
     public void addProductToStore(int storeId, String token, String name, String desc,
-                                   Category category, String keywords, String price,
-                                   String quantity, Dialog dialog) {
+                                  Category category, String keywords, String price,
+                                  String quantity, Dialog dialog) {
         try {
             int productId = getOrCreateProductId(token, name, desc, category, keywords);
 
@@ -89,9 +97,10 @@ public class ManageStoreProductsPresenter {
                     "&price=" + UriUtils.encodeQueryParam(price, StandardCharsets.UTF_8) +
                     "&category=" + category;
 
-            restTemplate.postForObject(addItemUrl, null, ApiResponse.class);
+            restTemplate.postForEntity(addItemUrl, null, ApiResponse.class);
             view.showSuccess("Product added to store successfully.");
             dialog.close();
+            loadProducts(storeId, token);
 
         } catch (HttpClientErrorException e) {
             handleHttpClientError(e);
@@ -104,8 +113,8 @@ public class ManageStoreProductsPresenter {
         String getAllUrl = "http://localhost:8080/stock/getAllProducts?token=" +
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8);
 
-        ApiResponse response = restTemplate.getForObject(getAllUrl, ApiResponse.class);
-        ProductDTO[] products = mapper.convertValue(response.getData(), ProductDTO[].class);
+        ResponseEntity<ApiResponse> response = restTemplate.getForEntity(getAllUrl, ApiResponse.class);
+        ProductDTO[] products = mapper.convertValue(response.getBody().getData(), ProductDTO[].class);
 
         for (ProductDTO product : products) {
             if (product.getName().equalsIgnoreCase(name)) {
@@ -120,8 +129,8 @@ public class ManageStoreProductsPresenter {
                 "&category=" + category +
                 "&keywords=" + UriUtils.encodeQueryParam(keywords, StandardCharsets.UTF_8);
 
-        ApiResponse addResponse = restTemplate.postForObject(addUrl, null, ApiResponse.class);
-        return mapper.convertValue(addResponse.getData(), Integer.class);
+        ResponseEntity<ApiResponse> addResponse = restTemplate.postForEntity(addUrl, null, ApiResponse.class);
+        return mapper.convertValue(addResponse.getBody().getData(), Integer.class);
     }
 
     public void deleteProduct(int storeId, String token, int productId) {
@@ -132,6 +141,7 @@ public class ManageStoreProductsPresenter {
 
             restTemplate.delete(url);
             view.showSuccess("Product removed.");
+            loadProducts(storeId, token);
         } catch (Exception e) {
             view.showError("Failed to remove product: " + e.getMessage());
         }
@@ -144,7 +154,7 @@ public class ManageStoreProductsPresenter {
                         "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8) +
                         "&productId=" + productId +
                         "&newQuantity=" + UriUtils.encodeQueryParam(quantity, StandardCharsets.UTF_8);
-                restTemplate.postForObject(quantityUrl, null, ApiResponse.class);
+                restTemplate.postForEntity(quantityUrl, null, ApiResponse.class);
             }
 
             if (!price.isEmpty()) {
@@ -152,10 +162,11 @@ public class ManageStoreProductsPresenter {
                         "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8) +
                         "&productId=" + productId +
                         "&newPrice=" + UriUtils.encodeQueryParam(price, StandardCharsets.UTF_8);
-                restTemplate.postForObject(priceUrl, null, ApiResponse.class);
+                restTemplate.postForEntity(priceUrl, null, ApiResponse.class);
             }
 
             view.showSuccess("Product updated.");
+            loadProducts(storeId, token);
         } catch (HttpClientErrorException e) {
             handleHttpClientError(e);
         } catch (Exception e) {
@@ -165,8 +176,7 @@ public class ManageStoreProductsPresenter {
 
     private void handleHttpClientError(HttpClientErrorException e) {
         try {
-            String body = e.getResponseBodyAsString();
-            ApiResponse error = mapper.readValue(body, ApiResponse.class);
+            ApiResponse error = mapper.readValue(e.getResponseBodyAsString(), ApiResponse.class);
             if (error.getErrNumber() != -1) {
                 view.showError(ExceptionHandlers.getErrorMessage(error.getErrNumber()));
             } else {
