@@ -48,18 +48,26 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 @SpringBootTest
 public class PurchaseTests  {
-        PaymentServiceImp payment = new PaymentServiceImp();
+
+    PaymentServiceImp payment = new PaymentServiceImp();
     SupplyServiceImp serviceImp = new SupplyServiceImp();
-    PurchaseRepository purchaseRepository = new PurchaseRepository();
-    UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
+    @Autowired
+    PurchaseRepository purchaseRepository;
+    @Autowired
+    UserSuspensionRepo suspensionRepo ;
 
     
     @Autowired
     NotificationRepository notificationRepository;
-    OrderRepository orderRepository = new OrderRepository();
-    StoreRepository storeRepository = new StoreRepository();
-    StockRepository stockRepository = new StockRepository();
-    SUConnectionRepository sIsuConnectionRepo = new SUConnectionRepository();
+    @Autowired
+    OrderRepository orderRepository;
+    @Autowired
+    StoreRepository storeRepository ;
+    @Autowired
+    StockRepository stockRepository ;
+    @Autowired
+    SUConnectionRepository sIsuConnectionRepo;
+    @Autowired
     AuthenticationRepo authRepo = new AuthenticationRepo();
     Encoder encoder = new Encoder();
     AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
