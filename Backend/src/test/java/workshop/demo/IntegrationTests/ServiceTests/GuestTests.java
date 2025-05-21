@@ -35,6 +35,7 @@ import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest
 public class GuestTests {
     PaymentServiceImp payment = new PaymentServiceImp();
@@ -52,8 +53,9 @@ public class GuestTests {
     AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
     UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
     UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-    AdminService adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);
+    AdminService adminService = new AdminService(orderRepository, storeRepository, userRepo, authRepo);
+    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),
+            adminService);
     StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo,
             sIsuConnectionRepo, suspensionRepo);
     StoreService storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo,
@@ -80,8 +82,9 @@ public class GuestTests {
         adminInitilizer = new AdminInitilizer("123321");
         userRepo = new UserRepository(encoder, adminInitilizer);
         suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-  adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-     userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo,
+        adminService = new AdminService(orderRepository, storeRepository, userRepo, authRepo);
+        userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"), adminService);
+        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo,
                 suspensionRepo);
         storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository,
                 sIsuConnectionRepo, stockRepository, suspensionRepo);
@@ -108,12 +111,15 @@ public class GuestTests {
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1,"Laptop");
+        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1, "Laptop");
 
         // ======================= SECOND GUEST SETUP =======================
 
     }
 
+
+
+    
     @AfterEach
 
     void tearDown() {
@@ -195,9 +201,10 @@ public class GuestTests {
         storeService.addStoreToSystem(NOToken, "failure", "HOME");
 
         ItemStoreDTO[] products = stockService.getProductsInStore(2);
-// ask bhaa i dont know what is happening , how are we getting an item please help help help
+        // ask bhaa i dont know what is happening , how are we getting an item please
+        // help help help
         // ===== ASSERT =====
-        assertTrue(products.length==0);
+        assertTrue(products.length == 0);
     }
 
     @Test
@@ -284,7 +291,7 @@ public class GuestTests {
     @Test
     void testGuestBuyCart_ProductNotAvailable() throws Exception {
 
-        userService.addToUserCart(GToken, new ItemStoreDTO(0, 0, 0, null, 0, 0,""), 1);
+        userService.addToUserCart(GToken, new ItemStoreDTO(0, 0, 0, null, 0, 0, ""), 1);
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
@@ -343,9 +350,10 @@ public class GuestTests {
         String[] keywords = { "Laptop", "Lap", "top" };
         System.out.println(storeService.getFinalRateInStore(1));
 
-        ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.ELECTRONICS, keywords[0], 1, 0, 3000, 0,
+        ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.ELECTRONICS, keywords[0], 1, 0,
+                3000, 0,
                 5);
-// ask bhaa for help 
+        // ask bhaa for help
         // --- Step 5: Call the system under test ---
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
 
@@ -416,9 +424,9 @@ public class GuestTests {
         assertEquals(0, result.length);
     }
 
-//    @Test
-//    void testGuestModifyCartAddQToBuy() throws Exception {
-//        throw new Exception("not implmented");
-//    }
+    // @Test
+    // void testGuestModifyCartAddQToBuy() throws Exception {
+    // throw new Exception("not implmented");
+    // }
 
 }
