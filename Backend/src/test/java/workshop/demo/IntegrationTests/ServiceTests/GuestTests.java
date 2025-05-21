@@ -105,10 +105,10 @@ public class GuestTests {
 
         // ======================= PRODUCT & ITEM ADDITION =======================
         String[] keywords = { "Laptop", "Lap", "top" };
-        stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
+        int productId = stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
-        assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1,"Laptop");
+        assertEquals(1, stockService.addItem(createdStoreId, NOToken, productId, 2, 2000, Category.ELECTRONICS));
+        itemStoreDTO = new ItemStoreDTO(productId, 2, 2000, Category.ELECTRONICS, 3, createdStoreId,"Laptop");
 
         // ======================= SECOND GUEST SETUP =======================
 
@@ -194,7 +194,7 @@ public class GuestTests {
     void testGuestViewEmptyStore() throws Exception {
         storeService.addStoreToSystem(NOToken, "failure", "HOME");
 
-        ItemStoreDTO[] products = stockService.getProductsInStore(1);
+        ItemStoreDTO[] products = stockService.getProductsInStore(2);
 // ask bhaa i dont know what is happening , how are we getting an item please help help help
         // ===== ASSERT =====
         assertTrue(products.length==0);
