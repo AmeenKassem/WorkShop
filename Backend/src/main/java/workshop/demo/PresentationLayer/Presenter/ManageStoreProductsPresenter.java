@@ -60,9 +60,9 @@ public class ManageStoreProductsPresenter {
 
     private ProductDTO fetchProductDetails(String token, int productId) {
         try {
-            String url = "http://localhost:8080/stock/getProductInfo?token=" +
-                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8) +
-                    "&productId=" + productId;
+            String url = "http://localhost:8080/stock/getProductInfo?token="
+                    + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
+                    + "&productId=" + productId;
 
             ResponseEntity<ApiResponse> response = restTemplate.exchange(url, HttpMethod.GET, null, ApiResponse.class);
             ApiResponse body = response.getBody();
@@ -70,24 +70,25 @@ public class ManageStoreProductsPresenter {
             if (body != null && body.getErrNumber() == -1) {
                 return mapper.convertValue(body.getData(), ProductDTO.class);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         return new ProductDTO(productId, "(unknown)", null, "(no description)");
     }
 
     // Add product to system if not exists, then add to store
     public void addProductToStore(int storeId, String token, String name, String desc,
-                                   Category category, String keywords, String price,
-                                   String quantity, Dialog dialog) {
+            Category category, String keywords, String price,
+            String quantity, Dialog dialog) {
         try {
             int productId = getOrCreateProductId(token, name, desc, category, keywords);
 
-            String addItemUrl = "http://localhost:8080/stock/addItem?storeId=" + storeId +
-                    "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8) +
-                    "&productId=" + productId +
-                    "&quantity=" + UriUtils.encodeQueryParam(quantity, StandardCharsets.UTF_8) +
-                    "&price=" + UriUtils.encodeQueryParam(price, StandardCharsets.UTF_8) +
-                    "&category=" + category;
+            String addItemUrl = "http://localhost:8080/stock/addItem?storeId=" + storeId
+                    + "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
+                    + "&productId=" + productId
+                    + "&quantity=" + UriUtils.encodeQueryParam(quantity, StandardCharsets.UTF_8)
+                    + "&price=" + UriUtils.encodeQueryParam(price, StandardCharsets.UTF_8)
+                    + "&category=" + category;
 
             restTemplate.postForObject(addItemUrl, null, ApiResponse.class);
             view.showSuccess("Product added to store successfully.");
@@ -101,8 +102,8 @@ public class ManageStoreProductsPresenter {
     }
 
     private int getOrCreateProductId(String token, String name, String desc, Category category, String keywords) throws Exception {
-        String getAllUrl = "http://localhost:8080/stock/getAllProducts?token=" +
-                UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8);
+        String getAllUrl = "http://localhost:8080/stock/getAllProducts?token="
+                + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8);
 
         ApiResponse response = restTemplate.getForObject(getAllUrl, ApiResponse.class);
         ProductDTO[] products = mapper.convertValue(response.getData(), ProductDTO[].class);
@@ -113,12 +114,12 @@ public class ManageStoreProductsPresenter {
             }
         }
 
-        String addUrl = "http://localhost:8080/stock/addProduct?token=" +
-                UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8) +
-                "&name=" + UriUtils.encodeQueryParam(name, StandardCharsets.UTF_8) +
-                "&description=" + UriUtils.encodeQueryParam(desc, StandardCharsets.UTF_8) +
-                "&category=" + category +
-                "&keywords=" + UriUtils.encodeQueryParam(keywords, StandardCharsets.UTF_8);
+        String addUrl = "http://localhost:8080/stock/addProduct?token="
+                + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
+                + "&name=" + UriUtils.encodeQueryParam(name, StandardCharsets.UTF_8)
+                + "&description=" + UriUtils.encodeQueryParam(desc, StandardCharsets.UTF_8)
+                + "&category=" + category
+                + "&keywords=" + UriUtils.encodeQueryParam(keywords, StandardCharsets.UTF_8);
 
         ApiResponse addResponse = restTemplate.postForObject(addUrl, null, ApiResponse.class);
         return mapper.convertValue(addResponse.getData(), Integer.class);
@@ -126,9 +127,9 @@ public class ManageStoreProductsPresenter {
 
     public void deleteProduct(int storeId, String token, int productId) {
         try {
-            String url = "http://localhost:8080/stock/removeItem?storeId=" + storeId +
-                    "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8) +
-                    "&productId=" + productId;
+            String url = "http://localhost:8080/stock/removeItem?storeId=" + storeId
+                    + "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
+                    + "&productId=" + productId;
 
             restTemplate.delete(url);
             view.showSuccess("Product removed.");
@@ -140,18 +141,18 @@ public class ManageStoreProductsPresenter {
     public void updateProduct(int storeId, String token, int productId, String quantity, String price, String description) {
         try {
             if (!quantity.isEmpty()) {
-                String quantityUrl = "http://localhost:8080/stock/updateQuantity?storeId=" + storeId +
-                        "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8) +
-                        "&productId=" + productId +
-                        "&newQuantity=" + UriUtils.encodeQueryParam(quantity, StandardCharsets.UTF_8);
+                String quantityUrl = "http://localhost:8080/stock/updateQuantity?storeId=" + storeId
+                        + "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
+                        + "&productId=" + productId
+                        + "&newQuantity=" + UriUtils.encodeQueryParam(quantity, StandardCharsets.UTF_8);
                 restTemplate.postForObject(quantityUrl, null, ApiResponse.class);
             }
 
             if (!price.isEmpty()) {
-                String priceUrl = "http://localhost:8080/stock/updatePrice?storeId=" + storeId +
-                        "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8) +
-                        "&productId=" + productId +
-                        "&newPrice=" + UriUtils.encodeQueryParam(price, StandardCharsets.UTF_8);
+                String priceUrl = "http://localhost:8080/stock/updatePrice?storeId=" + storeId
+                        + "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
+                        + "&productId=" + productId
+                        + "&newPrice=" + UriUtils.encodeQueryParam(price, StandardCharsets.UTF_8);
                 restTemplate.postForObject(priceUrl, null, ApiResponse.class);
             }
 
