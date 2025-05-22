@@ -15,17 +15,14 @@ public class VisibleDiscount implements Discount {
 
     @Override
     public boolean isApplicable(DiscountScope scope) {
-        boolean x = condition == null || condition.test(scope);
-        System.out.println(x);
         return condition == null || condition.test(scope);
     }
 
     @Override
     public double apply(DiscountScope scope) {
         if (!isApplicable(scope)) return 0.0;
-        return scope.getTotalPrice() * (percent / 100.0); // ✅ correct
+        return scope.getTotalPrice() * percent;
     }
-
 
     @Override
     public String getName() {

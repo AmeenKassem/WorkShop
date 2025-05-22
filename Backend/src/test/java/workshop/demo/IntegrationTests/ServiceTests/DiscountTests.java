@@ -25,10 +25,7 @@ import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.item;
-import workshop.demo.DomainLayer.Store.Discount;
-import workshop.demo.DomainLayer.Store.DiscountScope;
-import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.Store.VisibleDiscount;
+import workshop.demo.DomainLayer.Store.*;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
@@ -129,7 +126,7 @@ public class DiscountTests {
        int productId = stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
        assertEquals(1, stockService.addItem(createdStoreId, NOToken, productId, 10, 2000, Category.ELECTRONICS));
-       itemStoreDTO = new ItemStoreDTO(1, 1, 2000, Category.ELECTRONICS, 0, createdStoreId, "Laptop");
+       itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, createdStoreId, "Laptop");
        stockService.setProductToRandom(NOToken, productId, 1, 2000, createdStoreId, 5000);
        stockService.setProductToAuction(NOToken, createdStoreId, productId, 1, 1000, 2);
        assertTrue(stockService.getAllAuctions(NOToken, createdStoreId).length == 1);
@@ -162,28 +159,199 @@ public class DiscountTests {
    void add_discount() throws Exception {
        Store store = storeRepository.getStores().get(0);
        Predicate<DiscountScope> cond = scope -> scope.containsCategory("ELECTRONICS");
-       Discount discount = new VisibleDiscount("10% off elec", 10, cond);
+       Discount discount = new VisibleDiscount("10% off elec", 0.1, cond);
        store.addDiscount(discount);
        List<ItemStoreDTO> items = List.of(itemStoreDTO);
        DiscountScope scope = new DiscountScope(items);
        assertTrue(store.getDiscount().isApplicable(scope));
-       assertEquals(200, store.getDiscount().apply(scope), 0.1);
+       assertEquals(2000.0, store.getDiscount().apply(scope), 0.1);
    }
    @Test
-   void buy_discount() throws Exception {
+   void buy_normal_discount() throws Exception {
        Store storeId = storeRepository.getStores().get(0);
        //Predicate<DiscountScope> cond = scope -> scope.containsCategory("ELECTRONICS");
-       CreateDiscountDTO dto = new CreateDiscountDTO("10% off electonics",10,
+       CreateDiscountDTO dto = new CreateDiscountDTO("10% off electonics",0.1,
                CreateDiscountDTO.Type.VISIBLE,"CATEGORY:ELECTRONICS");
        //System.out.println("Hm:"+cond.toString());
        storeService.addDiscountToStore(storeId.getStoreID(),NOToken,dto);
-       userService.addToUserCart(GToken,itemStoreDTO,1);
+       userService.addToUserCart(GToken,itemStoreDTO,4);
 
        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
        ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
-       assertEquals(1800.0,receipts[0].getFinalPrice());
+       assertEquals(7200,receipts[0].getFinalPrice());
    }
+    @Test
+    void buy_AND_discount() throws Exception {
+        Store storeId = storeRepository.getStores().get(0);
+        Predicate<DiscountScope> cond1 = scope -> scope.containsCategory("ELECTRONICS");
+        Predicate<DiscountScope> cond2 = scope -> scope.containsCategory("HOME");
+
+        CreateDiscountDTO dto1 = new CreateDiscountDTO("10% off ELECTRONICS",0.10,
+                CreateDiscountDTO.Type.VISIBLE,"CATEGORY:HOME");
+        CreateDiscountDTO dto2 = new CreateDiscountDTO("20% off ELECTRONICS",0.20,
+                CreateDiscountDTO.Type.VISIBLE,"CATEGORY:ELECTRONICS");
+
+        Discount discount1 = new VisibleDiscount("10% off ELECTRONICS",0.10,cond1);
+        Discount discount2 = new VisibleDiscount("20% off ELECTRONICS",0.20,cond2);
+
+        AndDiscount andDiscount = new AndDiscount("asdf off ELECTRONICS");
+
+       andDiscount.addDiscount(discount1);
+        andDiscount.addDiscount(discount2);
+
+        storeId.setDiscount(andDiscount);
+
+
+        userService.addToUserCart(GToken,itemStoreDTO,3);
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+        ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
+        assertEquals(6000,receipts[0].getFinalPrice());
+    }
+    @Test
+    void buy_OR_discount1() throws Exception {
+        Store storeId = storeRepository.getStores().get(0);
+        Predicate<DiscountScope> cond = scope -> scope.containsCategory("ELECTRONICS");
+
+        CreateDiscountDTO dto1 = new CreateDiscountDTO("10% off ELECTRONICS",0.10,
+                CreateDiscountDTO.Type.VISIBLE,"CATEGORY:ELECTRONICS");
+        CreateDiscountDTO dto2 = new CreateDiscountDTO("20% off ELECTRONICS",0.20,
+                CreateDiscountDTO.Type.VISIBLE,"CATEGORY:ELECTRONICS");
+
+        Discount discount1 = new VisibleDiscount("10% off ELECTRONICS",0.10,cond);
+        Discount discount2 = new VisibleDiscount("20% off ELECTRONICS",0.20,cond);
+
+
+        OrDiscount ORDiscount = new OrDiscount("asdf off ELECTRONICS");
+        ORDiscount.addDiscount(discount1);
+        ORDiscount.addDiscount(discount2);
+
+        storeId.setDiscount(ORDiscount);
+
+
+        userService.addToUserCart(GToken,itemStoreDTO,4);
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+        ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
+        assertEquals(5600,receipts[0].getFinalPrice());
+    }
+    @Test
+    void buy_OR_discount2() throws Exception {
+        Store storeId = storeRepository.getStores().get(0);
+        Predicate<DiscountScope> cond1 = scope -> scope.containsCategory("ELECTRONICS");
+        Predicate<DiscountScope> cond2 = scope -> scope.containsCategory("HOME");
+
+        CreateDiscountDTO dto1 = new CreateDiscountDTO("10% off ELECTRONICS",0.10,
+                CreateDiscountDTO.Type.VISIBLE,"CATEGORY:ELECTRONICS");
+        CreateDiscountDTO dto2 = new CreateDiscountDTO("20% off ELECTRONICS",0.20,
+                CreateDiscountDTO.Type.VISIBLE,"CATEGORY:ELECTRONICS");
+
+        Discount discount1 = new VisibleDiscount("10% off ELECTRONICS",0.10,cond1);
+        Discount discount2 = new VisibleDiscount("20% off ELECTRONICS",0.20,cond2);
+
+
+        OrDiscount ORDiscount = new OrDiscount(" off ELECTRONICS");
+        ORDiscount.addDiscount(discount1);
+        ORDiscount.addDiscount(discount2);
+
+        storeId.setDiscount(ORDiscount);
+
+
+        userService.addToUserCart(GToken,itemStoreDTO,4);
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+        ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
+        assertEquals(7200,receipts[0].getFinalPrice());
+    }
+    @Test
+    void buy_XOR_discount1() throws Exception {
+        Store storeId = storeRepository.getStores().get(0);
+        Predicate<DiscountScope> cond = scope -> scope.containsCategory("ELECTRONICS");
+        CreateDiscountDTO dto1 = new CreateDiscountDTO("10% off ELECTRONICS",0.10,
+                CreateDiscountDTO.Type.VISIBLE,"CATEGORY:ELECTRONICS");
+        CreateDiscountDTO dto2 = new CreateDiscountDTO("20% off ELECTRONICS",0.20,
+                CreateDiscountDTO.Type.VISIBLE,"CATEGORY:ELECTRONICS");
+
+        Discount discount1 = new VisibleDiscount("10% off ELECTRONICS",0.10,cond);
+        Discount discount2 = new VisibleDiscount("20% off ELECTRONICS",0.20,cond);
+
+
+        XorDiscount XORDiscount = new XorDiscount("asdf off ELECTRONICS");
+        XORDiscount.addDiscount(discount1);
+        XORDiscount.addDiscount(discount2);
+
+        storeId.setDiscount(XORDiscount);
+
+
+        userService.addToUserCart(GToken,itemStoreDTO,4);
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+        ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
+        assertEquals(8000,receipts[0].getFinalPrice());
+    }
+    @Test
+    void buy_XOR_discount2() throws Exception {
+        Store storeId = storeRepository.getStores().get(0);
+        Predicate<DiscountScope> cond1 = scope -> scope.containsCategory("ELECTRONICS");
+        Predicate<DiscountScope> cond2 = scope -> scope.containsCategory("HOME");
+
+        CreateDiscountDTO dto1 = new CreateDiscountDTO("10% off ELECTRONICS",0.10,
+                CreateDiscountDTO.Type.VISIBLE,"CATEGORY:ELECTRONICS");
+        CreateDiscountDTO dto2 = new CreateDiscountDTO("20% off ELECTRONICS",0.20,
+                CreateDiscountDTO.Type.VISIBLE,"CATEGORY:ELECTRONICS");
+
+        Discount discount1 = new VisibleDiscount("10% off ELECTRONICS",0.10,cond1);
+        Discount discount2 = new VisibleDiscount("20% off ELECTRONICS",0.20,cond2);
+
+
+        XorDiscount XORDiscount = new XorDiscount("asdf off ELECTRONICS");
+        XORDiscount.addDiscount(discount1);
+        XORDiscount.addDiscount(discount2);
+
+        storeId.setDiscount(XORDiscount);
+
+
+        userService.addToUserCart(GToken,itemStoreDTO,4);
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+        ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
+        assertEquals(7200,receipts[0].getFinalPrice());
+    }
+    @Test
+    void buy_Max_discount() throws Exception {
+        Store storeId = storeRepository.getStores().get(0);
+        Predicate<DiscountScope> cond = scope -> scope.containsCategory("ELECTRONICS");
+        CreateDiscountDTO dto1 = new CreateDiscountDTO("10% off ELECTRONICS",0.10,
+                CreateDiscountDTO.Type.VISIBLE,"CATEGORY:ELECTRONICS");
+        CreateDiscountDTO dto2 = new CreateDiscountDTO("20% off ELECTRONICS",0.20,
+                CreateDiscountDTO.Type.VISIBLE,"CATEGORY:ELECTRONICS");
+
+        Discount discount1 = new VisibleDiscount("10% off ELECTRONICS",0.10,cond);
+        Discount discount2 = new VisibleDiscount("20% off ELECTRONICS",0.20,cond);
+
+
+        MaxDiscount maxDiscount = new MaxDiscount("asdf off ELECTRONICS");
+        maxDiscount.addDiscount(discount1);
+        maxDiscount.addDiscount(discount2);
+
+        storeId.setDiscount(maxDiscount);
+
+
+        userService.addToUserCart(GToken,itemStoreDTO,4);
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+        ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
+        assertEquals(6400,receipts[0].getFinalPrice());
+    }
+
+
 
 }
 
