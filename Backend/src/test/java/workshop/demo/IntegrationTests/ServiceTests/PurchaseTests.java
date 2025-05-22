@@ -209,8 +209,6 @@ public class PurchaseTests {
 
         stockService.addRegularBid(NGToken, x, 1, 10);
 
-        System.out.println("hbfsjkhfsgjkhsfgjk"+stockService.getAllBidsStatus(NOToken, 1).length);
-                System.out.println("hbfsjkhfsgjkhsfgjk"+stockService.getAllBidsStatus(NOToken, 1)[0].bids.length);
 
         assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
         stockService.rejectBid(NOToken, 1, x,              stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getId());
