@@ -588,9 +588,9 @@ public class StoreSTests {
     void testOwner_RequestStoreRolesInfoAndPermission_sucess() throws Exception {
         List<WorkerDTO> workers = storeService.ViewRolesAndPermissions(NOToken, 1);
         assertTrue(workers.size() == 1);
-        assertTrue(workers.get(0).isOwner == true);
-        assertTrue(workers.get(0).workerId == authRepo.getUserId(NOToken));
-        assertTrue(workers.get(0).Username.equals(authRepo.getUserName(NOToken)));
+        assertTrue(workers.get(0).isOwner() == true);
+        assertTrue(workers.get(0).getWorkerId() == authRepo.getUserId(NOToken));
+        assertTrue(workers.get(0).getUsername().equals(authRepo.getUserName(NOToken)));
 
     }
 
@@ -713,6 +713,7 @@ public class StoreSTests {
 
         storeService.rankStore(NGToken, 1, 0);
         assertTrue(storeService.getFinalRateInStore(1) == 3);
+
     
 
     /// 3 is deafult

@@ -83,7 +83,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             ProductDTO product = entry.getValue();
 
             VerticalLayout card = new VerticalLayout(
-                    new Span("🛒 " + product.getName()),
+                    new Span("🛒 " + item.getProductName()),
                     new Span("📦 Quantity: " + item.getQuantity()),
                     new Span("💲 Price: " + item.getPrice()));
             card.addClassName("product-card");

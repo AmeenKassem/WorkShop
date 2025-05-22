@@ -23,7 +23,7 @@ public class ReviewController {
     private ReviewService reviewService;
 
     public ReviewController(Repos repo) {
-        this.reviewService = new ReviewService(repo.reviewRepo, repo.auth, repo.userRepo, repo.storeRepo,repo.stockrepo);
+        this.reviewService = new ReviewService(repo.reviewRepo, repo.auth, repo.userRepo, repo.storeRepo, repo.stockrepo);
     }
 
     @PostMapping("/addToProduct")
@@ -51,7 +51,6 @@ public class ReviewController {
             @RequestParam int storeId,
             @RequestParam String review) {
         try {
-            //reviewService.AddReviewToStore(token, storeId, review);
             String decodedReview = URLDecoder.decode(review, StandardCharsets.UTF_8);
             reviewService.AddReviewToStore(token, storeId, decodedReview);
             return ResponseEntity.ok(new ApiResponse<>("review added to product successfully", null));

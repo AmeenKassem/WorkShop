@@ -103,8 +103,16 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Button addReview = new Button("💬 Add Review", e -> openProductReviewDialog(item));
         Button addRank = new Button("⭐ Add Rank", e -> openProductRankDialog(item));
         Button showReview = new Button("📖 Show Reviews", e -> openProductReviewsDialog(item));
-
-        HorizontalLayout actions = new HorizontalLayout(addToCart, addReview, addRank);
+        // Make all buttons full width
+        addToCart.setWidthFull();
+        addReview.setWidthFull();
+        addRank.setWidthFull();
+        showReview.setWidthFull();
+        // Stack buttons vertically
+        VerticalLayout actions = new VerticalLayout(addToCart, showReview, addReview, addRank);
+        actions.setSpacing(true);
+        actions.setPadding(false);
+        actions.setWidthFull();
         card.add(title, rating, price, quantity, category, actions);
         return card;
     }
@@ -235,7 +243,6 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
             }
             try {
                 presenter.addReviewToStore(token, myStoreId, review);
-                //NotificationView.showSuccess("Store review submitted.");
             } catch (Exception ex) {
                 NotificationView.showError("Failed to submit: " + ex.getMessage());
             }

@@ -1,7 +1,9 @@
 package workshop.demo.PresentationLayer.Presenter;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -223,19 +225,19 @@ public class StoreDetailsPresenter {
     }
 
     public void addToCart(String token, ItemStoreDTO item, int quantity) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("item", item);
+        body.put("quantity", quantity);
         String url = String.format(
-                "http://localhost:8080/api/users/addToCart?token=%s&storeId=%d&productId=%d&quantity=%d",
-                UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
-                item.getStoreId(),
-                item.getId(),
-                quantity
+                "http://localhost:8080/api/users/addToCart?token=%s",
+                UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
         );
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        HttpEntity<?> entity = new HttpEntity<>(headers);
 
+        HttpEntity<?> entity = new HttpEntity<>(body, headers);
         try {
             ResponseEntity<ApiResponse> response = restTemplate.exchange(
                     url,
@@ -244,11 +246,11 @@ public class StoreDetailsPresenter {
                     ApiResponse.class
             );
 
-            ApiResponse body = response.getBody();
-            if (body != null && body.getErrNumber() == -1) {
+            ApiResponse bodyResponse = response.getBody();
+            if (bodyResponse != null && bodyResponse.getErrNumber() == -1) {
                 NotificationView.showSuccess("Added to cart successfully.");
-            } else if (body != null) {
-                NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+            } else if (bodyResponse != null) {
+                NotificationView.showError(ExceptionHandlers.getErrorMessage(bodyResponse.getErrNumber()));
             } else {
                 NotificationView.showError("Unexpected empty response.");
             }

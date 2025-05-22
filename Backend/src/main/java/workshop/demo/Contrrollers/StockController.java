@@ -1,5 +1,8 @@
 package workshop.demo.Contrrollers;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -93,7 +96,9 @@ public class StockController {
             @RequestParam String description,
             @RequestParam String[] keywords) {
         try {
-            int productId = stockService.addProduct(token, name, category, description, keywords);
+            String decodedName = URLDecoder.decode(name, StandardCharsets.UTF_8);
+            String decodedDescription = URLDecoder.decode(description, StandardCharsets.UTF_8);
+            int productId = stockService.addProduct(token, decodedName, category, decodedDescription, keywords);
             return ResponseEntity.ok(new ApiResponse<>(productId, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
@@ -187,7 +192,6 @@ public class StockController {
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) Double minProductRating,
             @RequestParam(required = false) Double maxProductRating) {
-        ApiResponse<ItemStoreDTO[]> res;
         try {
             ItemStoreDTO[] items = stockService.searchProducts(token, new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter, storeId, minPrice, maxPrice, minProductRating, maxProductRating));
             return ResponseEntity.ok(new ApiResponse<>(items, null));

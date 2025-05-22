@@ -70,4 +70,8 @@ public class ItemStoreDTO {
     public void setStoreId(int storeId) {
         this.storeId = storeId;
     }
+
+    public String getProductName() {
+        return this.productName;
+    }
 }
