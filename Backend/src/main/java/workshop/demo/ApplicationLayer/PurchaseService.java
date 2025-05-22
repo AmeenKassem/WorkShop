@@ -49,8 +49,8 @@ public class PurchaseService {
 
     @Autowired
     public PurchaseService(IAuthRepo authRepo, IStockRepo stockRepo, IStoreRepo storeRepo, IUserRepo userRepo,
-            IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
-            ISupplyService supplyService, IUserSuspensionRepo susRepo) {
+                           IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
+                           ISupplyService supplyService, IUserSuspensionRepo susRepo) {
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
         this.storeRepo = storeRepo;
@@ -104,7 +104,7 @@ public class PurchaseService {
         }
 
         //Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
-        Map<Integer, Pair<List<ReceiptProduct>,Double>> storeToProducts = new HashMap<>();
+        Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts = new HashMap<>();
         for (ShoppingBasket basket : cart.getBaskets().values()) {
             logger.info("Processing basket for storeId={}", basket.getStoreId());
             String storeName = storeRepo.getStoreNameById(basket.getStoreId());
@@ -114,7 +114,7 @@ public class PurchaseService {
                 product.setstoreName(storeName); // need to change
             }
             List<ItemStoreDTO> itemStoreDTOS = new ArrayList<>();
-            for(ReceiptProduct p : boughtItems){
+            for (ReceiptProduct p : boughtItems) {
                 itemStoreDTOS.add(new ItemStoreDTO(p.getProductId(), p.getQuantity(), p.getPrice(), p.getCategory(), 0, basket.getStoreId(), p.getProductName()
                 ));
             }
@@ -122,9 +122,9 @@ public class PurchaseService {
             Store store = storeRepo.findStoreByID(basket.getStoreId()); // changed the  get list to use this function instead
 
             Discount discount = store.getDiscount();
-            double discountAmount = (discount!=null)? discount.apply(scope): 0.0;
+            double discountAmount = (discount != null) ? discount.apply(scope) : 0.0;
             double total = stockRepo.calculateTotalPrice(boughtItems);
-            double finalTotal = total-discountAmount;
+            double finalTotal = total - discountAmount;
             logger.info("Store={}, Original={}, Discount={}, Final={}", storeName, total, discountAmount, finalTotal);
             paymentService.processPayment(payment, finalTotal);
             supplyService.processSupply(supply);
@@ -135,7 +135,7 @@ public class PurchaseService {
     }
 
     public ParticipationInRandomDTO participateInRandom(String token, int randomId, int storeId, double amountPaid,
-            PaymentDetails paymentDetails) throws Exception {
+                                                        PaymentDetails paymentDetails) throws Exception {
         logger.info("participateInRandom called with randomId={}, storeId={}", randomId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
@@ -211,7 +211,7 @@ public class PurchaseService {
     }
 
     private void setRecieptMapForRandoms(Map<Integer, List<ReceiptProduct>> storeToProducts,
-            List<ParticipationInRandomDTO> pars) throws Exception {
+                                         List<ParticipationInRandomDTO> pars) throws Exception {
         for (ParticipationInRandomDTO card : pars) {
             stockRepo.validateAndDecreaseStock(card.storeId, card.productId, 1);
             Product product = stockRepo.findByIdInSystem_throwException(card.productId);
@@ -226,7 +226,7 @@ public class PurchaseService {
         }
     }
 
-    private ReceiptDTO[] saveReceipts(int userId, Map<Integer, List<ReceiptProduct>> storeToProducts   )
+    private ReceiptDTO[] saveReceipts(int userId, Map<Integer, List<ReceiptProduct>> storeToProducts)
             throws UIException {
         logger.info("saveReceipts called for userId={}", userId);
 
@@ -235,10 +235,10 @@ public class PurchaseService {
             int storeId = entry.getKey();
             String storeName = storeRepo.getStoreNameById(storeId);
             List<ReceiptProduct> items = entry.getValue();
-double total = items.stream()
-    .mapToDouble(item -> item.getPrice() * item.getQuantity())
-    .sum();
-    // changed this to do price*qunatity instead of just price itself
+            double total = items.stream()
+                    .mapToDouble(item -> item.getPrice() * item.getQuantity())
+                    .sum();
+            // changed this to do price*qunatity instead of just price itself
             ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, total);
             receipts.add(receipt);
             orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
@@ -247,6 +247,7 @@ double total = items.stream()
         }
         return receipts.toArray(new ReceiptDTO[0]);
     }
+
     private ReceiptDTO[] saveReceiptsWithDiscount(int userId, Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts)
             throws UIException {
         logger.info("saveReceipts called for userId={}", userId);

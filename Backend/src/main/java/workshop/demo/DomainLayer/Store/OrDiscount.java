@@ -14,7 +14,9 @@ public class OrDiscount extends CompositeDiscount {
     public double apply(DiscountScope scope) {
         return discounts.stream()
                 .filter(d -> d.isApplicable(scope))
-                .mapToDouble(d -> d.apply(scope))
-                .sum();
+                .findFirst()
+                .map(d -> d.apply(scope))
+                .orElse(0.0);
+
     }
 }
