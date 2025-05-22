@@ -310,8 +310,8 @@ public class StoreSTests {
 // this function need to take id to use this test guest doesnt have a username
         // === Act + Assert
         UIException ex = assertThrows(UIException.class, ()
-                -> storeService.AddOwnershipToStore(1, 3, authRepo.getUserId(token), true)
-        // shouldnt be able to add a guest
+                        -> storeService.AddOwnershipToStore(1, 3, authRepo.getUserId(token), true)
+                // shouldnt be able to add a guest
         );
 
         assertEquals("You are not regestered user!", ex.getMessage());
@@ -520,7 +520,7 @@ public class StoreSTests {
         assertEquals(ex.getMessage(), " store is not active");
     }
 
-//    @Test
+    //    @Test
 //    void testOwner_ManageStoreManagerPermissions() throws Exception {
 //        throw new Exception("need to impl view roles and permissons");
 //    }
@@ -583,7 +583,6 @@ public class StoreSTests {
         assertEquals("Store does not exist!", ex.getMessage());
 
     }
-
 
     @Test
     void testOwner_RequestStoreRolesInfoAndPermission_sucess() throws Exception {
@@ -715,15 +714,15 @@ public class StoreSTests {
         storeService.rankStore(NGToken, 1, 0);
         assertTrue(storeService.getFinalRateInStore(1) == 3);
 
-    
 
-    /// 3 is deafult
+
+        /// 3 is deafult
 
 
 
 
     }
-        @Test
+    @Test
     void testOwner_rankstore_Invalidstore() throws Exception {
 
         UIException ex = assertThrows(UIException.class, ()

@@ -146,7 +146,6 @@ public class Owner_ManagerAT extends AcceptanceTests {
         assertEquals(productId, itemAdded);
     }
 
-
     @Test
     void testOwner_AddProductToStock_Failure_InvalidProductData() throws Exception {
         int storeId = 100;
@@ -803,7 +802,7 @@ public class Owner_ManagerAT extends AcceptanceTests {
         //TODO
     }
 
-//    //todo:this case is not checked
+    //    //todo:this case is not checked
 //    @Test
 //    void testOwner_DeleteProductFromStock_Failure_ProductNotFound() throws Exception {
 //        int storeId = 100;
@@ -893,6 +892,7 @@ public class Owner_ManagerAT extends AcceptanceTests {
         assertEquals("you have no permession to set product to bid.", ex.getMessage());
         assertEquals(1004, ex.getNumber());
     }
+
     @Test
     void testOwner_AddToRandom_Failure() throws Exception {
         int storeId = 100;
