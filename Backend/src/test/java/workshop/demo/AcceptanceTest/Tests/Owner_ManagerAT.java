@@ -802,7 +802,7 @@ public class Owner_ManagerAT extends AcceptanceTests {
         //TODO
     }
 
-//    //todo:this case is not checked
+    //    //todo:this case is not checked
 //    @Test
 //    void testOwner_DeleteProductFromStock_Failure_ProductNotFound() throws Exception {
 //        int storeId = 100;

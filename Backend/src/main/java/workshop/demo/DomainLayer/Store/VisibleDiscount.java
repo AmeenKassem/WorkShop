@@ -23,8 +23,9 @@ public class VisibleDiscount implements Discount {
     @Override
     public double apply(DiscountScope scope) {
         if (!isApplicable(scope)) return 0.0;
-        return scope.getTotalPrice() * percent;
+        return scope.getTotalPrice() * (percent / 100.0); // ✅ correct
     }
+
 
     @Override
     public String getName() {
