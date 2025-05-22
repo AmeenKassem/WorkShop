@@ -1,0 +1,49 @@
+.add-manager-view {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.add-manager-form {
+    width: 100%;
+    max-width: 500px;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.add-manager-title {
+    font-size: 28px;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.add-manager-field {
+    width: 100%;
+    background-color: #add8e6;
+    font-size: 16px;
+}
+
+.add-manager-subtitle {
+    margin-top: 1rem;
+    font-weight: bold;
+}
+
+.add-manager-permissions {
+    background-color: #c0c0c0;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.add-manager-button-layout {
+    margin-top: 1.5rem;
+    justify-content: space-between;
+}
+
+.add-manager-button {
+    background-color: #3366ff;
+    color: white;
+    font-weight: bold;
+    border-radius: 6px;
+}

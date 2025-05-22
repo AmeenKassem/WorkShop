@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.UserService;
+import workshop.demo.DTOs.AddToCartRequest;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.SpecialCartItemDTO;
@@ -151,11 +152,10 @@ public class UserController {
     @PostMapping("/addToCart")
     public ResponseEntity<?> addToUserCart(
             @RequestParam String token,
-            @RequestBody ItemStoreDTO itemToAdd,
-            @RequestBody int quantity
+            @RequestBody AddToCartRequest request
     ) {
         try {
-            boolean data = userService.addToUserCart(token, itemToAdd, quantity);
+            boolean data = userService.addToUserCart(token, request.getItem(), request.getQuantity());
             return ResponseEntity.ok(new ApiResponse<>(data, null));
         } catch (UIException ex) {
             return ResponseEntity
@@ -167,7 +167,6 @@ public class UserController {
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
     }
-
 
     // @PutMapping("/updateProfile")
     // public String updateProfile(@RequestParam String token) {
@@ -225,5 +224,5 @@ public class UserController {
         }
         return res.toJson();
     }
-    
+
 }

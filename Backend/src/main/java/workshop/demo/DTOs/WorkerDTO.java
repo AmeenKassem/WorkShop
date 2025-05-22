@@ -1,37 +1,41 @@
 package workshop.demo.DTOs;
 
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public class WorkerDTO {
 
-    private String Username;
-    private boolean isManager;
-    private boolean isOwner;
+
+    private String username;
+    private boolean manager;
+    private boolean owner;
     private String storeName;
     private Permission[] permessions;
     private boolean setByMe;
     private int workerId;
 
-    public WorkerDTO(int workerId, String username, boolean isManager, boolean isOwner, String storeName, Permission[] permissions, boolean setByMe) {
-        this.Username = username;
-        this.isManager = isManager;
-        this.isOwner = isOwner;
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public WorkerDTO(int workerid, String username, boolean isManager, boolean isOwner, String storeName, Permission[] permissions, boolean setByMe) {
+        this.username = username;
+        this.manager = isManager;
+        this.owner = isOwner;
         this.storeName = storeName;
         this.permessions = permissions;
         this.setByMe = setByMe;
-        this.workerId = workerId;
+        this.workerId = workerid;
+    }
+
+    public WorkerDTO() {
     }
 
     public String getUsername() {
-        return Username;
-    }
-
-    public void setUsername(String username) {
-        this.Username = username;
+        return username;
     }
 
     public boolean isManager() {
-        return isManager;
+        return manager;
     }
 
     public void setManager(boolean manager) {
@@ -39,7 +43,7 @@ public class WorkerDTO {
     }
 
     public boolean isOwner() {
-        return isOwner;
+        return owner;
     }
 
     public void setOwner(boolean owner) {
@@ -57,7 +61,6 @@ public class WorkerDTO {
     public Permission[] getPermessions() {
         return permessions;
     }
-
     public void setPermessions(Permission[] permessions) {
         this.permessions = permessions;
     }
@@ -70,6 +73,7 @@ public class WorkerDTO {
         this.setByMe = setByMe;
     }
 
+
     public int getWorkerId() {
         return workerId;
     }
@@ -77,4 +81,5 @@ public class WorkerDTO {
     public void setWorkerId(int workerId) {
         this.workerId = workerId;
     }
+
 }

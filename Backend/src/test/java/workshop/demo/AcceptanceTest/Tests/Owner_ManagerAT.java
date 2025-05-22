@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class Owner_ManagerAT extends AcceptanceTests {
+
     Real real = new Real();
     private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
 
@@ -145,27 +146,28 @@ public class Owner_ManagerAT extends AcceptanceTests {
         assertEquals(productId, itemAdded);
     }
 
-//    @Test
-//    void testOwner_AddProductToStock_Failure_InvalidProductData() throws Exception {
-//        int storeId = 100;
-//        int productId = 200;
-//        String ownerToken = "owner-token";
-//        int ownerId = 10;
-//
-//        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
-//        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
-//        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
-//        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.AddToStock)).thenReturn(true);
-//
-//        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(
-//                new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", new String[]{"Phone"})
-//        );
-//
-//        NullPointerException ex = assertThrows(NullPointerException.class, () ->
-//                real.stockService.addItem(storeId, ownerToken, productId, -5, -999, Category.ELECTRONICS)
-//        );
-//
-//    }
+
+    @Test
+    void testOwner_AddProductToStock_Failure_InvalidProductData() throws Exception {
+        int storeId = 100;
+        int productId = 200;
+        String ownerToken = "owner-token";
+        int ownerId = 10;
+
+        when(real.mockAuthRepo.validToken(ownerToken)).thenReturn(true);
+        when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
+        when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
+        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.AddToStock)).thenReturn(true);
+
+        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(
+                new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", new String[]{"Phone"})
+        );
+
+        NullPointerException ex = assertThrows(NullPointerException.class, ()
+                -> real.stockService.addItem(storeId, ownerToken, productId, -5, -999, Category.ELECTRONICS)
+        );
+
+    }
 
     @Test
     void testOwner_AddProductToStock_Failure_StoreNotFound() throws Exception {
@@ -184,14 +186,13 @@ public class Owner_ManagerAT extends AcceptanceTests {
         when(real.mockStoreRepo.checkStoreExistance(storeId))
                 .thenThrow(new UIException(" store does not exist.", ErrorCodes.STORE_NOT_FOUND));
 
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.addItem(storeId, ownerToken, productId, 10, 100, Category.ELECTRONICS)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.stockService.addItem(storeId, ownerToken, productId, 10, 100, Category.ELECTRONICS)
         );
 
         assertEquals(" store does not exist.", ex.getMessage());
         assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getNumber());
     }
-
 
     @Test
     void testOwner_DeleteProductFromStock() throws Exception {
@@ -230,14 +231,13 @@ public class Owner_ManagerAT extends AcceptanceTests {
                 new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", new String[]{"Phone"})
         );
 
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.removeItem(storeId, ownerToken, productId)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.stockService.removeItem(storeId, ownerToken, productId)
         );
 
         assertEquals("this worker is not authorized!", ex.getMessage());
         assertEquals(ErrorCodes.NO_PERMISSION, ex.getNumber());
     }
-
 
     @Test
     void testOwner_UpdatePriceProductInStock() throws Exception {
@@ -253,8 +253,8 @@ public class Owner_ManagerAT extends AcceptanceTests {
 
         when(real.mockStockRepo.updatePrice(storeId, productId, 10)).thenReturn(true);
 
-        assertDoesNotThrow(() ->
-                real.stockService.updatePrice(storeId, ownerToken, productId, 10)
+        assertDoesNotThrow(()
+                -> real.stockService.updatePrice(storeId, ownerToken, productId, 10)
         );
     }
 
@@ -271,12 +271,11 @@ public class Owner_ManagerAT extends AcceptanceTests {
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.UpdateQuantity)).thenReturn(true);
         when(real.mockStockRepo.updateQuantity(storeId, productId, 10)).thenReturn(true);
 
-        assertDoesNotThrow(() ->
-                real.stockService.updateQuantity(storeId, ownerToken, productId, 10)
+        assertDoesNotThrow(()
+                -> real.stockService.updateQuantity(storeId, ownerToken, productId, 10)
         );
 
     }
-
 
     @Test
     void testOwner_AddStoreOwner_Success() throws Exception {
@@ -325,8 +324,8 @@ public class Owner_ManagerAT extends AcceptanceTests {
                 .when(real.mockUserRepo)
                 .checkUserRegister_ThrowException(newOwnerId);
 
-        UIException ex = assertThrows(UIException.class, () ->
-                real.storeService.AddOwnershipToStore(storeId, 10, newOwnerId, true)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.storeService.AddOwnershipToStore(storeId, 10, newOwnerId, true)
         );
 
         assertEquals("You are not regestered user!", ex.getMessage());
@@ -360,7 +359,6 @@ public class Owner_ManagerAT extends AcceptanceTests {
 
         assertEquals(-1, result);
     }
-
 
     @Test
     void testOwner_DeleteStoreOwner() throws Exception {
@@ -406,24 +404,20 @@ public class Owner_ManagerAT extends AcceptanceTests {
 
         when(real.mockUserRepo.isRegistered(21)).thenReturn(false);
 
-
         doThrow(new IllegalArgumentException("NO SUCH USER"))
                 .when(real.mockUserRepo)
                 .checkUserRegister_ThrowException(21);
         when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
         when(real.mockStoreRepo.checkStoreIsActive(storeId)).thenReturn(true);
 
-
         when(real.mockIOSrepo.checkToAddOwner(storeId, ownerId, 21)).thenReturn(false);
         when(real.mockIOSrepo.AddOwnershipToStore(storeId, ownerId, 21)).thenReturn(false);
-
 
         Exception ex = assertThrows(Exception.class, () -> {
             real.storeService.DeleteOwnershipFromStore(storeId, ownerToken, 21);
         });
         assertEquals(ex.getMessage(), "NO SUCH USER");
     }
-
 
     @Test
     void testOwner_AddStoreManager_Success() throws Exception {
@@ -497,9 +491,7 @@ public class Owner_ManagerAT extends AcceptanceTests {
 
         assertFalse((real.storeService.AddManagerToStore(storeId, 10, managerId, true)) == -1);
 
-
     }
-
 
     @Test
     void testDeleteManager_Success() throws Exception {
@@ -606,7 +598,6 @@ public class Owner_ManagerAT extends AcceptanceTests {
         assertEquals(ex.getMessage(), "Store not found with ID: " + storeId);
     }
 
-
     @Test
     void testOwner_ManageStoreManagerPermissions() throws Exception {
         int ownerId = 10;
@@ -653,7 +644,6 @@ public class Owner_ManagerAT extends AcceptanceTests {
         assertEquals("User is not a manager", ex.getMessage());
     }
 
-
     @Test
     void testOwner_DeactivateStore() throws Exception {
         int storeId = 100;
@@ -673,7 +663,6 @@ public class Owner_ManagerAT extends AcceptanceTests {
         when(real.mockAuthRepo.getUserId(ownerToken)).thenReturn(ownerId);
         real.storeService.deactivateteStore(storeId, ownerToken);
 
-
         doThrow(new UIException("can't deactivate an DEactivated store", ErrorCodes.DEACTIVATED_STORE))
                 .when(real.mockStoreRepo).deactivateStore(storeId, ownerId);
 
@@ -683,7 +672,6 @@ public class Owner_ManagerAT extends AcceptanceTests {
 
         assertEquals("can't deactivate an DEactivated store", ex.getMessage());
     }
-
 
     @Test
     void testOwner_ViewStorePurchaseHistory() throws Exception {
@@ -707,7 +695,6 @@ public class Owner_ManagerAT extends AcceptanceTests {
         });
 
         assertEquals("Store does not exist!", ex.getMessage());
-
 
     }
 
@@ -733,7 +720,8 @@ public class Owner_ManagerAT extends AcceptanceTests {
         WorkerDTO w = workers.get(0);
         assertEquals(ownerId, w.getWorkerId());
         assertEquals(username, w.getUsername());
-        assertTrue(w.isOwner());
+        assertTrue(w.isOwner());           // isManager == false -> isOwner == true
+        assertFalse(w.isManager());
         assertEquals(storeName, w.getStoreName());
     }
 
@@ -743,8 +731,8 @@ public class Owner_ManagerAT extends AcceptanceTests {
                 .when(real.mockAuthRepo)
                 .checkAuth_ThrowTimeOutException(eq("invalid-token"), any(Logger.class));
 
-        UIException ex = assertThrows(UIException.class, () ->
-                real.storeService.ViewRolesAndPermissions("invalid-token", 100)  // 100 is a valid store, but token is fake
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.storeService.ViewRolesAndPermissions("invalid-token", 100) // 100 is a valid store, but token is fake
         );
         assertEquals("Invalid token", ex.getMessage());
         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
@@ -756,18 +744,18 @@ public class Owner_ManagerAT extends AcceptanceTests {
                 .when(real.mockIOSrepo)
                 .getAllWorkers(invalidStoreId);
 
-        UIException ex2 = assertThrows(UIException.class, () ->
-                real.storeService.ViewRolesAndPermissions(validToken, invalidStoreId)
+        UIException ex2 = assertThrows(UIException.class, ()
+                -> real.storeService.ViewRolesAndPermissions(validToken, invalidStoreId)
         );
         assertEquals("Store not found", ex2.getMessage());
         assertEquals(ErrorCodes.STORE_NOT_FOUND, ex2.getNumber());
     }
 
-
     @Test
     void testOwner_AddPurchasePolicy() throws Exception {
         //TODO
     }
+
     @Test
     void testOwner_AddPurchasePolicy_Failure_InvalidPolicy() throws Exception {
         //TODO
@@ -834,11 +822,6 @@ public class Owner_ManagerAT extends AcceptanceTests {
 //
 //
 //    }
-
-
-
-
-
     @Test
     void testOwner_AddToAuction_Success() throws Exception {
         int storeId = 100;
@@ -856,6 +839,7 @@ public class Owner_ManagerAT extends AcceptanceTests {
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.SpecialType)).thenReturn(true);
         real.stockService.setProductToAuction(ownerToken, storeId, productId, 1, 5000, 2);
     }
+
     @Test
     void testOwner_AddToBID_Success() throws Exception {
         int storeId = 100;
@@ -873,6 +857,7 @@ public class Owner_ManagerAT extends AcceptanceTests {
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.SpecialType)).thenReturn(true);
         real.stockService.setProductToBid(ownerToken, storeId, productId, 1);
     }
+
     @Test
     void testOwner_AddToRandom_Success() throws Exception {
         int storeId = 100;
@@ -891,7 +876,6 @@ public class Owner_ManagerAT extends AcceptanceTests {
         real.stockService.setProductToRandom(ownerToken, productId, 1, 100, storeId, 5000);
     }
 
-
     @Test
     void testOwner_AddToBid_Failure() throws Exception {
         int storeId = 100;
@@ -902,35 +886,36 @@ public class Owner_ManagerAT extends AcceptanceTests {
         // Simulate missing permission
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.SpecialType)).thenReturn(false);
 
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.setProductToBid(ownerToken, storeId, productId, 1)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.stockService.setProductToBid(ownerToken, storeId, productId, 1)
         );
 
         assertEquals("you have no permession to set product to bid.", ex.getMessage());
         assertEquals(1004, ex.getNumber());
     }
-//    @Test
-//    void testOwner_AddToRandom_Failure() throws Exception {
-//        int storeId = 100;
-//        int productId = 200;
-//        int ownerId = 10;
-//        String ownerToken = "user-token";
-//        List<Permission> permissions = new LinkedList<>();
-//        permissions.add(Permission.AddToStock);
-//        permissions.add(Permission.ViewAllProducts);
-//        permissions.add(Permission.DeleteFromStock);
-//        permissions.add(Permission.SpecialType);
-//        permissions.add(Permission.UpdatePrice);
-//        permissions.add(Permission.UpdateQuantity);
-//
-//        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, null)).thenReturn(false);
-//
-//        UIException ex = assertThrows(UIException.class, () ->
-//                real.stockService.setProductToRandom(ownerToken,productId,1, 1.0, 1,10000)
-//        );
-//        //assertEquals(ex.getMessage(), "you have no permession to set product to bid.");
-//        assertEquals(1004, ex.getNumber());
-//    }
+    @Test
+    void testOwner_AddToRandom_Failure() throws Exception {
+        int storeId = 100;
+        int productId = 200;
+        int ownerId = 10;
+        String ownerToken = "user-token";
+        List<Permission> permissions = new LinkedList<>();
+        permissions.add(Permission.AddToStock);
+        permissions.add(Permission.ViewAllProducts);
+        permissions.add(Permission.DeleteFromStock);
+        permissions.add(Permission.SpecialType);
+        permissions.add(Permission.UpdatePrice);
+        permissions.add(Permission.UpdateQuantity);
+
+        when(real.mockIOSrepo.manipulateItem(ownerId, storeId, null)).thenReturn(false);
+
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.stockService.setProductToRandom(ownerToken, productId, 1, 1.0, 1, 10000)
+        );
+        //assertEquals(ex.getMessage(), "you have no permession to set product to bid.");
+        assertEquals(1004, ex.getNumber());
+    }
+
     @Test
     void testOwner_AddToAuction_Failure() throws Exception {
         int storeId = 100;
@@ -940,14 +925,12 @@ public class Owner_ManagerAT extends AcceptanceTests {
 
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.SpecialType)).thenReturn(false);
 
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.setProductToAuction(ownerToken, storeId, productId, 1, 5000, 2)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.stockService.setProductToAuction(ownerToken, storeId, productId, 1, 5000, 2)
         );
 
         //assertEquals("you have no permession to set product to auction.", ex.getMessage());
         assertEquals(1004, ex.getNumber());
     }
-
-
 
 }

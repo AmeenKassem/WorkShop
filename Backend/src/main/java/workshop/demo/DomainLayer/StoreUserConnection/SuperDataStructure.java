@@ -12,6 +12,7 @@ import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+
 public class SuperDataStructure {
 
     private Map<Integer, Tree> employees;
@@ -43,6 +44,9 @@ public class SuperDataStructure {
             if (this.employees.get(storeID).getNodeById(ownerId) == null) {
                 throw new UIException("Owner does not exist in this store", ErrorCodes.NO_PERMISSION);
             }
+            if (this.employees.get(storeID).getNodeById(ownerId).getIsManager()) {
+                throw new UIException("Manager can not make offers in this store", ErrorCodes.NO_PERMISSION);
+            }
             Node child = employees.get(storeID).getNodeById(newOnwerId);
             if (child != null && !child.getIsManager()) {
                 throw new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION);
@@ -62,6 +66,9 @@ public class SuperDataStructure {
             }
             if (this.employees.get(storeID).getNodeById(ownerId) == null) {
                 throw new UIException("Owner does not exist in this store", ErrorCodes.NO_PERMISSION);
+            }
+            if (this.employees.get(storeID).getNodeById(ownerId).getIsManager()) {
+                throw new UIException("Manager can not make offers in this store", ErrorCodes.NO_PERMISSION);
             }
             Node child = employees.get(storeID).getNodeById(newOwnerId);
             if (child != null && child.getIsManager()) {
@@ -228,7 +235,8 @@ public class SuperDataStructure {
             lock.unlock();
         }
     }
-/* 
+
+    /* 
     public List<WorkerDTO> getWorkerDTOsInStore(int storeId) throws Exception {
     ReentrantLock lock = storeLocks.computeIfAbsent(storeId, k -> new ReentrantLock());
     lock.lock();
@@ -354,6 +362,7 @@ public class SuperDataStructure {
         }
         return userId;
     }
+
     public void clearData() {
         if (employees != null) {
             employees.clear();
@@ -361,7 +370,6 @@ public class SuperDataStructure {
         offers.clear();
         storeLocks.clear();
     }
-
 
     public List<Node> getAllWorkers(int storeId) throws Exception {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeId, k -> new ReentrantLock());
@@ -391,12 +399,10 @@ public class SuperDataStructure {
                     allowedPermissions.add(entry.getKey());
                 }
             }
-        return allowedPermissions.toArray(new Permission[0]);
+            return allowedPermissions.toArray(new Permission[0]);
         } else {
             return null; // Owner have no permessions
         }
     }
 
 }
-
-

@@ -10,7 +10,11 @@ import org.springframework.stereotype.Service;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.CreateDiscountDTO;
+import workshop.demo.DTOs.NotificationDTO;
+import workshop.demo.DTOs.OrderDTO;
+import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -65,6 +69,8 @@ public class StoreService {
         int storeId = storeRepo.addStoreToSystem(bossId, storeName, category);
         suConnectionRepo.addNewStoreOwner(storeId, bossId);
         stockRepo.addStore(storeId);
+        //add store to history
+        this.orderRepo.addStoreTohistory(storeId);
         logger.info("Store '{}' added successfully with ID {} by boss {}", storeName, storeId, bossId);
         return storeId;
     }
@@ -96,11 +102,15 @@ public class StoreService {
         logger.info("Making an offer to be a store owner from {} to {}", ownerId, newOwnerId);
         String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
         String storeName = this.storeRepo.getStoreNameById(storeId);
-        String Message = "In store:{}, the owner:{} is offering you:{} to be an owner of this store" + storeName + owner + newOwnerName;
-        String jssonMessage = convertNotificationToJson(Message, newOwnerName, NotificationDTO.NotificationType.OFFER, true, owner, storeId);
-        this.notiRepo.sendDelayedMessageToUser(newOwnerName, jssonMessage);
+        String Message = String.format(
+                "In store: %s, the owner: %s is offering you: %s to become an owner of this store.",
+                storeName, owner, newOwnerName
+        );
 
-        suConnectionRepo.makeOffer(storeId, ownerId, newOwnerId, true, null, Message); // changed from ownerid, ownerid to ownerid,new ownerid
+        String jssonMessage = convertNotificationToJson(Message, newOwnerName, NotificationDTO.NotificationType.OFFER, true, owner, storeId);
+        suConnectionRepo.makeOffer(storeId, ownerId, newOwnerId, true, null, Message);
+
+        this.notiRepo.sendDelayedMessageToUser(newOwnerName, jssonMessage);
 
     }
 
@@ -159,10 +169,13 @@ public class StoreService {
         String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
         String nameNew = this.userRepo.getRegisteredUser(managerId).getUsername();
         String storeName = this.storeRepo.getStoreNameById(storeId);
-        String Message = "In store:{}, the owner:{} is offering you: {} to be a manager of this store" + storeName + owner + nameNew;
-        String jssonMessage = convertNotificationToJson(Message, nameNew, NotificationDTO.NotificationType.OFFER, false, owner, storeId);
+        String message = String.format(
+                "In store: %s, the owner: %s is offering you: %s to be a manager of this store.",
+                storeName, owner, nameNew
+        );
+        String jssonMessage = convertNotificationToJson(message, nameNew, NotificationDTO.NotificationType.OFFER, false, owner, storeId);
+        suConnectionRepo.makeOffer(storeId, ownerId, managerId, false, authorization, message);
         this.notiRepo.sendDelayedMessageToUser(nameNew, jssonMessage);
-        suConnectionRepo.makeOffer(storeId, ownerId, managerId, false, authorization, Message);
 
     }
 
@@ -245,7 +258,7 @@ public class StoreService {
         ///we have to notify the employees here
          for (int userId : toNotify) {
             String userName = this.userRepo.getRegisteredUser(userId).getUsername();
-            String message = "The store:{} has been closed, you are no longer an employee here" + storeName;
+            String message = String.format("The store: %s is deactivated ✅", storeName);
             this.notiRepo.sendDelayedMessageToUser(userName, message);
         }
         return storeId;
@@ -267,7 +280,8 @@ public class StoreService {
         //also notify the employees
         for (int userId : toNotify) {
             String userName = this.userRepo.getRegisteredUser(userId).getUsername();
-            String message = "The store:{} has been closed, you are no longer an employee here" + storeName;
+            String message = String.format("The store: %s has been closed, you are no longer an employee there.", storeName);
+
             this.notiRepo.sendDelayedMessageToUser(userName, message);
         }
 
@@ -275,18 +289,18 @@ public class StoreService {
     }
 
     //return the workers in specific store
-    public List<WorkerDTO> ViewRolesAndPermissions(String token , int storeId) throws Exception {
+    public List<WorkerDTO> ViewRolesAndPermissions(String token, int storeId) throws Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         List<Node> nodes = suConnectionRepo.getAllWorkers(storeId);  //return this as nodes 
-        String storeName = storeRepo.getStoreNameById(storeId);         
+        String storeName = storeRepo.getStoreNameById(storeId);
         List<WorkerDTO> result = new ArrayList<>();
         for (Node node : nodes) {
-            String username = userRepo.getRegisteredUser(node.getMyId()).getUsername(); 
+            String username = userRepo.getRegisteredUser(node.getMyId()).getUsername();
             boolean isManager = node.getIsManager();
             Permission[] permissions = suConnectionRepo.getPermissions(node);
             boolean setByMe = node.getParentId() == userId;
-            result.add(new WorkerDTO(userId,username, isManager, !isManager, storeName, permissions, setByMe));
+            result.add(new WorkerDTO(userId, username, isManager, !isManager, storeName, permissions, setByMe));
         }
         return result;
     }
@@ -317,13 +331,14 @@ public class StoreService {
     }
 
     public List<StoreDTO> getAllStores() {
-        List<Store> stores =  storeRepo.getStores();
+        List<Store> stores = storeRepo.getStores();
         List<StoreDTO> res = new ArrayList<>();
         for (Store store : stores) {
             res.add(store.getStoreDTO());
         }
         return res;
     }
+
     public void addDiscountToStore(int storeId, String token, CreateDiscountDTO dto) throws UIException, DevException {
         logger.info("User attempting to add a discount to store {}", storeId);
 
@@ -344,6 +359,7 @@ public class StoreService {
         store.addDiscount(discount);
         logger.info("Discount '{}' added successfully to store {}", discount.getName(), storeId);
     }
+
     public void removeDiscountFromStore(String token, int storeId, String discountName) throws UIException, DevException {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
@@ -365,6 +381,5 @@ public class StoreService {
 
         logger.info("Discount '{}' removed from store {}", discountName, storeId);
     }
-
 
 }

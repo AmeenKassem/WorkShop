@@ -20,9 +20,9 @@ import workshop.demo.DomainLayer.Order.Order;
 public class OrderRepository implements IOrderRepo {
 
     private Map<Integer, List<Order>> history;
-    private  final AtomicInteger counterOId = new AtomicInteger(1);
+    private final AtomicInteger counterOId = new AtomicInteger(1);
 
-    public  int generateId() {
+    public int generateId() {
         return counterOId.getAndIncrement();
     }
 
@@ -93,10 +93,16 @@ public class OrderRepository implements IOrderRepo {
         }
         return result;
     }
+
     public void clear() {
-    if (history != null) {
-        history.clear();
+        if (history != null) {
+            history.clear();
+        }
+        counterOId.set(1);
     }
-    counterOId.set(1);
-}
+
+    @Override
+    public void addStoreTohistory(int storeId) {
+        history.putIfAbsent(storeId, new ArrayList<>());
+    }
 }
