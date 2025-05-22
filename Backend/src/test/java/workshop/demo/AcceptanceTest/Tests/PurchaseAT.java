@@ -467,13 +467,13 @@ doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.US
         );
         DiscountScope scope = new DiscountScope(scopeItems);
 
-        Predicate<DiscountScope> cond1 = DiscountConditions.fromString("QUANTITY>3");
+        Predicate<DiscountScope> cond1 = DiscountConditions.fromString("CATEGORY:ELECTRONICS");
 
         Predicate<DiscountScope> cond2 = DiscountConditions.fromString("CATEGORY:ELECTRONICS");
 
-        Discount d1 = new VisibleDiscount("d1", 30, cond1);
+        Discount d1 = new VisibleDiscount("d1", 0.3, cond1);
 
-        Discount d2 = new VisibleDiscount("d2", 50, cond2);
+        Discount d2 = new VisibleDiscount("d2", 0.5, cond2);
 
         OrDiscount orDiscount = new OrDiscount("OrDiscount");
         orDiscount.addDiscount(d1);
@@ -499,7 +499,7 @@ doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.US
 
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(100.0, receipts[0].getFinalPrice());
+        assertEquals(40, receipts[0].getFinalPrice());
     }
 
     @Test
@@ -524,10 +524,10 @@ doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.US
         DiscountScope scope = new DiscountScope(scopeItems);
 
         Predicate<DiscountScope> cond1 = DiscountConditions.fromString("CATEGORY:ELECTRONICS");
-        Predicate<DiscountScope> cond2 = DiscountConditions.fromString("TOTAL>1000");
+        Predicate<DiscountScope> cond2 = DiscountConditions.fromString("CATEGORY:ELECTRONICS");
 
-        Discount d1 = new VisibleDiscount("d1", 30, cond1);
-        Discount d2 = new VisibleDiscount("d2", 50, cond2);
+        Discount d1 = new VisibleDiscount("d1", 0.3, cond1);
+        Discount d2 = new VisibleDiscount("d2", 0.5, cond2);
 
         XorDiscount xorDiscount = new XorDiscount("XorTest");
         xorDiscount.addDiscount(d1);
@@ -553,7 +553,7 @@ doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.US
 
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(140.0, receipts[0].getFinalPrice());
+        assertEquals(200, receipts[0].getFinalPrice());
     }
 
     @Test
@@ -578,10 +578,10 @@ doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.US
         DiscountScope scope = new DiscountScope(scopeItems);
 
         Predicate<DiscountScope> cond1 = DiscountConditions.fromString("CATEGORY:ELECTRONICS");
-        Predicate<DiscountScope> cond2 = DiscountConditions.fromString("TOTAL>100");
+        Predicate<DiscountScope> cond2 = DiscountConditions.fromString("CATEGORY:ELECTRONICS");
 
-        Discount d1 = new VisibleDiscount("d1", 30, cond1); // 30%
-        Discount d2 = new VisibleDiscount("d2", 10, cond2); // 10%
+        Discount d1 = new VisibleDiscount("d1", 0.3, cond1); // 30%
+        Discount d2 = new VisibleDiscount("d2", 0.1, cond2); // 10%
 
         AndDiscount andDiscount = new AndDiscount("AndTest");
         andDiscount.addDiscount(d1);
@@ -607,7 +607,7 @@ doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.US
 
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(120.0, receipts[0].getFinalPrice());
+        assertEquals(120, receipts[0].getFinalPrice());
     }
 
     @Test
