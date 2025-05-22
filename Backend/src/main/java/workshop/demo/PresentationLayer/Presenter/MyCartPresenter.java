@@ -1,11 +1,14 @@
 package workshop.demo.PresentationLayer.Presenter;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriUtils;
@@ -37,9 +40,11 @@ public class MyCartPresenter {
 
     private void loadRegularCartItems() {
         String token = getToken();
-        if (token == null) return;
+        if (token == null) {
+            return;
+        }
 
-        String url = String.format("http://localhost:8080/getregularcart?token=%s",
+        String url = String.format("http://localhost:8080/api/users/getregularcart?token=%s",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
         HttpHeaders headers = new HttpHeaders();
@@ -75,9 +80,11 @@ public class MyCartPresenter {
 
     private void loadSpecialCartItems() {
         String token = getToken();
-        if (token == null) return;
+        if (token == null) {
+            return;
+        }
 
-        String url = String.format("http://localhost:8080/getspecialcart?token=%s",
+        String url = String.format("http://localhost:8080/api/users/getspecialcart?token=%s",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
         HttpHeaders headers = new HttpHeaders();

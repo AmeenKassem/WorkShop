@@ -1,16 +1,17 @@
 package workshop.demo.PresentationLayer.View;
 
-import java.util.Locale.Category;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.*;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
+
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.SpecialType;
@@ -87,11 +88,6 @@ public class MyCartView extends VerticalLayout {
     private Component createNormalCartItem(ItemCartDTO item) {
         HorizontalLayout container = new HorizontalLayout();
         container.setClassName("cart-item");
-
-        Image image = new Image("https://via.placeholder.com/100", "Product Image");
-        image.setWidth("100px");
-        image.setHeight("100px");
-
         VerticalLayout details = new VerticalLayout();
         details.setClassName("cart-details");
 
@@ -102,7 +98,7 @@ public class MyCartView extends VerticalLayout {
         details.add(new Paragraph("❄️ Quantity: " + item.quantity));
         details.add(new Paragraph("🔥 Subtotal: ₪" + (item.price * item.quantity)));
 
-        container.add(image, details);
+        container.add(details);
         return container;
     }
 
@@ -119,10 +115,6 @@ public class MyCartView extends VerticalLayout {
             box.addClassName("bid-bg");
         }
 
-        Image image = new Image("https://via.placeholder.com/100", "Special Product");
-        image.setWidth("100px");
-        image.setHeight("100px");
-
         VerticalLayout details = new VerticalLayout();
         details.setClassName("special-details");
 
@@ -132,7 +124,7 @@ public class MyCartView extends VerticalLayout {
         details.add(new Paragraph("🏁 Ended: " + (item.isEnded() ? "Yes" : "No")));
         details.add(new Paragraph("🏆 You Won: " + (item.isWinner() ? "Yes" : "No")));
 
-        box.add(image, details);
+        box.add(details);
         return box;
     }
 
@@ -141,17 +133,17 @@ public class MyCartView extends VerticalLayout {
     }
 
     public void showError(String msg) {
-        Notification.show("❌ " + msg, 4000, Notification.Position.BOTTOM_CENTER);
+        NotificationView.showError(msg);
     }
 
     public void showSuccess(String msg) {
-        Notification.show("✅ " + msg, 3000, Notification.Position.BOTTOM_CENTER);
+        NotificationView.showError(msg);
     }
 
     // 🔧 Test data method
     public void testLoadCartData() {
         // Create 3 normal items from 3 stores
-        ItemCartDTO item1 = new ItemCartDTO(1,workshop.demo.DTOs.Category.HOME , 101, 2, 20, "Milk", "Fresh dairy milk", "Store A");
+        ItemCartDTO item1 = new ItemCartDTO(1, workshop.demo.DTOs.Category.HOME, 101, 2, 20, "Milk", "Fresh dairy milk", "Store A");
         ItemCartDTO item2 = new ItemCartDTO(2, workshop.demo.DTOs.Category.ELECTRONICS, 102, 1, 150, "Headphones", "Bluetooth over-ear", "Store B");
         ItemCartDTO item3 = new ItemCartDTO(3, workshop.demo.DTOs.Category.ELECTRONICS, 103, 3, 45, "Notebook", "A5 spiral notebook", "Store C");
         displayRegularItems(new ItemCartDTO[]{item1, item2, item3});

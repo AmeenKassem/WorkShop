@@ -2,7 +2,6 @@ package workshop.demo.InfrastructureLayer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -300,10 +299,10 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public Registered getRegisteredUserByName(String name) {
+    public Registered getRegisteredUserByName(String name) throws UIException {
         Registered user = users.get(name);
         if (user == null) {
-            throw new NoSuchElementException("No user found with username: " + name);
+            throw new UIException("No user found with username: " + name, ErrorCodes.USER_NOT_FOUND);
         }
         return user;
     }

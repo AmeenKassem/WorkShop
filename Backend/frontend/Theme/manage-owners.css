@@ -1,0 +1,62 @@
+.manage-owners-view {
+    max-width: 900px;
+    margin: auto;
+    padding: 2rem;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.manage-owners-view h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.manage-owners-view .owner-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: #f7f7f7;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.manage-owners-view .owner-row span {
+    font-size: 1rem;
+    color: #444;
+}
+
+.manage-owners-view .delete-button {
+    background-color: #e63946;
+    color: white;
+    font-weight: bold;
+    border-radius: 6px;
+}
+
+.manage-owners-view .offer-button {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    width: fit-content;
+}
+
+.manage-owners-view .offer-dialog {
+    width: 400px;
+    padding: 1rem;
+}
+
+.manage-owners-view .offer-dialog .vaadin-text-field {
+    width: 100%;
+}
+
+.manage-owners-view .offer-dialog .vaadin-button {
+    font-weight: bold;
+}

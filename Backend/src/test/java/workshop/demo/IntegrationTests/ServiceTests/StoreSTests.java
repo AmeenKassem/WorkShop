@@ -64,18 +64,19 @@ public class StoreSTests {
     StoreRepository storeRepository = new StoreRepository();
     StockRepository stockRepository = new StockRepository();
     SUConnectionRepository sIsuConnectionRepo = new SUConnectionRepository();
-    ReviewRepository reviewRepository=new ReviewRepository();
+    ReviewRepository reviewRepository = new ReviewRepository();
     AuthenticationRepo authRepo = new AuthenticationRepo();
     Encoder encoder = new Encoder();
     AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
     UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
     UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
- AdminService adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
+    AdminService adminService = new AdminService(orderRepository, storeRepository, userRepo, authRepo);
+    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"), adminService);
+    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
 
     StoreService storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
     PurchaseService purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
-    ReviewService reviewService=new ReviewService(reviewRepository, authRepo, userRepo, storeRepository,stockRepository);
+    ReviewService reviewService = new ReviewService(reviewRepository, authRepo, userRepo, storeRepository, stockRepository);
     String NOToken;
     String NGToken;
     ItemStoreDTO itemStoreDTO;
@@ -84,7 +85,7 @@ public class StoreSTests {
     @BeforeEach
     void setup() throws Exception {
         System.out.println("===== SETUP RUNNING =====");
-     reviewRepository=new ReviewRepository();
+        reviewRepository = new ReviewRepository();
 
         purchaseRepository = new PurchaseRepository();
         suspensionRepo = new UserSuspensionRepo();
@@ -98,18 +99,18 @@ public class StoreSTests {
         userRepo = new UserRepository(encoder, adminInitilizer);
         suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
 
-  adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-     userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
-      storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
+        adminService = new AdminService(orderRepository, storeRepository, userRepo, authRepo);
+        userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"), adminService);
+        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
+        storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
         purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
-     reviewService=new ReviewService(reviewRepository, authRepo, userRepo, storeRepository,stockRepository);
+        reviewService = new ReviewService(reviewRepository, authRepo, userRepo, storeRepository, stockRepository);
 
         GToken = userService.generateGuest();
         userService.register(GToken, "User", "User", 25);
-             NGToken = userService.login(GToken, "User", "User");
+        NGToken = userService.login(GToken, "User", "User");
 
         assertTrue(authRepo.getUserName(NGToken).equals("User"));
-
 
         String OToken = userService.generateGuest();
 
@@ -123,15 +124,14 @@ public class StoreSTests {
 
         int created1 = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
 
-        assertEquals(created1,1);
-
+        assertEquals(created1, 1);
 
         // ======================= PRODUCT & ITEM ADDITION =======================
         String[] keywords = {"Laptop", "Lap", "top"};
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1,"Laptop");
+        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1, "Laptop");
 
         // ======================= SECOND GUEST SETUP =======================
     }
@@ -182,7 +182,8 @@ public class StoreSTests {
         assertEquals("Product not found", ex.getMessage());
         assertEquals(1006, ex.getNumber());
     }
-       @Test
+
+    @Test
     void testOwner_AddProductToStock_Failure_Invalidqunatity() throws Exception {
 
         // === Act & Assert ===
@@ -190,7 +191,6 @@ public class StoreSTests {
                 -> stockService.addItem(1, NOToken, 2, -10, 999, Category.ELECTRONICS)
         );
 
-        
     }
 
     @Test
@@ -255,9 +255,8 @@ public class StoreSTests {
 
         // === Act ===
         storeService.AddOwnershipToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 2);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
         // ask bhaa i dont know what is happening ,  help help help
-
 
         // === Assert ===
         // assertEquals(sotre);
@@ -271,14 +270,13 @@ public class StoreSTests {
         String token1 = userService.login(token, "token", "token");
 
         // === Act ===
-
         //must make an offer before:
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
         storeService.AddOwnershipToStore(1, 4, authRepo.getUserId(token1), true);
         // ask bhaa i dont know what is happening ,  help help help
 
         // shouldnt work without offer
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 2);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
 
         // === Assert ===
         // assertEquals(sotre);
@@ -294,9 +292,9 @@ public class StoreSTests {
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
         storeService.AddOwnershipToStore(1, 4, authRepo.getUserId(token1), true);
 
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 2);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
         UIException ex = assertThrows(UIException.class, ()
-                ->                 storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token")
+                -> storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token")
         );
 
         assertEquals("This worker is already an owner/manager", ex.getMessage());
@@ -331,7 +329,7 @@ public class StoreSTests {
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
 
         storeService.AddOwnershipToStore(1, 4, authRepo.getUserId(token1), false);
-        assertTrue(storeService.ViewRolesAndPermissions(token1,1).size() == 1);
+        assertTrue(storeService.ViewRolesAndPermissions(token1, 1).size() == 1);
 
     }
 
@@ -345,10 +343,10 @@ public class StoreSTests {
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
 
         storeService.AddOwnershipToStore(1, 4, authRepo.getUserId(token1), true);
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 2);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
 
-        assertDoesNotThrow(() -> storeService.DeleteOwnershipFromStore(1, NOToken,authRepo.getUserId(token1) ));
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 1);
+        assertDoesNotThrow(() -> storeService.DeleteOwnershipFromStore(1, NOToken, authRepo.getUserId(token1)));
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 1);
 
     }
 
@@ -375,9 +373,9 @@ public class StoreSTests {
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, authRepo.getUserName(token1), a);
-        storeService.AddManagerToStore(1, 4, authRepo.getUserId(token1),true);
+        storeService.AddManagerToStore(1, 4, authRepo.getUserId(token1), true);
         // when decide equals true some list is null (i think its permissions list)
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 2);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
 
     }
 
@@ -392,7 +390,7 @@ public class StoreSTests {
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
         storeService.AddManagerToStore(1, 4, authRepo.getUserId(token1), false);
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 1);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 1);
 
     }
 
@@ -403,7 +401,7 @@ public class StoreSTests {
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
 
-        NoSuchElementException ex = assertThrows(NoSuchElementException.class, () -> {
+        Exception ex = assertThrows(Exception.class, () -> {
             storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
         });
         assertEquals("No user found with username: token", ex.getMessage());
@@ -440,7 +438,7 @@ public class StoreSTests {
         permissions.add(Permission.AddToStock);
         permissions.add(Permission.DeleteFromStock);
 
-        NoSuchElementException ex = assertThrows(NoSuchElementException.class, () -> {
+        Exception ex = assertThrows(Exception.class, () -> {
             storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", permissions);
         });
 
@@ -475,9 +473,9 @@ public class StoreSTests {
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
         storeService.AddManagerToStore(1, 4, authRepo.getUserId(token1), true);
-        
+
         storeService.deleteManager(1, NOToken, authRepo.getUserId(token1));
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken,1).size() == 1);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 1);
     }
 
     @Test
@@ -531,7 +529,6 @@ public class StoreSTests {
 //    void testOwner_ManageStoreManagerPermissions_Failure_NotAManagerFlag() throws Exception {
 //        throw new Exception("need to impl view roles and permissons");
 //    }
-
     @Test
     void testOwner_DeactivateStore() throws Exception {
         int result = storeService.deactivateteStore(1, NOToken);
@@ -587,86 +584,79 @@ public class StoreSTests {
 
     }
 
-   @Test
-   void testOwner_RequestStoreRolesInfoAndPermission_sucess() throws Exception {
-  List<WorkerDTO> workers=storeService.ViewRolesAndPermissions(NOToken, 1);
-  assertTrue(workers.size()==1);
-  assertTrue(workers.get(0).isOwner==true);
-    assertTrue(workers.get(0).workerId==authRepo.getUserId(NOToken));
-        assertTrue(workers.get(0).Username.equals( authRepo.getUserName(NOToken)));
+    @Test
+    void testOwner_RequestStoreRolesInfoAndPermission_sucess() throws Exception {
+        List<WorkerDTO> workers = storeService.ViewRolesAndPermissions(NOToken, 1);
+        assertTrue(workers.size() == 1);
+        assertTrue(workers.get(0).isOwner() == true);
+        assertTrue(workers.get(0).getWorkerId() == authRepo.getUserId(NOToken));
+        assertTrue(workers.get(0).getUsername().equals(authRepo.getUserName(NOToken)));
 
+    }
 
-
-   }
-     @Test
-   void testOwner_RequestStoreRolesInfoAndPermission_failure() throws Exception {
-  UIException ex = assertThrows(UIException.class, () ->
-  storeService.ViewRolesAndPermissions("ivalid", 1)
+    @Test
+    void testOwner_RequestStoreRolesInfoAndPermission_failure() throws Exception {
+        UIException ex = assertThrows(UIException.class, ()
+                -> storeService.ViewRolesAndPermissions("ivalid", 1)
         );
-       Exception    ex1 = assertThrows(Exception.class, () ->
-  storeService.ViewRolesAndPermissions(NOToken, 2)
+        Exception ex1 = assertThrows(Exception.class, ()
+                -> storeService.ViewRolesAndPermissions(NOToken, 2)
         );
-  
 
+    }
 
+    @Test
+    void testOwner_AddPurchasePolicy() throws Exception {
+        //throw new Exception("need to impl view roles and permissons");
+    }
 
-   }
+    @Test
+    void testOwner_AddPurchasePolicy_Failure_InvalidPolicy() throws Exception {
+        //throw new Exception("need to impl view roles and permissons");
+    }
 
-   @Test
-   void testOwner_AddPurchasePolicy() throws Exception {
-       //throw new Exception("need to impl view roles and permissons");
-   }
+    @Test
+    void testOwner_AddPurchasePolicy_Failure_NotOwner() throws Exception {
+        //  throw new Exception("need to impl view roles and permissons");
 
-   @Test
-   void testOwner_AddPurchasePolicy_Failure_InvalidPolicy() throws Exception {
-       //throw new Exception("need to impl view roles and permissons");
-   }
+    }
 
-   @Test
-   void testOwner_AddPurchasePolicy_Failure_NotOwner() throws Exception {
-     //  throw new Exception("need to impl view roles and permissons");
+    @Test
+    void testOwner_DeletePurchasePolicy() throws Exception {
+        // throw new Exception("need to impl view roles and permissons");
 
-   }
+    }
 
-   @Test
-   void testOwner_DeletePurchasePolicy() throws Exception {
-      // throw new Exception("need to impl view roles and permissons");
+    @Test
+    void testOwner_DeletePurchasePolicy_Failure_NotFound() throws Exception {
+        //   throw new Exception("need to impl view roles and permissons");
+    }
 
-   }
+    @Test
+    void testOwner_DeletePurchasePolicy_Failure_NoPermission() throws Exception {
+        // throw new Exception("need to impl view roles and permissons");
+    }
 
-   @Test
-   void testOwner_DeletePurchasePolicy_Failure_NotFound() throws Exception {
-    //   throw new Exception("need to impl view roles and permissons");
-   }
-
-
-   @Test
-   void testOwner_DeletePurchasePolicy_Failure_NoPermission() throws Exception {
-      // throw new Exception("need to impl view roles and permissons");
-   }
-
-   @Test
-   void testOwner_ReplyToMessage() throws Exception {
+    @Test
+    void testOwner_ReplyToMessage() throws Exception {
 //       throw new Exception("need to impl view roles and permissons");
 
-  }
+    }
 
+    @Test
+    void testOwner_ReplyToMessage_Failure_UserNotFound() throws Exception {
+        //  throw new Exception("need to impl view roles and permissons");
+    }
 
-   @Test
-   void testOwner_ReplyToMessage_Failure_UserNotFound() throws Exception {
-     //  throw new Exception("need to impl view roles and permissons");
-   }
+    @Test
+    void testOwner_ReplyToMessage_Failure_MessageNotFound() throws Exception {
+        //    throw new Exception("need to impl view roles and permissons");
+    }
 
-
-   @Test
-   void testOwner_ReplyToMessage_Failure_MessageNotFound() throws Exception {
-   //    throw new Exception("need to impl view roles and permissons");
-   }
-
-   @Test
-   void testOwner_ReopenStore() throws Exception {
-  //     throw new Exception("need to impl view roles and permissons");
-   }
+    @Test
+    void testOwner_ReopenStore() throws Exception {
+        //     throw new Exception("need to impl view roles and permissons");
+    }
 
     @Test
     void testOwner_DeleteProductFromStock_Failure_ProductNotFound() throws Exception {
@@ -710,21 +700,23 @@ public class StoreSTests {
 
     }
 
- @Test
+    @Test
     void testOwner_rankstore_Success() throws Exception {
 
         storeService.rankStore(NGToken, 1, 1);
-        assertTrue(storeService.getFinalRateInStore(1)==1);
-
-
-
+        assertTrue(storeService.getFinalRateInStore(1) == 1);
 
     }
-     @Test
+
+    @Test
     void testOwner_rankstore_Invalidrating() throws Exception {
 
         storeService.rankStore(NGToken, 1, 0);
-        assertTrue(storeService.getFinalRateInStore(1)==3); /// 3 is deafult
+        assertTrue(storeService.getFinalRateInStore(1) == 3);
+
+    
+
+    /// 3 is deafult
 
 
 
@@ -733,123 +725,113 @@ public class StoreSTests {
         @Test
     void testOwner_rankstore_Invalidstore() throws Exception {
 
-UIException ex = assertThrows(UIException.class, () ->
-        storeService.rankStore(NGToken, 2, 4)
+        UIException ex = assertThrows(UIException.class, ()
+                -> storeService.rankStore(NGToken, 2, 4)
         );
 
     }
-        @Test
+
+    @Test
     void testOwner_rankstore_Invalidtoken() throws Exception {
 
-UIException ex = assertThrows(UIException.class, () ->
-        storeService.rankStore(GToken, 1, 4)
-        ); 
+        UIException ex = assertThrows(UIException.class, ()
+                -> storeService.rankStore(GToken, 1, 4)
+        );
     }
+
     @Test
     void testOwner_rankitem_Success() throws Exception {
 
-        assertTrue(stockService.getProductsInStore(1)[0].rank==3);
+        assertTrue(stockService.getProductsInStore(1)[0].rank == 3);
 
-        stockService.rankProduct( 1,    NGToken,1, 1);
-                stockService.rankProduct( 1,    NGToken,1, 4);
+        stockService.rankProduct(1, NGToken, 1, 1);
+        stockService.rankProduct(1, NGToken, 1, 4);
 
-        assertTrue(stockService.getProductsInStore(1)[0].rank==3);
-
-
-
+        assertTrue(stockService.getProductsInStore(1)[0].rank == 3);
 
     }
-     @Test
+
+    @Test
     void testOwner_rankitem_Invalidrating() throws Exception {
 
-        assertTrue(stockService.getProductsInStore(1)[0].rank==3);
-UIException ex = assertThrows(UIException.class, () ->
-        stockService.rankProduct( 1,    NGToken,1, -1)
+        assertTrue(stockService.getProductsInStore(1)[0].rank == 3);
+        UIException ex = assertThrows(UIException.class, ()
+                -> stockService.rankProduct(1, NGToken, 1, -1)
         );
 
-
-
-
     }
-        @Test
+
+    @Test
     void testOwner_rankitem_Invalidstore() throws Exception {
 
-UIException ex = assertThrows(UIException.class, () ->
-        stockService.rankProduct( 2,    NGToken,1, 1)
+        UIException ex = assertThrows(UIException.class, ()
+                -> stockService.rankProduct(2, NGToken, 1, 1)
         );
     }
-      @Test
+
+    @Test
     void testOwner_rankitem_Invaliditem() throws Exception {
 
-UIException ex = assertThrows(UIException.class, () ->
-        stockService.rankProduct( 1,    NGToken,2, 1)
-        );        
-    
+        UIException ex = assertThrows(UIException.class, ()
+                -> stockService.rankProduct(1, NGToken, 2, 1)
+        );
 
-}
-      @Test
+    }
+
+    @Test
     void testOwner_rankitem_Invalidtoken() throws Exception {
 
-UIException ex = assertThrows(UIException.class, () ->
-        stockService.rankProduct( 1,    GToken,1, 1)
-        );        
-    
-
-}
-
-@Test
-    void testOwner_reviewstore_Success() throws Exception {
-                assertTrue(reviewService.getReviewsForStore(1).size()==0);
-
-reviewService.AddReviewToStore(NGToken,1,"first review");
-        
-        assertTrue(reviewService.getReviewsForStore(1).size()==1);
-                assertTrue(reviewService.getReviewsForStore(1).get(0).getReviewMsg().equals("first review"));
-
-
-
-
+        UIException ex = assertThrows(UIException.class, ()
+                -> stockService.rankProduct(1, GToken, 1, 1)
+        );
 
     }
-  
-        @Test
+
+    @Test
+    void testOwner_reviewstore_Success() throws Exception {
+        assertTrue(reviewService.getReviewsForStore(1).size() == 0);
+
+        reviewService.AddReviewToStore(NGToken, 1, "first review");
+
+        assertTrue(reviewService.getReviewsForStore(1).size() == 1);
+        assertTrue(reviewService.getReviewsForStore(1).get(0).getReviewMsg().equals("first review"));
+
+    }
+
+    @Test
     void testOwner_reviewstore_Invalidstore() throws Exception {
 
-UIException ex = assertThrows(UIException.class, () ->
-reviewService.AddReviewToStore(NGToken,2,"first review")
+        UIException ex = assertThrows(UIException.class, ()
+                -> reviewService.AddReviewToStore(NGToken, 2, "first review")
         );
 
     }
-    
-@Test
+
+    @Test
     void testOwner_reviewitem_Success() throws Exception {
 
-reviewService.AddReviewToProduct (NGToken,1,1,"first review");
-        
-                assertTrue(reviewService.getReviewsForProduct(1,1).get(0).getReviewMsg().equals("first review"));
+        reviewService.AddReviewToProduct(NGToken, 1, 1, "first review");
 
-
-
-
+        assertTrue(reviewService.getReviewsForProduct(1, 1).get(0).getReviewMsg().equals("first review"));
 
     }
-  
-        @Test
+
+    @Test
     void testOwner_reviewitem_Invalidstore() throws Exception {
 
-UIException ex = assertThrows(UIException.class, () ->
-reviewService.AddReviewToProduct (NGToken,2,1,"first review")
+        UIException ex = assertThrows(UIException.class, ()
+                -> reviewService.AddReviewToProduct(NGToken, 2, 1, "first review")
         );
 
     }
-        @Test
+
+    @Test
     void testOwner_reviewitem_Invaliditem() throws Exception {
 
-UIException ex = assertThrows(UIException.class, () ->
-reviewService.AddReviewToProduct (NGToken,1,5,"first review")
+        UIException ex = assertThrows(UIException.class, ()
+                -> reviewService.AddReviewToProduct(NGToken, 1, 5, "first review")
         );
 
     }
-    
 
 }

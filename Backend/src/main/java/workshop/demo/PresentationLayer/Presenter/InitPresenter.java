@@ -1,8 +1,6 @@
 package workshop.demo.PresentationLayer.Presenter;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.springframework.core.ParameterizedTypeReference;
@@ -17,11 +15,6 @@ import org.springframework.web.util.UriUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
@@ -107,7 +100,7 @@ public class InitPresenter {
 
                 ApiResponse body = response.getBody();
                 if (body != null && body.getErrNumber() != -1) {
-                    view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
 
                 }
                 // Clear session and redirect
@@ -120,16 +113,16 @@ public class InitPresenter {
                     ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
 
                     if (errorBody.getErrNumber() != -1) {
-                        view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                        NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
                     } else {
-                        view.showError("FAILED: " + errorBody.getErrorMsg());
+                        NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
                     }
                 } catch (Exception parsingEx) {
-                    view.showError("HTTP error: " + e.getMessage());
+                    NotificationView.showError("HTTP error: " + e.getMessage());
                 }
 
             } catch (Exception e) {
-                view.showError("UNEXPECTED ERROR: " + e.getMessage());
+                NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
 
             }
         }
@@ -143,7 +136,8 @@ public class InitPresenter {
         VaadinSession.getCurrent().getSession().invalidate();
         // Navigate to home page and re-init MainLayout
         // Force hard refresh to homepage (will also reload MainLayout cleanly)
-        UI.getCurrent().navigate("");
+        //UI.getCurrent().navigate("");
+        UI.getCurrent().getPage().setLocation("/");
         //UI.getCurrent().getPage().reload(); // Force hard refresh to reinitialize MainLayout
     }
 
@@ -156,7 +150,7 @@ public class InitPresenter {
 
         try {
             String url = String.format(
-                    "http://localhost:8080/history/getreceipts?token=%s",
+                    "http://localhost:8080/api/history/getreceipts?token=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
             HttpHeaders headers = new HttpHeaders();
@@ -169,7 +163,7 @@ public class InitPresenter {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<ApiResponse<List<ReceiptDTO>>>() {
-                    });
+            });
 
             ApiResponse<List<ReceiptDTO>> responseBody = response.getBody();
 
@@ -179,17 +173,31 @@ public class InitPresenter {
 
                 System.out.println("ok2");
                 PurchaseView.showReceiptDialog(receipts);
-                
+
             } else {
 
                 NotificationView.showError(ExceptionHandlers.getErrorMessage(responseBody.getErrNumber()));
             }
+            // } catch (Exception e) {
+            //     NotificationView.showError("Failed getting receipts : " + e.getMessage());
+            // }
+        } catch (HttpClientErrorException e) {
+            try {
+                String responseBody = e.getResponseBodyAsString();
+                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
+                if (errorBody.getErrNumber() != -1) {
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                } else {
+                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
+                }
+            } catch (Exception parsingEx) {
+                NotificationView.showError("HTTP error: " + e.getMessage());
+            }
 
-        } catch (
-
-        Exception e) {
-            NotificationView.showError("Failed getting receipts : " + e.getMessage());
+        } catch (Exception e) {
+            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
         }
 
     }
+
 }
