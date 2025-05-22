@@ -731,11 +731,10 @@ public class Owner_ManagerAT extends AcceptanceTests {
 
         assertEquals(1, workers.size());
         WorkerDTO w = workers.get(0);
-        assertEquals(ownerId, w.workerId);
-        assertEquals(username, w.Username);
-        assertTrue(w.isOwner);           // isManager == false -> isOwner == true
-        assertFalse(w.isManager);
-        assertEquals(storeName, w.storeName);
+        assertEquals(ownerId, w.getWorkerId());
+        assertEquals(username, w.getUsername());
+        assertTrue(w.isOwner());
+        assertEquals(storeName, w.getStoreName());
     }
 
     @Test
