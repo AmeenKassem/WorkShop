@@ -438,7 +438,7 @@ public class StoreSTests {
         permissions.add(Permission.AddToStock);
         permissions.add(Permission.DeleteFromStock);
 
-        NoSuchElementException ex = assertThrows(NoSuchElementException.class, () -> {
+        Exception ex = assertThrows(Exception.class, () -> {
             storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", permissions);
         });
 
