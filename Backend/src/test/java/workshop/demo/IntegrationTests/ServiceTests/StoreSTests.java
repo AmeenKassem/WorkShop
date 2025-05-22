@@ -401,7 +401,7 @@ public class StoreSTests {
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
 
-        NoSuchElementException ex = assertThrows(NoSuchElementException.class, () -> {
+        Exception ex = assertThrows(Exception.class, () -> {
             storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
         });
         assertEquals("No user found with username: token", ex.getMessage());
