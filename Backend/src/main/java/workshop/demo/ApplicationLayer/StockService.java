@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
@@ -13,6 +15,8 @@ import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
@@ -29,6 +33,7 @@ import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
 @Service
+@Service
 public class StockService {
 
     private static final Logger logger = LoggerFactory.getLogger(StockService.class);
@@ -41,7 +46,9 @@ public class StockService {
     private IUserSuspensionRepo susRepo;
 
     @Autowired
+    @Autowired
     public StockService(IStockRepo stockRepo, IStoreRepo storeRepo, IAuthRepo authRepo, IUserRepo userRepo,
+            ISUConnectionRepo cons, IUserSuspensionRepo susRepo) {
             ISUConnectionRepo cons, IUserSuspensionRepo susRepo) {
         this.stockRepo = stockRepo;
         this.authRepo = authRepo;
@@ -55,6 +62,9 @@ public class StockService {
         int x = storeRepo.getFinalRateInStore(1);
         logger.info("gfnedsm," + 0);
         logger.info("tarting searchProducts with criteria: {}", criteria);
+        int x = storeRepo.getFinalRateInStore(1);
+        logger.info("gfnedsm," + 0);
+        logger.info("tarting searchProducts with criteria: {}", criteria);
 
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         
@@ -64,6 +74,7 @@ public class StockService {
         storeRepo.fillWithStoreName(items);
         return items;
     }
+
 
     public ProductDTO getProductInfo(String token, int productId) throws UIException {
         logger.info("Fetching product info for ID {}", productId);
@@ -90,6 +101,9 @@ public class StockService {
         UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, bid.getSpecialId(), bid.getId(),
                 SpecialType.Auction);
         userRepo.addSpecialItemToCart(specialItem, userId);
+        UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, bid.getSpecialId(), bid.getId(),
+                SpecialType.Auction);
+        userRepo.addSpecialItemToCart(specialItem, userId);
         logger.info("Bid placed successfully by user: {} on auction: {}", userId, auctionId);
         return true;
 
@@ -102,6 +116,9 @@ public class StockService {
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         SingleBid bid = stockRepo.bidOnBid(bitId, price, userId, storeId);
+        UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, bid.getSpecialId(), bid.getId(),
+                SpecialType.BID);
+        userRepo.addSpecialItemToCart(specialItem, userId);
         UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, bid.getSpecialId(), bid.getId(),
                 SpecialType.BID);
         userRepo.addSpecialItemToCart(specialItem, userId);
@@ -198,10 +215,27 @@ public class StockService {
 
     public int setProductToRandom(String token, int productId, int quantity, double productPrice, int storeId,
             long RandomTime) throws UIException, DevException {
+    public void rejectBid(String token, int storeId, int bidId, int bidTorejectId) throws Exception, DevException {
+        logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidTorejectId, bidId, storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        storeRepo.checkStoreExistance(storeId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+            throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
+        }
+
+        stockRepo.rejectBid(storeId, bidId, bidTorejectId);
+    }
+
+    public int setProductToRandom(String token, int productId, int quantity, double productPrice, int storeId,
+            long RandomTime) throws UIException, DevException {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        return stockRepo.addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
         return stockRepo.addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
     }
 
@@ -212,6 +246,7 @@ public class StockService {
 
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        return stockRepo.endRandom(storeId, randomId);
         return stockRepo.endRandom(storeId, randomId);
     }
 
@@ -229,8 +264,12 @@ public class StockService {
 
     // stock managment:
     public ItemStoreDTO[] getProductsInStore(int storeId) throws UIException, DevException {
+    // stock managment:
+    public ItemStoreDTO[] getProductsInStore(int storeId) throws UIException, DevException {
         logger.info("Fetching all products in store: {}", storeId);
         storeRepo.checkStoreExistance(storeId);
+        ItemStoreDTO[] products = stockRepo.getProductsInStore(storeId);
+        logger.info("fetched {} products from store: {}", products.length, storeId);
         ItemStoreDTO[] products = stockRepo.getProductsInStore(storeId);
         logger.info("fetched {} products from store: {}", products.length, storeId);
         return products;
@@ -238,7 +277,12 @@ public class StockService {
 
     public int addItem(int storeId, String token, int productId, int quantity, int price, Category category)
             throws Exception, DevException {
+    public int addItem(int storeId, String token, int productId, int quantity, int price, Category category)
+            throws Exception, DevException {
         logger.info("User attempting to add item {} to store {}", productId, storeId);
+         if (quantity <= 0) {
+        throw new UIException("Quantity must be greater than zero.", ErrorCodes.INVALID_QUANTITY); 
+    }
          if (quantity <= 0) {
         throw new UIException("Quantity must be greater than zero.", ErrorCodes.INVALID_QUANTITY); 
     }
@@ -246,6 +290,7 @@ public class StockService {
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        logger.info("HmodeID is:{}",storeId);
         logger.info("HmodeID is:{}",storeId);
         storeRepo.checkStoreExistance(storeId);
         if (!suConnectionRepo.manipulateItem(userId, storeId, Permission.AddToStock)) {
@@ -259,17 +304,21 @@ public class StockService {
 
     public int addProduct(String token, String name, Category category, String description, String[] keywords)
             throws Exception {
+    public int addProduct(String token, String name, Category category, String description, String[] keywords)
+            throws Exception {
         logger.info("User attempting to add a new product to the system: name={}, category={}", name, category);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
 
+
         int productId = stockRepo.addProduct(name, category, description, keywords);
         logger.info("Product added successfully: {} with id ={}", name, productId);
         return productId;
     }
 
+    public int removeItem(int storeId, String token, int productId) throws Exception, DevException {
     public int removeItem(int storeId, String token, int productId) throws Exception, DevException {
         logger.info("User attempting to remove item {} from store {}", productId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -285,6 +334,11 @@ public class StockService {
         logger.info("Item {} successfully removed from store {}", productId, storeId);
         return productId;
     }
+
+    public int updateQuantity(int storeId, String token, int productId, int newQuantity)
+            throws Exception, DevException {
+        logger.info("User attempting to update quantity of product {} in store {} to {}", productId, storeId,
+                newQuantity);
 
     public int updateQuantity(int storeId, String token, int productId, int newQuantity)
             throws Exception, DevException {
@@ -329,6 +383,16 @@ public class StockService {
         logger.info("the rank updated successfully for product {} in store {}", productId, storeId);
         return productId;
     }
+
+    public ProductDTO[] getAllProducts(String token) throws Exception {
+        logger.info("fetching all the products in the system");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        return stockRepo.getAllProducts();
+    }
+}
 
     public ProductDTO[] getAllProducts(String token) throws Exception {
         logger.info("fetching all the products in the system");

@@ -45,6 +45,7 @@ public class ProductSearchCriteria {
             Category categoryFilter,
             String keywordFilter,
             Integer storeId,
+            Integer storeId,
             double minPrice,
             double maxPrice,
             double minStoreRating,
@@ -53,8 +54,11 @@ public class ProductSearchCriteria {
         this.categoryFilter = categoryFilter;
         this.keywordFilter = keywordFilter;
         this.storeId = storeId == null ? -1 : storeId;
+        this.storeId = storeId == null ? -1 : storeId;
         this.minPrice = minPrice;
         this.maxPrice = maxPrice;
+        this.minProductRating = minStoreRating;
+        this.maxProductRating = maxStoreRating;
         this.minProductRating = minStoreRating;
         this.maxProductRating = maxStoreRating;
     }
@@ -71,10 +75,13 @@ public class ProductSearchCriteria {
 
         // Price range check (minPrice ≤ price ≤ maxPrice)
         if (minPrice >= 0 || maxPrice >= 0) {
+        if (minPrice >= 0 || maxPrice >= 0) {
             int price = item.getPrice();
+            if (minPrice >= 0 && price <= minPrice) {
             if (minPrice >= 0 && price <= minPrice) {
                 return false;
             }
+            if (maxPrice >= 0 && price >= maxPrice) {
             if (maxPrice >= 0 && price >= maxPrice) {
                 return false;
             }
@@ -82,14 +89,18 @@ public class ProductSearchCriteria {
 
         // Store rating check
         if (minProductRating >= 0 || maxProductRating >= 0) {
+        if (minProductRating >= 0 || maxProductRating >= 0) {
             double rank = item.getFinalRank();
+            if (minProductRating >= 0 && rank <= minProductRating) {
             if (minProductRating >= 0 && rank <= minProductRating) {
                 return false;
             }
             if (maxProductRating >= 0 && rank >= maxProductRating) {
+            if (maxProductRating >= 0 && rank >= maxProductRating) {
                 return false;
             }
         }
+        
 
         return true;
     }
