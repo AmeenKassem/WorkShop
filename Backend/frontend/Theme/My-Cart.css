@@ -1,0 +1,114 @@
+/* General Cart View Container */
+.cart-view {
+    padding: 20px;
+}
+
+/* --- Normal Cart Styles --- */
+.normal-cart {
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.normal-cart .store-header {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.cart-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: #ccc;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    gap: 20px;
+}
+
+.cart-item img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.cart-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.quantity-button {
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* --- Special Cart Styles --- */
+.special-cart {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Shared styling for all special types */
+.special-item {
+    display: flex;
+    background-color: #ffedcc;
+    padding: 15px;
+    border-radius: 10px;
+    gap: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.special-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Specific background for each type */
+.random-bg {
+    background-color: orange;
+}
+
+.auction-bg {
+    background-color: gold;
+}
+
+.bid-bg {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+/* Footer buttons */
+.cart-buttons {
+    margin-top: 25px;
+    display: flex;
+    gap: 15px;
+}
+
+.cart-buttons button {
+    background-color: #0066ff;
+    color: white;
+    border-radius: 8px;
+    border: none;
+    padding: 10px 18px;
+    font-weight: bold;
+    cursor: pointer;
+}

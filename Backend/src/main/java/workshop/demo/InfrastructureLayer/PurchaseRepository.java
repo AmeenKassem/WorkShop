@@ -1,15 +1,25 @@
 package workshop.demo.InfrastructureLayer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 
+@Repository
 public class PurchaseRepository implements IPurchaseRepo {
 
     private final Map<Integer, List<SingleBid>> bidsByUser;
     private final Map<Integer, List<ParticipationInRandomDTO>> randomParticipationByUser;
 
+    @Autowired
     public PurchaseRepository() {
         this.bidsByUser = new HashMap<>(); //userId -> List of bids
         this.randomParticipationByUser = new HashMap<>(); //userId -> List of random participations
@@ -53,6 +63,10 @@ public class PurchaseRepository implements IPurchaseRepo {
     public List<ParticipationInRandomDTO> getAllRandomParticipationsByUser(int userId) {
         return randomParticipationByUser.getOrDefault(userId, Collections.emptyList());
     }
-
+   public void clear() {
+            bidsByUser.clear();
+        
+            randomParticipationByUser.clear();
     
+}
 }

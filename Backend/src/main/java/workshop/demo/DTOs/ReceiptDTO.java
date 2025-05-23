@@ -9,6 +9,10 @@ public class ReceiptDTO {
     private List<ReceiptProduct> productsList;
     private double finalPrice;
 
+    public ReceiptDTO() {
+        // Default constructor
+    }
+    
     public ReceiptDTO(String storeName, String date, List<ReceiptProduct> productsList, double finalPrice) {
         this.storeName = storeName;
         this.date = date;

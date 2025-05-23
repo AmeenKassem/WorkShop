@@ -1,6 +1,12 @@
 package workshop.demo.DomainLayer.Stock;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+
 import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.InfrastructureLayer.AISearch;
 
 public class ProductSearchCriteria {
 
@@ -10,14 +16,35 @@ public class ProductSearchCriteria {
     private int storeId;
     private double minPrice;
     private double maxPrice;
-    private double minStoreRating;
-    private double maxStoreRating;
+    private double minProductRating;
+    private double maxProductRating;
+
+    private AISearch ai = new AISearch();
 
     public ProductSearchCriteria(
             String productNameFilter,
             Category categoryFilter,
             String keywordFilter,
-            int storeId,
+            Integer storeId,
+            Double minPrice,
+            Double maxPrice,
+            Double minStoreRating,
+            Double maxStoreRating) {
+        this.productNameFilter = productNameFilter;
+        this.categoryFilter = categoryFilter;
+        this.keywordFilter = keywordFilter;
+        this.storeId = storeId == null ? -1 : storeId;
+        this.minPrice = minPrice == null ? -1.0 : minPrice;
+        this.maxPrice = maxPrice == null ? -1.0 : maxPrice;
+        this.minProductRating = minStoreRating == null ? -1.0 : minStoreRating;
+        this.maxProductRating = maxStoreRating == null ? -1.0 : maxStoreRating;
+    }
+
+    public ProductSearchCriteria(
+            String productNameFilter,
+            Category categoryFilter,
+            String keywordFilter,
+            Integer storeId,
             double minPrice,
             double maxPrice,
             double minStoreRating,
@@ -25,11 +52,11 @@ public class ProductSearchCriteria {
         this.productNameFilter = productNameFilter;
         this.categoryFilter = categoryFilter;
         this.keywordFilter = keywordFilter;
-        this.storeId = storeId;
+        this.storeId = storeId == null ? -1 : storeId;
         this.minPrice = minPrice;
         this.maxPrice = maxPrice;
-        this.minStoreRating = minStoreRating;
-        this.maxStoreRating = maxStoreRating;
+        this.minProductRating = minStoreRating;
+        this.maxProductRating = maxStoreRating;
     }
 
     public boolean matchesForStore(item item) {
@@ -43,23 +70,23 @@ public class ProductSearchCriteria {
         }
 
         // Price range check (minPrice ≤ price ≤ maxPrice)
-        if (minPrice > 0 || maxPrice > 0) {
+        if (minPrice >= 0 || maxPrice >= 0) {
             int price = item.getPrice();
-            if (minPrice > 0 && price < minPrice) {
+            if (minPrice >= 0 && price <= minPrice) {
                 return false;
             }
-            if (maxPrice > 0 && price > maxPrice) {
+            if (maxPrice >= 0 && price >= maxPrice) {
                 return false;
             }
         }
 
         // Store rating check
-        if (minStoreRating > 0 || maxStoreRating > 0) {
+        if (minProductRating >= 0 || maxProductRating >= 0) {
             double rank = item.getFinalRank();
-            if (minStoreRating > 0 && rank < minStoreRating) {
+            if (minProductRating >= 0 && rank <= minProductRating) {
                 return false;
             }
-            if (maxStoreRating > 0 && rank > maxStoreRating) {
+            if (maxProductRating >= 0 && rank >= maxProductRating) {
                 return false;
             }
         }
@@ -70,6 +97,8 @@ public class ProductSearchCriteria {
     public boolean specificCategory() {
         return categoryFilter != null;
     }
+
+    private HashMap<Integer, Double> productMatch = new HashMap<>();
 
     public boolean productIsMatch(Product product) {
         if (product == null) {
@@ -87,9 +116,14 @@ public class ProductSearchCriteria {
         }
 
         // Keyword match
-        if (keywordFilter != null && (product.getKeywords() == null
-                || product.getKeywords().stream().noneMatch(k -> k.toLowerCase().contains(keywordFilter.toLowerCase())))) {
-            return false;
+        if (keywordFilter != null) {
+            // for (String key : product.get) {
+            double a;
+            if ((a = ai.getConfidence(product.getName(), keywordFilter)) > 0.4) {
+                productMatch.put(product.getProductId(), a);
+                return true;
+            } else
+                return false;
         }
 
         return true;
@@ -101,6 +135,31 @@ public class ProductSearchCriteria {
 
     public int getStoreId() {
         return this.storeId;
+    }
+
+    public boolean specificStore() {
+        return storeId != -1; // IT WAS FILTER CHECK IT NEEDS TO BE STORE CHECK
+
+    }
+
+    public ItemStoreDTO[] sortOnArray(List<ItemStoreDTO> toSort) {
+        if (keywordFilter == null)
+            return toSort.toArray(new ItemStoreDTO[0]);
+
+        Comparator com = new Comparator<ItemStoreDTO>() {
+            @Override
+            public int compare(ItemStoreDTO o1, ItemStoreDTO o2) {
+                if (productMatch.get(o1.productId) > productMatch.get(o2.productId))
+                    return -1;
+                else if (productMatch.get(o1.productId) < productMatch.get(o2.productId))
+                    return 1;
+                else
+                    return 0;
+            }
+        };
+        toSort.sort(com);
+        return toSort.toArray(new ItemStoreDTO[0]);
+
     }
 
 }

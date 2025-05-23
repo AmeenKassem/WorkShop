@@ -1,213 +1,303 @@
 package workshop.demo.Contrrollers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import workshop.demo.ApplicationLayer.Response;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import workshop.demo.ApplicationLayer.StoreService;
-import workshop.demo.DTOs.OrderDTO;
+import workshop.demo.DTOs.CreateDiscountDTO;
+import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/store")
+@RequestMapping("/api/store")
 public class StoreController {
 
     private final StoreService storeService;
 
     @Autowired
     public StoreController(Repos repos) {
-        this.storeService = new StoreService(repos.storeRepo, repos.notificationRepo    , repos.auth, repos.userRepo, repos.orderRepo, repos.sUConnectionRepo, repos.stockrepo, repos.UserSuspensionRepo);
+        this.storeService = new StoreService(repos.storeRepo, repos.notificationRepo, repos.auth, repos.userRepo, repos.orderRepo, repos.sUConnectionRepo, repos.stockrepo, repos.UserSuspensionRepo);
     }
 
     @PostMapping("/addStore")
-    public String addStore(@RequestParam String token,
-                           @RequestParam String storeName,
-                           @RequestParam String category) {
-        Response<Integer> res;
+    public ResponseEntity<?> addStore(@RequestParam String token,
+            @RequestParam String storeName,
+            @RequestParam String category) {
         try {
             int storeId = storeService.addStoreToSystem(token, storeName, category);
-            res = new Response<>(storeId, null);
+            return ResponseEntity.ok(new ApiResponse<>(storeId, null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
+
     }
 
-    @PostMapping("/addOwner")
-    public String addOwner(@RequestParam int storeId,
-                           @RequestParam String token,
-                           @RequestParam int newOwnerId) {
-        Response<String> res;
+    @PostMapping("/respondToOffer")
+    public ResponseEntity<?> respondToOffer(
+            @RequestParam int storeId,
+            @RequestParam String senderName,
+            @RequestParam String receiverName,
+            @RequestParam boolean answer,
+            @RequestParam boolean toBeOwner) {
         try {
-            storeService.AddOwnershipToStore(storeId, token, newOwnerId);
-            res = new Response<>("Owner added successfully", null);
+            System.out.println("wesellll");
+            storeService.reciveAnswerToOffer(storeId, senderName, receiverName, answer, toBeOwner);
+            return ResponseEntity.ok(new ApiResponse<>("Offer response recorded successfully", null));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
+    }
+
+    @PostMapping("/makeOfferOwner")
+    public ResponseEntity<?> addOwner(@RequestParam int storeId,
+            @RequestParam String token,
+            @RequestParam String newOwner) {
+        try {
+            storeService.MakeofferToAddOwnershipToStore(storeId, token, newOwner);
+            return ResponseEntity.ok(new ApiResponse<>("Owner added successfully", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
     }
 
     @PostMapping("/deleteOwner")
-    public String deleteOwner(@RequestParam int storeId,
-                              @RequestParam String token,
-                              @RequestParam int ownerToDelete) {
-        Response<String> res;
+    public ResponseEntity<?> deleteOwner(@RequestParam int storeId,
+            @RequestParam String token,
+            @RequestParam int ownerToDelete) {
+
         try {
             storeService.DeleteOwnershipFromStore(storeId, token, ownerToDelete);
-            res = new Response<>("Owner deleted successfully", null);
+            return ResponseEntity.ok(new ApiResponse<>("Owner deleted successfully", null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+
         }
-        return res.toJson();
+
     }
 
-    @PostMapping("/addManager")
-    public String addManager(@RequestParam int storeId,
-                             @RequestParam String token,
-                             @RequestParam int managerId,
-                             @RequestBody List<Permission> permissions) {
-        Response<String> res;
+    @PostMapping("/makeOfferManager")
+    public ResponseEntity<?> addManager(@RequestParam int storeId,
+            @RequestParam String token,
+            @RequestParam String managerName,
+            @RequestBody List<Permission> permissions) {
         try {
-            storeService.AddManagerToStore(storeId, token, managerId, permissions);
-            res = new Response<>("Manager added successfully", null);
+            storeService.MakeOfferToAddManagerToStore(storeId, token, managerName, permissions);
+            return ResponseEntity.ok(new ApiResponse<>("made an offer successfuly", null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
+
     }
 
     @PostMapping("/changePermissions")
-    public String changePermissions(@RequestParam String token,
-                                    @RequestParam int managerId,
-                                    @RequestParam int storeId,
-                                    @RequestBody List<Permission> permissions) {
-        Response<String> res;
+    public ResponseEntity<?> changePermissions(@RequestParam String token,
+            @RequestParam int managerId,
+            @RequestParam int storeId,
+            @RequestBody List<Permission> permissions) {
         try {
             storeService.changePermissions(token, managerId, storeId, permissions);
-            res = new Response<>("Permissions updated successfully", null);
+            return ResponseEntity.ok(new ApiResponse<>("Permissions updated successfully", null));
+
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
+
     }
 
     @PostMapping("/deleteManager")
-    public String deleteManager(@RequestParam int storeId,
-                                @RequestParam String token,
-                                @RequestParam int managerId) {
-        Response<String> res;
+    public ResponseEntity<?> deleteManager(@RequestParam int storeId,
+            @RequestParam String token,
+            @RequestParam int managerId) {
         try {
             storeService.deleteManager(storeId, token, managerId);
-            res = new Response<>("Manager deleted successfully", null);
+            return ResponseEntity.ok(new ApiResponse<>("Manager deleted successfully", null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
-    @GetMapping("/viewHistory")
-    public String viewStoreHistory(@RequestParam int storeId) {
-        Response<List<OrderDTO>> res;
-        try {
-            List<OrderDTO> history = storeService.veiwStoreHistory(storeId);
-            res = new Response<>(history, null);
-        } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
-        }
-        return res.toJson();
-    }
-
+    // @GetMapping("/viewHistory")
+    // public ResponseEntity<?> viewStoreHistory(@RequestParam int storeId) {
+    //     try {
+    //         List<OrderDTO> history = storeService.veiwStoreHistory(storeId);
+    //         return ResponseEntity.ok(new ApiResponse<>(history, null));
+    //     } catch (Exception e) {
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //                 .body(new ApiResponse<>(null, e.getMessage(), -1));
+    //     }
+    // }
     @PostMapping("/rankStore")
-    public String rankStore(@RequestParam String token,
-                            @RequestParam int storeId,
-                            @RequestParam int newRank) {
-        Response<String> res;
+    public ResponseEntity<?> rankStore(@RequestParam String token,
+            @RequestParam int storeId,
+            @RequestParam int newRank) {
         try {
             storeService.rankStore(token, storeId, newRank);
-            res = new Response<>("Store ranked successfully", null);
+            return ResponseEntity.ok(new ApiResponse<>("Store ranked successfully", null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
     @GetMapping("/getFinalRate")
-    public String getFinalRate(@RequestParam int storeId) {
-        Response<Integer> res;
+    public ResponseEntity<?> getFinalRate(@RequestParam int storeId) {
         try {
             int rate = storeService.getFinalRateInStore(storeId);
-            res = new Response<>(rate, null);
+            return ResponseEntity.ok(new ApiResponse<>(rate, null));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
     @PostMapping("/deactivate")
-    public String deactivateStore(@RequestParam int storeId,
-                                  @RequestParam String token) {
-        Response<String> res;
+    public ResponseEntity<?> deactivateStore(@RequestParam int storeId,
+            @RequestParam String token) {
         try {
             storeService.deactivateteStore(storeId, token);
-            res = new Response<>("Store deactivated successfully", null);
+            return ResponseEntity.ok(new ApiResponse<>("Store deactivated successfully", null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
     @PostMapping("/close")
-    public String closeStore(@RequestParam int storeId,
-                             @RequestParam String token) {
-        Response<String> res;
+    public ResponseEntity<?> closeStore(@RequestParam int storeId,
+            @RequestParam String token) {
         try {
             storeService.closeStore(storeId, token);
-            res = new Response<>("Store closed successfully", null);
+            return ResponseEntity.ok(new ApiResponse<>("Store closed successfully", null));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
-    @GetMapping("/viewRoles")
-    public String viewRoles(@RequestParam int storeId) {
-        Response<List<WorkerDTO>> res;
+    @GetMapping("/viewRolesAndPermissions")
+    public ResponseEntity<?> viewRolesAndPermissions(@RequestParam String token, @RequestParam int storeId) {
         try {
-            List<WorkerDTO> roles = storeService.ViewRolesAndPermissions(storeId);
-            res = new Response<>(roles, null);
-        } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
-        }
-        return res.toJson();
-    }
-
-    @GetMapping("/storeOrders")
-    public String getAllOrdersByStore(@RequestParam int storeId,
-                                      @RequestParam String token) {
-        Response<List<OrderDTO>> res;
-        try {
-            List<OrderDTO> orders = storeService.veiwStoreHistory(storeId);
-            res = new Response<>(orders, null);
+            List<WorkerDTO> workers = storeService.ViewRolesAndPermissions(token, storeId);
+            return ResponseEntity.ok(new ApiResponse<>(workers, null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
+
+    // @GetMapping("/storeOrders")
+    // public ResponseEntity<?> getAllOrdersByStore(@RequestParam int storeId,
+    //         @RequestParam String token) {
+    //     try {
+    //         List<OrderDTO> orders = storeService.veiwStoreHistory(storeId);
+    //         return ResponseEntity.ok(new ApiResponse<>(orders, null));
+    //     } catch (UIException ex) {
+    //         return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+    //     } catch (Exception e) {
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //                 .body(new ApiResponse<>(null, e.getMessage(), -1));
+    //     }
+    // }
+    @GetMapping("/allStores")
+    public ResponseEntity<ApiResponse<List<StoreDTO>>> getAllStoresToshow() {
+        try {
+            List<StoreDTO> stores = storeService.getAllStores();
+            return ResponseEntity.ok(new ApiResponse<>(stores, null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @GetMapping("/getstoreDTO")
+    public ResponseEntity<?> getStoreDTO(@RequestParam String token, @RequestParam int storeId) {
+        try {
+            StoreDTO dto = storeService.getStoreDTO(token, storeId);
+            return ResponseEntity.ok(new ApiResponse<>(dto, null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+
+    }
+
+    @GetMapping("/myStores")
+    public ResponseEntity<?> getMyStores(@RequestParam String token) {
+        try {
+            List<StoreDTO> stores = storeService.getStoresOwnedByUser(token);
+            return ResponseEntity.ok(new ApiResponse<>(stores, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @PostMapping("/addDiscount")
+    public ResponseEntity<?> addDiscountToStore(
+            @RequestParam int storeId,
+            @RequestParam String token,
+            @RequestBody CreateDiscountDTO dto) {
+        try {
+            storeService.addDiscountToStore(storeId, token, dto); // assumes permission check is inside service
+            return ResponseEntity.ok(new ApiResponse<>("Discount added successfully", null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @PostMapping("/removeDiscountByName")
+    public ResponseEntity<?> removeDiscountByName(
+            @RequestParam String token,
+            @RequestParam int storeId,
+            @RequestParam String discountName) {
+        try {
+            storeService.removeDiscountFromStore(token, storeId, discountName);
+            return ResponseEntity.ok(new ApiResponse<>("Discount removed", null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
 }

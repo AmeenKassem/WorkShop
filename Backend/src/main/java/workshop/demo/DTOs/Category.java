@@ -1,6 +1,6 @@
 package workshop.demo.DTOs;
 
 public enum Category {
-    ELECTRONICS, HOME
+    ELECTRONICS, HOME, FASHION, CAMERA, HOME_APPLIANCE, KITCHEN, GARDEN, OFFICE, AUTOMOTIVE, TOYS
 
 }

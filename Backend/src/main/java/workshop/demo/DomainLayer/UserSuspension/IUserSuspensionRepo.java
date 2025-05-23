@@ -5,9 +5,9 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public interface IUserSuspensionRepo {
 
-    void suspendRegisteredUser(Integer userId, int minutes) throws UIException;
+    void suspendRegisteredUser(Integer userId, int secs) throws UIException;
 
-    void suspendGuestUser(int userId, int minutes) throws UIException;
+    void suspendGuestUser(int userId, int secs) throws UIException;
 
     boolean isSuspended(Integer userId);
 

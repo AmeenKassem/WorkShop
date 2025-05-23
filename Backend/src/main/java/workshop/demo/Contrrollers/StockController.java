@@ -1,172 +1,340 @@
 package workshop.demo.Contrrollers;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import workshop.demo.ApplicationLayer.Response;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import workshop.demo.ApplicationLayer.StockService;
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/stock")
 public class StockController {
 
-    private  StockService stockService;
+    private StockService stockService;
 
     @Autowired
     public StockController(Repos repos) {
-        this.stockService = new StockService(repos.stockrepo,repos.storeRepo,repos.auth,repos.userRepo,repos.sUConnectionRepo,repos.UserSuspensionRepo);
+        this.stockService = new StockService(repos.stockrepo, repos.storeRepo, repos.auth, repos.userRepo,
+                repos.sUConnectionRepo, repos.UserSuspensionRepo);
     }
 
     @GetMapping("/getProductInfo")
     public String getProductInfo(@RequestParam String token,
-                                 @RequestParam int productId) {
-        Response<ProductDTO> res;
+            @RequestParam int productId) {
+        ApiResponse<ProductDTO> res;
         try {
             ProductDTO product = stockService.getProductInfo(token, productId);
-            res = new Response<>(product, null);
+            res = new ApiResponse<>(product, null);
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            res = new ApiResponse<>(null, e.getMessage(), -1);
         }
         return res.toJson();
     }
 
     @GetMapping("/getProductsInStore")
-    public String getProductsInStore(@RequestParam int storeId) {
-        Response<List<ItemStoreDTO>> res;
+    public ResponseEntity<ApiResponse<ItemStoreDTO[]>> getProductsInStore(@RequestParam int storeId) {
+
         try {
-            List<ItemStoreDTO> products = stockService.getProductsInStore(storeId);
-            res = new Response<>(products, null);
+            ItemStoreDTO[] products = stockService.getProductsInStore(storeId);
+            return ResponseEntity.ok(new ApiResponse<>(products, null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
+
     }
 
     @PostMapping("/addItem")
-    public String addItem(@RequestParam int storeId,
-                          @RequestParam String token,
-                          @RequestParam int productId,
-                          @RequestParam int quantity,
-                          @RequestParam int price,
-                          @RequestParam workshop.demo.DTOs.Category category) {
-        Response<String> res;
+    public ResponseEntity<?> addItem(@RequestParam int storeId,
+            @RequestParam String token,
+            @RequestParam int productId,
+            @RequestParam int quantity,
+            @RequestParam int price,
+            @RequestParam workshop.demo.DTOs.Category category) {
+
         try {
             stockService.addItem(storeId, token, productId, quantity, price, category);
-            res = new Response<>("Item added successfully", null);
+            return ResponseEntity.ok(new ApiResponse<>("Item added successfully", null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
+
     }
 
     @PostMapping("/addProduct")
-    public String addProduct(@RequestParam String token,
-                             @RequestParam String name,
-                             @RequestParam workshop.demo.DTOs.Category category,
-                             @RequestParam String description,
-                             @RequestParam String[] keywords) {
-        Response<Integer> res;
+    public ResponseEntity<?> addProduct(@RequestParam String token,
+            @RequestParam String name,
+            @RequestParam workshop.demo.DTOs.Category category,
+            @RequestParam String description,
+            @RequestParam String[] keywords) {
         try {
-            int productId = stockService.addProduct(token, name, category, description, keywords);
-            res = new Response<>(productId, null);
+            String decodedName = URLDecoder.decode(name, StandardCharsets.UTF_8);
+            String decodedDescription = URLDecoder.decode(description, StandardCharsets.UTF_8);
+            int productId = stockService.addProduct(token, decodedName, category, decodedDescription, keywords);
+            return ResponseEntity.ok(new ApiResponse<>(productId, null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
+
     }
 
     @DeleteMapping("/removeItem")
-    public String removeItem(@RequestParam int storeId,
-                             @RequestParam String token,
-                             @RequestParam int productId) {
-        Response<String> res;
+    public ResponseEntity<?> removeItem(@RequestParam int storeId,
+            @RequestParam String token,
+            @RequestParam int productId) {
         try {
             stockService.removeItem(storeId, token, productId);
-            res = new Response<>("Item removed successfully", null);
+            return ResponseEntity.ok(new ApiResponse<>("Item removed successfully", null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
     @PostMapping("/updateQuantity")
-    public String updateQuantity(@RequestParam int storeId,
-                                 @RequestParam String token,
-                                 @RequestParam int productId,
-                                 @RequestParam int newQuantity) {
-        Response<String> res;
+    public ResponseEntity<?> updateQuantity(@RequestParam int storeId,
+            @RequestParam String token,
+            @RequestParam int productId,
+            @RequestParam int newQuantity) {
+
         try {
             stockService.updateQuantity(storeId, token, productId, newQuantity);
-            res = new Response<>("Quantity updated successfully", null);
+            return ResponseEntity.ok(new ApiResponse<>("Quantity updated successfully", null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
+
     }
 
     @PostMapping("/updatePrice")
-    public String updatePrice(@RequestParam int storeId,
-                              @RequestParam String token,
-                              @RequestParam int productId,
-                              @RequestParam int newPrice) {
-        Response<String> res;
+    public ResponseEntity<?> updatePrice(@RequestParam int storeId,
+            @RequestParam String token,
+            @RequestParam int productId,
+            @RequestParam int newPrice) {
+
         try {
             stockService.updatePrice(storeId, token, productId, newPrice);
-            res = new Response<>("Price updated successfully", null);
+            return ResponseEntity.ok(new ApiResponse<>("Price updated successfully", null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
+
     }
 
     @PostMapping("/rankProduct")
-    public String rankProduct(@RequestParam int storeId,
-                              @RequestParam String token,
-                              @RequestParam int productId,
-                              @RequestParam int newRank) {
-        Response<String> res;
+    public ResponseEntity<?> rankProduct(@RequestParam int storeId,
+            @RequestParam String token,
+            @RequestParam int productId,
+            @RequestParam int newRank) {
+
         try {
             stockService.rankProduct(storeId, token, productId, newRank);
-            res = new Response<>("Product ranked successfully", null);
+            return ResponseEntity.ok(new ApiResponse<>("Product ranked successfully", null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
     @GetMapping("/searchProducts")
-    public String searchProducts(@RequestParam String token,
-                                 @RequestBody ProductSearchCriteria criteria) {
-        Response<ItemStoreDTO[]> res;
+    public ResponseEntity<?> searchProducts(@RequestParam String token,
+            @RequestParam(required = false) String productNameFilter,
+            @RequestParam(required = false) Category categoryFilter,
+            @RequestParam(required = false) String keywordFilter,
+            @RequestParam(required = false) Integer storeId,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) Double minProductRating,
+            @RequestParam(required = false) Double maxProductRating) {
         try {
-            ItemStoreDTO[] items = stockService.searchProducts(token, criteria);
-            res = new Response<>(items, null);
+            ItemStoreDTO[] items = stockService.searchProducts(token, new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter, storeId, minPrice, maxPrice, minProductRating, maxProductRating));
+            return ResponseEntity.ok(new ApiResponse<>(items, null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
+
     }
+
+    @PostMapping("/acceptBid")
+    public ResponseEntity<?> acceptBid(@RequestParam String token,
+            @RequestParam int storeId, @RequestParam int bidId, @RequestParam int bidToAcceptId) {
+        try {
+            stockService.acceptBid(token, storeId, bidId, bidToAcceptId);
+            return ResponseEntity.ok(new ApiResponse<>("Store closed successfully", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @GetMapping("/getAllAuctions")
+    public ResponseEntity<?> getAllAuctions(@RequestParam String token, @RequestParam int storeId) {
+        try {
+            AuctionDTO[] auctions = stockService.getAllAuctions(token, storeId);
+            return ResponseEntity.ok(new ApiResponse<>(auctions, null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @PostMapping("/addBidOnAuction")
+    public ResponseEntity<?> addBidOnAuction(@RequestParam String token, @RequestParam int auctionId,
+            @RequestParam int storeId, @RequestParam double price) {
+        try {
+            stockService.addBidOnAucction(token, auctionId, storeId, price);
+            return ResponseEntity.ok(new ApiResponse<>("Bid added successfully", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @PostMapping("/addRegularBid")
+    public ResponseEntity<?> addRegularBid(@RequestParam String token,
+            @RequestParam int bitId,
+            @RequestParam int storeId,
+            @RequestParam double price) {
+        try {
+            stockService.addRegularBid(token, bitId, storeId, price);
+            return ResponseEntity.ok(new ApiResponse<>("Bid placed successfully", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @PostMapping("/setProductToAuction")
+    public ResponseEntity<?> setProductToAuction(@RequestParam String token, @RequestParam int storeId,
+            @RequestParam int productId, @RequestParam int quantity,
+            @RequestParam long time, @RequestParam double startPrice) {
+        try {
+            int id = stockService.setProductToAuction(token, storeId, productId, quantity, time, startPrice);
+            return ResponseEntity.ok(new ApiResponse<>(id, null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @PostMapping("/setProductToBid")
+    public ResponseEntity<?> setProductToBid(@RequestParam String token, @RequestParam int storeId, @RequestParam int productId, @RequestParam int quantity) {
+        try {
+            int id = stockService.setProductToBid(token, storeId, productId, quantity);
+            return ResponseEntity.ok(new ApiResponse<>(id, null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @GetMapping("/getAllBidsStatus")
+    public ResponseEntity<?> getAllBidsStatus(@RequestParam String token, @RequestParam int storeId) {
+        try {
+            BidDTO[] bids = stockService.getAllBidsStatus(token, storeId);
+            return ResponseEntity.ok(new ApiResponse<>(bids, null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @PostMapping("/endRandom")
+    public ResponseEntity<?> endRandom(@RequestParam String token, @RequestParam int storeId, @RequestParam int randomId) {
+        try {
+            ParticipationInRandomDTO result = stockService.endBid(token, storeId, randomId);
+            return ResponseEntity.ok(new ApiResponse<>(result, null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @GetMapping("/getAllRandomInStore")
+    public ResponseEntity<?> getAllRandomInStore(@RequestParam String token, @RequestParam int storeId) {
+        try {
+            RandomDTO[] randoms = stockService.getAllRandomInStore(token, storeId);
+            return ResponseEntity.ok(new ApiResponse<>(randoms, null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @PostMapping("/setProductToRandom")
+    public ResponseEntity<?> setProductToRandom(@RequestParam String token, @RequestParam int productId, @RequestParam int quantity,
+            @RequestParam double productPrice, @RequestParam int storeId, @RequestParam long randomTime) {
+        try {
+            int result = stockService.setProductToRandom(token, productId, quantity, productPrice, storeId, randomTime);
+            return ResponseEntity.ok(new ApiResponse<>(result, null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @GetMapping("/getAllProducts")
+    public ResponseEntity<?> getAllProducts(@RequestParam String token) {
+        try {
+            ProductDTO[] products = stockService.getAllProducts(token);
+            return ResponseEntity.ok(new ApiResponse<>(products, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
 }

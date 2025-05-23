@@ -1,29 +1,38 @@
 package workshop.demo.Contrrollers;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.OrderService;
-import workshop.demo.ApplicationLayer.Response;
 import workshop.demo.ApplicationLayer.UserService;
+import workshop.demo.DTOs.AddToCartRequest;
+import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.SpecialCartItemDTO;
+import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 public class UserController {
 
-    private  UserService userService;
+    private UserService userService;
     private OrderService orderService;
 
     @Autowired
     public UserController(Repos repos) {
-        this.userService = new UserService(repos.userRepo, repos.auth);
-        this.orderService= new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
-        
+        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer, repos.adminService);
+        this.orderService = new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
     }
 
     @ModelAttribute
@@ -32,107 +41,131 @@ public class UserController {
     }
 
     @GetMapping("/generateGuest")
-    public String generateGuest() {
-        Response<String> res;
+    public ResponseEntity<?> generateGuest() {
         try {
             String token = userService.generateGuest();
-            res = new Response<>(token, null);
+            return ResponseEntity.ok(new ApiResponse<>(token, null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
-        } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception ex) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, ex.getMessage()));
         }
-        return res.toJson();
     }
 
     @PostMapping("/register")
-    public String register(@RequestParam String token,
-                           @RequestParam String username,
-                           @RequestParam String password) {
-        Response<Boolean> res;
+    public ResponseEntity<ApiResponse<Boolean>> register(@RequestParam String token,
+            @RequestParam String username,
+            @RequestParam String password,
+            @RequestParam int age) {
+        ApiResponse<Boolean> res;
         try {
-            userService.register(token, username, password);
-            res = new Response<>(true, null);
+            userService.register(token, username, password, age);
+            return ResponseEntity
+                    .ok(new ApiResponse<>(true, null)); // success with data=true
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
-        } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(null, ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, ex.getMessage()));
         }
-        return res.toJson();
+
     }
 
     @PostMapping("/login")
-    public String login(@RequestParam String token,
-                        @RequestParam String username,
-                        @RequestParam String password) {
-        Response<String> res;
+    public ResponseEntity<?> login(
+            @RequestParam String token,
+            @RequestParam String username,
+            @RequestParam String password
+    ) {
         try {
-            String data = userService.login(token, username, password);
-            res = new Response<>(data, null);
+            String data = userService.login(token, username, password);//data new token for user
+            return ResponseEntity.ok(new ApiResponse<>(data, null)); // success: return new token
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
+
     }
 
     @DeleteMapping("/destroyGuest")
-    public String destroyGuest(@RequestParam String token) {
-        Response<Boolean> res;
+    public ResponseEntity<?> destroyGuest(@RequestParam String token) {
         try {
             userService.destroyGuest(token);
-            res = new Response<>(true, null);
+            return ResponseEntity.ok(new ApiResponse<>(true, null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
     @PostMapping("/logout")
-    public String logoutUser(@RequestParam String token) {
-        Response<String> res;
+    public ResponseEntity<?> logoutUser(@RequestParam String token
+    ) {
         try {
             String newToken = userService.logoutUser(token);
-            res = new Response<>(newToken, null);
+            return ResponseEntity.ok(new ApiResponse<>(newToken, null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
     @PostMapping("/setAdmin")
-    public String setAdmin(@RequestParam String token,
-                           @RequestParam String adminKey) {
-        Response<Boolean> res;
+    public ResponseEntity<?> setAdmin(
+            @RequestParam String token,
+            @RequestParam String adminKey
+    ) {
         try {
-            boolean data = userService.setAdmin(token, adminKey,2);
-            res = new Response<>(data, null);
+            boolean data = userService.setAdmin(token, adminKey, 2);
+            return ResponseEntity.ok(new ApiResponse<>(data, null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
     @PostMapping("/addToCart")
-    public String addToUserCart(@RequestParam String token,
-                                @RequestBody ItemStoreDTO itemToAdd) {
-        Response<Boolean> res;
+    public ResponseEntity<?> addToUserCart(
+            @RequestParam String token,
+            @RequestBody AddToCartRequest request
+    ) {
         try {
-            
-            res = new Response<>(userService.addToUserCart(token, itemToAdd), null);
+            boolean data = userService.addToUserCart(token, request.getItem(), request.getQuantity());
+            return ResponseEntity.ok(new ApiResponse<>(data, null));
         } catch (UIException ex) {
-            res = new Response<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new Response<>(null, e.getMessage(), -1);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
     // @PutMapping("/updateProfile")
@@ -148,6 +181,48 @@ public class UserController {
     //     }
     //     return res.toJson();
     // }''
+    @GetMapping("/getUserDTO")
+    public ResponseEntity<?> getUserDTO(@RequestParam String token) {
+        try {
+            UserDTO dto = userService.getUserDTO(token);
+            return ResponseEntity.ok(new ApiResponse<>(dto, null));
+        } catch (UIException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
 
-    
+    @GetMapping("/getspecialcart")
+    public String getSpecialCart(@RequestParam String token) {
+        ApiResponse<SpecialCartItemDTO[]> res;
+        try {
+            SpecialCartItemDTO[] cartItems = userService.getSpecialCart(token);
+            res = new ApiResponse<>(cartItems, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
+    }
+
+    @GetMapping("/getregularcart")
+    public String getRegularCart(@RequestParam String token) {
+        ApiResponse<ItemCartDTO[]> res;
+        try {
+            ItemCartDTO[] cartItems = userService.getRegularCart(token);
+            res = new ApiResponse<>(cartItems, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
+    }
+
 }

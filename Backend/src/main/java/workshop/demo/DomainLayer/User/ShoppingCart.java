@@ -37,4 +37,16 @@ public class ShoppingCart {
                 .flatMap(basket -> basket.getItems().stream())
                 .toList();
     }
+
+    public void ModifyCartAddQToBuy(int productId, int quantity) {
+        logger.debug("ModifyCartAddQToBuy called: productId={}, quantity={}", productId, quantity);
+
+        for (ShoppingBasket basket : storeBaskets.values()) {
+            if (basket.getItems().stream().anyMatch(item -> item.productId == productId)) {
+                basket.ModifyCartAddQToBuy(productId, quantity);
+                return;
+            }
+        }
+        logger.debug("Product not found in any basket: productId={}", productId);
+    }
 }

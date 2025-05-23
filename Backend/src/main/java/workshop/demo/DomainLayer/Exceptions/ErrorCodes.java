@@ -34,4 +34,7 @@ public class ErrorCodes {
     public static final int  SUSPENSION_NOT_FOUND = 1030;
     public static final int USERNAME_USED = 1031;
     public static final int USER_SUSPENDED = 1032;
+    public static final int DISCOUNT_NOT_FOUND = 1033;
+    public static final int INVALID_QUANTITY=1034;
+    
 }

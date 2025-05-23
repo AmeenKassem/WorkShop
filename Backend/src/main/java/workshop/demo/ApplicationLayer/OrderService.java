@@ -4,17 +4,20 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.IUserRepo;
-import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
-import workshop.demo.DomainLayer.Exceptions.UIException;
 
+@Service
 public class OrderService {
 
     private IOrderRepo orderRepo;
@@ -24,6 +27,7 @@ public class OrderService {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
+    @Autowired
     public OrderService(IOrderRepo orderRepo, IStoreRepo storeRepo, IAuthRepo authoRepo, IUserRepo userRepo) {
         this.orderRepo = orderRepo;
         this.storeRepo = storeRepo;
@@ -32,6 +36,7 @@ public class OrderService {
         logger.info("created Order/history service");
     }
 
+    //no nneed this in service:
     public void setOrderToStore(int storeId, int userId, ReceiptDTO receiptDTO) throws UIException {
         logger.info("about to set an order to the history");
         Store store = this.storeRepo.findStoreByID(storeId);

@@ -3,22 +3,33 @@ package workshop.demo.DTOs;
 public class ItemStoreDTO {
 
     private int id;
-    // public int quantity;
+    public int quantity;
     public int price;
     public Category category;
     public int rank;
     public int storeId;
     public String productName;
     public String storeName;
+    public int productId;
 
-    public ItemStoreDTO(int id, int quantity, int price, Category category, int rank, int storeId) {
+    public ItemStoreDTO(int id, int quantity, int price, Category category, int rank, int storeId, String productName) {
         this.id = id;
-        // this.quantity = quantity;
+        this.quantity = quantity;
         this.price = price;
         this.category = category;
         this.rank = rank;
         this.storeId = storeId;
-
+        this.productName = productName;
+    }
+    public ItemStoreDTO(int id, int quantity, int price, Category category, int rank, int storeId, String productName,int productId) {
+        this.id = id;
+        this.quantity = quantity;
+        this.price = price;
+        this.category = category;
+        this.rank = rank;
+        this.storeId = storeId;
+        this.productName = productName;
+        this.productId = productId;
     }
 
     public int getId() {
@@ -29,14 +40,13 @@ public class ItemStoreDTO {
         this.id = id;
     }
 
-    // public int getQuantity() {
-    //     return quantity;
-    // }
+    public int getQuantity() {
+        return quantity;
+    }
 
     // public void setQuantity(int quantity) {
-    //     this.quantity = quantity;
+    // this.quantity = quantity;
     // }
-
     public int getPrice() {
         return price;
     }
@@ -67,5 +77,23 @@ public class ItemStoreDTO {
 
     public void setStoreId(int storeId) {
         this.storeId = storeId;
+    }
+
+    @Override
+    public String toString() {
+        return "ItemStoreDTO{" +
+                "id=" + id +
+                ", quantity=" + quantity +
+                ", price=" + price +
+                ", category=" + category +
+                ", rank=" + rank +
+                ", storeId=" + storeId +
+                ", productName='" + productName + '\'' +
+                ", storeName='" + storeName + '\'' +
+                '}';
+    }
+
+    public String getProductName() {
+        return this.productName;
     }
 }
