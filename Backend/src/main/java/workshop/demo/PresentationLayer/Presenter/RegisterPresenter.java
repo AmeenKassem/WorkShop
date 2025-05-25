@@ -17,6 +17,7 @@ import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
+import workshop.demo.PresentationLayer.View.NotificationView;
 import workshop.demo.PresentationLayer.View.RegisterView;
 
 public class RegisterPresenter {
@@ -33,15 +34,19 @@ public class RegisterPresenter {
         String username = view.getUsername();
         String password = view.getPassword();
         int age = view.getAge();
+        if (!view.isPasswordValid(password)) {
+            NotificationView.showError(" Password is too weak.");
+            return;
+        }
 
         if (age <= 0) {
-            view.showError("Invalid age. Please enter a positive number.");
+            NotificationView.showError("Invalid age. Please enter a positive number.");
             return;
         }
 
         String guestToken = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         if (guestToken == null) {
-            view.showError(ExceptionHandlers.getErrorMessage(1001));
+            NotificationView.showError(ExceptionHandlers.getErrorMessage(1001));
             return;
         }
 
@@ -71,14 +76,14 @@ public class RegisterPresenter {
                 Boolean success = (Boolean) body.getData();
                 if (Boolean.TRUE.equals(success)) {
 
-                    view.showSuccess("Registered successfully!");
+                    NotificationView.showSuccess("Registered successfully!");
                     UI.getCurrent().navigate("login"); // go to login page
                 } else {
-                    view.showError("Registration failed.");
+                    NotificationView.showError("Registration failed.");
                 }
             } else {
                 if (body != null && body.getErrNumber() != -1) {
-                    view.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
                 }
             }
 
@@ -88,16 +93,16 @@ public class RegisterPresenter {
                 ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
 
                 if (errorBody.getErrNumber() != -1) {
-                    view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
                 } else {
-                    view.showError("FAILED: " + errorBody.getErrorMsg());
+                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
                 }
             } catch (Exception parsingEx) {
-                view.showError("HTTP error: " + e.getMessage());
+                NotificationView.showError("HTTP error: " + e.getMessage());
             }
 
         } catch (Exception e) {
-            view.showError("UNEXPECTED ERROR: " + e.getMessage());
+            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
 
         }
     }
