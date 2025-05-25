@@ -27,9 +27,7 @@ public class UserService {
     private IAuthRepo authRepo;
     private IStockRepo stockRepo;
     private final AdminInitilizer adminInitilizer;
-    //Hmode
     private AdminService adminService;
-    //HmodeEnd
 
     @Autowired
     public UserService(IUserRepo userRepo, IAuthRepo authRepo,IStockRepo stockRepo,AdminInitilizer adminInitilizer,AdminService adminService) {
@@ -38,6 +36,10 @@ public class UserService {
         this.stockRepo = stockRepo;
         this.adminInitilizer = adminInitilizer;
         this.adminService = adminService;
+
+
+
+
     }
 
     public String generateGuest() throws UIException, Exception {

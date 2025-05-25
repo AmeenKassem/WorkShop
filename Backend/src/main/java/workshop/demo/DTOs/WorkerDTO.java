@@ -10,19 +10,19 @@ public class WorkerDTO {
     private boolean manager;
     private boolean owner;
     private String storeName;
-    private Permission[] permessions;
+    private Permission[] permissions;
     private boolean setByMe;
     private int workerId;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public WorkerDTO(int workerid, String username, boolean isManager, boolean isOwner, String storeName, Permission[] permissions, boolean setByMe) {
+    public WorkerDTO(int workerId, String username, boolean manager, boolean owner, String storeName, Permission[] permissions, boolean setByMe) {
         this.username = username;
-        this.manager = isManager;
-        this.owner = isOwner;
+        this.manager = manager;
+        this.owner = owner;
         this.storeName = storeName;
-        this.permessions = permissions;
+        this.permissions = permissions;
         this.setByMe = setByMe;
-        this.workerId = workerid;
+        this.workerId = workerId;
     }
 
     public WorkerDTO() {
@@ -45,7 +45,7 @@ public class WorkerDTO {
     }
 
     public Permission[] getPermessions() {
-        return permessions;
+        return permissions;
     }
 
     public boolean isSetByMe() {
