@@ -2,7 +2,7 @@ package workshop.demo.DTOs;
 
 public class ItemStoreDTO {
 
-    private int id;
+    private int productId;
     public int quantity;
     public int price;
     public Category category;
@@ -12,7 +12,7 @@ public class ItemStoreDTO {
     public String storeName;
 
     public ItemStoreDTO(int id, int quantity, int price, Category category, int rank, int storeId, String productName) {
-        this.id = id;
+        this.productId = id;
         this.quantity = quantity;
         this.price = price;
         this.category = category;
@@ -24,12 +24,12 @@ public class ItemStoreDTO {
     public ItemStoreDTO() {
     }
 
-    public int getId() {
-        return id;
+    public int getProductId() {
+        return productId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setProductId(int id) {
+        this.productId = id;
     }
 
     public int getQuantity() {
@@ -74,4 +74,5 @@ public class ItemStoreDTO {
     public String getProductName() {
         return this.productName;
     }
+
 }

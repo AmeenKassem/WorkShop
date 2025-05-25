@@ -2,6 +2,7 @@ package workshop.demo.PresentationLayer.Presenter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.ReviewDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.NotificationView;
@@ -35,7 +37,7 @@ public class StoreDetailsPresenter {
         this.mapper = new ObjectMapper();
     }
 
-    public ItemStoreDTO[] getProductsInStore(int storeId) throws Exception {
+    public Map<ItemStoreDTO, ProductDTO> getProductsInStore(int storeId, String token) throws Exception {
         String url = "http://localhost:8080/stock/getProductsInStore?storeId=" + storeId;
         ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);
         ApiResponse<?> body = response.getBody();
@@ -44,7 +46,29 @@ public class StoreDetailsPresenter {
             throw new Exception(body != null ? body.getErrorMsg() : "Failed to load products");
         }
 
-        return mapper.convertValue(body.getData(), ItemStoreDTO[].class);
+        ItemStoreDTO[] items = mapper.convertValue(body.getData(), ItemStoreDTO[].class);
+        //all product:
+        String productsUrl = "http://localhost:8080/stock/getAllProducts?token="
+                + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8);
+        ResponseEntity<ApiResponse> productsResponse = restTemplate.getForEntity(productsUrl, ApiResponse.class);
+        ApiResponse<?> productsBody = productsResponse.getBody();
+        ProductDTO[] allProducts = mapper.convertValue(productsBody.getData(), ProductDTO[].class);
+
+        // Map productId to ProductDTO
+        Map<Integer, ProductDTO> productById = new HashMap<>();
+        for (ProductDTO product : allProducts) {
+            productById.put(product.getProductId(), product);
+        }
+
+        // Combine into final result
+        Map<ItemStoreDTO, ProductDTO> result = new LinkedHashMap<>();
+        for (ItemStoreDTO item : items) {
+            ProductDTO matching = productById.get(item.getProductId());
+            if (matching != null) {
+                result.put(item, matching);
+            }
+        }
+        return result;
     }
 
     public void addReviewToItem(String token, int storeId, int productId, String review) {

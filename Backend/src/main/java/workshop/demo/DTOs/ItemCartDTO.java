@@ -13,7 +13,7 @@ public class ItemCartDTO {
     public String description;
     public String storeName;
 
-    public ItemCartDTO(int storeId, Category category, int productId, int quantity , int price , String name, String description, String storeName) {
+    public ItemCartDTO(int storeId, Category category, int productId, int quantity, int price, String name, String description, String storeName) {
         this.storeId = storeId;
         this.category = category;
         this.productId = productId;
@@ -23,21 +23,24 @@ public class ItemCartDTO {
         this.description = description;
     }
 
-    public ItemCartDTO(ItemStoreDTO itemToAdd,int quantity) {
-          this.storeId =itemToAdd.getStoreId();
+    public ItemCartDTO(ItemStoreDTO itemToAdd, int quantity) {
+        this.storeId = itemToAdd.getStoreId();
         this.category = itemToAdd.getCategory();
-        this.productId = itemToAdd.getId();
+        this.productId = itemToAdd.getProductId();
         this.quantity = quantity;
         this.price = itemToAdd.getPrice();
         // need item name but itemstore doesnt have name 
         // need description but itemstore doesn have description
     }
 
+    public ItemCartDTO() {
+    }
+
     public ItemCartDTO(CartItem item) {
         //TODO Auto-generated constructor stub
     }
 
-    public int getProdutId() {
+    public int getProductId() {
         return productId;
     }
 }

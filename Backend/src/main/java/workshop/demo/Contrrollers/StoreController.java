@@ -54,7 +54,6 @@ public class StoreController {
             @RequestParam boolean answer,
             @RequestParam boolean toBeOwner) {
         try {
-            System.out.println("wesellll");
             storeService.reciveAnswerToOffer(storeId, senderName, receiverName, answer, toBeOwner);
             return ResponseEntity.ok(new ApiResponse<>("Offer response recorded successfully", null));
         } catch (Exception e) {
