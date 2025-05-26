@@ -41,57 +41,59 @@ import java.util.List;
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserTests {
-    PaymentServiceImp payment = new PaymentServiceImp();
-    SupplyServiceImp serviceImp = new SupplyServiceImp();
-    PurchaseRepository purchaseRepository = new PurchaseRepository();
-    UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
-    @Autowired
-    NotificationRepository notificationRepository;
-    OrderRepository orderRepository = new OrderRepository();
-    StoreRepository storeRepository = new StoreRepository();
-    StockRepository stockRepository = new StockRepository();
-    SUConnectionRepository sIsuConnectionRepo = new SUConnectionRepository();
-    AuthenticationRepo authRepo = new AuthenticationRepo();
-    Encoder encoder = new Encoder();
-    AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
-    UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
-    UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
- AdminService adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo,
-            sIsuConnectionRepo, suspensionRepo);
-    StoreService storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo,
-            orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
-    PurchaseService purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo,
-            purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
-    OrderService orderService = new OrderService(orderRepository, storeRepository, authRepo, userRepo);
+    
+   @Autowired
+   private NotificationRepository notificationRepository;
+   @Autowired
+   private StoreRepository storeRepository;
+   @Autowired
+   private StockRepository stockRepository;
+   @Autowired
+   private OrderRepository orderRepository;
+   @Autowired
+   private PurchaseRepository purchaseRepository;
+   @Autowired
+   private UserSuspensionRepo suspensionRepo;
+   @Autowired
+   private AuthenticationRepo authRepo;
 
-    String NOToken;
-    String NGToken;
-    ItemStoreDTO itemStoreDTO;
+   @Autowired
+   PaymentServiceImp payment;
+   @Autowired
+   SupplyServiceImp serviceImp;
+
+   @Autowired
+   SUConnectionRepository sIsuConnectionRepo;
+
+   @Autowired
+   Encoder encoder;
+   @Autowired
+   UserRepository userRepo;
+   @Autowired
+   UserSuspensionService suspensionService;
+   @Autowired
+   AdminService adminService;
+   @Autowired
+   UserService userService;
+   @Autowired
+   StockService stockService;
+   @Autowired
+   StoreService storeService;
+   @Autowired
+   PurchaseService purchaseService;
+   @Autowired
+   OrderService orderService;
+
+   String NOToken;
+   String NGToken;
+   ItemStoreDTO itemStoreDTO;
+   String GToken;
+   String Admin;
 
     @BeforeEach
     void setup() throws Exception {
         // ====== ADMIN SETUP ======
-        purchaseRepository = new PurchaseRepository();
-        suspensionRepo = new UserSuspensionRepo();
-        orderRepository = new OrderRepository();
-        storeRepository = new StoreRepository();
-        stockRepository = new StockRepository();
-        sIsuConnectionRepo = new SUConnectionRepository();
-        authRepo = new AuthenticationRepo();
-        encoder = new Encoder();
-        adminInitilizer = new AdminInitilizer("123321");
-        userRepo = new UserRepository(encoder, adminInitilizer);
-        suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-  adminService=new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-     userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"),adminService);        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo,
-                suspensionRepo);
-        storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository,
-                sIsuConnectionRepo, stockRepository, suspensionRepo);
-        purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository,
-                orderRepository, payment, serviceImp, suspensionRepo);
-        orderService = new OrderService(orderRepository, storeRepository, authRepo, userRepo);
-
+     
         String GToken = userService.generateGuest();
         userService.register(GToken, "User", "User", 25);
 
@@ -188,7 +190,7 @@ public class UserTests {
         assertTrue(authRepo.getUserName(token1).equals("User1"));
 
         userService.logoutUser(token1);
-        assertFalse(userRepo.isOnline(6));
+        assertFalse(userRepo.isOnline(authRepo.getUserId(token1)));
     }
 
     @Test
@@ -256,7 +258,7 @@ public class UserTests {
         String token = userService.generateGuest();
         userService.register(token, "adminUser3", "adminPass3", 22);
         String token1 = userService.login(token, "adminUser3", "adminPass3");
-        userService.setAdmin(token1, "123321", 6);
+        userService.setAdmin(token1, "123321", authRepo.getUserId(token1));
 
         assertTrue(userRepo.isAdmin(authRepo.getUserId(token1)));
 
@@ -267,7 +269,7 @@ public class UserTests {
         String token = userService.generateGuest();
         userService.register(token, "adminUser3", "adminPass3", 22);
         String token1 = userService.login(token, "adminUser3", "adminPass3");
-        userService.setAdmin(token1, "123321", 6);
+        userService.setAdmin(token1, "123321", authRepo.getUserId(token1));
 
         assertTrue(userRepo.isAdmin(authRepo.getUserId(token1)));
 
