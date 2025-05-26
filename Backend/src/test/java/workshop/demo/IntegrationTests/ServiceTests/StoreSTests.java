@@ -170,6 +170,13 @@ public class StoreSTests {
         int itemAdded = stockService.addItem(1, NOToken, 2, 10, 100, Category.ELECTRONICS);
         assertEquals(2, itemAdded);
         assertTrue(stockService.getProductInfo(NOToken, 2).getProductId() == 2);
+                assertTrue(stockService.getProductsInStore(1)[1].quantity == 10);
+                assertTrue(stockService.getProductsInStore(1)[1].price == 100);
+                assertTrue(stockService.getProductsInStore(1)[1].rank == 3);
+                                assertTrue(stockService.getProductsInStore(1)[1].productName.equals("Tablet"));
+                                
+
+
 
     }
 
@@ -230,9 +237,9 @@ public class StoreSTests {
     void testOwner_UpdateQuantityProductInStock() throws Exception {
 
         assertDoesNotThrow(()
-                -> stockService.updateQuantity(1, NOToken, 1, 1)
+                -> stockService.updateQuantity(1, NOToken, 1, 7)
         );
-        assertTrue(stockService.getProductsInStore(1)[0].quantity == 1);
+        assertTrue(stockService.getProductsInStore(1)[0].quantity == 7);
 
     }
 
@@ -258,31 +265,11 @@ public class StoreSTests {
         // === Act ===
         storeService.AddOwnershipToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
-        // ask bhaa i dont know what is happening ,  help help help
-
-        // === Assert ===
-        // assertEquals(sotre);
+        assertTrue(! sIsuConnectionRepo.getAllWorkers(1).get(1).getIsManager());
+        
     }
 
-    @Test
-    void testOwner_AddStoreOwner_fail() throws Exception {
-
-        String token = userService.generateGuest();
-        userService.register(token, "token", "token", 0);
-        String token1 = userService.login(token, "token", "token");
-
-        // === Act ===
-        //must make an offer before:
-        storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
-        storeService.AddOwnershipToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
-        // ask bhaa i dont know what is happening ,  help help help
-
-        // shouldnt work without offer
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
-
-        // === Assert ===
-        // assertEquals(sotre);
-    }
+    
 
     @Test
     void testOwner_AddStoreOwner_ReassignSameUser_Failure() throws Exception {
@@ -290,7 +277,6 @@ public class StoreSTests {
         userService.register(token, "token", "token", 0);
         String token1 = userService.login(token, "token", "token");
 
-        // === Act ===
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
         storeService.AddOwnershipToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
 
@@ -307,13 +293,9 @@ public class StoreSTests {
     void testOwner_AddStoreOwner_Failure_TargetNotFound() throws Exception {
         String token = userService.generateGuest();
 
-        // === Act ===
-        // storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
-// this function need to take id to use this test guest doesnt have a username
-        // === Act + Assert
+       
         UIException ex = assertThrows(UIException.class, ()
                         -> storeService.AddOwnershipToStore(1, 3, authRepo.getUserId(token), true)
-                // shouldnt be able to add a guest
         );
 
         assertEquals("You are not regestered user!", ex.getMessage());
@@ -376,8 +358,9 @@ public class StoreSTests {
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, authRepo.getUserName(token1), a);
         storeService.AddManagerToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
-        // when decide equals true some list is null (i think its permissions list)
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
+                assertTrue(sIsuConnectionRepo.getAllWorkers(1).get(1).getIsManager());
+
 
     }
 
@@ -407,7 +390,6 @@ public class StoreSTests {
             storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
         });
         assertEquals("No user found with username: token", ex.getMessage());
-        //assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ex.getNumber());
     }
 
     @Test
@@ -425,8 +407,7 @@ public class StoreSTests {
 
         UIException ex = assertThrows(UIException.class, () -> {
             storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
-            // already a manager need to throw error
-            //he can make an offer but can't add it, come on GUYS
+          
 
         });
 
@@ -491,8 +472,7 @@ public class StoreSTests {
         storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
 
         int result = storeService.AddManagerToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
-        // dunno why it doesnt work with true ????
-        // when decide true some list is null (i think its permissions list)
+        
 
         UIException ex = assertThrows(UIException.class, () -> {
             storeService.deleteManager(2, NOToken, authRepo.getUserId(token1));
@@ -513,7 +493,6 @@ public class StoreSTests {
         storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
 
         int result = storeService.AddManagerToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
-        // dunno why it doesnt work with true ????
         storeService.deactivateteStore(1, NOToken);
 
         DevException ex = assertThrows(DevException.class, () -> {

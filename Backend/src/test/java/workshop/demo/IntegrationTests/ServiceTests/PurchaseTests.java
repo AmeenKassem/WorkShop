@@ -164,9 +164,7 @@ public class PurchaseTests {
 
 
        boolean a = stockService.addRegularBid(NGToken, 1, 1, 10);
-       for (BidDTO iterable_element : stockService.getAllBidsStatus(NOToken, 1)) {
-           System.err.println(iterable_element.bidId);
-       }
+      
        assertTrue(a);
        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_PENDING));
        assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
@@ -190,6 +188,12 @@ public class PurchaseTests {
            ReceiptDTO r = result.get(0);
            assertEquals("TestStore", r.getStoreName());
            assertEquals(10, r.getFinalPrice());
+             assertTrue( orderService.getReceiptDTOsByUser(NGToken).size()==1);
+          assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getFinalPrice()==10);
+                    assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().size()==1);
+                                        assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().get(0).getProductId()==0);
+                            assertTrue(stockService.getProductsInStore(1)[0].quantity==7);
+    assertTrue(userRepo.getUserCart(authRepo.getUserId(NGToken)).getAllCart().size()==0);
 
        }
        catch (Exception exception){
@@ -216,6 +220,7 @@ public class PurchaseTests {
 
 
         assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
+        
 
         // Assert
     }
@@ -296,6 +301,12 @@ public class PurchaseTests {
         ReceiptDTO r = result.get(0);
         assertEquals("TestStore", r.getStoreName());
         assertEquals(10, r.getFinalPrice());
+
+            assertTrue( orderService.getReceiptDTOsByUser(NGToken).size()==1);
+          assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getFinalPrice()==10);
+                    assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().size()==1);
+                                        assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().get(0).getProductId()==0);
+    assertTrue(userRepo.getUserCart(authRepo.getUserId(NGToken)).getAllCart().size()==0);
 
     }
 
@@ -394,6 +405,12 @@ public class PurchaseTests {
         ReceiptDTO r = result.get(0);
         assertEquals("TestStore", r.getStoreName());
         assertEquals(0, r.getFinalPrice());
+            assertTrue( orderService.getReceiptDTOsByUser(NGToken).size()==1);
+          assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getFinalPrice()==0);
+                    assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().size()==1);
+                                        assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().get(0).getProductId()==0);
+                            assertTrue(stockService.getProductsInStore(1)[0].quantity==7);
+    assertTrue(userRepo.getUserCart(authRepo.getUserId(NGToken)).getAllCart().size()==0);
 
     }
 

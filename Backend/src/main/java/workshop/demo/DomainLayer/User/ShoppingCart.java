@@ -49,4 +49,9 @@ public class ShoppingCart {
         }
         logger.debug("Product not found in any basket: productId={}", productId);
     }
+  public  void clear(){
+          storeBaskets = new HashMap<>();
+
+
+    }
 }

@@ -257,7 +257,7 @@ public class UserRepository implements IUserRepo {
         if (!(isRegistered(userId))) {
             // logger.error("User not logged in for setProductToBid: {}", userId);
             throw new UIException("You are not regestered user!", ErrorCodes.USER_NOT_LOGGED_IN);
-        }
+        }   
     }
 
     @Override
@@ -306,4 +306,5 @@ public class UserRepository implements IUserRepo {
         }
         return user;
     }
+ 
 }

@@ -148,8 +148,8 @@ public class UserTests {
         String token1 = userService.login(Token, "User1", "User");
 
         assertTrue(authRepo.getUserName(token1).equals("User1"));
-        userService.setAdmin(Token, "123321", 6);
-        assertTrue(userRepo.isAdmin(6));
+        userService.setAdmin(Token, "123321", authRepo.getUserId(token1));
+        assertTrue(userRepo.isAdmin(authRepo.getUserId(token1)));
 
     }
 
@@ -162,7 +162,7 @@ public class UserTests {
         String token1 = userService.login(Token, "User1", "User");
 
         assertTrue(authRepo.getUserName(token1).equals("User1"));
-        userService.setAdmin(Token, "13321", 6);
+        userService.setAdmin(Token, "13321", authRepo.getUserId(token1));
         assertFalse(userRepo.isAdmin(6));
 
     }
@@ -176,6 +176,7 @@ public class UserTests {
         String token1 = userService.login(Token, "User1", "User");
 
         assertTrue(authRepo.getUserName(token1).equals("User1"));
+        assertTrue(userRepo.getUserCart(authRepo.getUserId(token1)).getAllCart().isEmpty() );
 
     }
 
@@ -184,8 +185,8 @@ public class UserTests {
         String Token = userService.generateGuest();
         userService.register(Token, "User1", "User", 25);
 
-        // --- Login ---
         String token1 = userService.login(Token, "User1", "User");
+        assertTrue(userRepo.getUserCart(authRepo.getUserId(token1)).getAllCart().isEmpty() );
 
         assertTrue(authRepo.getUserName(token1).equals("User1"));
 
@@ -198,7 +199,6 @@ public class UserTests {
         String Token = userService.generateGuest();
         userService.register(Token, "User1", "User", 25);
 
-        // --- Login ---
 
         UIException ex = assertThrows(UIException.class, () -> {
             userService.login(Token, "User1", "invalid");
@@ -213,10 +213,8 @@ public class UserTests {
         userService.register(Token, "User1", "User", 25);
         userService.login(Token, "User1", "User");
 
-        // Expect the logout to fail due to invalid token
         UIException ex = assertThrows(UIException.class, () -> userService.logoutUser("invalidToken"));
 
-        // Verify exception details
         assertEquals("Invalid token!", ex.getMessage());
         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
     }
@@ -227,7 +225,6 @@ public class UserTests {
         String Token = userService.generateGuest();
         userService.register(Token, "User1", "User", 25);
 
-        // Expect the logout to fail due to invalid token
         UIException ex = assertThrows(UIException.class, () -> userService.login("invalidToken", "user1", "User"));
         assertEquals("Invalid token!", ex.getMessage());
         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
@@ -258,6 +255,8 @@ public class UserTests {
         String token = userService.generateGuest();
         userService.register(token, "adminUser3", "adminPass3", 22);
         String token1 = userService.login(token, "adminUser3", "adminPass3");
+                assertTrue(userRepo.getUserCart(authRepo.getUserId(token1)).getAllCart().isEmpty() );
+
         userService.setAdmin(token1, "123321", authRepo.getUserId(token1));
 
         assertTrue(userRepo.isAdmin(authRepo.getUserId(token1)));
@@ -274,7 +273,7 @@ public class UserTests {
         assertTrue(userRepo.isAdmin(authRepo.getUserId(token1)));
 
         UIException ex = assertThrows(UIException.class, () -> {
-            userService.setAdmin("invalid token", "123321", 6);
+            userService.setAdmin("invalid token", "123321", authRepo.getUserId(token1));
         });
         assertFalse(userService.setAdmin(token, "123321", 1));
     }
@@ -284,7 +283,7 @@ public class UserTests {
         String token = userService.generateGuest();
         userService.register(token, "adminUser3", "adminPass3", 22);
 
-        assertFalse(userService.setAdmin(token, "adminUser3", 5));
+        assertFalse(userService.setAdmin(token, "adminUser3", authRepo.getUserId(token)));
     }
 
     @Test
@@ -345,6 +344,9 @@ public class UserTests {
         ItemStoreDTO[] items = stockService.getProductsInStore(1);
         assertTrue(items.length == 1);
         assertTrue(items[0].getId() == 1);
+                assertTrue(items[0].quantity==10);
+
+        
 
     }
 
@@ -353,9 +355,7 @@ public class UserTests {
         storeService.addStoreToSystem(NOToken, "failure", "HOME");
 
         ItemStoreDTO[] products = stockService.getProductsInStore(2);
-// ask bhaa i dont know what is happening , how are we getting an item please help help help
 
-        // ===== ASSERT =====
         assertTrue(products.length==0);
     }
 
@@ -378,7 +378,6 @@ public class UserTests {
         // ===== ASSERTIONS =====
 
         assertNotNull(info);
-        System.out.println(info.getName());
         assertTrue(info.getName().equals("Laptop"));
         assertTrue(info.getProductId() == 1);
         assertTrue(info.getCategory().equals(Category.ELECTRONICS));
@@ -411,7 +410,6 @@ public class UserTests {
         assertEquals("Invalid token!", exception.getMessage());
         assertEquals(ErrorCodes.INVALID_TOKEN, exception.getNumber());
 
-        // Assert
 
     }
 
@@ -427,6 +425,12 @@ public class UserTests {
         assertEquals("TestStore", receipts[0].getStoreName());
         assertEquals(2000.0,
                 receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
+                assertTrue( orderService.getReceiptDTOsByUser(NGToken).size()==1);
+          assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getFinalPrice()==2000);
+                    assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().size()==1);
+                                        assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().get(0).getProductId()==1);
+                            assertTrue(stockService.getProductsInStore(1)[0].quantity==9);
+    assertTrue(userRepo.getUserCart(authRepo.getUserId(NGToken)).getAllCart().size()==0);
     }
 
     @Test
@@ -564,6 +568,16 @@ public class UserTests {
     userService.ModifyCartAddQToBuy(NGToken, 1, 3);
         ReceiptDTO[] re= purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
         assertTrue(re[0].getFinalPrice()==6000);
+     assertTrue( orderService.getReceiptDTOsByUser(NGToken).size()==1);
+          assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getFinalPrice()==6000);
+                    assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().size()==1);
+                                        assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().get(0).getProductId()==1);
+                            assertTrue(stockService.getProductsInStore(1)[0].quantity==7);
+    assertTrue(userRepo.getUserCart(authRepo.getUserId(NGToken)).getAllCart().size()==0);
+
+
+
+
    }
    @Test
       void testGuestModifyCartAddQToBuy_failure() throws Exception {

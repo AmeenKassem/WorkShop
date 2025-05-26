@@ -10,7 +10,6 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import workshop.demo.ApplicationLayer.AdminService;
 import workshop.demo.ApplicationLayer.OrderService;
-import workshop.demo.ApplicationLayer.AdminService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
 import workshop.demo.ApplicationLayer.StockService;
@@ -22,9 +21,7 @@ import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
-import workshop.demo.DomainLayer.Notification.DelayedNotificationDecorator;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
@@ -142,8 +139,14 @@ public class GuestTests {
     void testGuestEnter_Success() throws Exception {
 
         String token = userService.generateGuest();
-System.out.println("dfsnhkldsfjndsfjl"+authRepo.getUserId(token));
+    int guestId = authRepo.getUserId(token);
         assertTrue(authRepo.getUserId(token) == 6);
+        assertTrue(userRepo.guestExist(guestId));
+    
+    // Additional checks from IUserRepo
+    assertNotNull(userRepo.getUserCart(guestId));
+    assertFalse(userRepo.isOnline(guestId));  
+    assertFalse(userRepo.isRegistered(guestId));
     }
 
     @Test
@@ -153,6 +156,10 @@ System.out.println("dfsnhkldsfjndsfjl"+authRepo.getUserId(token));
 
         userService.destroyGuest(token);
         assertFalse(userRepo.guestExist(6));
+            assertFalse(userRepo.guestExist(6));
+    
+    assertThrows(Exception.class, () -> userRepo.getUserCart(6));
+
 
     }
 
@@ -170,8 +177,15 @@ System.out.println("dfsnhkldsfjndsfjl"+authRepo.getUserId(token));
 
         userService.register(token, "Mohamad", "finish", 24);
         String tt = userService.login(token, "Mohamad", "finish");
-        assertTrue(authRepo.getUserName(tt).equals("Mohamad"));
+            int regId = authRepo.getUserId(tt);
 
+        assertTrue(authRepo.getUserName(tt).equals("Mohamad"));
+ assertTrue(userRepo.isRegistered(regId));
+    assertTrue(userRepo.isOnline(regId));
+    assertFalse(userRepo.isAdmin(regId));  
+    assertNotNull(userRepo.getUserCart(regId));
+    assertEquals("Mohamad", userRepo.getUserDTO(regId).getUsername());
+    assertTrue(userRepo.getUserCart(regId).getAllCart().isEmpty() );
     }
 
     @Test
@@ -186,15 +200,19 @@ System.out.println("dfsnhkldsfjndsfjl"+authRepo.getUserId(token));
         });
 
         assertEquals(ErrorCodes.USERNAME_USED, exception.getNumber());
+        List<String> usernames = userRepo.getAllUsernames();
+    assertEquals(1, usernames.stream().filter(u -> u.equals("Mohamad")).count());
     }
 
-    // NOTE:GET STORE PRODUCT FINISH
     @Test
     void testGuestGetStoreProducts() throws Exception {
 
         ItemStoreDTO[] items = stockService.getProductsInStore(1);
         assertTrue(items.length == 1);
         assertTrue(items[0].getId() == 1);
+
+         int guestId = authRepo.getUserId(GToken);
+    assertFalse(userRepo.isOnline(guestId));
     }
 
     @Test
@@ -220,6 +238,9 @@ System.out.println("dfsnhkldsfjndsfjl"+authRepo.getUserId(token));
         assertTrue(info.getProductId() == 1);
         assertTrue(info.getCategory().equals(Category.ELECTRONICS));
         assertTrue(info.getDescription().equals("Gaming Laptop"));
+         int guestId = authRepo.getUserId(GToken);
+    assertTrue(userRepo.guestExist(guestId));
+    assertTrue(!userRepo.isOnline(guestId));
 
     }
 
@@ -269,6 +290,14 @@ System.out.println("dfsnhkldsfjndsfjl"+authRepo.getUserId(token));
         assertEquals("TestStore", receipts[0].getStoreName());
         assertEquals(2000.0,
                 receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
+      
+                  int guestId = authRepo.getUserId(GToken);
+    assertTrue(userRepo.getUserCart(guestId).getAllCart().size()==0);
+   
+
+assertTrue(stockService.getProductsInStore(1)[0].quantity==9);
+
+
 
     }
 
@@ -357,7 +386,6 @@ System.out.println("dfsnhkldsfjndsfjl"+authRepo.getUserId(token));
         assertEquals(2000, result[0].getPrice());
         assertEquals(1, result[0].getStoreId());
 
-        // --- Step 7: Verify mocks ---
 
     }
 
@@ -369,14 +397,11 @@ System.out.println("dfsnhkldsfjndsfjl"+authRepo.getUserId(token));
                 0, 5000,
                 0, 5);
 
-        // 1. Throw on auth check
-
-        // 3. Run the test
+      
         UIException exception = assertThrows(UIException.class, () -> {
             stockService.searchProducts("invalid token", criteria);
         });
 
-        // 4. Verify
         assertEquals("Invalid token!", exception.getMessage());
         assertEquals(ErrorCodes.INVALID_TOKEN, exception.getNumber());
     }
@@ -426,7 +451,11 @@ System.out.println("dfsnhkldsfjndsfjl"+authRepo.getUserId(token));
         userService.ModifyCartAddQToBuy(GToken, 1, 3);
         ReceiptDTO[] re = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
         assertTrue(re[0].getFinalPrice() == 6000);
+          int guestId = authRepo.getUserId(GToken);
+    assertTrue(userRepo.getUserCart(guestId).getAllCart().size()==0);
+   
 
+assertTrue(stockService.getProductsInStore(1)[0].quantity==7);
     }
 
 }
