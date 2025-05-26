@@ -48,12 +48,12 @@ public class Real implements Bridge {
     public PurchaseService purchaseService;
     public OrderService orderService;
     public ReviewService reviewService;
-    public Real() {
+    public Real() throws Exception {
         initServices();
         //setupDefaultMocks();
     }
 
-    private void initServices() {
+    private void initServices() throws Exception {
         orderService = new OrderService(mockOrderRepo, mockStoreRepo, mockAuthRepo, mockUserRepo);
 AdminService admin=new AdminService(mockOrderRepo, mockStoreRepo, mockUserRepo, mockAuthRepo);
         stockService = new StockService(mockStockRepo, mockStoreRepo, mockAuthRepo, mockUserRepo, mockIOSrepo, mockSusRepo);

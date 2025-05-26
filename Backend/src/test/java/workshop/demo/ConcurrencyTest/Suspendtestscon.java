@@ -35,6 +35,9 @@ public class Suspendtestscon {
     private final UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
     private final UserService userService = new UserService(userRepo, authRepo, new StockRepository(),adminInitilizer,new AdminService(new OrderRepository(), new StoreRepository(), userRepo, authRepo));
 
+    public Suspendtestscon() throws Exception {
+    }
+
     @Test
     public void test_twoAdminsSuspend_twoUsers() throws Exception {
         // Admin A setup

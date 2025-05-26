@@ -36,7 +36,7 @@ public class AdminController {
 
 
     @Autowired
-    public AdminController(Repos repos) {
+    public AdminController(Repos repos) throws Exception {
          AdminService adminService=new AdminService(repos.orderRepo, repos.storeRepo, repos.userRepo, repos.auth);
         this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer,adminService);
         this.orderService = new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);

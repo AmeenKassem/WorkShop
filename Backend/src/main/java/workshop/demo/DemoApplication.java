@@ -13,15 +13,15 @@ public class DemoApplication {
 		SpringApplication.run(DemoApplication.class, args);
 	}
 
-	@Bean
-	public CommandLineRunner initAdmin(UserService userService) {
-		return args -> {
-			try {
-				userService.registerAdminIfNotExists("admin", "admin123", 30);
-				System.out.println(" Admin initialized");
-			} catch (Exception e) {
-				System.err.println(" Failed to initialize admin: " + e.getMessage());
-			}
-		};
-	}
+//	@Bean
+//	public CommandLineRunner initAdmin(UserService userService) {
+//		return args -> {
+//			try {
+//				userService.registerAdminIfNotExists("admin", "admin123", 30);
+//				System.out.println(" Admin initialized");
+//			} catch (Exception e) {
+//				System.err.println(" Failed to initialize admin: " + e.getMessage());
+//			}
+//		};
+//	}
 }

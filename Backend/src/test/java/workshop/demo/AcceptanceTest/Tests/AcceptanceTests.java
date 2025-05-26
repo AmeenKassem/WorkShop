@@ -14,6 +14,9 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 public abstract class AcceptanceTests {
     private final Bridge bridge = new Proxy();
 
+    protected AcceptanceTests() throws Exception {
+    }
+
     // System
     String testSystem_InitMarket(String admin) throws Exception {
         return bridge.testSystem_InitMarket(admin);

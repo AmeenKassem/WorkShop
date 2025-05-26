@@ -35,6 +35,9 @@ public class Owner_ManagerAT extends AcceptanceTests {
     Real real = new Real();
     private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
 
+    public Owner_ManagerAT() throws Exception {
+    }
+
     @BeforeEach
     void setup() throws Exception {
         // ====== ADMIN SETUP ======

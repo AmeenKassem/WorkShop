@@ -12,6 +12,9 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 public class Proxy implements Bridge {
     private final Real real = new Real();
 
+    public Proxy() throws Exception {
+    }
+
     // System
     @Override
     public String testSystem_InitMarket(String admin) throws Exception {

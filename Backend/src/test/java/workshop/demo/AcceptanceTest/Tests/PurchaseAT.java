@@ -31,6 +31,9 @@ import static org.mockito.Mockito.when;
 public class PurchaseAT extends AcceptanceTests {
     Real real = new Real();
 
+    public PurchaseAT() throws Exception {
+    }
+
     @BeforeEach
     void setup() throws Exception {
         int adminId = 999;

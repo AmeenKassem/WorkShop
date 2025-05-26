@@ -30,7 +30,7 @@ public class UserController {
     private OrderService orderService;
 
     @Autowired
-    public UserController(Repos repos) {
+    public UserController(Repos repos) throws Exception {
         this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer, repos.adminService);
         this.orderService = new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
     }

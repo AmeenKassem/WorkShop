@@ -35,6 +35,9 @@ public class UserAT extends AcceptanceTests {
     Real real = new Real();
     private static final Logger logger = LoggerFactory.getLogger(PaymentServiceImp.class);
 
+    public UserAT() throws Exception {
+    }
+
     @BeforeEach
     void setup() throws Exception {
         // ====== ADMIN SETUP ======
