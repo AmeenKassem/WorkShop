@@ -9,6 +9,8 @@ import com.vaadin.flow.component.UI;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.test.context.SpringBootTest;
+
 import workshop.demo.AcceptanceTest.Utill.Real;
 import workshop.demo.ApplicationLayer.ReviewService;
 import workshop.demo.DTOs.Category;
@@ -29,7 +31,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
+@SpringBootTest
 public class Owner_ManagerAT extends AcceptanceTests {
 
     Real real = new Real();

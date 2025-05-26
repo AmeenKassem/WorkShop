@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.server.VaadinSession;
 
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;

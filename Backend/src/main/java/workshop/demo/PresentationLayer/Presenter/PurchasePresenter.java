@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
 
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ReceiptDTO;
 

@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
+import org.springframework.boot.test.context.SpringBootTest;
+
 import workshop.demo.AcceptanceTest.Utill.Real;
 import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -27,7 +29,7 @@ import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-
+@SpringBootTest
 public class PurchaseAT extends AcceptanceTests {
     Real real = new Real();
 
@@ -419,7 +421,7 @@ doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.US
         );
         Discount discount = new VisibleDiscount("50percent", 50,
                 scope -> scope != null && scope.getItems().stream()
-                        .anyMatch(scopeItem -> scopeItem.getStoreId() == storeId && scopeItem.getId() == productId)
+                        .anyMatch(scopeItem -> scopeItem.getStoreId() == storeId && scopeItem.getProductId() == productId)
         );
 
         store.addDiscount(discount);

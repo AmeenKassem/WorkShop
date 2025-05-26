@@ -16,7 +16,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.server.VaadinSession;
 
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.LoginView;

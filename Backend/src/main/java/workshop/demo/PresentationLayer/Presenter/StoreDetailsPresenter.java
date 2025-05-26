@@ -20,7 +20,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.ReviewDTO;

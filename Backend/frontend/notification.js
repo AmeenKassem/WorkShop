@@ -30,7 +30,6 @@ window.initNotificationSocket = function(username) {
             
             if (notificationHandler && notificationHandler.$server) {
                 console.log("Found NotificationView component, calling receiveNotification");
-                playNotificationSound();
                 notificationHandler.$server.receiveNotification(msg);
             } else {
                 console.log("NotificationView component not found, checking Vaadin clients");
@@ -52,7 +51,6 @@ window.initNotificationSocket = function(username) {
                                     console.log("Found notification handler element");
                                     if (element.$server && typeof element.$server.receiveNotification === 'function') {
                                         console.log("Calling receiveNotification on found element");
-                                        playNotificationSound();
                                         element.$server.receiveNotification(msg);
                                         clientFound = true;
                                         break;
@@ -106,17 +104,6 @@ function fallbackBrowserNotification(msg) {
         });
     } else {
         console.log("Fallback: Browser notification not permitted");
-    }
-}
-
-function playNotificationSound() {
-    try {
-        const audio = new Audio('C:\Users\WINDOWS 10 PRO\OneDrive\Desktop\WorkShop\Backend\frontend\sounds\notify.mp3');
-        audio.play().catch(err => {
-            console.warn("🔇 Could not play sound automatically:", err);
-        });
-    } catch (err) {
-        console.error("Sound playback error:", err);
     }
 }
 

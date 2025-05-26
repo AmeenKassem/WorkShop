@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import workshop.demo.AcceptanceTest.Utill.Real;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
@@ -43,7 +44,7 @@ import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
-
+@SpringBootTest
 public class UserAT extends AcceptanceTests {
 
     Real real = new Real();

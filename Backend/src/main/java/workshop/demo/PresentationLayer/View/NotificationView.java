@@ -35,7 +35,7 @@ import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 
 // Add a custom tag so the component can be found in the DOM

@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ProductDTO;

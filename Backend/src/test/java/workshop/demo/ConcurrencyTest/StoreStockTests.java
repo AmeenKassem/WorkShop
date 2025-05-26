@@ -11,12 +11,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import workshop.demo.DTOs.Category;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
-
+@SpringBootTest
 public class StoreStockTests {
 
     private StoreStock store;
