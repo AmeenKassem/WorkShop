@@ -4,8 +4,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,15 +19,7 @@ import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
 import workshop.demo.DTOs.*;
-import workshop.demo.DomainLayer.Exceptions.DevException;
-import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
-import workshop.demo.DomainLayer.Stock.Product;
-import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.*;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-import workshop.demo.DomainLayer.User.AdminInitilizer;
-import workshop.demo.DomainLayer.User.ShoppingBasket;
-import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
