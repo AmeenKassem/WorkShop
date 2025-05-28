@@ -49,53 +49,54 @@ import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserTests {
-   @Autowired
-   private NotificationRepository notificationRepository;
-   @Autowired
-   private StoreRepository storeRepository;
-   @Autowired
-   private StockRepository stockRepository;
-   @Autowired
-   private OrderRepository orderRepository;
-   @Autowired
-   private PurchaseRepository purchaseRepository;
-   @Autowired
-   private UserSuspensionRepo suspensionRepo;
-   @Autowired
-   private AuthenticationRepo authRepo;
 
-   @Autowired
-   PaymentServiceImp payment;
-   @Autowired
-   SupplyServiceImp serviceImp;
+    @Autowired
+    private NotificationRepository notificationRepository;
+    @Autowired
+    private StoreRepository storeRepository;
+    @Autowired
+    private StockRepository stockRepository;
+    @Autowired
+    private OrderRepository orderRepository;
+    @Autowired
+    private PurchaseRepository purchaseRepository;
+    @Autowired
+    private UserSuspensionRepo suspensionRepo;
+    @Autowired
+    private AuthenticationRepo authRepo;
 
-   @Autowired
-   SUConnectionRepository sIsuConnectionRepo;
+    @Autowired
+    PaymentServiceImp payment;
+    @Autowired
+    SupplyServiceImp serviceImp;
 
-   @Autowired
-   Encoder encoder;
-   @Autowired
-   UserRepository userRepo;
-   @Autowired
-   UserSuspensionService suspensionService;
-   @Autowired
-   AdminService adminService;
-   @Autowired
-   UserService userService;
-   @Autowired
-   StockService stockService;
-   @Autowired
-   StoreService storeService;
-   @Autowired
-   PurchaseService purchaseService;
-   @Autowired
-   OrderService orderService;
+    @Autowired
+    SUConnectionRepository sIsuConnectionRepo;
 
-   String NOToken;
-   String NGToken;
-   ItemStoreDTO itemStoreDTO;
-   String GToken;
-   String Admin;
+    @Autowired
+    Encoder encoder;
+    @Autowired
+    UserRepository userRepo;
+    @Autowired
+    UserSuspensionService suspensionService;
+    @Autowired
+    AdminService adminService;
+    @Autowired
+    UserService userService;
+    @Autowired
+    StockService stockService;
+    @Autowired
+    StoreService storeService;
+    @Autowired
+    PurchaseService purchaseService;
+    @Autowired
+    OrderService orderService;
+
+    String NOToken;
+    String NGToken;
+    ItemStoreDTO itemStoreDTO;
+    String GToken;
+    String Admin;
 
     @BeforeEach
     void setup() throws Exception {
@@ -108,8 +109,8 @@ public class UserTests {
         sIsuConnectionRepo = new SUConnectionRepository();
         authRepo = new AuthenticationRepo();
         encoder = new Encoder();
-        adminInitilizer = new AdminInitilizer("123321");
-        userRepo = new UserRepository(encoder, adminInitilizer);
+        // adminInitilizer = new AdminInitilizer("123321");
+        // userRepo = new UserRepository(encoder, adminInitilizer);
         suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
         adminService = new AdminService(orderRepository, storeRepository, userRepo, authRepo);
         userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"), adminService);
@@ -120,7 +121,7 @@ public class UserTests {
         purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository,
                 orderRepository, payment, serviceImp, suspensionRepo);
         orderService = new OrderService(orderRepository, storeRepository, authRepo, userRepo);
-     
+
         String GToken = userService.generateGuest();
         userService.register(GToken, "User", "User", 25);
 
