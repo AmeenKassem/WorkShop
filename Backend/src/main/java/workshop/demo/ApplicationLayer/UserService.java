@@ -40,31 +40,6 @@ public class UserService {
         this.stockRepo = stockRepo;
         this.adminInitilizer = adminInitilizer;
         this.adminHandler = adminHandler;
-        //this.adminService = adminService;
-        // String username="admin";
-        // String password="admin123";
-        // int age=100;
-        // try {
-        //     int id = userRepo.login(username, password);
-        //     System.out.println("🟡 Admin already exists with username: " + username);
-        //     return;
-        // } catch (UIException e) {
-        //     System.out.println("🔄 Admin doesn't exist. Proceeding with creation.");
-        // }
-
-        // String guestToken = this.generateGuest();
-        // this.register(guestToken, username, password, age);
-        // String userToken = this.login(guestToken, username, password);
-        // System.out.println(userToken);
-        // int adminId = userRepo.login(username, password);
-        // this.setAdmin(userToken, adminInitilizer.getPassword(), adminId);
-        // //  Print all registered usernames:
-        // System.out.println(" Registered users:");
-        // for (String u : ((UserRepository) userRepo).getAllUsernames()) {
-        //     System.out.println(" - " + u);
-        // }
-        // System.out.println(" Admin registered and promoted: " + username);
-        // System.out.println(" All registered usernames: " + userRepo.getAllUsernames().get(0));
     }
 
     public String generateGuest() throws UIException, Exception {
@@ -120,7 +95,6 @@ public class UserService {
     public boolean setAdmin(String token, String adminKey, int id) throws UIException {
         logger.info("setAdmin called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        logger.info("User {} set as admin: {}");
         return userRepo.setUserAsAdmin(id, adminKey);
 
     }
@@ -186,34 +160,4 @@ public class UserService {
         return userRepo.getUserDTO(userId);
     }
 
-//    public void registerAdminIfNotExists(String username, String password, int age) throws Exception {
-//        try {
-//            int id = userRepo.login(username, password);
-//            System.out.println("🟡 Admin already exists with username: " + username);
-//            return;
-//        } catch (UIException e) {
-//            System.out.println("🔄 Admin doesn't exist. Proceeding with creation.");
-//        }
-//
-//        String guestToken = this.generateGuest();
-//
-//        this.register(guestToken, username, password, age);
-//
-//        String userToken = this.login(guestToken, username, password);
-//
-//        System.out.println(userToken);
-//        int adminId = userRepo.login(username, password);
-//        this.setAdmin(userToken, adminInitilizer.getPassword(), adminId);
-//
-//        //  Print all registered usernames:
-//        System.out.println(" Registered users:");
-//        for (String u : ((UserRepository) userRepo).getAllUsernames()) {
-//            System.out.println(" - " + u);
-//        }
-//
-//
-//        System.out.println(" Admin registered and promoted: " + username);
-//        System.out.println(" All registered usernames: " + userRepo.getAllUsernames().get(0));
-//
-//    }
 }

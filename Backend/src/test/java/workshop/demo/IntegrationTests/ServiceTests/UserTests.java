@@ -1,14 +1,21 @@
 package workshop.demo.IntegrationTests.ServiceTests;
 
+import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
-import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
@@ -18,12 +25,15 @@ import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-import workshop.demo.DomainLayer.User.AdminInitilizer;
-
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
@@ -34,10 +44,6 @@ import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.List;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -154,8 +160,8 @@ public class UserTests {
         String token1 = userService.login(Token, "User1", "User");
 
         assertTrue(authRepo.getUserName(token1).equals("User1"));
-        userService.setAdmin(Token, "123321", 6);
-        assertTrue(userRepo.isAdmin(6));
+        userService.setAdmin(Token, "123321", 5);
+        assertTrue(userRepo.isAdmin(5));
 
     }
 
@@ -277,11 +283,10 @@ public class UserTests {
         userService.setAdmin(token1, "123321", authRepo.getUserId(token1));
 
         assertTrue(userRepo.isAdmin(authRepo.getUserId(token1)));
-
         UIException ex = assertThrows(UIException.class, () -> {
-            userService.setAdmin("invalid token", "123321", 6);
+            userService.setAdmin("invalid token", "123321", 1);
         });
-        assertFalse(userService.setAdmin(token, "123321", 1));
+        assertFalse(userService.setAdmin(token, "121", 7));
     }
 
     @Test

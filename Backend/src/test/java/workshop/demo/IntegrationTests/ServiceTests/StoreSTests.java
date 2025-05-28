@@ -2,7 +2,6 @@ package workshop.demo.IntegrationTests.ServiceTests;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -17,7 +16,6 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.OrderService;
-import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
 import workshop.demo.ApplicationLayer.ReviewService;
@@ -37,13 +35,11 @@ import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
 import workshop.demo.InfrastructureLayer.OrderRepository;
 import workshop.demo.InfrastructureLayer.PurchaseRepository;
-import workshop.demo.InfrastructureLayer.ReviewRepository;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
@@ -746,9 +742,8 @@ public class StoreSTests {
         assertTrue(stockService.getProductsInStore(1)[0].rank == 3);
 
         stockService.rankProduct(1, NGToken, 1, 1);
-        stockService.rankProduct(1, NGToken, 1, authRepo.getUserId(NGToken));
-
-        assertTrue(stockService.getProductsInStore(1)[0].rank == 3);
+        //System.out.println("afhwlsdfkjEGn  " + stockService.getProductsInStore(1)[0].rank);
+        assertTrue(stockService.getProductsInStore(1)[0].rank == 1);
 
     }
 

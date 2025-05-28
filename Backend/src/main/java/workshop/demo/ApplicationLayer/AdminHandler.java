@@ -42,7 +42,7 @@ public class AdminHandler {
         this.storeRepo = storeRepo;
         this.userRepo = userRepo;
         this.authRepo = authRepo;
-        //you can inialize the admin here:
+        //inialize the admin here:
         try {
             initAdmin();
         } catch (UIException e) {
