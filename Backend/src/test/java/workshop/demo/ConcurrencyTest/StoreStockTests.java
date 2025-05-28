@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import workshop.demo.DTOs.Category;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.StoreStock;
@@ -163,4 +162,37 @@ public class StoreStockTests {
         AtomicInteger[] ranks = rankedItem.getRank();
         assertEquals(100, ranks[2].get(), "The rank count for rank 3 should be 100.");
     }
+
+    @Test
+    public void testConcurrentPurchaseOfLastItem_onlyOneSucceeds() throws InterruptedException {
+        item newItem = new item(1, 1, 100, Category.ELECTRONICS); // Quantity = 1
+        store.addItem(newItem);
+
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failureCount = new AtomicInteger(0);
+
+        for (int i = 0; i < 2; i++) {
+            executor.submit(() -> {
+                try {
+                    store.decreaseQuantitytoBuy(1, 1);
+                    successCount.incrementAndGet();
+                } catch (UIException e) {
+                    failureCount.incrementAndGet();
+                    System.out.println("Failed to buy: " + e.getMessage());
+                }
+            });
+        }
+
+        executor.shutdown();
+        executor.awaitTermination(3, TimeUnit.SECONDS);
+
+        assertEquals(1, successCount.get(), "Only one thread should succeed in buying the last item");
+        assertEquals(1, failureCount.get(), "One thread should fail due to insufficient stock");
+
+        item finalItem = store.getItemByProductId(1);
+        assertNotNull(finalItem);
+        assertEquals(0, finalItem.getQuantity(), "Final item quantity should be zero");
+    }
+
 }
