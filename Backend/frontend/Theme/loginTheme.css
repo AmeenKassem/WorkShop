@@ -30,8 +30,57 @@
 
 .login-button {
     width: 300px;
-    background-color: #3b82f6;
+    background-color: #2563eb;
+      transform: scale(1.02);
+  transition: all 0.2s ease;
     color: white;
     font-weight: bold;
     border-radius: 8px;
+}
+@keyframes shift-left {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(-100px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes shift-right {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(100px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes shift-up {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-40px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes shift-down {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(40px); }
+  100% { transform: translateY(0); }
+}
+.random-move {
+  position: relative;
+  top: calc(20px * var(--random-y, 0));
+  left: calc(40px * var(--random-x, 0));
+  transition: all 0.3s ease;
+}
+.shift-left {
+  animation: shift-left 0.3s ease;
+}
+.shift-right {
+  animation: shift-right 0.3s ease;
+}
+.shift-up {
+  animation: shift-up 0.3s ease;
+}
+.shift-down {
+  animation: shift-down 0.3s ease;
+}
+.shift-left,
+.shift-right,
+.shift-up,
+.shift-down {
+  transition: transform 0.3s ease;
 }

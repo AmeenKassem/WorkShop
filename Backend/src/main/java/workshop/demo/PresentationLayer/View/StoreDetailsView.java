@@ -1,8 +1,7 @@
 package workshop.demo.PresentationLayer.View;
 
 import java.util.List;
-
-import org.springframework.web.bind.annotation.PathVariable;
+import java.util.Map;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -23,6 +22,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.ReviewDTO;
 import workshop.demo.PresentationLayer.Presenter.StoreDetailsPresenter;
 
@@ -69,11 +69,11 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         }
         // Load and show products
         try {
-            ItemStoreDTO[] items = presenter.getProductsInStore(myStoreId);
+            Map<ItemStoreDTO, ProductDTO> itemsWithProducts = presenter.getProductsInStore(myStoreId, token);
             productContainer.removeAll();
 
-            for (ItemStoreDTO item : items) {
-                Div card = createProductCard(item);
+            for (Map.Entry<ItemStoreDTO, ProductDTO> entry : itemsWithProducts.entrySet()) {
+                Div card = createProductCard(entry.getKey(), entry.getValue());
                 productContainer.add(card);
             }
         } catch (Exception e) {
@@ -82,7 +82,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
 
     }
 
-    private Div createProductCard(ItemStoreDTO item) {
+    private Div createProductCard(ItemStoreDTO item, ProductDTO product) {
         Div card = new Div();
         card.getStyle()
                 .set("border", "1px solid #ddd")
@@ -97,7 +97,8 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Paragraph rating = new Paragraph("⭐ Rank: " + stars);
         Paragraph price = new Paragraph("💰 Price: " + item.price);
         Paragraph quantity = new Paragraph("📦 Quantity: " + item.quantity);
-        Paragraph category = new Paragraph("🏷️ Category: " + item.category);
+        Paragraph category = new Paragraph("🏷️ Category: " + product.category);
+        Paragraph description = new Paragraph("📄 Description: " + product.getDescription());
 
         Button addToCart = new Button("🛒 Add to Cart", e -> openAddToCartDialog(item));
         Button addReview = new Button("💬 Add Review", e -> openProductReviewDialog(item));
@@ -113,7 +114,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         actions.setSpacing(true);
         actions.setPadding(false);
         actions.setWidthFull();
-        card.add(title, rating, price, quantity, category, actions);
+        card.add(title, rating, price, quantity, category, description, actions);
         return card;
     }
 
@@ -136,7 +137,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 Notification.show("Please select a rank.");
                 return;
             }
-            presenter.rankProduct(item.getStoreId(), token, item.getId(), rank);
+            presenter.rankProduct(item.getStoreId(), token, item.getProductId(), rank);
             dialog.close();
         });
 
@@ -204,7 +205,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 return;
             }
             try {
-                presenter.addReviewToItem(token, item.storeId, item.getId(), review);
+                presenter.addReviewToItem(token, item.storeId, item.getProductId(), review);
                 //NotificationView.showSuccess("Product review submitted");
             } catch (Exception ex) {
                 NotificationView.showError("Failed to submit: " + ex.getMessage());
@@ -295,7 +296,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
 
     private void openProductReviewsDialog(ItemStoreDTO item) {
         try {
-            List<ReviewDTO> reviews = presenter.getProductReviews(item.getStoreId(), item.getId());
+            List<ReviewDTO> reviews = presenter.getProductReviews(item.getStoreId(), item.getProductId());
 
             List<String> formatted = reviews.stream()
                     .map(r -> "👤 " + r.getName() + ": " + r.getReviewMsg())

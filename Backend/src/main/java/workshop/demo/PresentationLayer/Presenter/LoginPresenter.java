@@ -50,12 +50,9 @@ public class LoginPresenter {
                 UriUtils.encodeQueryParam(password, StandardCharsets.UTF_8));
         System.out.println("Username: " + username);
         System.out.println("Password: " + password);
-        System.out.println("Guest token: " + guestToken);
-        System.out.println("Final URL: " + url);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED); // Optional here, since no body is sent
-
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         HttpEntity<?> entity = new HttpEntity<>(headers);
         // ApiResponse body = null;
         try {
@@ -74,7 +71,7 @@ public class LoginPresenter {
                 VaadinSession.getCurrent().setAttribute("auth-token", newUserToken);
                 VaadinSession.getCurrent().setAttribute("user-type", "user");
                 VaadinSession.getCurrent().setAttribute("username", username);
-                view.showSuccess("Logged in successfully!");
+                NotificationView.showSuccess("Logged in successfully!");
                 if (checkIfAdmin(newUserToken)) {
                     VaadinSession.getCurrent().setAttribute("user-type", "admin");
                 }
@@ -87,7 +84,10 @@ public class LoginPresenter {
                 UI.getCurrent().navigate("");
             } else {
                 if (body.getErrNumber() != -1) {
-                    NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+                    //NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+                    view.handleLoginError(body.getErrNumber());
+                } else {
+                    NotificationView.showError("UnExpected login failure.");
                 }
             }
 
@@ -97,7 +97,8 @@ public class LoginPresenter {
                 ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
 
                 if (errorBody.getErrNumber() != -1) {
-                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                    view.handleLoginError(errorBody.getErrNumber());
+                    //NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
                 } else {
                     NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
                 }

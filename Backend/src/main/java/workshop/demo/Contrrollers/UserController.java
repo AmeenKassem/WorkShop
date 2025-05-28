@@ -18,13 +18,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
-import workshop.demo.DTOs.AddToCartRequest;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.PurchaseHistoryDTO;
 import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.SystemAnalyticsDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.PresentationLayer.Requests.AddToCartRequest;
 
 @RestController
 @RequestMapping("/api/users")

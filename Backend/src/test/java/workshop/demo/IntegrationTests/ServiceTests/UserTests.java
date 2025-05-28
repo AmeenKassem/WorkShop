@@ -354,7 +354,7 @@ public class UserTests {
     void testUserGetStoreProducts() throws Exception {
         ItemStoreDTO[] items = stockService.getProductsInStore(1);
         assertTrue(items.length == 1);
-        assertTrue(items[0].getId() == 1);
+        assertTrue(items[0].getProductId() == 1);
 
     }
 

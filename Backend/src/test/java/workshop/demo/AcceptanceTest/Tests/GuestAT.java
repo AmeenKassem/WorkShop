@@ -643,7 +643,7 @@ public class GuestAT extends AcceptanceTests {
 
         assertNotNull(result);
         assertEquals(1, result.length);
-        assertEquals(productId, result[0].getId());
+        assertEquals(productId, result[0].getProductId());
         assertEquals(1500, result[0].getPrice());
         assertEquals(storeId, result[0].getStoreId());
 

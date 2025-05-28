@@ -1,10 +1,11 @@
 package workshop.demo.DomainLayer.Store;
 
-import workshop.demo.DTOs.ItemStoreDTO;
-
 import java.util.List;
 
+import workshop.demo.DTOs.ItemStoreDTO;
+
 public class DiscountScope {
+
     private final List<ItemStoreDTO> items;
 
     public DiscountScope(List<ItemStoreDTO> items) {
@@ -23,7 +24,7 @@ public class DiscountScope {
 
     public int getQuantityOfProduct(int productId) {
         return items.stream()
-                .filter(i -> i.getId() == productId)
+                .filter(i -> i.getProductId() == productId)
                 .mapToInt(ItemStoreDTO::getQuantity)
                 .sum();
     }

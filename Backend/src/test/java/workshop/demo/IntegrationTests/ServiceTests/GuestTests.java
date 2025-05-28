@@ -201,7 +201,7 @@ public class GuestTests {
 
         ItemStoreDTO[] items = stockService.getProductsInStore(1);
         assertTrue(items.length == 1);
-        assertTrue(items[0].getId() == 1);
+        assertTrue(items[0].getProductId() == 1);
     }
 
     @Test
@@ -359,7 +359,7 @@ public class GuestTests {
 
         assertNotNull(result);
         assertEquals(1, result.length);
-        assertEquals(1, result[0].getId());
+        assertEquals(1, result[0].getProductId());
         assertEquals(2000, result[0].getPrice());
         assertEquals(1, result[0].getStoreId());
 
