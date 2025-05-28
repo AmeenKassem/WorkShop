@@ -39,10 +39,9 @@ public class MyCartView extends VerticalLayout {
         setupActionButtons();
 
         // Use test data
-        testLoadCartData();
-
+        // testLoadCartData();
         // Use real data instead by enabling:
-        // presenter.loadCartItems();
+        presenter.loadCartItems();
     }
 
     private void setupHeader() {
@@ -140,27 +139,23 @@ public class MyCartView extends VerticalLayout {
         NotificationView.showError(msg);
     }
 
-    // 🔧 Test data method
-    public void testLoadCartData() {
-        // Create 3 normal items from 3 stores
-        ItemCartDTO item1 = new ItemCartDTO(1, workshop.demo.DTOs.Category.HOME, 101, 2, 20, "Milk", "Fresh dairy milk", "Store A");
-        ItemCartDTO item2 = new ItemCartDTO(2, workshop.demo.DTOs.Category.ELECTRONICS, 102, 1, 150, "Headphones", "Bluetooth over-ear", "Store B");
-        ItemCartDTO item3 = new ItemCartDTO(3, workshop.demo.DTOs.Category.ELECTRONICS, 103, 3, 45, "Notebook", "A5 spiral notebook", "Store C");
-        displayRegularItems(new ItemCartDTO[]{item1, item2, item3});
-
-        // Create 3 special items
-        SpecialCartItemDTO randomItem = new SpecialCartItemDTO();
-        randomItem.setIds(10, 1001, 0, SpecialType.Random);
-        randomItem.setValues("Mystery Box", false, false);
-
-        SpecialCartItemDTO auctionItem = new SpecialCartItemDTO();
-        auctionItem.setIds(11, 1002, 0, SpecialType.Auction);
-        auctionItem.setValues("Antique Clock", true, true);
-
-        SpecialCartItemDTO bidItem = new SpecialCartItemDTO();
-        bidItem.setIds(12, 1003, 2001, SpecialType.BID);
-        bidItem.setValues("Gaming Mouse", false, true);
-
-        displaySpecialItems(new SpecialCartItemDTO[]{randomItem, auctionItem, bidItem});
-    }
+    // // 🔧 Test data method
+    // public void testLoadCartData() {
+    //     // Create 3 normal items from 3 stores
+    //     ItemCartDTO item1 = new ItemCartDTO(1, workshop.demo.DTOs.Category.HOME, 101, 2, 20, "Milk", "Fresh dairy milk", "Store A");
+    //     ItemCartDTO item2 = new ItemCartDTO(2, workshop.demo.DTOs.Category.ELECTRONICS, 102, 1, 150, "Headphones", "Bluetooth over-ear", "Store B");
+    //     ItemCartDTO item3 = new ItemCartDTO(3, workshop.demo.DTOs.Category.ELECTRONICS, 103, 3, 45, "Notebook", "A5 spiral notebook", "Store C");
+    //     displayRegularItems(new ItemCartDTO[]{item1, item2, item3});
+    //     // Create 3 special items
+    //     SpecialCartItemDTO randomItem = new SpecialCartItemDTO();
+    //     randomItem.setIds(10, 1001, 0, SpecialType.Random);
+    //     randomItem.setValues("Mystery Box", false, false);
+    //     SpecialCartItemDTO auctionItem = new SpecialCartItemDTO();
+    //     auctionItem.setIds(11, 1002, 0, SpecialType.Auction);
+    //     auctionItem.setValues("Antique Clock", true, true);
+    //     SpecialCartItemDTO bidItem = new SpecialCartItemDTO();
+    //     bidItem.setIds(12, 1003, 2001, SpecialType.BID);
+    //     bidItem.setValues("Gaming Mouse", false, true);
+    //     displaySpecialItems(new SpecialCartItemDTO[]{randomItem, auctionItem, bidItem});
+    // }
 }

@@ -1,4 +1,6 @@
-package workshop.demo.DTOs;
+package workshop.demo.PresentationLayer.Requests;
+
+import workshop.demo.DTOs.ItemStoreDTO;
 
 public class AddToCartRequest {
 

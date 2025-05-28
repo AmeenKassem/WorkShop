@@ -423,7 +423,7 @@ public class PurchaseAT extends AcceptanceTests {
         );
         Discount discount = new VisibleDiscount("50percent", 50,
                 scope -> scope != null && scope.getItems().stream()
-                        .anyMatch(scopeItem -> scopeItem.getStoreId() == storeId && scopeItem.getId() == productId)
+                        .anyMatch(scopeItem -> scopeItem.getStoreId() == storeId && scopeItem.getProductId() == productId)
         );
 
         store.addDiscount(discount);

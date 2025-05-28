@@ -45,7 +45,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         Div productSection = new Div(productList);
         productSection.addClassName("products-section");
 
-        Button addProductBtn = new Button("+ Add Product", e -> openAddProductDialog());
+        Button addProductBtn = new Button("+ Add Item", e -> openAddItemDialog());
         addProductBtn.addClassName("add-product-btn");
 
         Button backBtn = new Button("⬅ Back", e -> getUI().ifPresent(ui -> ui.navigate("my stores")));
@@ -69,6 +69,51 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         presenter.loadProducts(storeId, token);
     }
 
+    private void openAddItemDialog() {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Add Item to Your Store");
+
+        ComboBox<ProductDTO> productSelect = new ComboBox<>("Select a Product");
+        productSelect.setItemLabelGenerator(ProductDTO::getName);
+
+        TextField priceField = new TextField("Price");
+        TextField quantityField = new TextField("Quantity");
+
+        Button addBtn = new Button("✅ Add", e -> {
+            ProductDTO selected = productSelect.getValue();
+            if (selected == null || priceField.isEmpty() || quantityField.isEmpty()) {
+                Notification.show("Please fill in all fields.");
+                return;
+            }
+
+            presenter.addExistingProductAsItem(
+                    storeId,
+                    token,
+                    selected,
+                    priceField.getValue(),
+                    quantityField.getValue(),
+                    dialog
+            );
+        });
+
+        Button newProductBtn = new Button("➕ Add New Product", e -> {
+            dialog.close();
+            openAddNewProductDialog();
+        });
+
+        VerticalLayout layout = new VerticalLayout(
+                productSelect,
+                priceField,
+                quantityField,
+                new HorizontalLayout(addBtn, newProductBtn)
+        );
+
+        dialog.add(layout);
+        dialog.open();
+
+        presenter.loadAllProducts(token, productSelect, storeId);
+    }
+
     public void showProducts(Map<ItemStoreDTO, ProductDTO> products) {
         productList.removeAll();
         errorMessage.setVisible(false);
@@ -85,11 +130,14 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             VerticalLayout card = new VerticalLayout(
                     new Span("🛒 " + item.getProductName()),
                     new Span("📦 Quantity: " + item.getQuantity()),
-                    new Span("💲 Price: " + item.getPrice()));
+                    new Span("💲 Price: " + item.getPrice()),
+                    new Span("📄 Description: " + product.getDescription()),
+                    new Span("🏷️ Category: " + product.getCategory().name())
+            );
             card.addClassName("product-card");
 
             Button edit = new Button("✏️ Edit", e -> openEditDialog(item, product.getDescription()));
-            Button delete = new Button("🗑️ Delete", e -> presenter.deleteProduct(storeId, token, item.getId()));
+            Button delete = new Button("🗑️ Delete", e -> presenter.deleteProduct(storeId, token, item.getProductId()));
 
             HorizontalLayout actions = new HorizontalLayout(edit, delete);
             actions.addClassName("button-row");
@@ -97,31 +145,6 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             card.add(actions);
             productList.add(card);
         }
-    }
-
-    private void openAddProductDialog() {
-        Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("Add Product");
-
-        TextField name = new TextField("Product Name");
-        TextField description = new TextField("Description");
-        ComboBox<Category> category = new ComboBox<>("Category");
-        category.setItems(Category.values());
-        TextField keywords = new TextField("Keywords (comma-separated)");
-        TextField price = new TextField("Price");
-        TextField quantity = new TextField("Quantity");
-
-        Button add = new Button("Add", e -> presenter.addProductToStore(storeId, token,
-                name.getValue(),
-                description.getValue(),
-                category.getValue(),
-                keywords.getValue(),
-                price.getValue(),
-                quantity.getValue(),
-                dialog));
-
-        dialog.add(name, description, category, keywords, price, quantity, add);
-        dialog.open();
     }
 
     private void openEditDialog(ItemStoreDTO item, String description) {
@@ -135,7 +158,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         priceField.setValue(String.valueOf(item.getPrice()));
 
         Button save = new Button("Save", e -> {
-            presenter.updateProduct(storeId, token, item.getId(),
+            presenter.updateProduct(storeId, token, item.getProductId(),
                     quantityField.getValue(),
                     priceField.getValue(),
                     description);
@@ -146,14 +169,41 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         dialog.open();
     }
 
-    public void showSuccess(String msg) {
-        Notification.show("✅ " + msg);
-    }
+    private void openAddNewProductDialog() {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Add Product to Store");
 
-    public void showError(String msg) {
-        Notification.show("❌ " + msg);
-        errorMessage.setText(msg);
-        errorMessage.setVisible(true);
+        // Fields
+        TextField name = new TextField("Product Name");
+        TextField description = new TextField("Description");
+        ComboBox<Category> category = new ComboBox<>("Category");
+        category.setItems(Category.values());
+        TextField price = new TextField("Price");
+        TextField quantity = new TextField("Quantity");
+
+        // Add button
+        Button add = new Button("✅ Add to Store", e -> {
+            if (name.isEmpty() || description.isEmpty() || category.isEmpty()
+                    || price.isEmpty() || quantity.isEmpty()) {
+                Notification.show("Please fill in all fields");
+                return;
+            }
+
+            presenter.addProductToStore(
+                    storeId,
+                    token,
+                    name.getValue(),
+                    description.getValue(),
+                    category.getValue(),
+                    price.getValue(),
+                    quantity.getValue(),
+                    dialog
+            );
+        });
+
+        VerticalLayout layout = new VerticalLayout(name, description, category, price, quantity, add);
+        dialog.add(layout);
+        dialog.open();
     }
 
     public void showEmptyPage(String msg) {

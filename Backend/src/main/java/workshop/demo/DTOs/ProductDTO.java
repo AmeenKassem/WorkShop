@@ -14,14 +14,9 @@ public class ProductDTO {
         this.description = description;
     }
 
-    // // store:
-    // public boolean initStoreValues = false;
-    // public int storeId;
-    // public double price;
-    // public double rating;
-    // public String storeName;
+    public ProductDTO() {
+    }
 
-    // Getters and setters
     public int getProductId() {
         return productId;
     }

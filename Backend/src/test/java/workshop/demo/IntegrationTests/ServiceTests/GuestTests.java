@@ -1,10 +1,15 @@
 package workshop.demo.IntegrationTests.ServiceTests;
 
 import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
@@ -18,11 +23,14 @@ import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-
-import workshop.demo.DomainLayer.Notification.DelayedNotificationDecorator;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
@@ -35,10 +43,6 @@ import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
-
-import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -110,10 +114,10 @@ public class GuestTests {
 
         int createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
         // assertEquals( 1,createdStoreId);
-        System.out.println(createdStoreId+"aaaaaaaaaaaaaaaaa");
+        System.out.println(createdStoreId + "aaaaaaaaaaaaaaaaa");
 
         // ======================= PRODUCT & ITEM ADDITION =======================
-        String[] keywords = { "Laptop", "Lap", "top" };
+        String[] keywords = {"Laptop", "Lap", "top"};
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(createdStoreId, NOToken, 1, 10, 2000, Category.ELECTRONICS));
@@ -124,16 +128,21 @@ public class GuestTests {
     @AfterEach
 
     void tearDown() {
-        if (userRepo != null)
+        if (userRepo != null) {
             userRepo.clear();
-        if (storeRepository != null)
+        }
+        if (storeRepository != null) {
             storeRepository.clear();
-        if (stockRepository != null)
+        }
+        if (stockRepository != null) {
             stockRepository.clear();
-        if (orderRepository != null)
+        }
+        if (orderRepository != null) {
             orderRepository.clear();
-        if (suspensionRepo != null)
+        }
+        if (suspensionRepo != null) {
             suspensionRepo.clear();
+        }
         // Add clear() for all other repos you wrote it for
     }
 
@@ -194,7 +203,7 @@ System.out.println("dfsnhkldsfjndsfjl"+authRepo.getUserId(token));
 
         ItemStoreDTO[] items = stockService.getProductsInStore(1);
         assertTrue(items.length == 1);
-        assertTrue(items[0].getId() == 1);
+        assertTrue(items[0].getProductId() == 1);
     }
 
     @Test
@@ -213,7 +222,6 @@ System.out.println("dfsnhkldsfjndsfjl"+authRepo.getUserId(token));
         ProductDTO info = stockService.getProductInfo(GToken, 1);
 
         // ===== ASSERTIONS =====
-
         assertNotNull(info);
         System.out.println(info.getName());
         assertTrue(info.getName().equals("Laptop"));
@@ -344,7 +352,7 @@ System.out.println("dfsnhkldsfjndsfjl"+authRepo.getUserId(token));
     void testGuestSearchProducts_Success() throws Exception {
 
         // --- Step 2: Prepare search criteria ---
-        String[] keywords = { "Laptop", "Lap", "top" };
+        String[] keywords = {"Laptop", "Lap", "top"};
         System.out.println(storeService.getFinalRateInStore(1));
 
         ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.ELECTRONICS, null, 1, 0, 3000, 0,
@@ -353,12 +361,11 @@ System.out.println("dfsnhkldsfjndsfjl"+authRepo.getUserId(token));
 
         assertNotNull(result);
         assertEquals(1, result.length);
-        assertEquals(1, result[0].getId());
+        assertEquals(1, result[0].getProductId());
         assertEquals(2000, result[0].getPrice());
         assertEquals(1, result[0].getStoreId());
 
         // --- Step 7: Verify mocks ---
-
     }
 
     @Test
@@ -370,7 +377,6 @@ System.out.println("dfsnhkldsfjndsfjl"+authRepo.getUserId(token));
                 0, 5);
 
         // 1. Throw on auth check
-
         // 3. Run the test
         UIException exception = assertThrows(UIException.class, () -> {
             stockService.searchProducts("invalid token", criteria);
@@ -384,7 +390,7 @@ System.out.println("dfsnhkldsfjndsfjl"+authRepo.getUserId(token));
     @Test
     void testSearchProducts_NoMatches() throws Exception {
 
-        String[] keywords = { "Laptop", "Lap", "top" };
+        String[] keywords = {"Laptop", "Lap", "top"};
         ProductSearchCriteria criteria = new ProductSearchCriteria("aa", Category.ELECTRONICS, keywords[0], 1, 0, 5000,
                 0, 5);
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
