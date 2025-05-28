@@ -47,6 +47,9 @@ public class GuestAT extends AcceptanceTests {
     String token_guest = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ7XCJ1c2VyTmFtZVwiOlwiYWRtaW5Vc2VyMlwiLFwiaWRcIjoyfSIsImlhdCI6MTc0NjgyNDkyNiwiZXhwIjoxNzQ2ODI4NTI2fQ.zSFqaapc2ANZpwbewtxqk2hedPH50VrdFYS8Dj58eTw";
     Logger logger;
 
+    public GuestAT() throws Exception {
+    }
+
     @BeforeEach
     void setup() throws Exception {
         int adminId = 999;

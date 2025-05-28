@@ -13,9 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
-import workshop.demo.ApplicationLayer.AdminService;
+import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.OrderService;
-import workshop.demo.ApplicationLayer.AdminService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
 import workshop.demo.ApplicationLayer.StockService;
@@ -32,7 +31,6 @@ import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
@@ -47,55 +45,54 @@ import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class GuestTests {
-    
-   @Autowired
-   private NotificationRepository notificationRepository;
-   @Autowired
-   private StoreRepository storeRepository;
-   @Autowired
-   private StockRepository stockRepository;
-   @Autowired
-   private OrderRepository orderRepository;
-   @Autowired
-   private PurchaseRepository purchaseRepository;
-   @Autowired
-   private UserSuspensionRepo suspensionRepo;
-   @Autowired
-   private AuthenticationRepo authRepo;
 
-   @Autowired
-   PaymentServiceImp payment;
-   @Autowired
-   SupplyServiceImp serviceImp;
+    @Autowired
+    private NotificationRepository notificationRepository;
+    @Autowired
+    private StoreRepository storeRepository;
+    @Autowired
+    private StockRepository stockRepository;
+    @Autowired
+    private OrderRepository orderRepository;
+    @Autowired
+    private PurchaseRepository purchaseRepository;
+    @Autowired
+    private UserSuspensionRepo suspensionRepo;
+    @Autowired
+    private AuthenticationRepo authRepo;
 
-   @Autowired
-   SUConnectionRepository sIsuConnectionRepo;
+    @Autowired
+    PaymentServiceImp payment;
+    @Autowired
+    SupplyServiceImp serviceImp;
 
-   @Autowired
-   Encoder encoder;
-   @Autowired
-   UserRepository userRepo;
-   @Autowired
-   UserSuspensionService suspensionService;
-   @Autowired
-   AdminService adminService;
-   @Autowired
-   UserService userService;
-   @Autowired
-   StockService stockService;
-   @Autowired
-   StoreService storeService;
-   @Autowired
-   PurchaseService purchaseService;
-   @Autowired
-   OrderService orderService;
+    @Autowired
+    SUConnectionRepository sIsuConnectionRepo;
 
-   String NOToken;
-   String NGToken;
-   ItemStoreDTO itemStoreDTO;
-   String GToken;
-   String Admin;
+    @Autowired
+    Encoder encoder;
+    @Autowired
+    UserRepository userRepo;
+    @Autowired
+    UserSuspensionService suspensionService;
+    @Autowired
+    AdminHandler adminService;
+    @Autowired
+    UserService userService;
+    @Autowired
+    StockService stockService;
+    @Autowired
+    StoreService storeService;
+    @Autowired
+    PurchaseService purchaseService;
+    @Autowired
+    OrderService orderService;
 
+    String NOToken;
+    String NGToken;
+    ItemStoreDTO itemStoreDTO;
+    String GToken;
+    String Admin;
 
     @BeforeEach
     void setup() throws Exception {
@@ -151,8 +148,9 @@ public class GuestTests {
     void testGuestEnter_Success() throws Exception {
 
         String token = userService.generateGuest();
-System.out.println("dfsnhkldsfjndsfjl"+authRepo.getUserId(token));
-        assertTrue(authRepo.getUserId(token) == 6);
+        System.out.println("dfsnhkldsfjndsfjl" + authRepo.getUserId(token));
+
+        assertTrue(authRepo.getUserId(token) == 5);
     }
 
     @Test

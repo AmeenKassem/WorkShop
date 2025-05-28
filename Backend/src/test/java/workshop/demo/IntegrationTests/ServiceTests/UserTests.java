@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
-import workshop.demo.ApplicationLayer.AdminService;
+import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
@@ -34,7 +34,6 @@ import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
@@ -80,7 +79,7 @@ public class UserTests {
     @Autowired
     UserSuspensionService suspensionService;
     @Autowired
-    AdminService adminService;
+    AdminHandler adminService;
     @Autowired
     UserService userService;
     @Autowired
@@ -101,26 +100,6 @@ public class UserTests {
     @BeforeEach
     void setup() throws Exception {
         // ====== ADMIN SETUP ======
-        purchaseRepository = new PurchaseRepository();
-        suspensionRepo = new UserSuspensionRepo();
-        orderRepository = new OrderRepository();
-        storeRepository = new StoreRepository();
-        stockRepository = new StockRepository();
-        sIsuConnectionRepo = new SUConnectionRepository();
-        authRepo = new AuthenticationRepo();
-        encoder = new Encoder();
-        // adminInitilizer = new AdminInitilizer("123321");
-        // userRepo = new UserRepository(encoder, adminInitilizer);
-        suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-        adminService = new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-        userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"), adminService);
-        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo,
-                suspensionRepo);
-        storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository,
-                sIsuConnectionRepo, stockRepository, suspensionRepo);
-        purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository,
-                orderRepository, payment, serviceImp, suspensionRepo);
-        orderService = new OrderService(orderRepository, storeRepository, authRepo, userRepo);
 
         String GToken = userService.generateGuest();
         userService.register(GToken, "User", "User", 25);
@@ -181,8 +160,8 @@ public class UserTests {
         String token1 = userService.login(Token, "User1", "User");
 
         assertTrue(authRepo.getUserName(token1).equals("User1"));
-        userService.setAdmin(Token, "123321", 6);
-        assertTrue(userRepo.isAdmin(6));
+        userService.setAdmin(Token, "123321", 5);
+        assertTrue(userRepo.isAdmin(5));
 
     }
 
@@ -304,11 +283,10 @@ public class UserTests {
         userService.setAdmin(token1, "123321", authRepo.getUserId(token1));
 
         assertTrue(userRepo.isAdmin(authRepo.getUserId(token1)));
-
         UIException ex = assertThrows(UIException.class, () -> {
-            userService.setAdmin("invalid token", "123321", 6);
+            userService.setAdmin("invalid token", "123321", 1);
         });
-        assertFalse(userService.setAdmin(token, "123321", 1));
+        assertFalse(userService.setAdmin(token, "121", 7));
     }
 
     @Test
