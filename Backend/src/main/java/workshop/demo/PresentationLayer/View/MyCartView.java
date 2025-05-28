@@ -92,7 +92,6 @@ public class MyCartView extends VerticalLayout {
 
         details.add(new Paragraph("🏪 Store: " + item.storeId));
         details.add(new Paragraph("📦 Product Name: " + item.name));
-        details.add(new Paragraph("📝 Description: " + item.description));
         details.add(new Paragraph("💵 Price per unit: ₪" + item.price));
         details.add(new Paragraph("❄️ Quantity: " + item.quantity));
         details.add(new Paragraph("🔥 Subtotal: ₪" + (item.price * item.quantity)));

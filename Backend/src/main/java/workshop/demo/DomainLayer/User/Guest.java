@@ -5,10 +5,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.UserDTO;
 
 public class Guest {
+
     private static final Logger logger = LoggerFactory.getLogger(Guest.class);
 
     private int id;
@@ -24,7 +24,7 @@ public class Guest {
         return id;
     }
 
-    public void addToCart(int storeId, ItemCartDTO item) {
+    public void addToCart(int storeId, CartItem item) {
         logger.debug("addToCart called (explicit store): guestId={}, storeId={}, product={}", id, storeId,
                 item.productId);
 
@@ -37,14 +37,14 @@ public class Guest {
         cart = new ShoppingCart();
     }
 
-    public void addToCart(ItemCartDTO item) {
+    public void addToCart(CartItem item) {
         logger.debug("addToCart called (from item.storeId): guestId={}, storeId={}, product={}", id, item.storeId,
                 item.productId);
 
         cart.addItem(item.storeId, item);
     }
 
-    public List<ItemCartDTO> getCart() {
+    public List<CartItem> getCart() {
         logger.debug("getCart called for guestId={}, totalItems={}", id, cart.getAllCart().size());
 
         return cart.getAllCart();
@@ -70,7 +70,7 @@ public class Guest {
         cart.getBaskets().values().forEach(basket -> {
             basket.getItems().removeIf(item -> item.productId == productId);
         });
-        
+
     }
 
 }

@@ -6,11 +6,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.springframework.stereotype.Component;
-
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -141,8 +138,6 @@ public class StoreStock {
             decreaseQuantitytoBuy(item.getProductId(), item.getQuantity());
             boughtItems.add(new ReceiptProduct(
                     item.getName(),
-                    item.getCategory(),
-                    item.getDescription(),
                     "storid",
                     item.getQuantity(),
                     item.getPrice(), item.productId

@@ -19,8 +19,11 @@ import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
+import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.InfrastructureLayer.StoreRepository;
 
 @Service
 public class UserService {
@@ -30,14 +33,16 @@ public class UserService {
     private IUserRepo userRepo;
     private IAuthRepo authRepo;
     private IStockRepo stockRepo;
+    private IStoreRepo storeRepo;
     private final AdminInitilizer adminInitilizer;
     private final AdminHandler adminHandler;
 
     @Autowired
-    public UserService(IUserRepo userRepo, IAuthRepo authRepo, IStockRepo stockRepo, AdminInitilizer adminInitilizer, AdminHandler adminHandler) {
+    public UserService(IUserRepo userRepo, IAuthRepo authRepo, IStockRepo stockRepo, AdminInitilizer adminInitilizer, AdminHandler adminHandler, IStoreRepo storeRepo) {
         this.userRepo = userRepo;
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
+        this.storeRepo = storeRepo;
         this.adminInitilizer = adminInitilizer;
         this.adminHandler = adminHandler;
     }
@@ -149,8 +154,21 @@ public class UserService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
-        List<ItemCartDTO> regularCartItems = userRepo.getUserCart(userId).getAllCart();
-        return regularCartItems.toArray(new ItemCartDTO[0]);
+        List<CartItem> regularCartItems = userRepo.getUserCart(userId).getAllCart();
+        ItemCartDTO[] dtos = new ItemCartDTO[regularCartItems.size()];
+        for (int i = 0; i < regularCartItems.size(); i++) {
+            CartItem item = regularCartItems.get(i);
+            ItemCartDTO dto = new ItemCartDTO();
+            dto.storeId = item.storeId;
+            dto.productId = item.productId;
+            dto.quantity = item.quantity;
+            dto.price = item.price;
+            dto.name = item.name;
+            dto.storeName = this.storeRepo.getStoreNameById(item.storeId);
+            dtos[i] = dto;
+        }
+
+        return dtos;
     }
 
     public UserDTO getUserDTO(String token) throws UIException {
