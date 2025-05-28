@@ -15,9 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
-import workshop.demo.ApplicationLayer.AdminService;
+import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.OrderService;
-import workshop.demo.ApplicationLayer.AdminService;
+import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
 import workshop.demo.ApplicationLayer.ReviewService;
@@ -54,59 +54,59 @@ import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class StoreSTests {
 
-    
-   @Autowired
-   private NotificationRepository notificationRepository;
-   @Autowired
-   private StoreRepository storeRepository;
-   @Autowired
-   private StockRepository stockRepository;
-   @Autowired
-   private OrderRepository orderRepository;
-   @Autowired
-   private PurchaseRepository purchaseRepository;
-   @Autowired
-   private UserSuspensionRepo suspensionRepo;
-   @Autowired
-   private AuthenticationRepo authRepo;
+    @Autowired
+    private NotificationRepository notificationRepository;
+    @Autowired
+    private StoreRepository storeRepository;
+    @Autowired
+    private StockRepository stockRepository;
+    @Autowired
+    private OrderRepository orderRepository;
+    @Autowired
+    private PurchaseRepository purchaseRepository;
+    @Autowired
+    private UserSuspensionRepo suspensionRepo;
+    @Autowired
+    private AuthenticationRepo authRepo;
 
-   @Autowired
-   PaymentServiceImp payment;
-   @Autowired
-   SupplyServiceImp serviceImp;
+    @Autowired
+    PaymentServiceImp payment;
+    @Autowired
+    SupplyServiceImp serviceImp;
 
-   @Autowired
-   SUConnectionRepository sIsuConnectionRepo;
+    @Autowired
+    SUConnectionRepository sIsuConnectionRepo;
 
-   @Autowired
-   Encoder encoder;
-   @Autowired
-   UserRepository userRepo;
-   @Autowired
-   UserSuspensionService suspensionService;
-   @Autowired
-   AdminService adminService;
-   @Autowired
-   UserService userService;
-   @Autowired
-   StockService stockService;
-   @Autowired
-   StoreService storeService;
-   @Autowired
-   PurchaseService purchaseService;
-   @Autowired
-   OrderService orderService;
-   @Autowired 
-   ReviewService reviewService;
+    @Autowired
+    Encoder encoder;
+    @Autowired
+    UserRepository userRepo;
+    @Autowired
+    UserSuspensionService suspensionService;
+    @Autowired
+    AdminHandler adminService;
+    @Autowired
+    UserService userService;
+    @Autowired
+    StockService stockService;
+    @Autowired
+    StoreService storeService;
+    @Autowired
+    PurchaseService purchaseService;
+    @Autowired
+    OrderService orderService;
+    @Autowired
+    ReviewService reviewService;
 
-   String NOToken;
-   String NGToken;
-   ItemStoreDTO itemStoreDTO;
-   String GToken;
-   String Admin;
+    String NOToken;
+    String NGToken;
+    ItemStoreDTO itemStoreDTO;
+    String GToken;
+    String Admin;
+
     @BeforeEach
     void setup() throws Exception {
-     
+
         GToken = userService.generateGuest();
         userService.register(GToken, "User", "User", 25);
         NGToken = userService.login(GToken, "User", "User");
@@ -161,7 +161,6 @@ public class StoreSTests {
     // ========== Store Owner Use Cases ==========
     @Test
     void testOwner_AddProductToStock() throws Exception {
-
 
         String[] keywords = {"Tablet", "Touchscreen"};
 
@@ -312,8 +311,8 @@ public class StoreSTests {
 // this function need to take id to use this test guest doesnt have a username
         // === Act + Assert
         UIException ex = assertThrows(UIException.class, ()
-                        -> storeService.AddOwnershipToStore(1, 3, authRepo.getUserId(token), true)
-                // shouldnt be able to add a guest
+                -> storeService.AddOwnershipToStore(1, 3, authRepo.getUserId(token), true)
+        // shouldnt be able to add a guest
         );
 
         assertEquals("You are not regestered user!", ex.getMessage());
@@ -716,9 +715,9 @@ public class StoreSTests {
         storeService.rankStore(NGToken, 1, 0);
         assertTrue(storeService.getFinalRateInStore(1) == 3);
 
+    
 
-
-        /// 3 is deafult
+    /// 3 is deafult
 
 
 

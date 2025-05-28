@@ -3,7 +3,6 @@ package workshop.demo.Contrrollers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,11 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.PurchaseService;
-import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ReceiptDTO;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
@@ -25,7 +22,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 @RequestMapping("/purchase")
 public class PurcheseContoller {
 
-    private PurchaseService purchaseService;
+    private final PurchaseService purchaseService;
 
     @Autowired
     public PurcheseContoller(Repos repo) {
@@ -101,7 +98,7 @@ public class PurcheseContoller {
         ApiResponse<ParticipationInRandomDTO> res;
         try {
             ParticipationInRandomDTO result = purchaseService.participateInRandom(token, randomId, storeId, amountPaid,
-payment);
+                    payment);
             res = new ApiResponse<>(result, null);
         } catch (UIException e) {
             res = new ApiResponse<>(null, e.getMessage(), e.getNumber());
@@ -145,7 +142,6 @@ payment);
     // }
     // return res.toJson();
     // }
-
     // @PostMapping("/submitBid")
     // public String submitBid(@RequestParam String token,
     // @RequestBody SingleBid bid) {
@@ -160,7 +156,6 @@ payment);
     // }
     // return res.toJson();
     // }
-
     // @GetMapping("/searchProductInStore")
     // public String searchProductInStore(@RequestParam String token,
     // @RequestParam int storeId,
@@ -177,5 +172,4 @@ payment);
     // }
     // return res.toJson();
     // }
-
 }
