@@ -8,11 +8,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.springframework.stereotype.Component;
+
 import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
+@Component
 public class SuperDataStructure {
 
     private Map<Integer, Tree> employees;
@@ -88,6 +91,9 @@ public class SuperDataStructure {
                 throw new Exception("store does not exist in superDS");
             }
             Node child = employees.get(storeID).getNodeById(newOnwerId);
+            if (employees.get(storeID).getNodeById(ownerId) == null) {
+                throw new UIException("This worker is not an owner", ErrorCodes.USER_NOT_FOUND);
+            }
             if (child != null && !child.getIsManager()) {
                 throw new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION);
             }

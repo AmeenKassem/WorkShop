@@ -1,32 +1,46 @@
 package workshop.demo.AcceptanceTest.Tests;
 
-import org.junit.jupiter.api.BeforeEach;
+import java.util.List;
+import java.util.function.Predicate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import org.slf4j.Logger;
+
 import workshop.demo.AcceptanceTest.Utill.Real;
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.item;
-import workshop.demo.DomainLayer.Store.*;
+import workshop.demo.DomainLayer.Store.AndDiscount;
+import workshop.demo.DomainLayer.Store.Discount;
+import workshop.demo.DomainLayer.Store.DiscountConditions;
+import workshop.demo.DomainLayer.Store.DiscountScope;
+import workshop.demo.DomainLayer.Store.OrDiscount;
+import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.Store.VisibleDiscount;
+import workshop.demo.DomainLayer.Store.XorDiscount;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
-
-import java.util.List;
-import java.util.function.Predicate;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
 
 public class PurchaseAT extends AcceptanceTests {
 
