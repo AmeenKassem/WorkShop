@@ -40,6 +40,7 @@ import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.Store.VisibleDiscount;
 import workshop.demo.DomainLayer.Store.XorDiscount;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
 public class PurchaseAT extends AcceptanceTests {
@@ -381,12 +382,13 @@ public class PurchaseAT extends AcceptanceTests {
 
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, Category.ELECTRONICS, productId, 1, 200, "Phone", "Smartphone", "TestStore");
-        cart.addItem(storeId, item);
+        ItemCartDTO item = new ItemCartDTO(storeId,  productId, 1, 200, "Phone", "TestStore");
+        CartItem item1=new CartItem(item);
+        cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", Category.ELECTRONICS, "Smartphone", "TestStore", 2, 200);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false)))
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone",  "TestStore", 2, 200);
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),"TestStore"))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
@@ -415,8 +417,9 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, Category.ELECTRONICS, productId, 3, 200, "Phone", "Smartphone", "TestStore");
-        cart.addItem(storeId, item);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 3, 200, "Phone", "TestStore");
+        CartItem item1=new CartItem(item);
+        cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
 
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
@@ -434,8 +437,8 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", Category.ELECTRONICS, "Smartphone", "TestStore", 1, 100);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false)))
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 100);
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),"TestStore"))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(100.0);
 
@@ -463,8 +466,9 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, Category.ELECTRONICS, productId, 1, 200, "Phone", "Smartphone", "TestStore");
-        cart.addItem(storeId, item);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore");
+        CartItem item1=new CartItem(item);
+        cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
 
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
@@ -490,8 +494,8 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", Category.ELECTRONICS, "Smartphone", "TestStore", 1, 200);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false)))
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200);
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),"TestStore"))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0); // total before discount
 
@@ -519,8 +523,9 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, Category.ELECTRONICS, productId, 1, 200, "Phone", "Smartphone", "TestStore");
-        cart.addItem(storeId, item);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore");
+        CartItem item1=new CartItem(item);
+        cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
 
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
@@ -544,8 +549,8 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", Category.ELECTRONICS, "Smartphone", "TestStore", 1, 200);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false)))
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone","TestStore", 1, 200);
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),"TestStore"))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0); // before discount
 
@@ -573,8 +578,9 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, Category.ELECTRONICS, productId, 1, 200, "Phone", "Smartphone", "TestStore");
-        cart.addItem(storeId, item);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore");
+        CartItem item1=new CartItem(item);
+        cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
 
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
@@ -598,8 +604,8 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", Category.ELECTRONICS, "Smartphone", "TestStore", 1, 200);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false)))
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200);
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),"TestStore"))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
 
@@ -627,8 +633,9 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, Category.ELECTRONICS, productId, 1, 200, "Phone", "Smartphone", "TestStore");
-        cart.addItem(storeId, item);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore");
+        CartItem item1=new CartItem(item);
+        cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
 
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
@@ -652,8 +659,8 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", Category.ELECTRONICS, "Smartphone", "TestStore", 1, 200);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false)))
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone",  "TestStore", 1, 200);
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
 

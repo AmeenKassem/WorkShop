@@ -76,7 +76,7 @@ public class Real implements Bridge {
         AdminHandler admin = new AdminHandler(mockOrderRepo, mockStoreRepo, mockUserRepo, mockAuthRepo);
         stockService = new StockService(mockStockRepo, mockStoreRepo, mockAuthRepo, mockUserRepo, mockIOSrepo, mockSusRepo);
         adminHandler = new AdminHandler(mockOrderRepo, mockStoreRepo, mockUserRepo, mockAuthRepo);
-        userService = new UserService(mockUserRepo, mockAuthRepo, mockStockRepo, new AdminInitilizer("123321"), adminHandler);
+        userService = new UserService(mockUserRepo, mockAuthRepo, mockStockRepo, new AdminInitilizer("123321"), adminHandler,mockStoreRepo);
         storeService = new StoreService(mockStoreRepo, mockNotiRepo, mockAuthRepo, mockUserRepo, mockOrderRepo, mockIOSrepo, mockStockRepo, mockSusRepo);
         notificationService = new NotificationService(mockNotiRepo, mockUserRepo);
         purchaseService = new PurchaseService(mockAuthRepo, mockStockRepo, mockStoreRepo, mockUserRepo,

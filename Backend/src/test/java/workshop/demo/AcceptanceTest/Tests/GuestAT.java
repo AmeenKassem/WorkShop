@@ -38,6 +38,7 @@ import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
@@ -371,24 +372,24 @@ public class GuestAT extends AcceptanceTests {
 
         ItemStoreDTO itemStoreDTO = new ItemStoreDTO(productId, 5, 1500, Category.ELECTRONICS, 0, 4, "Laptop");;
         ItemCartDTO itemCartDTO = new ItemCartDTO(itemStoreDTO, 3);
-
+        CartItem CartItem=new CartItem(itemCartDTO);
         doNothing().when(real.mockUserRepo).addItemToGeustCart(guestId, itemCartDTO);
         real.userService.addToUserCart(guestToken, itemStoreDTO, 3);
 
         ShoppingCart mockCart = Mockito.mock(ShoppingCart.class);
         when(real.mockUserRepo.getUserCart(guestId)).thenReturn(mockCart);
-        when(mockCart.getAllCart()).thenReturn(List.of(itemCartDTO));
+        when(mockCart.getAllCart()).thenReturn(List.of(CartItem));
 
         ShoppingBasket mockBasket = Mockito.mock(ShoppingBasket.class);
         when(mockBasket.getStoreId()).thenReturn(storeId);
-        when(mockBasket.getItems()).thenReturn(List.of(itemCartDTO));
+        when(mockBasket.getItems()).thenReturn(List.of(CartItem));
         HashMap<Integer, ShoppingBasket> baskets = new HashMap<>();
         baskets.put(storeId, mockBasket);
         when(mockCart.getBaskets()).thenReturn(baskets);
 
-        List<ReceiptProduct> receiptProducts = List.of(new ReceiptProduct("ProductName", Category.ELECTRONICS, "desc", "TestStore", 2, 100));
+        List<ReceiptProduct> receiptProducts = List.of(new ReceiptProduct("ProductName", "TestStore", 2, 100,productId));
         when(real.mockStockRepo.checkAvailability(any())).thenReturn(true);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), anyList(), eq(true))).thenReturn(receiptProducts);
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), anyList(), eq(true),eq("TestStore"))).thenReturn(receiptProducts);
         when(real.mockStockRepo.calculateTotalPrice(receiptProducts)).thenReturn(200.0);
         when(real.mockPay.processPayment(PaymentDetails.testPayment(), 200)).thenReturn(true);
         when(real.mockSupply.processSupply(any())).thenReturn(true);
@@ -454,7 +455,7 @@ public class GuestAT extends AcceptanceTests {
         when(real.mockAuthRepo.validToken(guestToken)).thenReturn(true);
         when(real.mockAuthRepo.getUserId(guestToken)).thenReturn(guestId);
         when(real.mockUserRepo.getUserCart(guestId)).thenReturn(mockCart);
-        when(mockCart.getAllCart()).thenReturn(List.of(Mockito.mock(ItemCartDTO.class)));
+        when(mockCart.getAllCart()).thenReturn(List.of(Mockito.mock(CartItem.class)));
         when(real.mockStockRepo.checkAvailability(any())).thenReturn(false);
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
@@ -477,16 +478,16 @@ public class GuestAT extends AcceptanceTests {
         when(real.mockAuthRepo.validToken(guestToken)).thenReturn(true);
         when(real.mockAuthRepo.getUserId(guestToken)).thenReturn(guestId);
         when(real.mockUserRepo.getUserCart(guestId)).thenReturn(mockCart);
-        when(mockCart.getAllCart()).thenReturn(List.of(Mockito.mock(ItemCartDTO.class)));
+        when(mockCart.getAllCart()).thenReturn(List.of(Mockito.mock(CartItem.class)));
         HashMap<Integer, ShoppingBasket> baskets = new HashMap<>();
         baskets.put(storeId, mockBasket);
         when(mockCart.getBaskets()).thenReturn(baskets);
 
         when(mockBasket.getStoreId()).thenReturn(storeId);
-        when(mockBasket.getItems()).thenReturn(List.of(Mockito.mock(ItemCartDTO.class)));
+        when(mockBasket.getItems()).thenReturn(List.of(Mockito.mock(CartItem.class)));
         when(real.mockStoreRepo.getStoreNameById(100)).thenReturn("TestStore");
         when(real.mockStockRepo.checkAvailability(any())).thenReturn(true);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), anyList(), eq(true)))
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), anyList(), eq(true),eq("TestStore")))
                 .thenReturn(List.of(Mockito.mock(ReceiptProduct.class)));
         when(real.mockStockRepo.calculateTotalPrice(anyList())).thenReturn(100.0);
         when(real.mockStoreRepo.findStoreByID(100)).thenReturn(new Store(100, "TestStore", "ELECTRONICS"));
@@ -514,17 +515,17 @@ public class GuestAT extends AcceptanceTests {
         when(real.mockAuthRepo.validToken(guestToken)).thenReturn(true);
         when(real.mockAuthRepo.getUserId(guestToken)).thenReturn(guestId);
         when(real.mockUserRepo.getUserCart(guestId)).thenReturn(mockCart);
-        when(mockCart.getAllCart()).thenReturn(List.of(Mockito.mock(ItemCartDTO.class)));
+        when(mockCart.getAllCart()).thenReturn(List.of(Mockito.mock(CartItem.class)));
 
         HashMap<Integer, ShoppingBasket> baskets = new HashMap<>();
         baskets.put(storeId, mockBasket);
         when(mockCart.getBaskets()).thenReturn(baskets);
 
         when(mockBasket.getStoreId()).thenReturn(storeId);
-        when(mockBasket.getItems()).thenReturn(List.of(Mockito.mock(ItemCartDTO.class)));
+        when(mockBasket.getItems()).thenReturn(List.of(Mockito.mock(CartItem.class)));
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
         when(real.mockStockRepo.checkAvailability(any())).thenReturn(true);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), anyList(), eq(true)))
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), anyList(), eq(true),eq("TestStore")))
                 .thenReturn(List.of(Mockito.mock(ReceiptProduct.class)));
         when(real.mockStockRepo.calculateTotalPrice(anyList())).thenReturn(100.0);
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(new Store(storeId, "TestStore", "ELECTRONICS"));
@@ -552,17 +553,17 @@ public class GuestAT extends AcceptanceTests {
         when(real.mockAuthRepo.validToken(guestToken)).thenReturn(true);
         when(real.mockAuthRepo.getUserId(guestToken)).thenReturn(guestId);
         when(real.mockUserRepo.getUserCart(guestId)).thenReturn(mockCart);
-        when(mockCart.getAllCart()).thenReturn(List.of(Mockito.mock(ItemCartDTO.class)));
+        when(mockCart.getAllCart()).thenReturn(List.of(Mockito.mock(CartItem.class)));
 
         HashMap<Integer, ShoppingBasket> baskets = new HashMap<>();
         baskets.put(storeId, mockBasket);
         when(mockCart.getBaskets()).thenReturn(baskets);
 
         when(mockBasket.getStoreId()).thenReturn(storeId);
-        when(mockBasket.getItems()).thenReturn(List.of(Mockito.mock(ItemCartDTO.class)));
+        when(mockBasket.getItems()).thenReturn(List.of(Mockito.mock(CartItem.class)));
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("UnknownStore");
         when(real.mockStockRepo.checkAvailability(any())).thenReturn(true);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), anyList(), eq(true)))
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), anyList(), eq(true),eq("UnknownStore")))
                 .thenReturn(List.of(Mockito.mock(ReceiptProduct.class)));
         when(real.mockStockRepo.calculateTotalPrice(anyList())).thenReturn(100.0);
 
