@@ -91,12 +91,12 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 .set("width", "240px")
                 .set("background-color", "#f9f9f9");
 
-        H4 title = new H4("📦 " + item.productName);
-        String stars = "⭐".repeat(item.rank) + "☆".repeat(5 - item.rank);
+        H4 title = new H4("📦 " + item.getProductName());
+        String stars = "⭐".repeat(item.getRank()) + "☆".repeat(5 - item.getRank());
 
         Paragraph rating = new Paragraph("⭐ Rank: " + stars);
-        Paragraph price = new Paragraph("💰 Price: " + item.price);
-        Paragraph quantity = new Paragraph("📦 Quantity: " + item.quantity);
+        Paragraph price = new Paragraph("💰 Price: " + item.getPrice());
+        Paragraph quantity = new Paragraph("📦 Quantity: " + item.getQuantity());
         Paragraph category = new Paragraph("🏷️ Category: " + product.category);
         Paragraph description = new Paragraph("📄 Description: " + product.getDescription());
 
@@ -121,7 +121,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
     public void openProductRankDialog(ItemStoreDTO item) {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("⭐ Rank Product: " + item.productName);
+        dialog.setHeaderTitle("⭐ Rank Product: " + item.getProductName());
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(true);
@@ -186,7 +186,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
     private void openProductReviewDialog(ItemStoreDTO item) {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("Review for " + item.productName);
+        dialog.setHeaderTitle("Review for " + item.getProductName());
 
         VerticalLayout content = new VerticalLayout();
         content.setPadding(false);
@@ -205,7 +205,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 return;
             }
             try {
-                presenter.addReviewToItem(token, item.storeId, item.getProductId(), review);
+                presenter.addReviewToItem(token, item.getStoreId(), item.getProductId(), review);
                 //NotificationView.showSuccess("Product review submitted");
             } catch (Exception ex) {
                 NotificationView.showError("Failed to submit: " + ex.getMessage());

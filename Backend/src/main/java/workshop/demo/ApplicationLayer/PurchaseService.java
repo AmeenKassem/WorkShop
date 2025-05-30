@@ -12,7 +12,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -23,7 +31,6 @@ import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.ISupplyService;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
-import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Discount;
 import workshop.demo.DomainLayer.Store.DiscountScope;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
@@ -49,8 +56,8 @@ public class PurchaseService {
 
     @Autowired
     public PurchaseService(IAuthRepo authRepo, IStockRepo stockRepo, IStoreRepo storeRepo, IUserRepo userRepo,
-                           IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
-                           ISupplyService supplyService, IUserSuspensionRepo susRepo) {
+            IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
+            ISupplyService supplyService, IUserSuspensionRepo susRepo) {
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
         this.storeRepo = storeRepo;
@@ -108,17 +115,18 @@ public class PurchaseService {
         for (ShoppingBasket basket : cart.getBaskets().values()) {
             logger.info("Processing basket for storeId={}", basket.getStoreId());
             String storeName = storeRepo.getStoreNameById(basket.getStoreId());
-            List<ReceiptProduct> boughtItems = stockRepo.processCartItemsForStore(basket.getStoreId(), //HERE!!!!ASDLKJSAD
-                    basket.getItems(), isGuest);
+            List<ReceiptProduct> boughtItems = stockRepo.processCartItemsForStore(basket.getStoreId(),
+                    basket.getItems(), isGuest, storeName);
             for (ReceiptProduct product : boughtItems) {
-                product.setstoreName(storeName); // need to change
+                product.setstoreName(storeName);
             }
             List<ItemStoreDTO> itemStoreDTOS = new ArrayList<>();
             for (ReceiptProduct p : boughtItems) {
-                itemStoreDTOS.add(new ItemStoreDTO(p.getProductId(), p.getQuantity(), p.getPrice(), p.getCategory(), 0, basket.getStoreId(), p.getProductName()
+                itemStoreDTOS.add(new ItemStoreDTO(p.getProductId(), p.getQuantity(), p.getPrice(), p.getCategory(), 0, basket.getStoreId(), p.getProductName(),storeName
                 ));
             }
             DiscountScope scope = new DiscountScope(itemStoreDTOS);
+            System.out.println(scope.getItems().getFirst().getCategory());
             Store store = storeRepo.findStoreByID(basket.getStoreId()); // changed the  get list to use this function instead
 
             Discount discount = store.getDiscount();
@@ -135,7 +143,7 @@ public class PurchaseService {
     }
 
     public ParticipationInRandomDTO participateInRandom(String token, int randomId, int storeId, double amountPaid,
-                                                        PaymentDetails paymentDetails) throws Exception {
+            PaymentDetails paymentDetails) throws Exception {
         logger.info("participateInRandom called with randomId={}, storeId={}", randomId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
@@ -162,13 +170,15 @@ public class PurchaseService {
             if (specialItem.type == SpecialType.Random) {
                 ParticipationInRandomDTO card = stockRepo.getRandomCardIfWinner(specialItem.storeId,
                         specialItem.specialId, userId);
-                if (card != null)
+                if (card != null) {
                     winingRandoms.add(card);
+                }
             } else {
                 SingleBid bid = stockRepo.getBidIfWinner(specialItem.storeId, specialItem.specialId, specialItem.bidId,
                         specialItem.type);
-                if (bid != null)
+                if (bid != null) {
                     winningBids.add(bid);
+                }
             }
         }
         double sumToPay = setRecieptMapForBids(winningBids, storeToProducts);
@@ -197,11 +207,11 @@ public class PurchaseService {
 
             ReceiptProduct receiptProduct = new ReceiptProduct(
                     product.getName(),
-                    product.getCategory(),
-                    product.getDescription(),
                     storeName,
                     bid.getAmount(),
-                    (int) bid.getBidPrice());
+                    (int) bid.getBidPrice(),
+                    bid.getId(),
+                    product.getCategory());
 
             res.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
             // paymentService.processPayment(payment, (int) bid.getBidPrice());
@@ -211,15 +221,19 @@ public class PurchaseService {
     }
 
     private void setRecieptMapForRandoms(Map<Integer, List<ReceiptProduct>> storeToProducts,
-                                         List<ParticipationInRandomDTO> pars) throws Exception {
+            List<ParticipationInRandomDTO> pars) throws Exception {
         for (ParticipationInRandomDTO card : pars) {
             stockRepo.validateAndDecreaseStock(card.storeId, card.productId, 1);
             Product product = stockRepo.findByIdInSystem_throwException(card.productId);
             String storeName = storeRepo.getStoreNameById(card.storeId);
 
             ReceiptProduct receiptProduct = new ReceiptProduct(
-                    product.getName(), product.getCategory(), product.getDescription(),
-                    storeName, 1, 0);
+                    product.getName(),
+                    storeName,
+                    1,
+                    0,
+                    product.getProductId(),
+                    product.getCategory());
 
             storeToProducts.computeIfAbsent(card.storeId, k -> new ArrayList<>()).add(receiptProduct);
             // supplyService.processSupply(supply);

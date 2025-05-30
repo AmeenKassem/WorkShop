@@ -17,6 +17,7 @@ import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
+import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
@@ -118,12 +119,13 @@ public class UserRepository implements IUserRepo {
 
     @Override
     public void addItemToGeustCart(int guestId, ItemCartDTO item) throws UIException {
+        CartItem itemCart = new CartItem(item);
         if (guestExist(guestId)) {
             Guest geust = guests.get(guestId);
-            geust.addToCart(item);
+            geust.addToCart(itemCart);
             logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProductId(), guestId});
         } else if (userExist(guestId)) {
-            getRegisteredUser(guestId).addToCart(item);
+            getRegisteredUser(guestId).addToCart(itemCart);
             logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProductId(), guestId});
         } else {
             throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);

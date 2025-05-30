@@ -6,11 +6,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.springframework.stereotype.Component;
-
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -125,7 +122,7 @@ public class StoreStock {
     //     return itemStoreDTOList;
     // }
     //may be changed later:
-    public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems, boolean isGuest, int storeid) throws UIException {
+    public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems, boolean isGuest, String storeName) throws UIException {
         List<ReceiptProduct> boughtItems = new ArrayList<>();
         for (ItemCartDTO dto : cartItems) {
             CartItem item = new CartItem(dto);
@@ -141,11 +138,11 @@ public class StoreStock {
             decreaseQuantitytoBuy(item.getProductId(), item.getQuantity());
             boughtItems.add(new ReceiptProduct(
                     item.getName(),
-                    item.getCategory(),
-                    item.getDescription(),
-                    "storid",
+                    storeName,
                     item.getQuantity(),
-                    item.getPrice(), item.productId
+                    item.getPrice(),
+                    item.productId,
+                    item.category
             ));
         }
         return boughtItems;

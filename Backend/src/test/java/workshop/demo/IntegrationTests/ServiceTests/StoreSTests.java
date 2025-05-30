@@ -128,7 +128,7 @@ public class StoreSTests {
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1, "Laptop");
+        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1, "Laptop","TestStore");
 
         // ======================= SECOND GUEST SETUP =======================
     }
@@ -209,7 +209,7 @@ public class StoreSTests {
         stockService.removeItem(1, NOToken, 1);
 
         // Assert
-        assertTrue(stockService.getProductsInStore(1)[0].quantity == 0);
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 0);
     }
 
     @Test
@@ -227,7 +227,7 @@ public class StoreSTests {
         assertDoesNotThrow(()
                 -> stockService.updateQuantity(1, NOToken, 1, 1)
         );
-        assertTrue(stockService.getProductsInStore(1)[0].quantity == 1);
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 1);
 
     }
 
@@ -315,7 +315,7 @@ public class StoreSTests {
         assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ex.getNumber());
     }
 
-    //todo:: send approval to user 
+    //todo:: send approval to user
     @Test
     void testOwner_AddStoreOwner_Rejected() throws Exception {
         String token = userService.generateGuest();
@@ -711,7 +711,7 @@ public class StoreSTests {
         storeService.rankStore(NGToken, 1, 0);
         assertTrue(storeService.getFinalRateInStore(1) == 3);
 
-    
+
 
     /// 3 is deafult
 
@@ -739,18 +739,18 @@ public class StoreSTests {
     @Test
     void testOwner_rankitem_Success() throws Exception {
 
-        assertTrue(stockService.getProductsInStore(1)[0].rank == 3);
+        assertTrue(stockService.getProductsInStore(1)[0].getRank() == 3);
 
         stockService.rankProduct(1, NGToken, 1, 1);
         //System.out.println("afhwlsdfkjEGn  " + stockService.getProductsInStore(1)[0].rank);
-        assertTrue(stockService.getProductsInStore(1)[0].rank == 1);
+        assertTrue(stockService.getProductsInStore(1)[0].getRank() == 1);
 
     }
 
     @Test
     void testOwner_rankitem_Invalidrating() throws Exception {
 
-        assertTrue(stockService.getProductsInStore(1)[0].rank == 3);
+        assertTrue(stockService.getProductsInStore(1)[0].getRank() == 3);
         UIException ex = assertThrows(UIException.class, ()
                 -> stockService.rankProduct(1, NGToken, 1, -1)
         );
