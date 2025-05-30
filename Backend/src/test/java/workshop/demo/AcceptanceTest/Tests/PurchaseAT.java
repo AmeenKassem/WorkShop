@@ -388,7 +388,7 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
 
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone",  "TestStore", 2, 200);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),"TestStore"))
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
@@ -438,7 +438,7 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 100);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),"TestStore"))
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(100.0);
 
@@ -495,7 +495,7 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),"TestStore"))
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0); // total before discount
 
@@ -550,7 +550,7 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone","TestStore", 1, 200);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),"TestStore"))
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0); // before discount
 
@@ -605,7 +605,7 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),"TestStore"))
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
 

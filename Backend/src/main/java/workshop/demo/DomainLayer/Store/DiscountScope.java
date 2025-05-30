@@ -1,8 +1,11 @@
 package workshop.demo.DomainLayer.Store;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.InfrastructureLayer.StoreRepository;
 
 public class DiscountScope {
 
@@ -32,8 +35,9 @@ public class DiscountScope {
     public boolean containsCategory(String categoryName) {
         return items.stream()
                 .anyMatch(i -> i.getCategory().name().equalsIgnoreCase(categoryName));
-    }
 
+    }
+    
     public int getTotalQuantity() {
         return items.stream().mapToInt(ItemStoreDTO::getQuantity).sum();
     }

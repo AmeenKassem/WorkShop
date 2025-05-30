@@ -209,7 +209,7 @@ public class StoreSTests {
         stockService.removeItem(1, NOToken, 1);
 
         // Assert
-        assertTrue(stockService.getProductsInStore(1)[0].quantity == 0);
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 0);
     }
 
     @Test
@@ -227,7 +227,7 @@ public class StoreSTests {
         assertDoesNotThrow(()
                 -> stockService.updateQuantity(1, NOToken, 1, 1)
         );
-        assertTrue(stockService.getProductsInStore(1)[0].quantity == 1);
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 1);
 
     }
 
@@ -739,18 +739,18 @@ public class StoreSTests {
     @Test
     void testOwner_rankitem_Success() throws Exception {
 
-        assertTrue(stockService.getProductsInStore(1)[0].rank == 3);
+        assertTrue(stockService.getProductsInStore(1)[0].getRank() == 3);
 
         stockService.rankProduct(1, NGToken, 1, 1);
         //System.out.println("afhwlsdfkjEGn  " + stockService.getProductsInStore(1)[0].rank);
-        assertTrue(stockService.getProductsInStore(1)[0].rank == 1);
+        assertTrue(stockService.getProductsInStore(1)[0].getRank() == 1);
 
     }
 
     @Test
     void testOwner_rankitem_Invalidrating() throws Exception {
 
-        assertTrue(stockService.getProductsInStore(1)[0].rank == 3);
+        assertTrue(stockService.getProductsInStore(1)[0].getRank() == 3);
         UIException ex = assertThrows(UIException.class, ()
                 -> stockService.rankProduct(1, NGToken, 1, -1)
         );
