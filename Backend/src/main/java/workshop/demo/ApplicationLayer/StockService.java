@@ -52,14 +52,15 @@ public class StockService {
     }
 
     public ItemStoreDTO[] searchProducts(String token, ProductSearchCriteria criteria) throws Exception {
-        int x = storeRepo.getFinalRateInStore(1);
-        logger.info("gfnedsm," + 0);
+        //int x = storeRepo.getFinalRateInStore(1);
+        //logger.info("gfnedsm," + 0);
         logger.info("tarting searchProducts with criteria: {}", criteria);
 
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
 
         logger.info("Returning matched items to client ");
-        ItemStoreDTO[] items = stockRepo.search(criteria);
+        String storeName= this.storeRepo.getStoreNameById(criteria.getStoreId());
+        ItemStoreDTO[] items = stockRepo.search(criteria,storeName);
         storeRepo.fillWithStoreName(items);
         return items;
     }

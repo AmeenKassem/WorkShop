@@ -10,6 +10,7 @@ public class CartItem {
     public int quantity;
     public int price;
     public String name;
+    public Category category;
 
     public CartItem(ItemCartDTO dto) {
         this.productId = dto.productId;
@@ -17,13 +18,14 @@ public class CartItem {
         this.quantity = dto.quantity;
         this.price = dto.price;
         this.name = dto.name;
+        this.category =dto.category;
     }
 
-    // Optional manual constructor
-    public CartItem(int productId, int quantity, Category cat) {
-        this.productId = productId;
-        this.quantity = quantity;
-    }
+//    // Optional manual constructor
+//    public CartItem(int productId, int quantity, Category cat) {
+//        this.productId = productId;
+//        this.quantity = quantity;
+//    }
 
     // Getters
     public int getProductId() {

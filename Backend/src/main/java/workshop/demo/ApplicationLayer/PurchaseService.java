@@ -115,17 +115,18 @@ public class PurchaseService {
         for (ShoppingBasket basket : cart.getBaskets().values()) {
             logger.info("Processing basket for storeId={}", basket.getStoreId());
             String storeName = storeRepo.getStoreNameById(basket.getStoreId());
-            List<ReceiptProduct> boughtItems = stockRepo.processCartItemsForStore(basket.getStoreId(), //HERE!!!!ASDLKJSAD
+            List<ReceiptProduct> boughtItems = stockRepo.processCartItemsForStore(basket.getStoreId(),
                     basket.getItems(), isGuest, storeName);
             for (ReceiptProduct product : boughtItems) {
-                product.setstoreName(storeName); // need to change
+                product.setstoreName(storeName);
             }
             List<ItemStoreDTO> itemStoreDTOS = new ArrayList<>();
             for (ReceiptProduct p : boughtItems) {
-                itemStoreDTOS.add(new ItemStoreDTO(p.getProductId(), p.getQuantity(), p.getPrice(), p.getCategory(), 0, basket.getStoreId(), p.getProductName()
+                itemStoreDTOS.add(new ItemStoreDTO(p.getProductId(), p.getQuantity(), p.getPrice(), p.getCategory(), 0, basket.getStoreId(), p.getProductName(),storeName
                 ));
             }
             DiscountScope scope = new DiscountScope(itemStoreDTOS);
+            System.out.println(scope.getItems().getFirst().getCategory());
             Store store = storeRepo.findStoreByID(basket.getStoreId()); // changed the  get list to use this function instead
 
             Discount discount = store.getDiscount();
@@ -208,7 +209,9 @@ public class PurchaseService {
                     product.getName(),
                     storeName,
                     bid.getAmount(),
-                    (int) bid.getBidPrice());
+                    (int) bid.getBidPrice(),
+                    bid.getId(),
+                    product.getCategory());
 
             res.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
             // paymentService.processPayment(payment, (int) bid.getBidPrice());
@@ -226,7 +229,11 @@ public class PurchaseService {
 
             ReceiptProduct receiptProduct = new ReceiptProduct(
                     product.getName(),
-                    storeName, 1, 0);
+                    storeName,
+                    1,
+                    0,
+                    product.getProductId(),
+                    product.getCategory());
 
             storeToProducts.computeIfAbsent(card.storeId, k -> new ArrayList<>()).add(receiptProduct);
             // supplyService.processSupply(supply);

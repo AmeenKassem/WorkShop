@@ -118,7 +118,7 @@ public class GuestTests {
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(createdStoreId, NOToken, 1, 10, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, createdStoreId, "Laptop");
+        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, createdStoreId, "Laptop","TestStore");
 
     }
 
@@ -294,7 +294,7 @@ public class GuestTests {
     @Test
     void testGuestBuyCart_ProductNotAvailable() throws Exception {
 
-        userService.addToUserCart(GToken, new ItemStoreDTO(0, 0, 0, null, 0, 0, ""), 1);
+        userService.addToUserCart(GToken, new ItemStoreDTO(0, 0, 0, null, 0, 1, "","TestStore"), 1);
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();

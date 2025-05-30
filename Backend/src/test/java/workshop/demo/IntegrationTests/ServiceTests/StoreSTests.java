@@ -128,7 +128,7 @@ public class StoreSTests {
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1, "Laptop");
+        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1, "Laptop","TestStore");
 
         // ======================= SECOND GUEST SETUP =======================
     }
@@ -315,7 +315,7 @@ public class StoreSTests {
         assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ex.getNumber());
     }
 
-    //todo:: send approval to user 
+    //todo:: send approval to user
     @Test
     void testOwner_AddStoreOwner_Rejected() throws Exception {
         String token = userService.generateGuest();
@@ -711,7 +711,7 @@ public class StoreSTests {
         storeService.rankStore(NGToken, 1, 0);
         assertTrue(storeService.getFinalRateInStore(1) == 3);
 
-    
+
 
     /// 3 is deafult
 

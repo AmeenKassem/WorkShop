@@ -122,7 +122,8 @@ public class DiscountTests {
         int productId = stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(createdStoreId, NOToken, productId, 10, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, createdStoreId, "Laptop");
+        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, createdStoreId, "Laptop","TestStore");
+        System.out.println(itemStoreDTO.getCategory());
         stockService.setProductToRandom(NOToken, productId, 1, 2000, createdStoreId, 5000);
         stockService.setProductToAuction(NOToken, createdStoreId, productId, 1, 1000, 2);
         assertTrue(stockService.getAllAuctions(NOToken, createdStoreId).length == 1);
@@ -172,7 +173,7 @@ public class DiscountTests {
         //System.out.println("Hm:"+cond.toString());
         storeService.addDiscountToStore(storeId.getStoreID(), NOToken, dto);
         userService.addToUserCart(GToken, itemStoreDTO, 4);
-
+        //System.out.println(userService.getRegularCart(GToken)[0].category);
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
         ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);

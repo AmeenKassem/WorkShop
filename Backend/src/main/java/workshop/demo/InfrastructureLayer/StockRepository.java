@@ -198,7 +198,7 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public ItemStoreDTO[] getProductsInStore(int storeId) throws UIException, DevException {
-        return search(new ProductSearchCriteria(null, null, null, storeId, null, null, null, null));
+        return search(new ProductSearchCriteria(null, null, null, storeId, null, null, null, null),null);
     }
 
     @Override
@@ -333,9 +333,10 @@ public class StockRepository implements IStockRepo {
             dto.price = item.price;
             dto.name = item.name;
             dto.storeName = StoreName;
+            dto.category=item.category;
             dtoList.add(dto);
         }
-        return storeStock.ProcessCartItems(dtoList, isGuest, storeId);
+        return storeStock.ProcessCartItems(dtoList, isGuest, StoreName);
     }
 
     @Override
@@ -406,7 +407,7 @@ public class StockRepository implements IStockRepo {
     // 'getMatchesItems'");
     // }
     @Override
-    public ItemStoreDTO[] search(ProductSearchCriteria criteria) throws UIException {
+    public ItemStoreDTO[] search(ProductSearchCriteria criteria,String storeName) throws UIException {
         List<Product> matchesCategoryProduct = getProductsFilteredByCategory(criteria);
         List<ItemStoreDTO> result = new ArrayList<>();
         for (Product product : matchesCategoryProduct) {
@@ -417,7 +418,7 @@ public class StockRepository implements IStockRepo {
             for (StoreStock store : matchesStores) {
                 item item = store.getItemByProductId(product.getProductId());
                 if (criteria.matchesForStore(item)) {
-                    ItemStoreDTO toAdd = convertToItemStoreDTO(item, product, store.getStoreStockId());
+                    ItemStoreDTO toAdd = convertToItemStoreDTO(item, product, store.getStoreStockId(),storeName);
                     result.add(toAdd);
                 }
             }
@@ -426,8 +427,8 @@ public class StockRepository implements IStockRepo {
 
     }
 
-    private ItemStoreDTO convertToItemStoreDTO(item item, Product product, int storeId) {
-        return new ItemStoreDTO(product.getProductId(), item.getQuantity(), item.getPrice(), product.getCategory(), item.getFinalRank(), storeId, product.getName());
+    private ItemStoreDTO convertToItemStoreDTO(item item, Product product, int storeId,String storeName) {
+        return new ItemStoreDTO(product.getProductId(), item.getQuantity(), item.getPrice(), product.getCategory(), item.getFinalRank(), storeId, product.getName(),storeName);
     }
 
     private List<StoreStock> getMatchesStore(ProductSearchCriteria criteria) {
@@ -467,5 +468,7 @@ public class StockRepository implements IStockRepo {
         }
         return allProductDTOs.toArray(new ProductDTO[0]);
     }
+
+
 
 }

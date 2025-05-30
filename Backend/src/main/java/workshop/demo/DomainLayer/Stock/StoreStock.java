@@ -122,7 +122,7 @@ public class StoreStock {
     //     return itemStoreDTOList;
     // }
     //may be changed later:
-    public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems, boolean isGuest, int storeid) throws UIException {
+    public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems, boolean isGuest, String storeName) throws UIException {
         List<ReceiptProduct> boughtItems = new ArrayList<>();
         for (ItemCartDTO dto : cartItems) {
             CartItem item = new CartItem(dto);
@@ -138,9 +138,11 @@ public class StoreStock {
             decreaseQuantitytoBuy(item.getProductId(), item.getQuantity());
             boughtItems.add(new ReceiptProduct(
                     item.getName(),
-                    "storid",
+                    storeName,
                     item.getQuantity(),
-                    item.getPrice(), item.productId
+                    item.getPrice(),
+                    item.productId,
+                    item.category
             ));
         }
         return boughtItems;

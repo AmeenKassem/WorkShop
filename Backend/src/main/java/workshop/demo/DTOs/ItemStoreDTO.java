@@ -11,7 +11,7 @@ public class ItemStoreDTO {
     private String productName;
     private String storeName;
 
-    public ItemStoreDTO(int id, int quantity, int price, Category category, int rank, int storeId, String productName) {
+    public ItemStoreDTO(int id, int quantity, int price, Category category, int rank, int storeId, String productName,String storeName) {
         this.productId = id;
         this.quantity = quantity;
         this.price = price;
@@ -19,6 +19,7 @@ public class ItemStoreDTO {
         this.rank = rank;
         this.storeId = storeId;
         this.productName = productName;
+        this.storeName= storeName;
 
     }
 
@@ -63,6 +64,9 @@ public class ItemStoreDTO {
     public int getStoreId() {
         return storeId;
     }
+    public String getStoreName(){
+        return storeName;
+    }
 
     public void setStoreId(int storeId) {
         this.storeId = storeId;
@@ -73,6 +77,7 @@ public class ItemStoreDTO {
     }
 
     public void setStoreName(String storeName){
-        this.storeName=storeName;
+        this.storeName= storeName;
+
     }
 }

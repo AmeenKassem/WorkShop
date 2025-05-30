@@ -106,7 +106,7 @@ public interface IStockRepo {
 
     ParticipationInRandomDTO getRandomCard(int storeId, int specialId, int specialId2) throws UIException;
 
-    public ItemStoreDTO[] search(ProductSearchCriteria criteria) throws UIException;
+    public ItemStoreDTO[] search(ProductSearchCriteria criteria,String storeName) throws UIException;
 
     ProductDTO[] getAllProducts();
 }

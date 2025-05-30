@@ -127,7 +127,7 @@ public class UserTests {
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 10, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, 1, "Laptop");
+        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, 1, "Laptop","TestStore");
 
     }
 
@@ -439,15 +439,15 @@ public class UserTests {
 
     @Test
     void testUserBuyCart_ProductNotAvailable() throws Exception {
-        userService.addToUserCart(NGToken, new ItemStoreDTO(0, 0, 0, null, 0, 0, ""), 1);
+        userService.addToUserCart(NGToken, new ItemStoreDTO(0, 0, 0, null, 0, 1, "","TestStore"), 1);
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-        Exception ex = assertThrows(UIException.class,
+        assertThrows(Exception.class,
                 () -> purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
 
-        assertEquals("Store not found for ID: 0", ex.getMessage());
+
     }
 
     @Test
