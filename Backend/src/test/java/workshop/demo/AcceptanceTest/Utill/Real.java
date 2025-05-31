@@ -2,26 +2,43 @@ package workshop.demo.AcceptanceTest.Utill;
 
 import java.util.List;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mockito.Mockito;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.NotificationService;
+import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
+import workshop.demo.ApplicationLayer.ReviewService;
 import workshop.demo.ApplicationLayer.StockService;
 import workshop.demo.ApplicationLayer.StoreService;
-import workshop.demo.ApplicationLayer.*;
+import workshop.demo.ApplicationLayer.SupplyServiceImp;
+import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Review.IReviewRepo;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
-import workshop.demo.DomainLayer.User.ShoppingCart;
-import workshop.demo.InfrastructureLayer.*;
-import workshop.demo.DTOs.*;
+import workshop.demo.InfrastructureLayer.AuthenticationRepo;
+import workshop.demo.InfrastructureLayer.NotificationRepository;
+import workshop.demo.InfrastructureLayer.OrderRepository;
+import workshop.demo.InfrastructureLayer.PurchaseRepository;
+import workshop.demo.InfrastructureLayer.ReviewRepository;
+import workshop.demo.InfrastructureLayer.StockRepository;
+import workshop.demo.InfrastructureLayer.StoreRepository;
+import workshop.demo.InfrastructureLayer.UserRepository;
+import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 
 public class Real implements Bridge {
+
     public AuthenticationRepo mockAuthRepo = Mockito.mock(AuthenticationRepo.class);
     public UserRepository mockUserRepo = Mockito.mock(UserRepository.class);
     public StoreRepository mockStoreRepo = Mockito.mock(StoreRepository.class);
@@ -32,8 +49,7 @@ public class Real implements Bridge {
 
     public ISUConnectionRepo mockIOSrepo = Mockito.mock(ISUConnectionRepo.class);
     public UserSuspensionRepo mockSusRepo = Mockito.mock(UserSuspensionRepo.class);
-    public IReviewRepo mockReviewRepo=Mockito.mock(ReviewRepository.class);
-
+    public IReviewRepo mockReviewRepo = Mockito.mock(ReviewRepository.class);
 
     //public SuperDataStructure mockserviceios=new SuperDataStructure();
     //    public SingleBid mockSingleBid = Mockito.mock(SingleBid.class);
@@ -48,21 +64,24 @@ public class Real implements Bridge {
     public PurchaseService purchaseService;
     public OrderService orderService;
     public ReviewService reviewService;
-    public Real() {
+    public AdminHandler adminHandler;
+
+    public Real() throws Exception {
         initServices();
         //setupDefaultMocks();
     }
 
-    private void initServices() {
+    private void initServices() throws Exception {
         orderService = new OrderService(mockOrderRepo, mockStoreRepo, mockAuthRepo, mockUserRepo);
-AdminService admin=new AdminService(mockOrderRepo, mockStoreRepo, mockUserRepo, mockAuthRepo);
+        AdminHandler admin = new AdminHandler(mockOrderRepo, mockStoreRepo, mockUserRepo, mockAuthRepo);
         stockService = new StockService(mockStockRepo, mockStoreRepo, mockAuthRepo, mockUserRepo, mockIOSrepo, mockSusRepo);
-        userService = new UserService(mockUserRepo, mockAuthRepo,mockStockRepo,new AdminInitilizer("123321"),admin);
+        adminHandler = new AdminHandler(mockOrderRepo, mockStoreRepo, mockUserRepo, mockAuthRepo);
+        userService = new UserService(mockUserRepo, mockAuthRepo, mockStockRepo, new AdminInitilizer("123321"), adminHandler,mockStoreRepo);
         storeService = new StoreService(mockStoreRepo, mockNotiRepo, mockAuthRepo, mockUserRepo, mockOrderRepo, mockIOSrepo, mockStockRepo, mockSusRepo);
         notificationService = new NotificationService(mockNotiRepo, mockUserRepo);
         purchaseService = new PurchaseService(mockAuthRepo, mockStockRepo, mockStoreRepo, mockUserRepo,
                 mockPurchaseRepo, mockOrderRepo, mockPay, mockSupply, mockSusRepo);
-        reviewService=new ReviewService(mockReviewRepo,mockAuthRepo,mockUserRepo,mockStoreRepo,mockStockRepo);
+        reviewService = new ReviewService(mockReviewRepo, mockAuthRepo, mockUserRepo, mockStoreRepo, mockStockRepo);
     }
 
     /////////////////////// System /////////////////////////////
@@ -134,8 +153,8 @@ AdminService admin=new AdminService(mockOrderRepo, mockStoreRepo, mockUserRepo, 
 
     // for the user is the same think
     @Override
-    public boolean testGuest_AddProductToCart(String token, ItemStoreDTO a,int qunatity) throws Exception {
-        return userService.addToUserCart(token, a,qunatity);
+    public boolean testGuest_AddProductToCart(String token, ItemStoreDTO a, int qunatity) throws Exception {
+        return userService.addToUserCart(token, a, qunatity);
     }
 
     @Override
@@ -229,7 +248,6 @@ AdminService admin=new AdminService(mockOrderRepo, mockStoreRepo, mockUserRepo, 
 //        return "TODO";
 //
 //    }
-
     @Override
     public String testUser_AddBid(String token, int bitId, int storeId, double price) throws Exception {
         // return purchaseService.addBid(token, storeID, productID, bid);
@@ -285,7 +303,7 @@ AdminService admin=new AdminService(mockOrderRepo, mockStoreRepo, mockUserRepo, 
     //////////////////////////// Owner ////////////////////////////
     @Override
     public String testOwner_ManageInventory_AddProduct(int storeId, String token, int productId, int quantity,
-                                                       int price, Category category)
+            int price, Category category)
             throws Exception {
         stockService.addItem(storeId, token, productId, quantity, price, category);
         return "Done";
@@ -320,8 +338,8 @@ AdminService admin=new AdminService(mockOrderRepo, mockStoreRepo, mockUserRepo, 
     }
 
     @Override
-    public String testOwner_AssignNewOwner(int token, int storeID, int NewOwner,boolean decide ) throws Exception {
-        storeService.AddOwnershipToStore(storeID, token, NewOwner,decide);
+    public String testOwner_AssignNewOwner(int token, int storeID, int NewOwner, boolean decide) throws Exception {
+        storeService.AddOwnershipToStore(storeID, token, NewOwner, decide);
         return "Done";
     }
 
@@ -336,10 +354,9 @@ AdminService admin=new AdminService(mockOrderRepo, mockStoreRepo, mockUserRepo, 
 //        storeService.AddManagerToStore(storeID, token, mangerId);
 //        return "Done";
 //    }
-
     @Override
     public String testOwner_EditManagerPermissions(String token, int managerId, int storeID,
-                                                   List<Permission> autorization) throws Exception {
+            List<Permission> autorization) throws Exception {
         storeService.changePermissions(token, managerId, storeID, autorization);
         return "Done";
     }
@@ -392,7 +409,7 @@ AdminService admin=new AdminService(mockOrderRepo, mockStoreRepo, mockUserRepo, 
 
     @Override
     public String testOwner_addProductToAucation(String token, int id, int productId, int quantity, long time,
-                                                 double startPrice)
+            double startPrice)
             throws Exception {
         //storeService.setProductToAuction(token, id, productId, quantity, time, startPrice);
         return "Done";
@@ -428,7 +445,7 @@ AdminService admin=new AdminService(mockOrderRepo, mockStoreRepo, mockUserRepo, 
 
     @Override
     public String testOwner_addProductToRandom(String token, int storeId, int quantity, int productId,
-                                               int numberOfCards, double priceForCard)
+            int numberOfCards, double priceForCard)
             throws Exception {
         //storeService.setProductToRandom(token, storeId, quantity, productId, numberOfCards, (long)priceForCard);
         return "Done";

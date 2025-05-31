@@ -17,6 +17,7 @@ import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
+import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
@@ -42,15 +43,6 @@ public class UserRepository implements IUserRepo {
         users = new ConcurrentHashMap<>();
         guests = new ConcurrentHashMap<>();
         idToUsername = new ConcurrentHashMap<>();
-//        int a=generateGuest();
-//        try{
-//            registerUser("name","pass",30);
-//            int x=login("name","pass");
-//            setUserAsAdmin(x,"123321");
-//        }
-//         catch (UIException e) {
-//            throw new RuntimeException(e);
-//        }
     }
 
     public List<String> getAllUsernames() {
@@ -127,13 +119,14 @@ public class UserRepository implements IUserRepo {
 
     @Override
     public void addItemToGeustCart(int guestId, ItemCartDTO item) throws UIException {
+        CartItem itemCart = new CartItem(item);
         if (guestExist(guestId)) {
             Guest geust = guests.get(guestId);
-            geust.addToCart(item);
-            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProdutId(), guestId});
+            geust.addToCart(itemCart);
+            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProductId(), guestId});
         } else if (userExist(guestId)) {
-            getRegisteredUser(guestId).addToCart(item);
-            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProdutId(), guestId});
+            getRegisteredUser(guestId).addToCart(itemCart);
+            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProductId(), guestId});
         } else {
             throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
 
@@ -257,7 +250,7 @@ public class UserRepository implements IUserRepo {
         if (!(isRegistered(userId))) {
             // logger.error("User not logged in for setProductToBid: {}", userId);
             throw new UIException("You are not regestered user!", ErrorCodes.USER_NOT_LOGGED_IN);
-        }   
+        }
     }
 
     @Override
@@ -306,5 +299,4 @@ public class UserRepository implements IUserRepo {
         }
         return user;
     }
- 
 }

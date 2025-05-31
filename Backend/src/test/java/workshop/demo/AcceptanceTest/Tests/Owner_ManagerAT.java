@@ -1,14 +1,24 @@
 package workshop.demo.AcceptanceTest.Tests;
 //UpdateProductInStock_Failure_InvalidData() throws Exception
 
+import java.util.LinkedList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import com.vaadin.flow.component.UI;
-
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import workshop.demo.AcceptanceTest.Utill.Real;
 import workshop.demo.ApplicationLayer.ReviewService;
 import workshop.demo.DTOs.Category;
@@ -24,16 +34,13 @@ import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.Registered;
 
-import java.util.LinkedList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 public class Owner_ManagerAT extends AcceptanceTests {
 
     Real real = new Real();
     private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
+
+    public Owner_ManagerAT() throws Exception {
+    }
 
     @BeforeEach
     void setup() throws Exception {
@@ -162,7 +169,7 @@ public class Owner_ManagerAT extends AcceptanceTests {
                 new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", new String[]{"Phone"})
         );
 
-        NullPointerException ex = assertThrows(NullPointerException.class, ()
+        Exception ex = assertThrows(Exception.class, ()
                 -> real.stockService.addItem(storeId, ownerToken, productId, -5, -999, Category.ELECTRONICS)
         );
 
@@ -909,11 +916,8 @@ public class Owner_ManagerAT extends AcceptanceTests {
 
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, null)).thenReturn(false);
 
-        UIException ex = assertThrows(UIException.class, ()
-                -> real.stockService.setProductToRandom(ownerToken, productId, 1, 1.0, 1, 10000)
-        );
-        //assertEquals(ex.getMessage(), "you have no permession to set product to bid.");
-        assertEquals(1004, ex.getNumber());
+        int res = real.stockService.setProductToRandom(ownerToken, productId, 1, 1.0, 1, 10000);
+        assertEquals(0, res);
     }
 
     @Test

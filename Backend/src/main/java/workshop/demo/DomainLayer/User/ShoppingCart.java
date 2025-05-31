@@ -6,9 +6,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import workshop.demo.DTOs.ItemCartDTO;
-
 public class ShoppingCart {
+
     private static final Logger logger = LoggerFactory.getLogger(ShoppingCart.class);
 
     private HashMap<Integer, ShoppingBasket> storeBaskets = new HashMap<>();
@@ -17,7 +16,7 @@ public class ShoppingCart {
         return storeBaskets;
     }
 
-    public void addItem(int storeId, ItemCartDTO item) {
+    public void addItem(int storeId, CartItem item) {
         logger.debug("addItem called: storeId={}, item={}", storeId, item);
 
         if (!storeBaskets.containsKey(storeId)) {
@@ -30,7 +29,7 @@ public class ShoppingCart {
         storeBaskets.get(storeId).addItem(item);
     }
 
-    public List<ItemCartDTO> getAllCart() {
+    public List<CartItem> getAllCart() {
         logger.debug("getAllCart called. Total baskets={}", storeBaskets.size());
 
         return storeBaskets.values().stream()
@@ -48,10 +47,5 @@ public class ShoppingCart {
             }
         }
         logger.debug("Product not found in any basket: productId={}", productId);
-    }
-  public  void clear(){
-          storeBaskets = new HashMap<>();
-
-
     }
 }

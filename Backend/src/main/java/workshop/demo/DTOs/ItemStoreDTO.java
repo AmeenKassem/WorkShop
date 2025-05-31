@@ -2,43 +2,41 @@ package workshop.demo.DTOs;
 
 public class ItemStoreDTO {
 
-    private int id;
-    public int quantity;
-    public int price;
-    public Category category;
-    public int rank;
-    public int storeId;
-    public String productName;
-    public String storeName;
+    private int productId;
+    private int quantity;
+    private int price;
+    private Category category;
+    private int rank;
+    private int storeId;
+    private String productName;
+    private String storeName;
 
-    public ItemStoreDTO(int id, int quantity, int price, Category category, int rank, int storeId, String productName) {
-        this.id = id;
+    public ItemStoreDTO(int id, int quantity, int price, Category category, int rank, int storeId, String productName,String storeName) {
+        this.productId = id;
         this.quantity = quantity;
         this.price = price;
         this.category = category;
         this.rank = rank;
         this.storeId = storeId;
         this.productName = productName;
+        this.storeName= storeName;
+
     }
 
-    public ItemStoreDTO() {
+//    public ItemStoreDTO() {
+//    }
+    public int getProductId() {
+        return productId;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
+    public void setProductId(int id) {
+        this.productId = id;
     }
 
     public int getQuantity() {
         return quantity;
     }
 
-    // public void setQuantity(int quantity) {
-    //     this.quantity = quantity;
-    // }
     public int getPrice() {
         return price;
     }
@@ -66,6 +64,9 @@ public class ItemStoreDTO {
     public int getStoreId() {
         return storeId;
     }
+    public String getStoreName(){
+        return storeName;
+    }
 
     public void setStoreId(int storeId) {
         this.storeId = storeId;
@@ -73,5 +74,10 @@ public class ItemStoreDTO {
 
     public String getProductName() {
         return this.productName;
+    }
+
+    public void setStoreName(String storeName){
+        this.storeName= storeName;
+
     }
 }

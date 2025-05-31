@@ -16,16 +16,18 @@ public class CreateDiscountDTO {
     private double percent;
     private Type type;
     private String condition; // e.g. "CATEGORY:DAIRY", "TOTAL>100", or null
-    private Logic logic = Logic.SINGLE; // default to simple discount
+    private Logic logic ;// default to simple discount
     private List<CreateDiscountDTO> subDiscounts;
 
-    public CreateDiscountDTO(String name,double percent,Type type,String condition) {
-        this.name = name;
-        this.percent = percent;
-        this.type = type;
-        this.condition = condition;
-
-    }
+   
+    public CreateDiscountDTO(String name, double percent, Type type, String condition, Logic logic, List<CreateDiscountDTO> subDiscounts) {
+    this.name = name;
+    this.percent = percent;
+    this.type = type;
+    this.condition = condition;
+    this.logic = logic ;
+    this.subDiscounts = subDiscounts;
+}
     public String getName() {
         return name;
     }

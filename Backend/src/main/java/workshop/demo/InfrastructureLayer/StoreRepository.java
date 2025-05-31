@@ -170,9 +170,9 @@ public class StoreRepository implements IStoreRepo {
    @Override
    public void fillWithStoreName(ItemStoreDTO[] items) {
     for (ItemStoreDTO itemStoreDTO : items) {
-        int storeId = itemStoreDTO.storeId;
+        int storeId = itemStoreDTO.getStoreId();
         Store store =this.findStoreByID(storeId);
-        itemStoreDTO.storeName=store.getStoreName();
+        itemStoreDTO.setStoreName(store.getStoreName());
     }
    } 
 

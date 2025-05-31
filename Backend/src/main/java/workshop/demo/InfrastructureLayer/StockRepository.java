@@ -28,6 +28,7 @@ import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.ActivePurcheses;
+import workshop.demo.DomainLayer.User.CartItem;
 
 @Repository
 public class StockRepository implements IStockRepo {
@@ -103,7 +104,6 @@ public class StockRepository implements IStockRepo {
     // return result.toArray(new ProductDTO[0]);
     // }
     // fix it -> bhaa must ckeck it I did not understand it well so I tried this:
-
     // why do we need that? if it's for review it to user -> it's wrong
     @Override
     public ProductDTO GetProductInfo(int productId) throws UIException {
@@ -198,7 +198,7 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public ItemStoreDTO[] getProductsInStore(int storeId) throws UIException, DevException {
-        return search(new ProductSearchCriteria(null, null, null, storeId   ,null , null, null, null));
+        return search(new ProductSearchCriteria(null, null, null, storeId, null, null, null, null),null);
     }
 
     @Override
@@ -257,8 +257,8 @@ public class StockRepository implements IStockRepo {
     }
 
     @Override
-    public boolean checkAvailability(List<ItemCartDTO> cartItems) {
-        for (ItemCartDTO itemDTO : cartItems) {
+    public boolean checkAvailability(List<CartItem> cartItems) {
+        for (CartItem itemDTO : cartItems) {
             StoreStock stock = storeStocks.get(itemDTO.storeId);
             if (stock == null) {
                 return false;
@@ -318,61 +318,26 @@ public class StockRepository implements IStockRepo {
         return this.storeId2ActivePurchases.get(storeId).getProductPrice(randomId);
     }
 
-    public List<ReceiptProduct> processCartItemsForStore(int storeId, List<ItemCartDTO> cartItems, boolean isGuest)
+    public List<ReceiptProduct> processCartItemsForStore(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
             throws Exception {
         StoreStock storeStock = storeStocks.get(storeId);
         if (storeStock == null) {
             throw new DevException("Store stock not initialized for storeId: " + storeId);
         }
-        return storeStock.ProcessCartItems(cartItems, isGuest, storeId);
+        List<ItemCartDTO> dtoList = new ArrayList<>();
+        for (CartItem item : cartItems) {
+            ItemCartDTO dto = new ItemCartDTO();
+            dto.storeId = item.storeId;
+            dto.productId = item.productId;
+            dto.quantity = item.quantity;
+            dto.price = item.price;
+            dto.name = item.name;
+            dto.storeName = StoreName;
+            dto.category=item.category;
+            dtoList.add(dto);
+        }
+        return storeStock.ProcessCartItems(dtoList, isGuest, StoreName);
     }
-
-    // @Override
-    // public ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria,
-    // ProductDTO[] matchesProducts)
-    // throws UIException, DevException {
-
-    // List<ItemStoreDTO> itemList = new LinkedList<>();
-    // if (criteria.getStoreId() == -1) {// search in all stores
-    // for (StoreStock stock : this.storeStocks.values()) {
-    // List<item> lilStock = stock.getAllItemsInStock();
-    // for (item item1 : lilStock) {
-    // for (ProductDTO pro : matchesProducts) {
-    // if (item1.getProductId() == pro.getProductId() &&
-    // criteria.matchesForStore(item1)) {
-    // ItemStoreDTO toAdd = new ItemStoreDTO(
-    // item1.getProductId(),
-    // item1.getQuantity(),
-    // item1.getPrice(),
-    // item1.getCategory(),
-    // item1.getFinalRank(),
-    // stock.getStoreStockId());
-    // itemList.add(toAdd);
-    // break; // found matching product -> no need to check other products
-    // }
-    // }
-    // }
-    // }
-
-    // } else {// search in a spicific store
-    // StoreStock stock = this.storeStocks.get(criteria.getStoreId());
-    // if (stock == null) {
-    // throw new UIException("stock does not exist", ErrorCodes.STOCK_NOT_FOUND);
-    // }
-    // for (ProductDTO pro : matchesProducts) {
-    // item item1 = stock.getItemByProductId(pro.getProductId());
-    // if (item1 != null && criteria.matchesForStore(item1)) {
-    // ItemStoreDTO toAdd = new ItemStoreDTO(item1.getProductId(),
-    // item1.getQuantity(), item1.getPrice(),
-    // item1.getCategory(), item1.getFinalRank(), stock.getStoreStockId());
-    // itemList.add(toAdd);
-    // }
-    // }
-
-    // }
-
-    // return itemList.toArray(new ItemStoreDTO[0]);
-    // }
 
     @Override
     public void checkProductExists_ThrowException(int productId) throws UIException {
@@ -415,12 +380,11 @@ public class StockRepository implements IStockRepo {
         return getActivePurchases(storeId).getCardWithId(specialId, randomId);
     }
 
-
     public void clear() {
         idGen.set(1);
-    for (ActivePurcheses activePurchases : storeId2ActivePurchases.values()) {
-        activePurchases.clear(); 
-    }
+        for (ActivePurcheses activePurchases : storeId2ActivePurchases.values()) {
+            activePurchases.clear();
+        }
         if (storeId2ActivePurchases != null) {
             storeId2ActivePurchases.clear();
         }
@@ -442,19 +406,19 @@ public class StockRepository implements IStockRepo {
     // throw new UnsupportedOperationException("Unimplemented method
     // 'getMatchesItems'");
     // }
-
     @Override
-    public ItemStoreDTO[] search(ProductSearchCriteria criteria) throws UIException {
+    public ItemStoreDTO[] search(ProductSearchCriteria criteria,String storeName) throws UIException {
         List<Product> matchesCategoryProduct = getProductsFilteredByCategory(criteria);
         List<ItemStoreDTO> result = new ArrayList<>();
         for (Product product : matchesCategoryProduct) {
-            if (!criteria.productIsMatch(product)) 
+            if (!criteria.productIsMatch(product)) {
                 continue;
+            }
             List<StoreStock> matchesStores = getMatchesStore(criteria);
             for (StoreStock store : matchesStores) {
                 item item = store.getItemByProductId(product.getProductId());
-                if(criteria.matchesForStore(item)){
-                    ItemStoreDTO toAdd = convertToItemStoreDTO(item,product,store.getStoreStockId());
+                if (criteria.matchesForStore(item)) {
+                    ItemStoreDTO toAdd = convertToItemStoreDTO(item, product, store.getStoreStockId(),storeName);
                     result.add(toAdd);
                 }
             }
@@ -463,15 +427,15 @@ public class StockRepository implements IStockRepo {
 
     }
 
-    private ItemStoreDTO convertToItemStoreDTO(item item, Product product,int storeId) {
-        return new ItemStoreDTO(product.getProductId(), item.getQuantity(), item.getPrice(), product.getCategory(), item.getFinalRank(),storeId,product.getName());
+    private ItemStoreDTO convertToItemStoreDTO(item item, Product product, int storeId,String storeName) {
+        return new ItemStoreDTO(product.getProductId(), item.getQuantity(), item.getPrice(), product.getCategory(), item.getFinalRank(), storeId, product.getName(),storeName);
     }
 
     private List<StoreStock> getMatchesStore(ProductSearchCriteria criteria) {
         List<StoreStock> stores = new ArrayList<>();
-        if(criteria.specificStore()){
+        if (criteria.specificStore()) {
             stores.add(storeStocks.get(criteria.getStoreId()));
-        }else{
+        } else {
             stores.addAll(storeStocks.values());
         }
         return stores;
@@ -495,16 +459,16 @@ public class StockRepository implements IStockRepo {
         for (List<Product> productList : allProducts.values()) {
             for (Product product : productList) {
                 allProductDTOs.add(new ProductDTO(
-                    product.getProductId(),
-                    product.getName(),
-                    product.getCategory(),
-                    product.getDescription()
+                        product.getProductId(),
+                        product.getName(),
+                        product.getCategory(),
+                        product.getDescription()
                 ));
             }
         }
         return allProductDTOs.toArray(new ProductDTO[0]);
     }
 
- 
-  
+
+
 }

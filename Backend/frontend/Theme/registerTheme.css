@@ -27,3 +27,11 @@
   color: white;
   font-weight: bold;
 }
+.register-view vaadin-number-field {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+.register-view span {
+  font-size: 0.9rem;
+  color: red;
+}
