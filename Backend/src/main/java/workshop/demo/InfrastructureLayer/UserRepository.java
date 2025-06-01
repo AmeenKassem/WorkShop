@@ -217,7 +217,7 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public ShoppingCart getUserCart(int userId) {
+    public ShoppingCart getUserCart(int userId) throws UIException {
         if (guests.containsKey(userId)) {
             return guests.get(userId).geCart();
         }
@@ -225,7 +225,7 @@ public class UserRepository implements IUserRepo {
         if (registered != null) {
             return registered.geCart();
         }
-        throw new RuntimeException(new UIException("User with ID " + userId + " not found", ErrorCodes.USER_NOT_FOUND));
+        throw new UIException("User with ID " + userId + " not found", ErrorCodes.USER_NOT_FOUND);
     }
 
     @Override
@@ -268,7 +268,7 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public UserDTO getUserDTO(int userId) {
+    public UserDTO getUserDTO(int userId) throws UIException {
         if (isRegistered(userId)) {
             logger.log(Level.INFO, "getUserDTO for registered user ID={}", userId);
             return getRegisteredUser(userId).getUserDTO();
@@ -276,7 +276,7 @@ public class UserRepository implements IUserRepo {
             logger.log(Level.INFO, "getUserDTO for guests user ID={}", userId);
             return guests.get(userId).getUserDTO();
         } else {
-            throw new RuntimeException(new UIException("User not found with ID: " + userId, ErrorCodes.USER_NOT_FOUND));
+            throw new UIException("User not found with ID: " + userId, ErrorCodes.USER_NOT_FOUND);
         }
     }
 

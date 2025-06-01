@@ -336,4 +336,13 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         return stockRepo.getAllProducts();
     }
+
+    public ParticipationInRandomDTO participateInRandom(String token, int storeId, int randomId, double price)throws Exception {
+        logger.info("user participating in randomId: {} in store: {} with price: {}", randomId, storeId, price);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        return stockRepo.participateInRandom(userId, randomId, storeId, price);
+    }
 }
