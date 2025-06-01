@@ -342,4 +342,19 @@ public class UserController {
         }
     }
 
+    @GetMapping("/getAllUsers")
+    public String getAllUsers(@RequestParam String token) {
+        ApiResponse<List<UserDTO>> res;
+        try {
+            List<UserDTO> users = userService.getAllUsers(token);
+            res = new ApiResponse<>(users, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
+    }
+
+
 }

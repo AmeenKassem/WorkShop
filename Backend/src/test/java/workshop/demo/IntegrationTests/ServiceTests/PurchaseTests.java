@@ -125,7 +125,7 @@ public class PurchaseTests {
         int productId = stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(createdStoreId, NOToken, productId, 10, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, createdStoreId, "Laptop","TestStore");
+        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, createdStoreId, "Laptop", "TestStore");
         stockService.setProductToRandom(NOToken, productId, 1, 2000, createdStoreId, 5000);
         stockService.setProductToAuction(NOToken, createdStoreId, productId, 1, 1000, 2);
         assertTrue(stockService.getAllAuctions(NOToken, createdStoreId).length == 1);
@@ -141,7 +141,6 @@ public class PurchaseTests {
     }
 
     @AfterEach
-
     void tearDown() {
         userRepo.clear();
         storeRepository.clear();
@@ -189,6 +188,16 @@ public class PurchaseTests {
             assertEquals("TestStore", r.getStoreName());
             assertEquals(10, r.getFinalPrice());
 
+
+            assertTrue(orderService.getReceiptDTOsByUser(NGToken).size() == 1);
+            assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getFinalPrice() == 10);
+            assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().size() == 1);
+            assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().get(0).getProductId() == 1);
+            assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 7);
+            assertTrue(userRepo.getUserCart(authRepo.getUserId(NGToken)).getAllCart().size() == 0);
+            assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
+
+
         } catch (Exception exception) {
             System.out.println(exception);
         }
@@ -207,8 +216,16 @@ public class PurchaseTests {
         stockService.rejectBid(NOToken, 1, x, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getId());
 
         assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+        ReceiptDTO[] receipts = purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
+        assertNotNull(receipts);
+        assertEquals(0, receipts.length);
 
-        // Assert
+
+        assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
+
+
     }
 
     @Test
@@ -251,8 +268,7 @@ public class PurchaseTests {
         assertEquals("Bid ID not found in active bids!", ex.getMessage());
     }
 
-    // Needs Fixing!
-    // AddAUCTION
+
     @Test
     void Add_AuctionBidToSpecialCart_Success_won() throws Exception {
         stockService.addBidOnAucction(NGToken, 1, 1, 10);
@@ -286,6 +302,15 @@ public class PurchaseTests {
         assertEquals("TestStore", r.getStoreName());
         assertEquals(10, r.getFinalPrice());
 
+
+        assertTrue(orderService.getReceiptDTOsByUser(NGToken).size() == 1);
+        assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getFinalPrice() == 10);
+        assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().size() == 1);
+        assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().get(0).getProductId() == 1);
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 8);
+        assertTrue(userRepo.getUserCart(authRepo.getUserId(NGToken)).getAllCart().size() == 0);
+        assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
+
     }
 
     @Test
@@ -298,20 +323,27 @@ public class PurchaseTests {
         Thread.sleep(500);
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].status.equals(AuctionStatus.IN_PROGRESS));
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].getStatus().equals(Status.AUCTION_PENDING));
-        stockService.addBidOnAucction(NGToken, 1, 1, 20);
+        stockService.addBidOnAucction(NOToken, 1, 1, 20);
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids.length == 2);
 
         Thread.sleep(500);
 
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].status.equals(AuctionStatus.FINISH));
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].getStatus().equals(Status.AUCTION_LOSED));
+        assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[1].getStatus().equals(Status.AUCTION_WON));
+
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
 
-        UIException ex = assertThrows(UIException.class,
-                () -> purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails));
-        assertEquals("Product not available", ex.getMessage());
+        purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
+
+        assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
+
+        purchaseService.finalizeSpecialCart(NOToken, paymentDetails, supplyDetails);
+
+        assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
+
 
     }
 
@@ -383,10 +415,18 @@ public class PurchaseTests {
         assertEquals("TestStore", r.getStoreName());
         assertEquals(0, r.getFinalPrice());
 
+        assertTrue(orderService.getReceiptDTOsByUser(NGToken).size() == 1);
+        assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getFinalPrice() == 0);
+        assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().size() == 1);
+        assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().get(0).getProductId() == 1);
+        assertTrue(userRepo.getUserCart(authRepo.getUserId(NGToken)).getAllCart().size() == 0);
+        assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
+
+
     }
 
     // Needs Fixing!
-    // @Test
+    @Test
     void Set_ProductToRandom_didntwin() throws Exception {
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
@@ -402,6 +442,8 @@ public class PurchaseTests {
 
         assertNotNull(receipts);
         assertEquals(0, receipts.length);
+        assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
+
 
     }
 

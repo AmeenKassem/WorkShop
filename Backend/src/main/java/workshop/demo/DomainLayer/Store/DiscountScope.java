@@ -24,6 +24,10 @@ public class DiscountScope {
                 .mapToDouble(item -> item.getPrice() * item.getQuantity())
                 .sum();
     }
+    
+    public boolean containsItem(int itemId) {
+        return items.stream().anyMatch(i -> i.getProductId() == itemId);
+    }
 
     public int getQuantityOfProduct(int productId) {
         return items.stream()
@@ -37,6 +41,10 @@ public class DiscountScope {
                 .anyMatch(i -> i.getCategory().name().equalsIgnoreCase(categoryName));
 
     }
+    public boolean containsStore(int storeId) {
+    return items.stream().anyMatch(i -> i.getStoreId() == storeId);
+}
+
     
     public int getTotalQuantity() {
         return items.stream().mapToInt(ItemStoreDTO::getQuantity).sum();
