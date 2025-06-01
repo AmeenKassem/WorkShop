@@ -136,10 +136,10 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
             Button edit = new Button("✏️ Edit", e -> openEditDialog(item, product.getDescription()));
             Button delete = new Button("🗑️ Delete", e -> presenter.deleteProduct(storeId, token, item.getProductId()));
-            Button auctionButton = new Button("🎯 Set to Auction", e
+            Button auctionButton = new Button("🎯 Start Auction", e
                     -> showAuctionDialog(storeId, token, item.getProductId()));
-            Button bidButton = new Button("💸 Set to Bid", e -> showBidDialog(storeId, token, item.getProductId()));
-            Button randomButton = new Button("🎲 Set to Random", e -> showRandomDialog(storeId, token, item.getProductId()));
+            Button bidButton = new Button("💸 Enable Bidding", e -> showBidDialog(storeId, token, item.getProductId()));
+            Button randomButton = new Button("🎲 Start Random Draw", e -> showRandomDialog(storeId, token, item.getProductId()));
             VerticalLayout actions = new VerticalLayout(edit, auctionButton, bidButton, randomButton, delete);
             actions.addClassName("button-row");
 

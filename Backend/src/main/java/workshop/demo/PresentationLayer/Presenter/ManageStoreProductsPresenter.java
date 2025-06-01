@@ -262,7 +262,7 @@ public class ManageStoreProductsPresenter {
             );
 
             restTemplate.postForEntity(url, null, ApiResponse.class);
-            NotificationView.showSuccess("🎉 Product set to random draw!");
+            NotificationView.showSuccess("Product set to random draw!");
         } catch (Exception e) {
             ExceptionHandlers.handleException(e);
         }

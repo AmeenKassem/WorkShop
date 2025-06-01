@@ -2,6 +2,7 @@ package workshop.demo.PresentationLayer.View;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -14,6 +15,8 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEvent;
@@ -21,8 +24,10 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
+import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.ReviewDTO;
 import workshop.demo.PresentationLayer.Presenter.StoreDetailsPresenter;
 
@@ -83,6 +88,10 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
     }
 
     private Div createProductCard(ItemStoreDTO item, ProductDTO product) {
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        List<RandomDTO> randomProductIds = presenter.getRandomProductIds(myStoreId, token);
+        List<AuctionDTO> auctionProductIds = presenter.getAuctionProductIds(myStoreId, token);
+
         Div card = new Div();
         card.getStyle()
                 .set("border", "1px solid #ddd")
@@ -92,6 +101,10 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 .set("background-color", "#f9f9f9");
 
         H4 title = new H4("📦 " + item.getProductName());
+        VerticalLayout actions = new VerticalLayout();
+        actions.setSpacing(true);
+        actions.setPadding(false);
+        actions.setWidthFull();
         String stars = "⭐".repeat(item.getRank()) + "☆".repeat(5 - item.getRank());
 
         Paragraph rating = new Paragraph("⭐ Rank: " + stars);
@@ -99,8 +112,38 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Paragraph quantity = new Paragraph("📦 Quantity: " + item.getQuantity());
         Paragraph category = new Paragraph("🏷️ Category: " + product.category);
         Paragraph description = new Paragraph("📄 Description: " + product.getDescription());
-
         Button addToCart = new Button("🛒 Add to Cart", e -> openAddToCartDialog(item));
+        //here manage the special  items:
+        //auction:
+        boolean isAuction = auctionProductIds.stream()
+                .anyMatch(a -> a.productId == item.getProductId());
+        if (isAuction) {
+            AuctionDTO matchingAuction = auctionProductIds.stream()
+                    .filter(a -> a.productId == item.getProductId())
+                    .findFirst()
+                    .orElse(null);
+
+            if (matchingAuction != null) {
+                Button auctionButton = new Button("🎯 Join Auction", e -> showAuctionBidDialog(matchingAuction));
+                auctionButton.setWidthFull();
+                actions.add(auctionButton);
+
+            }
+        }
+
+        //random:
+        boolean isRandom = randomProductIds.stream()
+                .anyMatch(r -> r.productId == item.getProductId());
+        if (isRandom) {
+            Button randomButton = new Button("🎲 Buy Random Card", e -> {
+                NotificationView.showSuccess("🎉 Coming soon: Random card draw!");
+            });
+            randomButton.setWidthFull();
+            actions.add(randomButton);
+        }
+        //bid:
+
+        //other:
         Button addReview = new Button("💬 Add Review", e -> openProductReviewDialog(item));
         Button addRank = new Button("⭐ Add Rank", e -> openProductRankDialog(item));
         Button showReview = new Button("📖 Show Reviews", e -> openProductReviewsDialog(item));
@@ -109,13 +152,10 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         addReview.setWidthFull();
         addRank.setWidthFull();
         showReview.setWidthFull();
-        // Stack buttons vertically
-        VerticalLayout actions = new VerticalLayout(addToCart, showReview, addReview, addRank);
-        actions.setSpacing(true);
-        actions.setPadding(false);
-        actions.setWidthFull();
+        actions.add(addToCart, showReview, addReview, addRank);
         card.add(title, rating, price, quantity, category, description, actions);
         return card;
+
     }
 
     public void openProductRankDialog(ItemStoreDTO item) {
@@ -307,4 +347,35 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
             showDialog(List.of("Failed to load product reviews: " + e.getMessage()));
         }
     }
+
+    private void showAuctionBidDialog(AuctionDTO auction) {
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("💸 Place Your Bid in Auction");
+
+        int suggestedPrice = (int) Math.ceil(auction.maxBid) + 1;
+
+        IntegerField priceField = new IntegerField("Your Bid Price");
+        priceField.setMin(suggestedPrice); // must be strictly higher
+        priceField.setStepButtonsVisible(true);
+        priceField.setValue(suggestedPrice); // suggest next valid price
+
+        VerticalLayout layout = new VerticalLayout(
+                new Paragraph("Current Highest Bid: " + auction.maxBid),
+                priceField
+        );
+        dialog.add(layout);
+
+        Button confirm = new Button("Place Bid in Auction", e -> {
+            int price = priceField.getValue();
+            presenter.placeBidOnAuction(token, auction.auctionId, auction.storeId, price);
+            dialog.close();
+        });
+
+        Button cancel = new Button("Cancel", e -> dialog.close());
+        dialog.getFooter().add(new HorizontalLayout(confirm, cancel));
+
+        dialog.open();
+    }
+
 }

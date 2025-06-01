@@ -1,6 +1,7 @@
 package workshop.demo.DTOs;
 
 public class RandomDTO {
+
     public int productId;
     public int quantity;
     public ParticipationInRandomDTO[] participations;
@@ -12,5 +13,7 @@ public class RandomDTO {
     public ParticipationInRandomDTO winner;
     public double productPrice;
     public double amountLeft;
-    
+
+    public RandomDTO() {
+    }
 }

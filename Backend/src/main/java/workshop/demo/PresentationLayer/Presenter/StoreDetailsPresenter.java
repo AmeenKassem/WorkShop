@@ -1,10 +1,14 @@
 package workshop.demo.PresentationLayer.Presenter;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -21,8 +25,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.ReviewDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.NotificationView;
@@ -279,6 +285,65 @@ public class StoreDetailsPresenter {
             ExceptionHandlers.handleException(e);
         }
         return List.of();
+    }
+
+    public List<RandomDTO> getRandomProductIds(int storeId, String token) {
+        try {
+            String url = String.format(
+                    "http://localhost:8080/stock/getAllRandomInStore?token=%s&storeId=%d",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                    storeId
+            );
+
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);
+
+            if (response.getBody() != null && response.getBody().getErrNumber() == -1) {
+                ObjectMapper mapper = new ObjectMapper();
+                RandomDTO[] randoms = mapper.convertValue(response.getBody().getData(), RandomDTO[].class);
+                return Arrays.asList(randoms);
+            }
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+
+        return new ArrayList<>();
+    }
+
+    public List<AuctionDTO> getAuctionProductIds(int storeId, String token) {
+        try {
+            String url = String.format(
+                    "http://localhost:8080/stock/getAllAuctions?token=%s&storeId=%d",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                    storeId
+            );
+            ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);
+
+            if (response.getBody() != null && response.getBody().getErrNumber() == -1) {
+                ObjectMapper mapper = new ObjectMapper();
+                AuctionDTO[] auctions = mapper.convertValue(response.getBody().getData(), AuctionDTO[].class);
+                return Arrays.asList(auctions);
+
+            }
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+        return new ArrayList<>();
+    }
+
+    public void placeBidOnAuction(String token, int auctionId, int storeId, int price) {
+        try {
+            String url = String.format(
+                    "http://localhost:8080/stock/addBidOnAuction?token=%s&auctionId=%d&storeId=%d&price=%d",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                    auctionId, storeId, price
+            );
+
+            restTemplate.postForEntity(url, null, ApiResponse.class);
+            NotificationView.showSuccess(" Bid placed successfully!");
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
     }
 
 }

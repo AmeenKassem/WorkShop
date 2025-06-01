@@ -67,10 +67,7 @@ public class MyCartPresenter {
                         .map(obj -> mapper.convertValue(obj, ItemCartDTO.class))
                         .collect(Collectors.toList());
                 view.displayRegularItems(items.toArray(new ItemCartDTO[0]));
-            } else {
-                showError(rawResponse);
             }
-
         } catch (Exception e) {
             ExceptionHandlers.handleException(e);
         }
@@ -105,10 +102,7 @@ public class MyCartPresenter {
                         .map(obj -> mapper.convertValue(obj, SpecialCartItemDTO.class))
                         .collect(Collectors.toList());
                 view.displaySpecialItems(items.toArray(new SpecialCartItemDTO[0]));
-            } else {
-                showError(rawResponse);
             }
-
         } catch (Exception e) {
             ExceptionHandlers.handleException(e);
         }
@@ -124,13 +118,4 @@ public class MyCartPresenter {
         return token;
     }
 
-    private void showError(ApiResponse errorBody) {
-        if (errorBody == null) {
-            NotificationView.showError("Empty response from server.");
-        } else if (errorBody.getErrNumber() != -1) {
-            NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-        } else {
-            NotificationView.showError("Error: " + errorBody.getErrorMsg());
-        }
-    }
 }
