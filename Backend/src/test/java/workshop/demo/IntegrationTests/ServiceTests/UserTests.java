@@ -316,6 +316,8 @@ public class UserTests {
         ReceiptDTO r = result.get(0);
         assertEquals("TestStore", r.getStoreName());
         assertEquals(2000, r.getFinalPrice());
+                assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==9); 
+
     }
 
     @Test
@@ -336,6 +338,8 @@ public class UserTests {
         });
         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
         assertEquals("Invalid token!", ex.getMessage());
+                assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==9); 
+
     }
 
     @Test
@@ -409,6 +413,8 @@ public class UserTests {
         assertDoesNotThrow(() -> {
             userService.addToUserCart(NGToken, itemStoreDTO, 1);
         });
+                assertTrue(userService.getRegularCart(NGToken).length==1);
+
     }
 
     @Test
@@ -419,6 +425,8 @@ public class UserTests {
 
         assertEquals("Invalid token!", exception.getMessage());
         assertEquals(ErrorCodes.INVALID_TOKEN, exception.getNumber());
+        
+                assertTrue(userService.getRegularCart(NGToken).length==0);
 
         // Assert
     }
@@ -467,6 +475,8 @@ public class UserTests {
                 () -> purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
 
         assertEquals("Shopping cart is empty or not found", ex.getMessage());
+                assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10); 
+
     }
 
     @Test
@@ -477,6 +487,8 @@ public class UserTests {
                 () -> purchaseService.buyRegisteredCart(NGToken, PaymentDetails.test_fail_Payment(), supplyDetails));
 
         assertEquals("Payment failed", ex.getMessage());
+                assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10); 
+
     }
 
     @Test
@@ -577,6 +589,8 @@ public class UserTests {
         userService.ModifyCartAddQToBuy(NGToken, 1, 3);
         ReceiptDTO[] re = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
         assertTrue(re[0].getFinalPrice() == 6000);
+                assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==7); 
+
     }
 
     @Test
@@ -589,6 +603,8 @@ public class UserTests {
                 -> userService.ModifyCartAddQToBuy("INVALID", 1, 2)
         );
         ReceiptDTO[] re = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+                assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==9); 
+
     }
 
 }

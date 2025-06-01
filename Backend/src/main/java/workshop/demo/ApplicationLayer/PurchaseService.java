@@ -93,56 +93,68 @@ public class PurchaseService {
         return processCart(userId, false, paymentdetails, supplydetails);
     }
 
-    private ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails payment, SupplyDetails supply)
-            throws Exception {
-        logger.info("processCart called for userId={}, isGuest={}", userId, isGuest);
+   private ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails payment, SupplyDetails supply)
+        throws Exception {
+    logger.info("processCart called for userId={}, isGuest={}", userId, isGuest);
 
-        ShoppingCart cart = userRepo.getUserCart(userId);
-        if (cart == null || cart.getAllCart().isEmpty()) {
-            logger.warn("Cart is empty for userId={}", userId);
-
-            throw new UIException("Shopping cart is empty or not found", ErrorCodes.CART_NOT_FOUND);
-        }
-
-        if (isGuest && !stockRepo.checkAvailability(cart.getAllCart())) {
-            logger.warn("Product availability check failed for guest userId={}", userId);
-
-            throw new UIException("Not all items are available for guest purchase", ErrorCodes.PRODUCT_NOT_FOUND);
-        }
-
-        //Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
-        Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts = new HashMap<>();
-        for (ShoppingBasket basket : cart.getBaskets().values()) {
-            logger.info("Processing basket for storeId={}", basket.getStoreId());
-            String storeName = storeRepo.getStoreNameById(basket.getStoreId());
-            List<ReceiptProduct> boughtItems = stockRepo.processCartItemsForStore(basket.getStoreId(),
-                    basket.getItems(), isGuest, storeName);
-            for (ReceiptProduct product : boughtItems) {
-                product.setstoreName(storeName);
-            }
-            List<ItemStoreDTO> itemStoreDTOS = new ArrayList<>();
-            for (ReceiptProduct p : boughtItems) {
-                itemStoreDTOS.add(new ItemStoreDTO(p.getProductId(), p.getQuantity(), p.getPrice(), p.getCategory(), 0, basket.getStoreId(), p.getProductName(),storeName
-                ));
-            }
-            DiscountScope scope = new DiscountScope(itemStoreDTOS);
-            System.out.println(scope.getItems().getFirst().getCategory());
-            Store store = storeRepo.findStoreByID(basket.getStoreId()); // changed the  get list to use this function instead
-
-            Discount discount = store.getDiscount();
-            double discountAmount = (discount != null) ? discount.apply(scope) : 0.0;
-            double total = stockRepo.calculateTotalPrice(boughtItems);
-            double finalTotal = total - discountAmount;
-            logger.info("Store={}, Original={}, Discount={}, Final={}", storeName, total, discountAmount, finalTotal);
-            paymentService.processPayment(payment, finalTotal);
-            supplyService.processSupply(supply);
-            //storeToProducts.put(basket.getStoreId(), boughtItems);
-                                    userRepo.getUserCart(userId).clear();
-
-            storeToProducts.put(basket.getStoreId(), Pair.of(boughtItems, finalTotal));
-        }
-        return saveReceiptsWithDiscount(userId, storeToProducts);
+    ShoppingCart cart = userRepo.getUserCart(userId);
+    if (cart == null || cart.getAllCart().isEmpty()) {
+        logger.warn("Cart is empty for userId={}", userId);
+        throw new UIException("Shopping cart is empty or not found", ErrorCodes.CART_NOT_FOUND);
     }
+
+    if (isGuest && !stockRepo.checkAvailability(cart.getAllCart())) {
+        logger.warn("Product availability check failed for guest userId={}", userId);
+        throw new UIException("Not all items are available for guest purchase", ErrorCodes.PRODUCT_NOT_FOUND);
+    }
+
+    Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts = new HashMap<>();
+
+    for (ShoppingBasket basket : cart.getBaskets().values()) {
+        int storeId = basket.getStoreId();
+        Store store = storeRepo.findStoreByID(storeId);
+
+        if (store == null || !store.isActive()) {
+            logger.info("Skipping inactive or missing storeId={}", storeId);
+            continue; // Skip this store
+        }
+
+        String storeName = store.getStoreName();
+        logger.info("Processing basket for active storeId={} ({})", storeId, storeName);
+
+        List<ReceiptProduct> boughtItems = stockRepo.processCartItemsForStore(
+            storeId, basket.getItems(), isGuest, storeName);
+
+        for (ReceiptProduct product : boughtItems) {
+            product.setstoreName(storeName);
+        }
+
+        List<ItemStoreDTO> itemStoreDTOS = new ArrayList<>();
+        for (ReceiptProduct p : boughtItems) {
+            itemStoreDTOS.add(new ItemStoreDTO(
+                p.getProductId(), p.getQuantity(), p.getPrice(), p.getCategory(),
+                0, storeId, p.getProductName(), storeName
+            ));
+        }
+
+        DiscountScope scope = new DiscountScope(itemStoreDTOS);
+        Discount discount = store.getDiscount();
+        double discountAmount = (discount != null) ? discount.apply(scope) : 0.0;
+        double total = stockRepo.calculateTotalPrice(boughtItems);
+        double finalTotal = total - discountAmount;
+
+        logger.info("Store={}, Original={}, Discount={}, Final={}", storeName, total, discountAmount, finalTotal);
+
+        paymentService.processPayment(payment, finalTotal);
+        supplyService.processSupply(supply);
+        stockRepo.changequantity(storeId, basket.getItems(), isGuest, storeName);
+
+        storeToProducts.put(storeId, Pair.of(boughtItems, finalTotal));
+    }
+
+    userRepo.getUserCart(userId).clear();
+    return saveReceiptsWithDiscount(userId, storeToProducts);
+}
 
     public ParticipationInRandomDTO participateInRandom(String token, int randomId, int storeId, double amountPaid,
             PaymentDetails paymentDetails) throws Exception {
@@ -227,7 +239,7 @@ public class PurchaseService {
                     storeName,
                     bid.getAmount(),
                     (int) bid.getBidPrice(),
-                    bid.getId(),
+                    bid.productId(),
                     product.getCategory());
 
             res.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);

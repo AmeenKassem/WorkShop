@@ -154,7 +154,6 @@ public class UserService {
     public ItemCartDTO[] getRegularCart(String token) throws UIException {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
         List<CartItem> regularCartItems = userRepo.getUserCart(userId).getAllCart();
         ItemCartDTO[] dtos = new ItemCartDTO[regularCartItems.size()];
         for (int i = 0; i < regularCartItems.size(); i++) {

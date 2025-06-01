@@ -135,7 +135,6 @@ public class StoreStock {
                     continue;
                 }
             }
-            decreaseQuantitytoBuy(item.getProductId(), item.getQuantity());
             boughtItems.add(new ReceiptProduct(
                     item.getName(),
                     storeName,
@@ -147,7 +146,21 @@ public class StoreStock {
         }
         return boughtItems;
     }
+public void changequantity(List<ItemCartDTO> cartItems, boolean isGuest, String storeName) throws UIException {
+  List<ReceiptProduct> boughtItems = new ArrayList<>();
+        for (ItemCartDTO dto : cartItems) {
+            CartItem item = new CartItem(dto);
+            item storeItem = getItemByProductId(item.getProductId());
 
+            if (storeItem == null || storeItem.getQuantity() < item.getQuantity()) {
+                if (isGuest) {
+                    throw new UIException("Insufficient stock during guest purchase.", ErrorCodes.INSUFFICIENT_STOCK);
+                } else {
+                    continue;
+                }
+            }
+            decreaseQuantitytoBuy(item.getProductId(), item.getQuantity());
+    }}
     //just for testing
     public List<item> getItemsByCategoryObject(Category category) {
         List<item> result = new ArrayList<>();
