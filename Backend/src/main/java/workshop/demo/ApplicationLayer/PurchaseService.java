@@ -137,6 +137,8 @@ public class PurchaseService {
             paymentService.processPayment(payment, finalTotal);
             supplyService.processSupply(supply);
             //storeToProducts.put(basket.getStoreId(), boughtItems);
+                                    userRepo.getUserCart(userId).clear();
+
             storeToProducts.put(basket.getStoreId(), Pair.of(boughtItems, finalTotal));
         }
         return saveReceiptsWithDiscount(userId, storeToProducts);
@@ -184,6 +186,7 @@ public class PurchaseService {
         double sumToPay = setRecieptMapForBids(winningBids, storeToProducts);
         setRecieptMapForRandoms(storeToProducts, winingRandoms);
         if (supplyService.processSupply(supply) && paymentService.processPayment(payment, sumToPay)) {
+            userRepo.getRegisteredUser(userId).getSpecialCart().clear();
             return saveReceipts(userId, storeToProducts);
         }
         throw new DevException("something went wrong with supply or payment");

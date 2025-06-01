@@ -24,6 +24,16 @@ public class DiscountConditions {
             return scope -> scope.getTotalQuantity() >= minQty;
         }
 
+        if (condition.startsWith("ITEM:")) {
+            int itemId = Integer.parseInt(condition.substring("ITEM:".length()).trim());
+            return scope -> scope.containsItem(itemId);
+        }
+        if (condition.startsWith("STORE:")) {
+    int storeId = Integer.parseInt(condition.substring("STORE:".length()).trim());
+    return scope -> scope.containsStore(storeId);
+}
+
+
         // fallback: never apply
         return scope -> false;
     }

@@ -276,6 +276,12 @@ public class GuestTests {
         assertEquals(2000.0,
                 receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
 
+                            int guestId = authRepo.getUserId(GToken);
+    assertTrue(userRepo.getUserCart(guestId).getAllCart().size()==0);
+   
+
+assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==9); 
+
     }
 
     @Test
