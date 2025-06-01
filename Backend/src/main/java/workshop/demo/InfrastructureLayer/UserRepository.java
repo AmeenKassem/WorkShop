@@ -280,6 +280,16 @@ public class UserRepository implements IUserRepo {
         }
     }
 
+    @Override
+    public List<UserDTO> getAllUserDTOs() {
+        List<UserDTO> result = new ArrayList<>();
+        for (String username : users.keySet()) {
+            Registered user = users.get(username);
+            result.add(user.getUserDTO());
+        }
+        return result;
+    }
+
     public void clear() {
         if (guests != null) {
             guests.clear();

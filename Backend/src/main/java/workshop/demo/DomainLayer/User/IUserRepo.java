@@ -108,6 +108,8 @@ public interface IUserRepo {
 
     public UserDTO getUserDTO(int userId) throws UIException;
 
+    public List<UserDTO> getAllUserDTOs() throws UIException;
+
     List<String> getAllUsernames();
 
     public Registered getRegisteredUserByName(String name) throws UIException;
