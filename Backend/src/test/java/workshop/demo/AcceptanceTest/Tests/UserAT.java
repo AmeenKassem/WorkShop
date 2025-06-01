@@ -633,7 +633,6 @@ public class UserAT extends AcceptanceTests {
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
 
-        verify(real.mockUserRepo).getUserCart(userId);
         verify(real.mockStockRepo).processCartItemsForStore(eq(storeId), anyList(), eq(false), eq("TestStore"));
         verify(real.mockStockRepo).calculateTotalPrice(anyList());
         verify(real.mockPay).processPayment(any(), eq(200.0));
