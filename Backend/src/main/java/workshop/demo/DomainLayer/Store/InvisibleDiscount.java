@@ -6,6 +6,8 @@ public class InvisibleDiscount implements Discount {
     private final String name;
     private final double percent;
     private final Predicate<DiscountScope> condition;
+    
+    
 
     public InvisibleDiscount(String name, double percent, Predicate<DiscountScope> condition) {
         this.name = name;
