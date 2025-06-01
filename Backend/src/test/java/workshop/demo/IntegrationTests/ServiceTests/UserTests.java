@@ -435,6 +435,13 @@ public class UserTests {
         assertEquals("TestStore", receipts[0].getStoreName());
         assertEquals(2000.0,
                 receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
+
+                              assertTrue( orderService.getReceiptDTOsByUser(NGToken).size()==1);
+          assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getFinalPrice()==2000);
+                    assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().size()==1);
+                                        assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().get(0).getProductId()==1);
+                            assertTrue(stockService.getProductsInStore(1)[0].getQuantity()==9);
+    assertTrue(userRepo.getUserCart(authRepo.getUserId(NGToken)).getAllCart().size()==0);
     }
 
     @Test

@@ -137,6 +137,8 @@ public class PurchaseService {
             paymentService.processPayment(payment, finalTotal);
             supplyService.processSupply(supply);
             //storeToProducts.put(basket.getStoreId(), boughtItems);
+                        userRepo.getUserCart(userId).clear();
+
             storeToProducts.put(basket.getStoreId(), Pair.of(boughtItems, finalTotal));
         }
         return saveReceiptsWithDiscount(userId, storeToProducts);
