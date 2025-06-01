@@ -49,15 +49,12 @@ public class PurcheseContoller {
 
             ReceiptDTO[] receipts = purchaseService.buyGuestCart(token, paymentdetails, supplydetails);
             res = new ApiResponse<>(receipts, null);
-            // Return 200 OK for successful operations
             return ResponseEntity.ok(res.toJson());
         } catch (UIException e) {
             res = new ApiResponse<>(null, e.getMessage(), e.getNumber());
-            // Return 400 Bad Request for client errors
             return ResponseEntity.badRequest().body(res.toJson());
         } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
-            // Return 500 Internal Server Error for server errors
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(res.toJson());
         }
@@ -90,22 +87,22 @@ public class PurcheseContoller {
     }
 
     @PostMapping("/participateRandom")
-    public String participateInRandom(@RequestParam String token,
+    public ResponseEntity<?> participateInRandom(@RequestParam String token,
             @RequestParam int randomId,
             @RequestParam int storeId,
             @RequestParam double amountPaid,
             @RequestBody PaymentDetails payment) {
-        ApiResponse<ParticipationInRandomDTO> res;
         try {
             ParticipationInRandomDTO result = purchaseService.participateInRandom(token, randomId, storeId, amountPaid,
                     payment);
-            res = new ApiResponse<>(result, null);
-        } catch (UIException e) {
-            res = new ApiResponse<>(null, e.getMessage(), e.getNumber());
+            return ResponseEntity.ok(new ApiResponse<>(result, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
-        return res.toJson();
     }
 
     @PostMapping("/finalizeRandomWinnings")

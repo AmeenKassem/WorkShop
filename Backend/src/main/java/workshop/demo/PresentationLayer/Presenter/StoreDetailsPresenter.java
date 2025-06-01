@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.ReviewDTO;
@@ -344,6 +345,34 @@ public class StoreDetailsPresenter {
         } catch (Exception e) {
             ExceptionHandlers.handleException(e);
         }
+
+    }
+
+    public void participateInRandomDraw(String token, int randomId, int storeId, double amountPaid, PaymentDetails payment) {
+        try {
+            String url = String.format(
+                    "http://localhost:8080/purchase/participateRandom?token=%s&randomId=%d&storeId=%d&amountPaid=%.2f",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                    randomId, storeId, amountPaid
+            );
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<PaymentDetails> entity = new HttpEntity<>(payment, headers);
+
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    ApiResponse.class
+            );
+
+            NotificationView.showSuccess("Successfully participated in the random draw!");
+
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+
     }
 
 }

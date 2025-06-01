@@ -17,6 +17,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEvent;
@@ -26,6 +27,7 @@ import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.ReviewDTO;
@@ -135,11 +137,16 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         boolean isRandom = randomProductIds.stream()
                 .anyMatch(r -> r.productId == item.getProductId());
         if (isRandom) {
-            Button randomButton = new Button("🎲 Buy Random Card", e -> {
-                NotificationView.showSuccess("🎉 Coming soon: Random card draw!");
-            });
-            randomButton.setWidthFull();
-            actions.add(randomButton);
+            RandomDTO matchingRandom = randomProductIds.stream()
+                    .filter(r -> r.productId == item.getProductId())
+                    .findFirst()
+                    .orElse(null);
+
+            if (matchingRandom != null) {
+                Button randomButton = new Button("🎲 Buy Random Card", e -> showRandomParticipationDialog(matchingRandom));
+                randomButton.setWidthFull();
+                actions.add(randomButton);
+            }
         }
         //bid:
 
@@ -375,6 +382,45 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Button cancel = new Button("Cancel", e -> dialog.close());
         dialog.getFooter().add(new HorizontalLayout(confirm, cancel));
 
+        dialog.open();
+    }
+
+    private void showRandomParticipationDialog(RandomDTO random) {
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("🎲 Participate in Random Draw");
+
+        // Input fields for payment
+        TextField cardNumber = new TextField("Card Number");
+        TextField cardHolder = new TextField("Cardholder Name");
+        TextField expiration = new TextField("Expiration Date (MM/YY)");
+        PasswordField cvv = new PasswordField("CVV");
+
+        NumberField amountPaid = new NumberField("Amount Paid");
+        amountPaid.setValue(random.productPrice);
+        amountPaid.setMin(0.1);
+
+        VerticalLayout form = new VerticalLayout(
+                cardNumber, cardHolder, expiration, cvv, amountPaid
+        );
+
+        Button confirm = new Button("Confirm Purchase", e -> {
+            PaymentDetails payment = new PaymentDetails(
+                    cardNumber.getValue(),
+                    cardHolder.getValue(),
+                    expiration.getValue(),
+                    cvv.getValue()
+            );
+
+            double amount = amountPaid.getValue();
+
+            presenter.participateInRandomDraw(token, random.id, random.storeId, amount, payment);
+            dialog.close();
+        });
+
+        Button cancel = new Button("Cancel", e -> dialog.close());
+        dialog.add(form);
+        dialog.getFooter().add(new HorizontalLayout(confirm, cancel));
         dialog.open();
     }
 
