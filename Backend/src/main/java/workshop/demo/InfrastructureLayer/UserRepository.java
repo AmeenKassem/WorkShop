@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -22,6 +25,7 @@ import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingCart;
+import workshop.demo.DomainLayer.User.SpecialCart;
 
 @Repository
 public class UserRepository implements IUserRepo {
@@ -178,7 +182,7 @@ public class UserRepository implements IUserRepo {
             if (users.containsKey(username)) {
                 return users.get(username);
             } else {
-                throw new RuntimeException(new UIException("User not found: " + username, ErrorCodes.USER_NOT_FOUND));
+                new UIException("User not found: " + username, ErrorCodes.USER_NOT_FOUND);
             }
         }
         return null;
@@ -213,7 +217,7 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public ShoppingCart getUserCart(int userId) {
+    public ShoppingCart getUserCart(int userId) throws UIException {
         if (guests.containsKey(userId)) {
             return guests.get(userId).geCart();
         }
@@ -221,7 +225,7 @@ public class UserRepository implements IUserRepo {
         if (registered != null) {
             return registered.geCart();
         }
-        throw new RuntimeException(new UIException("User with ID " + userId + " not found", ErrorCodes.USER_NOT_FOUND));
+        throw new UIException("User with ID " + userId + " not found", ErrorCodes.USER_NOT_FOUND);
     }
 
     @Override
@@ -264,7 +268,7 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public UserDTO getUserDTO(int userId) {
+    public UserDTO getUserDTO(int userId) throws UIException {
         if (isRegistered(userId)) {
             logger.log(Level.INFO, "getUserDTO for registered user ID={}", userId);
             return getRegisteredUser(userId).getUserDTO();
@@ -272,7 +276,7 @@ public class UserRepository implements IUserRepo {
             logger.log(Level.INFO, "getUserDTO for guests user ID={}", userId);
             return guests.get(userId).getUserDTO();
         } else {
-            throw new RuntimeException(new UIException("User not found with ID: " + userId, ErrorCodes.USER_NOT_FOUND));
+            throw new UIException("User not found with ID: " + userId, ErrorCodes.USER_NOT_FOUND);
         }
     }
 
@@ -299,4 +303,41 @@ public class UserRepository implements IUserRepo {
         }
         return user;
     }
+
+ public void removeSpecialItem(int userId, UserSpecialItemCart itemToRemove) throws UIException {
+    Registered user = getRegisteredUser(userId);
+
+    user.getSpecialCart().removeIf(item ->
+        item.storeId == itemToRemove.storeId &&
+        item.specialId == itemToRemove.specialId &&
+        item.bidId == itemToRemove.bidId &&
+        item.type == itemToRemove.type
+    );
+}
+public void removeBoughtSpecialItems(int userId, List<SingleBid> winningBids, List<ParticipationInRandomDTO> winningRandoms) throws UIException {
+    Registered user = getRegisteredUser(userId);
+    List<UserSpecialItemCart> cart = user.getSpecialCart();
+
+    for (SingleBid bid : winningBids) {
+        cart.removeIf(item ->
+            item.storeId == bid.getStoreId() &&
+            item.specialId == bid.getSpecialId() &&
+            item.bidId == bid.getId() &&
+            item.type == bid.getType()
+        );
+    }
+
+    for (ParticipationInRandomDTO card : winningRandoms) {
+        cart.removeIf(item ->
+            item.storeId == card.storeId &&
+            item.specialId == card.randomId &&
+            item.type == SpecialType.Random
+        );
+    }
+
+    logger.log(Level.INFO,"Removed bought special items from user {}'s cart", userId);
+}
+
+
+
 }

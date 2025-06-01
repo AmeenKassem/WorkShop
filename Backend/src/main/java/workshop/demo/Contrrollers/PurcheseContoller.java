@@ -90,15 +90,15 @@ public class PurcheseContoller {
     }
 
     @PostMapping("/participateRandom")
-    public String participateInRandom(@RequestParam String token,
-            @RequestParam int randomId,
-            @RequestParam int storeId,
-            @RequestParam double amountPaid,
-            @RequestBody PaymentDetails payment) {
+    public String participateInRandom(@RequestParam String token,@RequestParam int randomId,@RequestParam int storeId,@RequestParam double amountPaid,
+            @RequestParam String cardNumber,
+            @RequestParam String cardHolderName,
+            @RequestParam String expirationDate,
+            @RequestParam String cvv) {
         ApiResponse<ParticipationInRandomDTO> res;
         try {
-            ParticipationInRandomDTO result = purchaseService.participateInRandom(token, randomId, storeId, amountPaid,
-                    payment);
+            PaymentDetails payment = new PaymentDetails(cardNumber, cardHolderName, expirationDate, cvv);
+            ParticipationInRandomDTO result = purchaseService.participateInRandom(token, randomId, storeId, amountPaid, payment);
             res = new ApiResponse<>(result, null);
         } catch (UIException e) {
             res = new ApiResponse<>(null, e.getMessage(), e.getNumber());

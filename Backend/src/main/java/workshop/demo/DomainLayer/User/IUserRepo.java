@@ -3,6 +3,8 @@ package workshop.demo.DomainLayer.User;
 import java.util.List;
 
 import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -104,9 +106,14 @@ public interface IUserRepo {
 
     public void checkAdmin_ThrowException(int userId) throws UIException;
 
-    public UserDTO getUserDTO(int userId);
+    public UserDTO getUserDTO(int userId) throws UIException;
 
     List<String> getAllUsernames();
 
     public Registered getRegisteredUserByName(String name) throws UIException;
+
+    public void removeSpecialItem(int userId, UserSpecialItemCart itemToRemove) throws UIException ;
+
+    public void removeBoughtSpecialItems(int userId, List<SingleBid> winningBids, List<ParticipationInRandomDTO> winningRandoms) throws UIException ;
+    
 }
