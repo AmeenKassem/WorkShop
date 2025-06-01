@@ -217,12 +217,18 @@ public class PurchaseTests {
         stockService.rejectBid(NOToken, 1, x, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getId());
 
         assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
-        // assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty() );
+         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+       ReceiptDTO[] receipts=   purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
+        assertNotNull(receipts);
+            assertEquals(0, receipts.length);
+
+
+         assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty() );
 
         
       
 
-        // Assert
     }
 
     @Test
@@ -320,23 +326,26 @@ public class PurchaseTests {
         Thread.sleep(500);
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].status.equals(AuctionStatus.IN_PROGRESS));
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].getStatus().equals(Status.AUCTION_PENDING));
-        stockService.addBidOnAucction(NGToken, 1, 1, 20);
+        stockService.addBidOnAucction(NOToken, 1, 1, 20);
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids.length == 2);
 
         Thread.sleep(500);
 
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].status.equals(AuctionStatus.FINISH));
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].getStatus().equals(Status.AUCTION_LOSED));
+                assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[1].getStatus().equals(Status.AUCTION_WON));
+
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
 
-        UIException ex = assertThrows(UIException.class,
-                () -> purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails));
-        assertEquals("Product not available", ex.getMessage());
-   //     purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
+                purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
         
-     //           assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty() );
+               assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty() );
+
+                purchaseService.finalizeSpecialCart(NOToken, paymentDetails, supplyDetails);
+        
+               assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty() );
 
 
     }

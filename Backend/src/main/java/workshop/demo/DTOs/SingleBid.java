@@ -9,12 +9,15 @@ public class SingleBid {
     private Status status;
     private int storeId;
     private int userId;
+        private int productId;
+
 
     
 
   
 
     public SingleBid(int productId, int amount, int userId, double price, SpecialType type, int storeId, int id, int specialId) {
+        this.productId=productId;
         this.amount = amount;
         this.userId = userId;
         this.price = price;
@@ -87,8 +90,14 @@ public class SingleBid {
         return this.status == Status.AUCTION_WON || this.status == Status.BID_ACCEPTED;
     }
 
-    public boolean isEnded() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'isEnded'");
-    }
+  public boolean isEnded() {
+        return status != Status.AUCTION_PENDING && status != Status.BID_PENDING;
+
+       
+}
+  public int productId() {
+        return productId;
+
+       
+}
 }
