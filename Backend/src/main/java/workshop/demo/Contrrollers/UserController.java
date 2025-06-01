@@ -173,6 +173,41 @@ public class UserController {
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
     }
+    @PostMapping("/ModifyCart")
+public String ModifyCart(
+        @RequestParam String token,
+        @RequestParam int productId,
+        @RequestParam int quantity
+) {
+    ApiResponse<Boolean> res;
+    try {
+        boolean result = userService.ModifyCartAddQToBuy(token, productId, quantity);
+        res = new ApiResponse<>(result, null);
+    } catch (UIException ex) {
+        res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+    } catch (Exception e) {
+        res = new ApiResponse<>(null, e.getMessage(), -1);
+    }
+    return res.toJson();
+}
+@PostMapping("/removeFromCart")
+public String removeFromCart(
+        @RequestParam String token,
+        @RequestParam int productId
+) {
+    ApiResponse<Boolean> res;
+    try {
+        boolean result = userService.removeItemFromCart(token, productId);
+        res = new ApiResponse<>(result, null);
+    } catch (UIException ex) {
+        res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+    } catch (Exception e) {
+        res = new ApiResponse<>(null, e.getMessage(), -1);
+    }
+    return res.toJson();
+}
+
+
 
     // @PutMapping("/updateProfile")
     // public String updateProfile(@RequestParam String token) {

@@ -24,6 +24,9 @@ public class PaymentDetails {
      public static PaymentDetails test_fail_Payment() throws Exception {
 throw new Exception("Payment failed");
     }
+     public PaymentDetails() {
+        // no-args constructor for Jackson
+    }
 
      public static PaymentDetails getPaymentDetailsFromJSON(String json) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
