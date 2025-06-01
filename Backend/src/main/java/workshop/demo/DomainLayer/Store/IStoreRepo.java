@@ -12,7 +12,7 @@ public interface IStoreRepo {
 
     List<StoreDTO> viewAllStores();
 
-    public int addStoreToSystem(int bossID, String storeName, String Category);
+    public int addStoreToSystem(int bossID, String storeName, String Category) throws UIException;
 
     Store findStoreByID(int Id);
 

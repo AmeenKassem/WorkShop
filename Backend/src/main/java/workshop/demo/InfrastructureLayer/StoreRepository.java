@@ -35,10 +35,18 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public int addStoreToSystem(int bossID, String storeName, String Category) {
-        int storeId = generateId();
-        stores.add(new Store(storeId, storeName, Category));
-        return storeId;
+    public int addStoreToSystem(int bossID, String storeName, String Category) throws UIException {
+        synchronized (stores) {
+            boolean nameExists = stores.stream()
+                    .anyMatch(store -> store.getStoreName().equalsIgnoreCase(storeName));
+
+            if (nameExists) {
+                throw new UIException("A store with thid name already exists.", ErrorCodes.STORE_EXIST);
+            }
+            int storeId = generateId();
+            stores.add(new Store(storeId, storeName, Category));
+            return storeId;
+        }
     }
 
     @Override
@@ -62,7 +70,8 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public Store findStoreByID(int ID) {
+    public Store findStoreByID(int ID
+    ) {
         for (Store store : this.stores) {
             if (store.getStoreID() == ID) {
                 return store;

@@ -48,6 +48,9 @@ public class ExceptionHandlers {
         errorMessages.put(ErrorCodes.SUSPENSION_NOT_FOUND, "Suspension record not found.");
         errorMessages.put(ErrorCodes.USERNAME_USED, "This username is already in use.");
         errorMessages.put(ErrorCodes.USER_SUSPENDED, "This user is currently suspended.");
+        errorMessages.put(ErrorCodes.STORE_EXIST, "This store name is already exists.");
+        errorMessages.put(ErrorCodes.DISCOUNT_NOT_FOUND, "This discount is not found");
+        errorMessages.put(ErrorCodes.INVALID_QUANTITY, "This are not enough quantity in store");
     }
 
     public static String getErrorMessage(int code) {

@@ -12,7 +12,7 @@ public class ReceiptDTO {
     public ReceiptDTO() {
         // Default constructor
     }
-    
+
     public ReceiptDTO(String storeName, String date, List<ReceiptProduct> productsList, double finalPrice) {
         this.storeName = storeName;
         this.date = date;
@@ -34,6 +34,22 @@ public class ReceiptDTO {
 
     public double getFinalPrice() {
         return finalPrice;
+    }
+
+    public void setStoreName(String storeName) {
+        this.storeName = storeName;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public void setProductsList(List<ReceiptProduct> productsList) {
+        this.productsList = productsList;
+    }
+
+    public void setFinalPrice(double finalPrice) {
+        this.finalPrice = finalPrice;
     }
 
 }
