@@ -247,17 +247,26 @@ public class ActivePurcheses {
     }
 
     public SingleBid getBidIfWinner(int specialId, int bidId, SpecialType type) {
-        if (type == SpecialType.Auction) {
-            if (activeAuction.containsKey(specialId)) {
-                if(activeAuction.get(specialId).bidIsWinner(bidId)) return activeAuction.get(specialId).getWinner();
-            }
-        } else {
-            if (activeBid.containsKey(specialId)) {
-                if(activeBid.get(specialId).bidIsWinner(bidId)) return activeBid.get(specialId).getWinner();
+    if (type == SpecialType.Auction) {
+        if (activeAuction.containsKey(specialId)) {
+            var auction = activeAuction.get(specialId);
+            SingleBid bid = auction.getBid(bidId);
+            if (bid != null && bid.isWinner()) {
+                return bid;
             }
         }
-        return null;
+    } else { // BID
+        if (activeBid.containsKey(specialId)) {
+            var bidContainer = activeBid.get(specialId);
+            SingleBid bid = bidContainer.getBid(bidId);
+            if (bid != null && bid.isAccepted()) {
+                return bid;
+            }
+        }
     }
+    return null;
+}
+
 
     public SingleBid getBidWithId(int specialId, int bidId, SpecialType type) {
         if (type == SpecialType.Auction) {
