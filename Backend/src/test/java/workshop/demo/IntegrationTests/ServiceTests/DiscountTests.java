@@ -250,6 +250,74 @@ void single_discount_invalid_condition_never_applies() throws Exception {
     assertEquals(4000, receipts[0].getFinalPrice()); // No discount applied
 }
 @Test
+void buy_SINGLE_discount_fail_wrongCategory() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO dto = new CreateDiscountDTO("10% off HOME", 0.10,
+            CreateDiscountDTO.Type.VISIBLE, "CATEGORY:HOME", CreateDiscountDTO.Logic.SINGLE, null);
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, dto);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4);
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice()); // No discount
+}
+
+@Test
+void buy_SINGLE_discount_fail_quantityTooLow() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO dto = new CreateDiscountDTO("5% off on 10+ items", 0.05,
+            CreateDiscountDTO.Type.VISIBLE, "QUANTITY>10", CreateDiscountDTO.Logic.SINGLE, null);
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, dto);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4); // only 4 items
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice()); // No discount
+}
+
+@Test
+void buy_SINGLE_discount_fail_totalTooLow() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO dto = new CreateDiscountDTO("15% off expensive carts", 0.15,
+            CreateDiscountDTO.Type.VISIBLE, "TOTAL>10000", CreateDiscountDTO.Logic.SINGLE, null);
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, dto);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4); // 8000 total
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice()); // No discount
+}
+
+@Test
+void buy_SINGLE_discount_fail_wrongStore() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO dto = new CreateDiscountDTO("10% off wrong store", 0.10,
+            CreateDiscountDTO.Type.VISIBLE, "STORE:999999", CreateDiscountDTO.Logic.SINGLE, null);
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, dto);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4);
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice()); // No discount
+}
+
+@Test
 void or_discount_store_condition_applies() throws Exception {
     Store store = storeRepository.getStores().get(0);
     int storeId = itemStoreDTO.getStoreId();
@@ -365,6 +433,94 @@ void or_discount_category_matches_only() throws Exception {
     assertEquals(3200, receipts[0].getFinalPrice()); // 20% off
 }
 @Test
+void buy_OR_discount_fail_allWrongCategory() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO sub1 = new CreateDiscountDTO("10% off HOME", 0.10,
+            CreateDiscountDTO.Type.VISIBLE, "CATEGORY:HOME", CreateDiscountDTO.Logic.SINGLE, null);
+    CreateDiscountDTO sub2 = new CreateDiscountDTO("15% off GROCERY", 0.15,
+            CreateDiscountDTO.Type.VISIBLE, "CATEGORY:GROCERY", CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO orDTO = new CreateDiscountDTO("OR Discount - wrong categories", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.OR, List.of(sub1, sub2));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, orDTO);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4); // Category is ELECTRONICS
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice());
+}
+
+@Test
+void buy_OR_discount_fail_allWrongStore() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO sub1 = new CreateDiscountDTO("10% off Store 999", 0.10,
+            CreateDiscountDTO.Type.VISIBLE, "STORE:999", CreateDiscountDTO.Logic.SINGLE, null);
+    CreateDiscountDTO sub2 = new CreateDiscountDTO("15% off Store 888", 0.15,
+            CreateDiscountDTO.Type.VISIBLE, "STORE:888", CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO orDTO = new CreateDiscountDTO("OR Discount - wrong stores", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.OR, List.of(sub1, sub2));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, orDTO);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4);
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice());
+}
+
+@Test
+void buy_OR_discount_fail_allQuantityTooLow() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO sub1 = new CreateDiscountDTO("10% off if qty > 10", 0.10,
+            CreateDiscountDTO.Type.VISIBLE, "QUANTITY>10", CreateDiscountDTO.Logic.SINGLE, null);
+    CreateDiscountDTO sub2 = new CreateDiscountDTO("15% off if qty > 15", 0.15,
+            CreateDiscountDTO.Type.VISIBLE, "QUANTITY>15", CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO orDTO = new CreateDiscountDTO("OR Discount - quantity too low", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.OR, List.of(sub1, sub2));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, orDTO);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4); // Only 4 items
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice());
+}
+
+@Test
+void buy_OR_discount_fail_totalPriceTooLow() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO sub1 = new CreateDiscountDTO("10% off if total > 10000", 0.10,
+            CreateDiscountDTO.Type.VISIBLE, "TOTAL>10000", CreateDiscountDTO.Logic.SINGLE, null);
+    CreateDiscountDTO sub2 = new CreateDiscountDTO("15% off if total > 15000", 0.15,
+            CreateDiscountDTO.Type.VISIBLE, "TOTAL>15000", CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO orDTO = new CreateDiscountDTO("OR Discount - price too low", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.OR, List.of(sub1, sub2));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, orDTO);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4); // Total = 8000
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice());
+}
+
+@Test
 void and_discount_store_and_category_match() throws Exception {
     Store store = storeRepository.getStores().get(0);
     int storeId = itemStoreDTO.getStoreId();
@@ -455,6 +611,94 @@ void and_discount_none_match() throws Exception {
     ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
     assertEquals(4000, receipts[0].getFinalPrice()); // No discount
 }
+@Test
+void buy_AND_discount_fail_wrongCategory() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO sub1 = new CreateDiscountDTO("10% off ELECTRONICS", 0.10,
+            CreateDiscountDTO.Type.VISIBLE, "CATEGORY:ELECTRONICS", CreateDiscountDTO.Logic.SINGLE, null);
+    CreateDiscountDTO sub2 = new CreateDiscountDTO("15% off HOME", 0.15,
+            CreateDiscountDTO.Type.VISIBLE, "CATEGORY:HOME", CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO andDTO = new CreateDiscountDTO("AND Discount - wrong category", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.AND, List.of(sub1, sub2));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, andDTO);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4); // only ELECTRONICS
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice());
+}
+
+@Test
+void buy_AND_discount_fail_wrongStore() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO sub1 = new CreateDiscountDTO("10% off STORE:1", 0.10,
+            CreateDiscountDTO.Type.VISIBLE, "STORE:1", CreateDiscountDTO.Logic.SINGLE, null);
+    CreateDiscountDTO sub2 = new CreateDiscountDTO("15% off STORE:99", 0.15,
+            CreateDiscountDTO.Type.VISIBLE, "STORE:99", CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO andDTO = new CreateDiscountDTO("AND Discount - wrong store", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.AND, List.of(sub1, sub2));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, andDTO);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4); // Store is only 1
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice());
+}
+
+@Test
+void buy_AND_discount_fail_quantityTooLow() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO sub1 = new CreateDiscountDTO("10% off ELECTRONICS", 0.10,
+            CreateDiscountDTO.Type.VISIBLE, "CATEGORY:ELECTRONICS", CreateDiscountDTO.Logic.SINGLE, null);
+    CreateDiscountDTO sub2 = new CreateDiscountDTO("15% off QUANTITY>10", 0.15,
+            CreateDiscountDTO.Type.VISIBLE, "QUANTITY>10", CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO andDTO = new CreateDiscountDTO("AND Discount - quantity too low", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.AND, List.of(sub1, sub2));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, andDTO);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4); // Only 4 quantity
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice());
+}
+
+@Test
+void buy_AND_discount_fail_priceTooLow() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO sub1 = new CreateDiscountDTO("10% off ELECTRONICS", 0.10,
+            CreateDiscountDTO.Type.VISIBLE, "CATEGORY:ELECTRONICS", CreateDiscountDTO.Logic.SINGLE, null);
+    CreateDiscountDTO sub2 = new CreateDiscountDTO("15% off TOTAL>10000", 0.15,
+            CreateDiscountDTO.Type.VISIBLE, "TOTAL>10000", CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO andDTO = new CreateDiscountDTO("AND Discount - total price too low", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.AND, List.of(sub1, sub2));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, andDTO);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4); // Total = 8000
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice());
+}
+
 @Test
 void xor_discount_store_only_applies() throws Exception {
     Store store = storeRepository.getStores().get(0);
@@ -551,6 +795,105 @@ void xor_discount_only_item_condition_applies() throws Exception {
     ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
     assertEquals(1500, receipts[0].getFinalPrice());     // 25% off
 }
+@Test
+void buy_XOR_discount_fail_bothApply() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO sub1 = new CreateDiscountDTO("10% off ELECTRONICS", 0.10,
+            CreateDiscountDTO.Type.VISIBLE, "CATEGORY:ELECTRONICS", CreateDiscountDTO.Logic.SINGLE, null);
+    CreateDiscountDTO sub2 = new CreateDiscountDTO("15% off QUANTITY>1", 0.15,
+            CreateDiscountDTO.Type.VISIBLE, "QUANTITY>1", CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO xorDTO = new CreateDiscountDTO("XOR Discount - both apply", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.XOR, List.of(sub1, sub2));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, xorDTO);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4); // Both conditions true
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    // Neither applies due to XOR conflict
+    assertEquals(8000, receipts[0].getFinalPrice());
+}
+
+@Test
+void buy_XOR_discount_fail_noneApply() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO sub1 = new CreateDiscountDTO("10% off CATEGORY:TOYS", 0.10,
+            CreateDiscountDTO.Type.VISIBLE, "CATEGORY:TOYS", CreateDiscountDTO.Logic.SINGLE, null);
+    CreateDiscountDTO sub2 = new CreateDiscountDTO("15% off TOTAL>10000", 0.15,
+            CreateDiscountDTO.Type.VISIBLE, "TOTAL>10000", CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO xorDTO = new CreateDiscountDTO("XOR Discount - none apply", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.XOR, List.of(sub1, sub2));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, xorDTO);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4); // Neither condition true
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice());
+}
+
+@Test
+void buy_XOR_discount_fail_wrongStoreInOne() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO sub1 = new CreateDiscountDTO("10% off ELECTRONICS", 0.10,
+            CreateDiscountDTO.Type.VISIBLE, "CATEGORY:ELECTRONICS", CreateDiscountDTO.Logic.SINGLE, null);
+    CreateDiscountDTO sub2 = new CreateDiscountDTO("20% off STORE:99", 0.20,
+            CreateDiscountDTO.Type.VISIBLE, "STORE:99", CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO xorDTO = new CreateDiscountDTO("XOR Discount - 2nd store fails", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.XOR, List.of(sub1, sub2));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, xorDTO);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4); // First applies, second false → OK
+
+    // But now let’s make both true to cause XOR failure
+    CreateDiscountDTO validStoreDTO = new CreateDiscountDTO("20% off STORE:" + store.getStoreID(), 0.20,
+            CreateDiscountDTO.Type.VISIBLE, "STORE:" + store.getStoreID(), CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO xorBothApply = new CreateDiscountDTO("XOR - both now apply", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.XOR, List.of(sub1, validStoreDTO));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, xorBothApply);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4);
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice());
+}
+
+@Test
+void buy_XOR_discount_fail_itemMismatch() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO sub1 = new CreateDiscountDTO("10% off ITEM:99", 0.10,
+            CreateDiscountDTO.Type.VISIBLE, "ITEM:99", CreateDiscountDTO.Logic.SINGLE, null);
+    CreateDiscountDTO sub2 = new CreateDiscountDTO("15% off ITEM:100", 0.15,
+            CreateDiscountDTO.Type.VISIBLE, "ITEM:100", CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO xorDTO = new CreateDiscountDTO("XOR Discount - items don't match", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.XOR, List.of(sub1, sub2));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, xorDTO);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4); // Our item ID != 99 or 100
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice());
+}
+
 @Test
 void max_discount_store_vs_category_higher_applies() throws Exception {
     Store store = storeRepository.getStores().get(0);
@@ -666,6 +1009,94 @@ void max_discount_applies_item_based_highest() throws Exception {
     ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
     assertEquals(1400, receipts[0].getFinalPrice()); // 30% off
 }
+@Test
+void buy_MAX_discount_fail_noneApply_dueToCategory() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO sub1 = new CreateDiscountDTO("10% off CATEGORY:TOYS", 0.10,
+            CreateDiscountDTO.Type.VISIBLE, "CATEGORY:TOYS", CreateDiscountDTO.Logic.SINGLE, null);
+    CreateDiscountDTO sub2 = new CreateDiscountDTO("20% off CATEGORY:FOOD", 0.20,
+            CreateDiscountDTO.Type.VISIBLE, "CATEGORY:FOOD", CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO maxDTO = new CreateDiscountDTO("MAX Discount - categories don't match", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.MAX, List.of(sub1, sub2));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, maxDTO);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4); // Category is ELECTRONICS
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice());
+}
+
+@Test
+void buy_MAX_discount_fail_dueToTotalPriceThreshold() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO sub1 = new CreateDiscountDTO("15% off TOTAL>10000", 0.15,
+            CreateDiscountDTO.Type.VISIBLE, "TOTAL>10000", CreateDiscountDTO.Logic.SINGLE, null);
+    CreateDiscountDTO sub2 = new CreateDiscountDTO("25% off TOTAL>20000", 0.25,
+            CreateDiscountDTO.Type.VISIBLE, "TOTAL>20000", CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO maxDTO = new CreateDiscountDTO("MAX Discount - price too low", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.MAX, List.of(sub1, sub2));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, maxDTO);
+    userService.addToUserCart(NGToken, itemStoreDTO, 2); // total = 4000 < thresholds
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(4000, receipts[0].getFinalPrice());
+}
+
+@Test
+void buy_MAX_discount_fail_dueToStoreMismatch() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO sub1 = new CreateDiscountDTO("10% off STORE:99", 0.10,
+            CreateDiscountDTO.Type.VISIBLE, "STORE:99", CreateDiscountDTO.Logic.SINGLE, null);
+    CreateDiscountDTO sub2 = new CreateDiscountDTO("20% off STORE:100", 0.20,
+            CreateDiscountDTO.Type.VISIBLE, "STORE:100", CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO maxDTO = new CreateDiscountDTO("MAX Discount - wrong store IDs", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.MAX, List.of(sub1, sub2));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, maxDTO);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4); // Our store ID is likely 1
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice());
+}
+
+@Test
+void buy_MAX_discount_fail_dueToItemID() throws Exception {
+    Store store = storeRepository.getStores().get(0);
+
+    CreateDiscountDTO sub1 = new CreateDiscountDTO("5% off ITEM:999", 0.05,
+            CreateDiscountDTO.Type.VISIBLE, "ITEM:999", CreateDiscountDTO.Logic.SINGLE, null);
+    CreateDiscountDTO sub2 = new CreateDiscountDTO("15% off ITEM:777", 0.15,
+            CreateDiscountDTO.Type.VISIBLE, "ITEM:777", CreateDiscountDTO.Logic.SINGLE, null);
+
+    CreateDiscountDTO maxDTO = new CreateDiscountDTO("MAX Discount - item not in cart", 0.0,
+            CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.MAX, List.of(sub1, sub2));
+
+    storeService.addDiscountToStore(store.getStoreID(), NOToken, maxDTO);
+    userService.addToUserCart(NGToken, itemStoreDTO, 4); // itemStoreDTO has a different productId
+
+    PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+
+    assertEquals(8000, receipts[0].getFinalPrice());
+}
+
 
 
 
