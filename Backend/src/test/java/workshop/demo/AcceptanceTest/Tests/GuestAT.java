@@ -60,7 +60,6 @@ public class GuestAT extends AcceptanceTests {
         when(real.mockUserRepo.generateGuest()).thenReturn(adminId);
         when(real.mockAuthRepo.generateGuestToken(adminId)).thenReturn(adminGuestToken);
         when(real.mockAuthRepo.validToken(adminGuestToken)).thenReturn(true);
-
         when(real.mockAuthRepo.validToken(adminGuestToken)).thenReturn(true);
 
         when(real.mockUserRepo.login("admin", "adminPass")).thenReturn(adminId);

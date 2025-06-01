@@ -207,7 +207,7 @@ public class PurchaseService {
     throw new DevException("Something went wrong with supply or payment");
 }
 
-    private double setRecieptMapForBids(List<SingleBid> winningBids, Map<Integer, List<ReceiptProduct>> res)
+    public double setRecieptMapForBids(List<SingleBid> winningBids, Map<Integer, List<ReceiptProduct>> res)
             throws Exception {
         double price = 0;
 
@@ -227,7 +227,7 @@ public class PurchaseService {
                     storeName,
                     bid.getAmount(),
                     (int) bid.getBidPrice(),
-                    bid.getId(),
+                    bid.productId(),
                     product.getCategory());
 
             res.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
