@@ -24,6 +24,7 @@ public class DiscountScope {
                 .mapToDouble(item -> item.getPrice() * item.getQuantity())
                 .sum();
     }
+    
     public boolean containsItem(int itemId) {
         return items.stream().anyMatch(i -> i.getProductId() == itemId);
     }
