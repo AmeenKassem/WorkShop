@@ -107,8 +107,8 @@ public class UserService {
     public boolean addToUserCart(String token, ItemStoreDTO itemToAdd, int quantity) throws UIException {
         logger.info("addToUserCart called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        String storeName= this.storeRepo.getStoreNameById(itemToAdd.getStoreId());
-        ItemCartDTO item = new ItemCartDTO(itemToAdd.getStoreId(),itemToAdd.getProductId(), quantity,itemToAdd.getPrice(),itemToAdd.getProductName(),storeName,itemToAdd.getCategory());
+        String storeName = this.storeRepo.getStoreNameById(itemToAdd.getStoreId());
+        ItemCartDTO item = new ItemCartDTO(itemToAdd.getStoreId(), itemToAdd.getProductId(), quantity, itemToAdd.getPrice(), itemToAdd.getProductName(), storeName, itemToAdd.getCategory());
         userRepo.addItemToGeustCart(authRepo.getUserId(token), item);
         logger.info("Item added to user cart");
         return true;
@@ -154,7 +154,7 @@ public class UserService {
     public ItemCartDTO[] getRegularCart(String token) throws UIException {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        //userRepo.checkUserRegisterOnline_ThrowException(userId);
         List<CartItem> regularCartItems = userRepo.getUserCart(userId).getAllCart();
         ItemCartDTO[] dtos = new ItemCartDTO[regularCartItems.size()];
         for (int i = 0; i < regularCartItems.size(); i++) {

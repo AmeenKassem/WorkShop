@@ -54,21 +54,6 @@ public class ExceptionHandlers {
         return errorMessages.getOrDefault(code, "An unexpected error occurred (code: " + code + ").");
     }
 
-    // public static void handleException(HttpClientErrorException e) {
-    //     try {
-    //         String responseBody = e.getResponseBodyAsString();
-    //         ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-    //         if (errorBody.getErrNumber() != -1) {
-    //             NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-    //         } else {
-    //             NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
-    //         }
-    //     } catch (Exception parsingEx) {
-    //         //this is for me for now-> will be deleted later!
-    //         NotificationView.showError("HTTP error: " + e.getMessage());
-    //         //NotificationView.showError("HTTP error: unexcpected error!");
-    //     }
-    // }
     //more flexible:
     public static void handleException(Exception e) {
         if (e instanceof HttpClientErrorException httpEx) {

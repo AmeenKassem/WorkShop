@@ -223,6 +223,51 @@ public class ManageStoreProductsPresenter {
         }
     }
 
+    public void setProductToAuction(int storeId, String token, int productId, int quantity, long time, double startPrice) {
+        String url = String.format(
+                "http://localhost:8080/stock/setProductToAuction?token=%s&storeId=%d&productId=%d&quantity=%d&time=%d&startPrice=%.2f",
+                UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                storeId, productId, quantity, time, startPrice
+        );
+
+        try {
+            restTemplate.postForEntity(url, null, ApiResponse.class);
+            NotificationView.showSuccess("Product set to auction!");
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+    }
+
+    public void setProductToBid(int storeId, String token, int productId, int quantity) {
+        try {
+            String url = String.format(
+                    "http://localhost:8080/stock/setProductToBid?token=%s&storeId=%d&productId=%d&quantity=%d",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                    storeId, productId, quantity
+            );
+
+            restTemplate.postForEntity(url, null, ApiResponse.class);
+            NotificationView.showSuccess("Product set to bid successfully!");
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+    }
+
+    public void setProductToRandom(int storeId, String token, int productId, int quantity, double productPrice, long randomTime) {
+        try {
+            String url = String.format(
+                    "http://localhost:8080/stock/setProductToRandom?token=%s&productId=%d&quantity=%d&productPrice=%.2f&storeId=%d&randomTime=%d",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                    productId, quantity, productPrice, storeId, randomTime
+            );
+
+            restTemplate.postForEntity(url, null, ApiResponse.class);
+            NotificationView.showSuccess("🎉 Product set to random draw!");
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+    }
+
     private String generateKeywordsFrom(String name, String desc) {
         return java.util.Arrays.stream((name + " " + desc).toLowerCase().split(" "))
                 .map(w -> w.replaceAll("[^a-z0-9]", ""))

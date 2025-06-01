@@ -57,6 +57,7 @@ public class AdminHandler {
     private void initAdmin() throws UIException {
 
         this.userRepo.registerUser("admin", "Admin123", 23);
+        this.userRepo.getRegisteredUserByName("admin").setAdmin();
     }
 
     public List<PurchaseHistoryDTO> viewPurchaseHistory(String adminToken) throws Exception {

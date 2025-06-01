@@ -143,9 +143,10 @@ public class LoginPresenter {
                 VaadinSession.getCurrent().setAttribute("user-type", "user");
                 VaadinSession.getCurrent().setAttribute("username", username);
                 NotificationView.showSuccess("Logged in successfully!");
-                // if (checkIfAdmin(newUserToken)) {
-                //     VaadinSession.getCurrent().setAttribute("user-type", "admin");
-                // }
+                if (checkIfAdmin(newUserToken)) {
+                    System.out.println("adminnnnn");
+                    VaadinSession.getCurrent().setAttribute("user-type", "admin");
+                }
                 NotificationView notificationView = new NotificationView();
                 notificationView.createWS(UI.getCurrent(), username);
                 notificationView.register(UI.getCurrent());

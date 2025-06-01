@@ -210,6 +210,9 @@ public class StockController {
         try {
             stockService.acceptBid(token, storeId, bidId, bidToAcceptId);
             return ResponseEntity.ok(new ApiResponse<>("Store closed successfully", null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
@@ -221,6 +224,9 @@ public class StockController {
         try {
             AuctionDTO[] auctions = stockService.getAllAuctions(token, storeId);
             return ResponseEntity.ok(new ApiResponse<>(auctions, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
@@ -233,6 +239,9 @@ public class StockController {
         try {
             stockService.addBidOnAucction(token, auctionId, storeId, price);
             return ResponseEntity.ok(new ApiResponse<>("Bid added successfully", null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
@@ -247,6 +256,9 @@ public class StockController {
         try {
             stockService.addRegularBid(token, bitId, storeId, price);
             return ResponseEntity.ok(new ApiResponse<>("Bid placed successfully", null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
@@ -260,6 +272,10 @@ public class StockController {
         try {
             int id = stockService.setProductToAuction(token, storeId, productId, quantity, time, startPrice);
             return ResponseEntity.ok(new ApiResponse<>(id, null));
+
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
@@ -271,6 +287,9 @@ public class StockController {
         try {
             int id = stockService.setProductToBid(token, storeId, productId, quantity);
             return ResponseEntity.ok(new ApiResponse<>(id, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
@@ -282,6 +301,9 @@ public class StockController {
         try {
             BidDTO[] bids = stockService.getAllBidsStatus(token, storeId);
             return ResponseEntity.ok(new ApiResponse<>(bids, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
@@ -293,6 +315,9 @@ public class StockController {
         try {
             ParticipationInRandomDTO result = stockService.endBid(token, storeId, randomId);
             return ResponseEntity.ok(new ApiResponse<>(result, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
@@ -304,6 +329,9 @@ public class StockController {
         try {
             RandomDTO[] randoms = stockService.getAllRandomInStore(token, storeId);
             return ResponseEntity.ok(new ApiResponse<>(randoms, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
@@ -316,6 +344,9 @@ public class StockController {
         try {
             int result = stockService.setProductToRandom(token, productId, quantity, productPrice, storeId, randomTime);
             return ResponseEntity.ok(new ApiResponse<>(result, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
