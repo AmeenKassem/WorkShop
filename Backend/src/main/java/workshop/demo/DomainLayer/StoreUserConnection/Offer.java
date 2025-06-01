@@ -1,10 +1,8 @@
-package workshop.demo.DTOs;
+package workshop.demo.DomainLayer.StoreUserConnection;
 
 import java.util.List;
 
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-
-public class OfferDTO {
+public class Offer {
 
     private int senderId;
     private int receiverId;
@@ -13,7 +11,7 @@ public class OfferDTO {
     private String message;
     private boolean approve;
 
-    public OfferDTO(int senderId, int receiverId, boolean toBeOwner, List<Permission> permissions, String message) {
+    public Offer(int senderId, int receiverId, boolean toBeOwner, List<Permission> permissions, String message) {
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.toBeOwner = toBeOwner;

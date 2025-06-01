@@ -71,10 +71,8 @@ public class MyCartPresenter {
                 showError(rawResponse);
             }
 
-        } catch (HttpClientErrorException e) {
-            handleHttpClientError(e);
         } catch (Exception e) {
-            NotificationView.showError("Unexpected Error: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -111,10 +109,8 @@ public class MyCartPresenter {
                 showError(rawResponse);
             }
 
-        } catch (HttpClientErrorException e) {
-            handleHttpClientError(e);
         } catch (Exception e) {
-            NotificationView.showError("Unexpected Error: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -126,16 +122,6 @@ public class MyCartPresenter {
             return null;
         }
         return token;
-    }
-
-    private void handleHttpClientError(HttpClientErrorException e) {
-        try {
-            String responseBody = e.getResponseBodyAsString();
-            ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-            showError(errorBody);
-        } catch (Exception parsingEx) {
-            NotificationView.showError("HTTP Error: " + e.getMessage());
-        }
     }
 
     private void showError(ApiResponse errorBody) {

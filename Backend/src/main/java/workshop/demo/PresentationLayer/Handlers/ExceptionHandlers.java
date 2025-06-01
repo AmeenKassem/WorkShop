@@ -3,7 +3,13 @@ package workshop.demo.PresentationLayer.Handlers;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.web.client.HttpClientErrorException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import workshop.demo.Contrrollers.ApiResponse;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
+import workshop.demo.PresentationLayer.View.NotificationView;
 
 public class ExceptionHandlers {
 
@@ -46,6 +52,54 @@ public class ExceptionHandlers {
 
     public static String getErrorMessage(int code) {
         return errorMessages.getOrDefault(code, "An unexpected error occurred (code: " + code + ").");
+    }
+
+    // public static void handleException(HttpClientErrorException e) {
+    //     try {
+    //         String responseBody = e.getResponseBodyAsString();
+    //         ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
+    //         if (errorBody.getErrNumber() != -1) {
+    //             NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+    //         } else {
+    //             NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
+    //         }
+    //     } catch (Exception parsingEx) {
+    //         //this is for me for now-> will be deleted later!
+    //         NotificationView.showError("HTTP error: " + e.getMessage());
+    //         //NotificationView.showError("HTTP error: unexcpected error!");
+    //     }
+    // }
+    //more flexible:
+    public static void handleException(Exception e) {
+        if (e instanceof HttpClientErrorException httpEx) {
+            try {
+                String responseBody = httpEx.getResponseBodyAsString();
+                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
+
+                if (errorBody.getErrNumber() != -1) {
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                } else {
+                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
+                }
+
+            } catch (Exception parsingEx) {
+                System.err.println("Failed to parse error response: " + parsingEx.getMessage());
+                NotificationView.showError("Something went wrong (status " + httpEx.getStatusCode() + ").");
+            }
+
+        } else if (e instanceof org.springframework.web.client.UnknownContentTypeException unknownTypeEx) {
+            // Handles cases where the server returns HTML instead of JSON
+            System.err.println("Unexpected content type: " + unknownTypeEx.getContentType());
+            e.printStackTrace();
+            NotificationView.showError("Server returned an unexpected response format. Try again later.");
+
+        } else {
+            // Fallback: for everything else
+            e.printStackTrace();
+            System.err.println("Exception type: " + e.getClass().getName());
+            System.err.println("Error message: " + e.getMessage());
+            NotificationView.showError("HTTP error: " + e.getMessage());
+        }
     }
 
 }

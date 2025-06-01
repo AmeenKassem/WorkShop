@@ -65,22 +65,8 @@ public class HomePagePresenter {
                 return Collections.emptyList();
             }
 
-        } catch (HttpClientErrorException e) {
-            try {
-                String responseBody = e.getResponseBodyAsString();
-                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-
-                if (errorBody.getErrNumber() != -1) {
-                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-                } else {
-                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
-                }
-            } catch (Exception parsingEx) {
-                NotificationView.showError("HTTP error: " + e.getMessage());
-            }
-            return null;
         } catch (Exception e) {
-            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
             return null;
         }
     }

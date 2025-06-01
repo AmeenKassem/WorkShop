@@ -64,11 +64,10 @@ public class ManageStoreManagersPresenter {
                 NotificationView.showError("Unexpected error: Empty response");
             }
 
-        } catch (HttpClientErrorException e) {
-            handleHttpClientException(e);
         } catch (Exception e) {
-            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
+
     }
 
     public void addManager(String username, Map<Permission, Checkbox> checkboxMap) {
@@ -101,10 +100,8 @@ public class ManageStoreManagersPresenter {
                 view.showError("Unexpected error: Empty response");
             }
 
-        } catch (HttpClientErrorException e) {
-            handleHttpClientException(e);
         } catch (Exception e) {
-            view.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -138,10 +135,8 @@ public class ManageStoreManagersPresenter {
                 view.showError("Unexpected error: Empty response");
             }
 
-        } catch (HttpClientErrorException e) {
-            handleHttpClientException(e);
         } catch (Exception e) {
-            view.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -170,20 +165,18 @@ public class ManageStoreManagersPresenter {
             } else {
                 view.showError("Unexpected error: Empty response");
             }
-        } catch (HttpClientErrorException e) {
-            handleHttpClientException(e);
         } catch (Exception e) {
-            view.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
-    private void handleHttpClientException(HttpClientErrorException e) {
-        try {
-            String responseBody = e.getResponseBodyAsString();
-            ApiResponse errorBody = objectMapper.readValue(responseBody, ApiResponse.class);
-            view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-        } catch (Exception parsingEx) {
-            view.showError("HTTP error: " + e.getMessage());
-        }
-    }
+    // private void handleHttpClientException(HttpClientErrorException e) {
+    //     try {
+    //         String responseBody = e.getResponseBodyAsString();
+    //         ApiResponse errorBody = objectMapper.readValue(responseBody, ApiResponse.class);
+    //         view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+    //     } catch (Exception parsingEx) {
+    //         view.showError("HTTP error: " + e.getMessage());
+    //     }
+    // }
 }

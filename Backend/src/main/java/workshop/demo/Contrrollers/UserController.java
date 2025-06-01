@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.http.MediaType;
 import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.UserService;
@@ -84,8 +84,9 @@ public class UserController {
 
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(
+    //@PostMapping("/login")
+    @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse> login(
             @RequestParam String token,
             @RequestParam String username,
             @RequestParam String password
@@ -187,8 +188,8 @@ public class UserController {
     //     }
     //     return res.toJson();
     // }''
-    @GetMapping("/getUserDTO")
-    public ResponseEntity<?> getUserDTO(@RequestParam String token) {
+    @GetMapping(value = "/getUserDTO", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<UserDTO>> getUserDTO(@RequestParam String token) {
         try {
             UserDTO dto = userService.getUserDTO(token);
             return ResponseEntity.ok(new ApiResponse<>(dto, null));

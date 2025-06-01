@@ -3,12 +3,10 @@ package workshop.demo.DomainLayer.Store;
 import java.util.List;
 
 import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public interface IStoreRepo {
 

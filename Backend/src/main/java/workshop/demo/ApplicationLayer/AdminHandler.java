@@ -48,6 +48,7 @@ public class AdminHandler {
         } catch (UIException e) {
             // TODO Auto-generated catch block
             //here must do something
+            System.err.println("Admin initialization failed: " + e.getMessage());
             e.printStackTrace();
         }
 

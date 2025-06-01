@@ -103,20 +103,8 @@ public class StoreDetailsPresenter {
                 NotificationView.showError("Unknown error adding review.");
             }
 
-        } catch (HttpClientErrorException e) {
-            try {
-                String responseBody = e.getResponseBodyAsString();
-                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-                if (errorBody.getErrNumber() != -1) {
-                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-                } else {
-                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
-                }
-            } catch (Exception parsingEx) {
-                NotificationView.showError("HTTP error: " + e.getMessage());
-            }
         } catch (Exception e) {
-            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -151,20 +139,8 @@ public class StoreDetailsPresenter {
                 NotificationView.showError("Unknown error adding store review.");
             }
 
-        } catch (HttpClientErrorException e) {
-            try {
-                String responseBody = e.getResponseBodyAsString();
-                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-                if (errorBody.getErrNumber() != -1) {
-                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-                } else {
-                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
-                }
-            } catch (Exception parsingEx) {
-                NotificationView.showError("HTTP error: " + e.getMessage());
-            }
         } catch (Exception e) {
-            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -194,20 +170,8 @@ public class StoreDetailsPresenter {
                 NotificationView.showError("Unexpected empty response");
             }
 
-        } catch (HttpClientErrorException e) {
-            try {
-                String responseBody = e.getResponseBodyAsString();
-                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-                if (errorBody.getErrNumber() != -1) {
-                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-                } else {
-                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
-                }
-            } catch (Exception parsingEx) {
-                NotificationView.showError("HTTP error: " + e.getMessage());
-            }
         } catch (Exception e) {
-            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
 
         return List.of(); // fallback if error
@@ -243,7 +207,7 @@ public class StoreDetailsPresenter {
                 NotificationView.showError("Unknown error ranking product.");
             }
         } catch (Exception e) {
-            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
 
     }
@@ -280,7 +244,7 @@ public class StoreDetailsPresenter {
             }
 
         } catch (Exception e) {
-            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -301,11 +265,8 @@ public class StoreDetailsPresenter {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<ApiResponse<List<ReviewDTO>>>() {
-            }
-            );
-
+            });
             ApiResponse<List<ReviewDTO>> body = response.getBody();
-
             if (body != null && body.getErrNumber() == -1) {
                 return body.getData() != null ? body.getData() : List.of();
             } else if (body != null) {
@@ -315,9 +276,8 @@ public class StoreDetailsPresenter {
             }
 
         } catch (Exception e) {
-            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
-
         return List.of();
     }
 

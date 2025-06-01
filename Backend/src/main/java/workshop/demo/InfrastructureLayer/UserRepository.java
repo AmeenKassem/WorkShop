@@ -155,37 +155,37 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public boolean isAdmin(int id) {
+    public boolean isAdmin(int id) throws UIException {
         Registered registered = getRegisteredUser(id);
         return registered != null && registered.isAdmin();
     }
 
     @Override
-    public boolean isRegistered(int id) {
+    public boolean isRegistered(int id) throws UIException {
         return getRegisteredUser(id) != null;
     }
 
     @Override
-    public boolean isOnline(int id) {
+    public boolean isOnline(int id) throws UIException {
         Registered registered = getRegisteredUser(id);
         return registered != null && registered.isOnline();
     }
 
     @Override
-    public Registered getRegisteredUser(int id) {
+    public Registered getRegisteredUser(int id) throws UIException {
         if (idToUsername.containsKey(id)) {
             String username = idToUsername.get(id);
             if (users.containsKey(username)) {
                 return users.get(username);
             } else {
-                throw new RuntimeException(new UIException("User not found: " + username, ErrorCodes.USER_NOT_FOUND));
+                throw new UIException("User not found: " + username, ErrorCodes.USER_NOT_FOUND);
             }
         }
         return null;
     }
 
     @Override
-    public boolean setUserAsAdmin(int id, String adminKey) {
+    public boolean setUserAsAdmin(int id, String adminKey) throws UIException {
         Registered registered = getRegisteredUser(id);
         if (registered != null) {
             if (adminInit.matchPassword(adminKey)) {
@@ -213,7 +213,7 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public ShoppingCart getUserCart(int userId) {
+    public ShoppingCart getUserCart(int userId) throws UIException {
         if (guests.containsKey(userId)) {
             return guests.get(userId).geCart();
         }
@@ -254,17 +254,17 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public void addSpecialItemToCart(UserSpecialItemCart item, int userId) throws DevException {
+    public void addSpecialItemToCart(UserSpecialItemCart item, int userId) throws DevException, UIException {
         getRegisteredUser(userId).addSpecialItemToCart(item);
     }
 
     @Override
-    public List<UserSpecialItemCart> getAllSpecialItems(int userId) {
+    public List<UserSpecialItemCart> getAllSpecialItems(int userId) throws UIException {
         return getRegisteredUser(userId).getSpecialCart();
     }
 
     @Override
-    public UserDTO getUserDTO(int userId) {
+    public UserDTO getUserDTO(int userId) throws UIException {
         if (isRegistered(userId)) {
             logger.log(Level.INFO, "getUserDTO for registered user ID={}", userId);
             return getRegisteredUser(userId).getUserDTO();
@@ -272,7 +272,7 @@ public class UserRepository implements IUserRepo {
             logger.log(Level.INFO, "getUserDTO for guests user ID={}", userId);
             return guests.get(userId).getUserDTO();
         } else {
-            throw new RuntimeException(new UIException("User not found with ID: " + userId, ErrorCodes.USER_NOT_FOUND));
+            throw new UIException("User not found with ID: " + userId, ErrorCodes.USER_NOT_FOUND);
         }
     }
 

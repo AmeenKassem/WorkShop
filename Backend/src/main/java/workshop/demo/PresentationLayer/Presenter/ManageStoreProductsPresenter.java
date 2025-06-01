@@ -48,26 +48,22 @@ public class ManageStoreProductsPresenter {
 
                 Map<ItemStoreDTO, ProductDTO> mapped = new LinkedHashMap<>();
                 for (ItemStoreDTO item : items) {
-                    try {
-                        ProductDTO product = fetchProductDetails(token, item.getProductId());
-                        mapped.put(item, product);
-                    } catch (Exception ex) {
-                        System.out.println("⚠️ Failed to fetch product info for itemId " + item.getProductId());
-                    }
+                    //try {
+                    ProductDTO product = fetchProductDetails(token, item.getProductId());
+                    mapped.put(item, product);
+                    // } catch (Exception ex) {
+                    //     System.out.println("⚠️ Failed to fetch product info for itemId " + item.getProductId());
+                    // }
                 }
 
                 view.showProducts(mapped);
             } else {
                 view.showEmptyPage("📭 No products in this store yet.");
-                NotificationView.showError("Error" + ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+                //NotificationView.showError("Error" + ExceptionHandlers.getErrorMessage(body.getErrNumber()));
             }
 
-        } catch (HttpClientErrorException e) {
-            handleHttpClientError(e);
-            view.showEmptyPage("❌ Failed to load products due to server error.");
         } catch (Exception e) {
-            view.showEmptyPage("❌ Unexpected error occurred.");
-            NotificationView.showError("Unexpected error: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -85,8 +81,8 @@ public class ManageStoreProductsPresenter {
                 return mapper.convertValue(body.getData(), ProductDTO.class);
             }
         } catch (Exception ex) {
-            System.out.println("⚠️ Could not fetch product info: " + ex.getMessage());
-
+            //System.out.println("⚠️ Could not fetch product info: " + ex.getMessage());
+            ExceptionHandlers.handleException(ex);
         }
 
         return new ProductDTO(productId, "(unknown)", null, "(no description)");
@@ -112,10 +108,8 @@ public class ManageStoreProductsPresenter {
             dialog.close();
             loadProducts(storeId, token);
 
-        } catch (HttpClientErrorException e) {
-            handleHttpClientError(e);
         } catch (Exception e) {
-            NotificationView.showError("Unexpected error while adding product: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -149,7 +143,8 @@ public class ManageStoreProductsPresenter {
             NotificationView.showSuccess("Product removed.");
             loadProducts(storeId, token);
         } catch (Exception e) {
-            NotificationView.showError("Failed to remove product: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
+            //NotificationView.showError("Failed to remove product: " + e.getMessage());
         }
     }
 
@@ -175,23 +170,8 @@ public class ManageStoreProductsPresenter {
 
             NotificationView.showSuccess("Product updated.");
             loadProducts(storeId, token);
-        } catch (HttpClientErrorException e) {
-            handleHttpClientError(e);
         } catch (Exception e) {
-            NotificationView.showError("Update failed: " + e.getMessage());
-        }
-    }
-
-    private void handleHttpClientError(HttpClientErrorException e) {
-        try {
-            ApiResponse error = mapper.readValue(e.getResponseBodyAsString(), ApiResponse.class);
-            if (error.getErrNumber() != -1) {
-                NotificationView.showError(ExceptionHandlers.getErrorMessage(error.getErrNumber()));
-            } else {
-                NotificationView.showError("FAILED: " + error.getErrorMsg());
-            }
-        } catch (Exception parsingEx) {
-            NotificationView.showError("HTTP error: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -220,7 +200,7 @@ public class ManageStoreProductsPresenter {
 
             comboBox.setItems(notInStore);
         } catch (Exception e) {
-            NotificationView.showError("Could not load product list: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -239,7 +219,7 @@ public class ManageStoreProductsPresenter {
             dialog.close();
             loadProducts(storeId, token);
         } catch (Exception e) {
-            NotificationView.showError("Failed to add item: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
