@@ -1,32 +1,27 @@
 package workshop.demo.AcceptanceTest.Tests;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+
 import org.slf4j.Logger;
 
+import org.slf4j.LoggerFactory;
 import workshop.demo.AcceptanceTest.Utill.Real;
-import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.PaymentDetails;
-import workshop.demo.DTOs.ReceiptDTO;
-import workshop.demo.DTOs.ReceiptProduct;
-import workshop.demo.DTOs.SingleBid;
-import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -45,6 +40,7 @@ import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
 public class PurchaseAT extends AcceptanceTests {
+    private static final Logger logger = LoggerFactory.getLogger(PurchaseAT.class);
 
     Real real = new Real();
 
@@ -167,6 +163,93 @@ public class PurchaseAT extends AcceptanceTests {
     }
 
     @Test
+    void Add_BidProductToSpecialCart_Success_And_Buy() throws Exception {
+        int storeId = 100;
+        int userId = 20;
+        String userToken = "user-token-2";
+        int bidId = 1;
+        int specialId = 1;
+        double price = 30.0;
+        int productId = 200;
+
+        // ===== MOCK: User Validations =====
+        when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
+        doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userId);
+        doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(eq(userToken), any());
+
+        // ===== MOCK: Bidding Phase =====
+        SingleBid bid = new SingleBid(productId, 1, userId, price, SpecialType.BID, storeId, bidId, specialId);
+        when(real.mockStockRepo.bidOnBid(bidId, price, userId, storeId)).thenReturn(bid);
+        doNothing().when(real.mockUserRepo).addSpecialItemToCart(any(), eq(userId));
+
+        boolean added = real.stockService.addRegularBid(userToken, bidId, storeId, price);
+        assertTrue(added);
+
+        // ===== MOCK: Accept Bid Phase =====
+        when(real.mockIOSrepo.manipulateItem(userId, storeId, Permission.SpecialType)).thenReturn(true);
+        when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
+        when(real.mockStockRepo.acceptBid(storeId, bidId, bidId)).thenReturn(bid);  // acceptBid returns SingleBid
+
+        SingleBid accepted = real.stockService.acceptBid(userToken, storeId, bidId, bidId);
+        assertNotNull(accepted);
+        assertEquals(userId, accepted.getUserId());
+
+        // ===== MOCK: Cart Preparation Phase =====
+        List<UserSpecialItemCart> specialItems = List.of(new UserSpecialItemCart(storeId, specialId, bidId, SpecialType.BID));
+        when(real.mockUserRepo.getAllSpecialItems(userId)).thenReturn(specialItems);
+
+        // Ensure bid is returned as winner + ended
+        SingleBid wonBid = Mockito.spy(bid);
+        when(wonBid.isWinner()).thenReturn(true);
+        when(wonBid.isEnded()).thenReturn(true);
+        when(real.mockStockRepo.getBidIfWinner(storeId, specialId, bidId, SpecialType.BID)).thenReturn(wonBid);
+
+        // ===== MOCK: Product & Store Info =====
+        Product product = new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", null);
+        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(product);
+        when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
+
+        // ===== MOCK: Payment & Supply =====
+        PaymentDetails payment = PaymentDetails.testPayment();
+        SupplyDetails supply = SupplyDetails.getTestDetails();
+        when(real.mockPay.processPayment(payment, price)).thenReturn(true);
+        when(real.mockSupply.processSupply(supply)).thenReturn(true);
+
+        // ===== MOCK: Cleanup and Save Receipts =====
+        doNothing().when(real.mockUserRepo).removeBoughtSpecialItems(eq(userId), anyList(), anyList());
+        doNothing().when(real.mockUserRepo).removeSpecialItem(eq(userId), any());
+
+        ReceiptDTO expectedReceipt = new ReceiptDTO("TestStore", "2025-06-01", List.of(
+                new ReceiptProduct("Phone", "TestStore", 1, (int) price, productId, Category.ELECTRONICS)
+        ), price);
+
+        doNothing().when(real.mockOrderRepo).setOrderToStore(eq(storeId), eq(userId), any(), eq("TestStore"));
+
+        // ===== ACTUAL FINALIZATION =====
+        ReceiptDTO[] result = real.purchaseService.finalizeSpecialCart(userToken, payment, supply);
+
+        // ===== ASSERTIONS =====
+        assertNotNull(result);
+        assertEquals(1, result.length);
+
+        ReceiptDTO receipt = result[0];
+        assertEquals("TestStore", receipt.getStoreName());
+        assertEquals(price, receipt.getFinalPrice());
+
+        List<ReceiptProduct> products = receipt.getProductsList();
+        assertEquals(1, products.size());
+
+        ReceiptProduct productResult = products.get(0);
+        assertEquals("Phone", productResult.getProductName());
+        assertEquals(1, productResult.getQuantity());
+        assertEquals((int) price, productResult.getPrice());
+        assertEquals(productId, productResult.getProductId());
+        assertEquals("TestStore", productResult.getStorename());
+        assertEquals(Category.ELECTRONICS, productResult.getCategory());
+    }
+
+    @Test
     void Add_BidProduct_Failure_InvalidToken() throws UIException {
         String token = "bad-token";
 
@@ -260,6 +343,80 @@ public class PurchaseAT extends AcceptanceTests {
     }
 
     @Test
+    void Add_AuctionBidToSpecialCart_Success_And_Buy() throws Exception {
+        int storeId = 100;
+        int userId = 20;
+        String userToken = "user-token-2";
+        int auctionId = 555;
+        int specialId = 6000;
+        double price = 60.0;
+        int productId = 200;
+
+        // ===== MOCK: Auth & User Validation =====
+        when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
+        doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(eq(userToken), any());
+        doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userId);
+        doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+
+        // ===== MOCK: Auction Bidding =====
+        SingleBid auctionBid = new SingleBid(productId, 1, userId, price, SpecialType.Auction, storeId, auctionId, specialId);
+        when(real.mockStockRepo.bidOnAuction(storeId, userId, auctionId, price)).thenReturn(auctionBid);
+        doNothing().when(real.mockUserRepo).addSpecialItemToCart(any(), eq(userId));
+
+        boolean added = real.stockService.addBidOnAucction(userToken, auctionId, storeId, price);
+        assertTrue(added);
+
+        // ===== MOCK: Special Cart Contains Auction Item =====
+        List<UserSpecialItemCart> specialItems = List.of(new UserSpecialItemCart(storeId, specialId, auctionId, SpecialType.Auction));
+        when(real.mockUserRepo.getAllSpecialItems(userId)).thenReturn(specialItems);
+
+        // ===== MOCK: Auction Result = Winner & Ended =====
+        SingleBid wonAuction = Mockito.spy(auctionBid);
+        when(wonAuction.isWinner()).thenReturn(true);
+        when(wonAuction.isEnded()).thenReturn(true);
+        when(real.mockStockRepo.getBidIfWinner(storeId, specialId, auctionId, SpecialType.Auction)).thenReturn(wonAuction);
+
+        // ===== MOCK: Product Info & Store Name =====
+        Product product = new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", null);
+        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(product);
+        when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
+
+        // ===== MOCK: Payment & Supply Services =====
+        PaymentDetails payment = PaymentDetails.testPayment();
+        SupplyDetails supply = SupplyDetails.getTestDetails();
+        when(real.mockPay.processPayment(payment, price)).thenReturn(true);
+        when(real.mockSupply.processSupply(supply)).thenReturn(true);
+
+        // ===== MOCK: Post-purchase Cleanup =====
+        doNothing().when(real.mockUserRepo).removeBoughtSpecialItems(eq(userId), anyList(), anyList());
+        doNothing().when(real.mockUserRepo).removeSpecialItem(eq(userId), any());
+
+        doNothing().when(real.mockOrderRepo).setOrderToStore(eq(storeId), eq(userId), any(), eq("TestStore"));
+
+        // ===== ACT: Finalize Auction Cart =====
+        ReceiptDTO[] result = real.purchaseService.finalizeSpecialCart(userToken, payment, supply);
+
+        // ===== ASSERTIONS =====
+        assertNotNull(result);
+        assertEquals(1, result.length);
+
+        ReceiptDTO receipt = result[0];
+        assertEquals("TestStore", receipt.getStoreName());
+        assertEquals(price, receipt.getFinalPrice());
+
+        List<ReceiptProduct> products = receipt.getProductsList();
+        assertEquals(1, products.size());
+
+        ReceiptProduct productResult = products.get(0);
+        assertEquals("Phone", productResult.getProductName());
+        assertEquals(1, productResult.getQuantity());
+        assertEquals((int) price, productResult.getPrice());
+        assertEquals(productId, productResult.getProductId());
+        assertEquals("TestStore", productResult.getStorename());
+        assertEquals(Category.ELECTRONICS, productResult.getCategory());
+    }
+
+    @Test
     void Add_AuctionBid_Failure_InvalidToken() throws UIException {
         String token = "bad-token";
 
@@ -345,6 +502,85 @@ public class PurchaseAT extends AcceptanceTests {
     }
 
     @Test
+    void ParticipateInRandom_Success_And_Buy() throws Exception {
+        int storeId = 100;
+        int userId = 20;
+        String token = "user-token-2";
+        int randomId = 777;
+        int productId = 200;
+        double price = 100.0;
+
+        // ===== MOCK: Auth & User Validations =====
+        when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
+        doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(eq(token), any());
+        doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userId);
+        doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+
+        // ===== MOCK: Participation (User wins + event ended) =====
+        ParticipationInRandomDTO card = new ParticipationInRandomDTO(
+                productId, storeId, userId, randomId, price
+        );
+        card.isWinner = true;
+        card.ended = true;
+        when(real.mockStockRepo.validatedParticipation(userId, randomId, storeId, price)).thenReturn(card);
+        doNothing().when(real.mockUserRepo).addSpecialItemToCart(any(), eq(userId));
+
+        // ===== ACT: participateInRandom =====
+        PaymentDetails payment = PaymentDetails.testPayment();
+        ParticipationInRandomDTO participationResult = real.purchaseService.participateInRandom(
+                token, randomId, storeId, price, payment
+        );
+        assertNotNull(participationResult);
+        assertEquals(randomId, participationResult.randomId);
+
+        // ===== MOCK: Special cart contains random item =====
+        UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, randomId, -1, SpecialType.Random);
+        when(real.mockUserRepo.getAllSpecialItems(userId)).thenReturn(List.of(specialItem));
+
+        // ===== MOCK: Returning the winning card during finalizeSpecialCart =====
+        when(real.mockStockRepo.getRandomCardIfWinner(storeId, randomId, userId)).thenReturn(card);
+
+        // ===== MOCK: Product Info & Store Name =====
+        Product product = new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", null);
+        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(product);
+        when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
+        doNothing().when(real.mockStockRepo).validateAndDecreaseStock(storeId, productId, 1);
+
+        // ===== MOCK: Payment & Supply (success) =====
+        SupplyDetails supply = SupplyDetails.getTestDetails();
+        when(real.mockPay.processPayment(payment, price)).thenReturn(true);
+        when(real.mockSupply.processSupply(supply)).thenReturn(true);
+
+        // ===== MOCK: Cleanup after purchase =====
+        doNothing().when(real.mockUserRepo).removeBoughtSpecialItems(eq(userId), anyList(), anyList());
+        doNothing().when(real.mockOrderRepo).setOrderToStore(eq(storeId), eq(userId), any(), eq("TestStore"));
+        when(real.mockSupply.processSupply(supply)).thenReturn(true);
+        when(real.mockPay.processPayment(payment, 0.0)).thenReturn(true);
+
+        // ===== ACT: Finalize Special Cart =====
+        ReceiptDTO[] resultReceipts = real.purchaseService.finalizeSpecialCart(token, payment, supply);
+
+        // ===== ASSERTIONS =====
+        assertNotNull(resultReceipts);
+        assertEquals(1, resultReceipts.length);
+
+        ReceiptDTO receipt = resultReceipts[0];
+        assertEquals("TestStore", receipt.getStoreName());
+        assertEquals(0.0, receipt.getFinalPrice()); // random is already paid during participation
+
+        List<ReceiptProduct> products = receipt.getProductsList();
+        assertEquals(1, products.size());
+
+        ReceiptProduct productResult = products.get(0);
+        assertEquals("Phone", productResult.getProductName());
+        assertEquals(1, productResult.getQuantity());
+        assertEquals(productId, productResult.getProductId());
+        assertEquals("TestStore", productResult.getStorename());
+        assertEquals(Category.ELECTRONICS, productResult.getCategory());
+    }
+
+
+    @Test
     void Set_ProductToRandom_Failure_InvalidToken() throws UIException {
         String token = "bad-token";
 
@@ -383,13 +619,13 @@ public class PurchaseAT extends AcceptanceTests {
 
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId,  productId, 1, 200, "Phone", "TestStore",Category.ELECTRONICS);
-        CartItem item1=new CartItem(item);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
+        CartItem item1 = new CartItem(item);
         cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone",  "TestStore", 2, 200,productId,Category.ELECTRONICS);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),eq("TestStore")))
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 2, 200, productId, Category.ELECTRONICS);
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
@@ -473,15 +709,15 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore",Category.ELECTRONICS);
-        CartItem item1=new CartItem(item);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
+        CartItem item1 = new CartItem(item);
         cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
 
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
 
         List<ItemStoreDTO> scopeItems = List.of(
-                new ItemStoreDTO(productId, 1, 200, Category.ELECTRONICS, 0, storeId, "Phone","TestStore")
+                new ItemStoreDTO(productId, 1, 200, Category.ELECTRONICS, 0, storeId, "Phone", "TestStore")
         );
         DiscountScope scope = new DiscountScope(scopeItems);
 
@@ -501,8 +737,8 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200,productId,Category.ELECTRONICS);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),eq("TestStore")))
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0); // total before discount
 
@@ -530,15 +766,15 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore",Category.ELECTRONICS);
-        CartItem item1=new CartItem(item);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
+        CartItem item1 = new CartItem(item);
         cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
 
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
 
         List<ItemStoreDTO> scopeItems = List.of(
-                new ItemStoreDTO(productId, 1, 200, Category.ELECTRONICS, 0, storeId, "Phone","TestStore")
+                new ItemStoreDTO(productId, 1, 200, Category.ELECTRONICS, 0, storeId, "Phone", "TestStore")
         );
         DiscountScope scope = new DiscountScope(scopeItems);
 
@@ -556,8 +792,8 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone","TestStore", 1, 200,productId,Category.ELECTRONICS);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),eq("TestStore")))
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0); // before discount
 
@@ -585,15 +821,15 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore",Category.ELECTRONICS);
-        CartItem item1=new CartItem(item);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
+        CartItem item1 = new CartItem(item);
         cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
 
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
 
         List<ItemStoreDTO> scopeItems = List.of(
-                new ItemStoreDTO(productId, 1, 200, Category.ELECTRONICS, 0, storeId, "Phone","TestStore")
+                new ItemStoreDTO(productId, 1, 200, Category.ELECTRONICS, 0, storeId, "Phone", "TestStore")
         );
         DiscountScope scope = new DiscountScope(scopeItems);
 
@@ -611,8 +847,8 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200,productId,Category.ELECTRONICS);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),eq("TestStore")))
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
 
@@ -640,15 +876,15 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore",Category.ELECTRONICS);
-        CartItem item1=new CartItem(item);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
+        CartItem item1 = new CartItem(item);
         cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
 
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
 
         List<ItemStoreDTO> scopeItems = List.of(
-                new ItemStoreDTO(productId, 1, 200, Category.ELECTRONICS, 0, storeId, "Phone","TestStore")
+                new ItemStoreDTO(productId, 1, 200, Category.ELECTRONICS, 0, storeId, "Phone", "TestStore")
         );
         DiscountScope scope = new DiscountScope(scopeItems);
 
@@ -666,8 +902,8 @@ public class PurchaseAT extends AcceptanceTests {
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone",  "TestStore", 1, 200,productId,Category.ELECTRONICS);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),eq("TestStore")))
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
 

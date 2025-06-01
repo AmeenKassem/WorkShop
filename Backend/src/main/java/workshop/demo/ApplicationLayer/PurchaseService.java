@@ -219,7 +219,7 @@ public class PurchaseService {
     throw new DevException("Something went wrong with supply or payment");
 }
 
-    private double setRecieptMapForBids(List<SingleBid> winningBids, Map<Integer, List<ReceiptProduct>> res)
+    public double setRecieptMapForBids(List<SingleBid> winningBids, Map<Integer, List<ReceiptProduct>> res)
             throws Exception {
         double price = 0;
 
