@@ -78,6 +78,7 @@ public class Real implements Bridge {
         when (this.mockUserRepo.getRegisteredUserByName("admin")).thenReturn(new Registered(1,"admin","Admin123",23));
 
         orderService = new OrderService(mockOrderRepo, mockStoreRepo, mockAuthRepo, mockUserRepo);
+
         AdminHandler admin = new AdminHandler(mockOrderRepo, mockStoreRepo, mockUserRepo, mockAuthRepo);
         stockService = new StockService(mockStockRepo, mockStoreRepo, mockAuthRepo, mockUserRepo, mockIOSrepo, mockSusRepo);
         adminHandler = new AdminHandler(mockOrderRepo, mockStoreRepo, mockUserRepo, mockAuthRepo);

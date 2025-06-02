@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -204,6 +205,72 @@ public class StockController {
 
     }
 
+    @GetMapping("/searchRandoms")
+    public ResponseEntity<?> searceRandoms(@RequestParam String token,
+            @RequestParam(required = false) String productNameFilter,
+            @RequestParam(required = false) Category categoryFilter,
+            @RequestParam(required = false) String keywordFilter,
+            @RequestParam(required = false) Integer storeId,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) Double minProductRating,
+            @RequestParam(required = false) Double maxProductRating) {
+        try {
+            ProductSearchCriteria criteria = new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter,storeId, minPrice, maxPrice, minProductRating, maxProductRating);
+            RandomDTO[] results = stockService.searchActiveRandoms(token, criteria);
+            return ResponseEntity.ok(new ApiResponse<>(results, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @GetMapping("/searchBids")
+    public ResponseEntity<?> searchBids(@RequestParam String token,
+            @RequestParam(required = false) String productNameFilter,
+            @RequestParam(required = false) Category categoryFilter,
+            @RequestParam(required = false) String keywordFilter,
+            @RequestParam(required = false) Integer storeId,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) Double minProductRating,
+            @RequestParam(required = false) Double maxProductRating) {
+        try {
+            ProductSearchCriteria criteria = new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter,storeId, minPrice, maxPrice, minProductRating, maxProductRating);
+            BidDTO[] results = stockService.searchActiveBids(token, criteria);
+            return ResponseEntity.ok(new ApiResponse<>(results, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+    @GetMapping("/searchAuctions")
+    public ResponseEntity<?> searchAuctions(@RequestParam String token,
+            @RequestParam(required = false) String productNameFilter,
+            @RequestParam(required = false) Category categoryFilter,
+            @RequestParam(required = false) String keywordFilter,
+            @RequestParam(required = false) Integer storeId,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) Double minProductRating,
+            @RequestParam(required = false) Double maxProductRating) {
+        try {
+            ProductSearchCriteria criteria = new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter,storeId, minPrice, maxPrice, minProductRating, maxProductRating);
+            AuctionDTO[] results = stockService.searchActiveAuctions(token, criteria);
+            return ResponseEntity.ok(new ApiResponse<>(results, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
     @PostMapping("/acceptBid")
     public ResponseEntity<?> acceptBid(@RequestParam String token,
             @RequestParam int storeId, @RequestParam int bidId, @RequestParam int bidToAcceptId) {
@@ -380,6 +447,7 @@ public class StockController {
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
     }
+
 
 
 }

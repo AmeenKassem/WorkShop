@@ -7,4 +7,6 @@ public class BidDTO {
     public int bidId;
     public SingleBid winner;//null if opened
     public SingleBid[] bids;
+    public int storeId;
+    public String storeName;
 }
