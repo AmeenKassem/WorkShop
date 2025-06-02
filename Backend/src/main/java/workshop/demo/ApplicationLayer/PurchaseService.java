@@ -126,7 +126,7 @@ public class PurchaseService {
                 ));
             }
             DiscountScope scope = new DiscountScope(itemStoreDTOS);
-            System.out.println(scope.getItems().getFirst().getCategory());
+            //System.out.println(scope.getItems().getFirst().getCategory());
             Store store = storeRepo.findStoreByID(basket.getStoreId()); // changed the  get list to use this function instead
 
             Discount discount = store.getDiscount();
