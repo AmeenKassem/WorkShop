@@ -1,8 +1,9 @@
 package workshop.demo.DTOs;
 
 public class SingleBid {
+
     private int amount;
-    private int id; 
+    private int id;
     private double price;
     private SpecialType type;
     private int specialId;
@@ -11,10 +12,6 @@ public class SingleBid {
     private int userId;
         private int productId;
 
-
-    
-
-  
 
     public SingleBid(int productId, int amount, int userId, double price, SpecialType type, int storeId, int id, int specialId) {
         this.productId=productId;
@@ -25,8 +22,11 @@ public class SingleBid {
         this.storeId = storeId;
         this.id = id;
         this.specialId = specialId;
-        if(type == SpecialType.Auction) status = Status.AUCTION_PENDING;
-        else status = Status.BID_PENDING;
+        if (type == SpecialType.Auction) {
+            status = Status.AUCTION_PENDING;
+        } else {
+            status = Status.BID_PENDING;
+        }
     }
 
     public double getBidPrice() {
@@ -85,7 +85,7 @@ public class SingleBid {
     public boolean isAccepted() {
         return this.status == Status.BID_ACCEPTED;
     }
-    
+
     public boolean isWinner() {
         return this.status == Status.AUCTION_WON || this.status == Status.BID_ACCEPTED;
     }

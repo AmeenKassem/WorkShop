@@ -21,6 +21,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.slf4j.Logger;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import workshop.demo.AcceptanceTest.Utill.Real;
 import workshop.demo.DTOs.Category;
@@ -42,6 +43,7 @@ import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
+@SpringBootTest
 public class GuestAT extends AcceptanceTests {
 
     Real real = new Real();

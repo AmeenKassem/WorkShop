@@ -82,12 +82,13 @@ public class Auction {
         res.storeId = storeId;
 
         SingleBid[] arrayBids = new SingleBid[bids.size()];
-        for (int i = 0; i < arrayBids.length; i++)
+        for (int i = 0; i < arrayBids.length; i++) {
             arrayBids[i] = bids.get(i);
+        }
 
         // TODO set a time date for ending product.
         res.auctionId = this.auctionId;
-        res.bids=arrayBids; // this line wasnt here , so bids was always null 
+        res.bids = arrayBids; // this line wasnt here , so bids was always null 
         return res;
     }
 
@@ -96,12 +97,14 @@ public class Auction {
     }
 
     public boolean bidIsWinner(int bidId) {
-       return winner!=null && winner.getId()==bidId;
+        return winner != null && winner.getId() == bidId;
     }
 
     public SingleBid getBid(int bidId) {
         for (SingleBid singleBid : bids) {
-            if(singleBid.getId()==bidId)return singleBid;
+            if (singleBid.getId() == bidId) {
+                return singleBid;
+            }
         }
         return null;
     }
@@ -110,4 +113,3 @@ public class Auction {
         return productId;
     }
 }
-// >>>>>>> main:Backend/src/main/java/workshop/demo/DomainLayer/Store/Auction.java

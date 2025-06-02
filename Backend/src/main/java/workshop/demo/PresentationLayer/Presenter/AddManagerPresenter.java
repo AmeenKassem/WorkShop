@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
 
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.AddManagerView;
@@ -54,8 +54,6 @@ public class AddManagerPresenter {
                     storeId,
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     UriUtils.encodeQueryParam(managerName, StandardCharsets.UTF_8));
-
-            // Headers
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -82,21 +80,8 @@ public class AddManagerPresenter {
                 }
             }
 
-        } catch (HttpClientErrorException e) {
-            try {
-                String responseBody = e.getResponseBodyAsString();
-                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-
-                if (errorBody.getErrNumber() != -1) {
-                    view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-                } else {
-                    view.showError("❌ FAILED: " + errorBody.getErrorMsg());
-                }
-            } catch (Exception parseEx) {
-                view.showError("❌ HTTP error: " + e.getMessage());
-            }
         } catch (Exception e) {
-            view.showError("❌ UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 

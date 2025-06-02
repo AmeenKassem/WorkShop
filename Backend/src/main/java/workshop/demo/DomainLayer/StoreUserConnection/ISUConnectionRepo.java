@@ -2,7 +2,6 @@ package workshop.demo.DomainLayer.StoreUserConnection;
 
 import java.util.List;
 
-import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 
 public interface ISUConnectionRepo {
@@ -39,7 +38,7 @@ public interface ISUConnectionRepo {
 
     public List<Permission> deleteOffer(int storeId, int senderId, int reciverId) throws Exception;
 
-    public OfferDTO getOffer(int storeId, int senderId, int reciverId) throws Exception;
+    public Offer getOffer(int storeId, int senderId, int reciverId) throws Exception;
 
     public List<Integer> getStoresIdForUser(int userId);
 
@@ -48,8 +47,10 @@ public interface ISUConnectionRepo {
     public Permission[] getPermissions(Node node);
 
     public List<Node> getAllWorkers(int storeId) throws Exception;
+
     // for tests
     SuperDataStructure getData();
+
     public boolean hasPermission(int userId, int storeId, Permission permission);
 
 }

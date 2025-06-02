@@ -1,17 +1,14 @@
 package workshop.demo.InfrastructureLayer;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -19,7 +16,6 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 @Repository
 public class StoreRepository implements IStoreRepo {
@@ -27,7 +23,7 @@ public class StoreRepository implements IStoreRepo {
     private List<Store> stores;
 
     // switch it when use database!!
-    private static  AtomicInteger counterSId = new AtomicInteger(1);
+    private static AtomicInteger counterSId = new AtomicInteger(1);
 
     public static int generateId() {
         return counterSId.getAndIncrement();
@@ -39,10 +35,18 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public int addStoreToSystem(int bossID, String storeName, String Category) {
-        int storeId = generateId();
-        stores.add(new Store(storeId, storeName, Category));
-        return storeId;
+    public int addStoreToSystem(int bossID, String storeName, String Category) throws UIException {
+        synchronized (stores) {
+            boolean nameExists = stores.stream()
+                    .anyMatch(store -> store.getStoreName().equalsIgnoreCase(storeName));
+
+            if (nameExists) {
+                throw new UIException("A store with thid name already exists.", ErrorCodes.STORE_EXIST);
+            }
+            int storeId = generateId();
+            stores.add(new Store(storeId, storeName, Category));
+            return storeId;
+        }
     }
 
     @Override
@@ -66,7 +70,8 @@ public class StoreRepository implements IStoreRepo {
     }
 
     @Override
-    public Store findStoreByID(int ID) {
+    public Store findStoreByID(int ID
+    ) {
         for (Store store : this.stores) {
             if (store.getStoreID() == ID) {
                 return store;
@@ -160,20 +165,20 @@ public class StoreRepository implements IStoreRepo {
         }
         return store.getStoreDTO();
     }
-   public  void clear() {
-    counterSId.set(1);
-    this.stores = Collections.synchronizedList(new LinkedList<>());
 
-} 
+    public void clear() {
+        counterSId.set(1);
+        this.stores = Collections.synchronizedList(new LinkedList<>());
 
-
-   @Override
-   public void fillWithStoreName(ItemStoreDTO[] items) {
-    for (ItemStoreDTO itemStoreDTO : items) {
-        int storeId = itemStoreDTO.getStoreId();
-        Store store =this.findStoreByID(storeId);
-        itemStoreDTO.setStoreName(store.getStoreName());
     }
-   } 
+
+    @Override
+    public void fillWithStoreName(ItemStoreDTO[] items) {
+        for (ItemStoreDTO itemStoreDTO : items) {
+            int storeId = itemStoreDTO.getStoreId();
+            Store store = this.findStoreByID(storeId);
+            itemStoreDTO.setStoreName(store.getStoreName());
+        }
+    }
 
 }

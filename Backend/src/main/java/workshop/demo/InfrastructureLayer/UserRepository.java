@@ -159,37 +159,37 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public boolean isAdmin(int id) {
+    public boolean isAdmin(int id) throws UIException {
         Registered registered = getRegisteredUser(id);
         return registered != null && registered.isAdmin();
     }
 
     @Override
-    public boolean isRegistered(int id) {
+    public boolean isRegistered(int id) throws UIException {
         return getRegisteredUser(id) != null;
     }
 
     @Override
-    public boolean isOnline(int id) {
+    public boolean isOnline(int id) throws UIException {
         Registered registered = getRegisteredUser(id);
         return registered != null && registered.isOnline();
     }
 
     @Override
-    public Registered getRegisteredUser(int id) {
+    public Registered getRegisteredUser(int id) throws UIException {
         if (idToUsername.containsKey(id)) {
             String username = idToUsername.get(id);
             if (users.containsKey(username)) {
                 return users.get(username);
             } else {
-                new UIException("User not found: " + username, ErrorCodes.USER_NOT_FOUND);
+                throw new UIException("User not found: " + username, ErrorCodes.USER_NOT_FOUND);
             }
         }
         return null;
     }
 
     @Override
-    public boolean setUserAsAdmin(int id, String adminKey) {
+    public boolean setUserAsAdmin(int id, String adminKey) throws UIException {
         Registered registered = getRegisteredUser(id);
         if (registered != null) {
             if (adminInit.matchPassword(adminKey)) {
@@ -217,7 +217,7 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public ShoppingCart getUserCart(int userId) {
+    public ShoppingCart getUserCart(int userId) throws UIException {
         if (guests.containsKey(userId)) {
             return guests.get(userId).geCart();
         }
@@ -225,7 +225,7 @@ public class UserRepository implements IUserRepo {
         if (registered != null) {
             return registered.geCart();
         }
-        throw new RuntimeException(new UIException("User with ID " + userId + " not found", ErrorCodes.USER_NOT_FOUND));
+        throw new UIException("User with ID " + userId + " not found", ErrorCodes.USER_NOT_FOUND);
     }
 
     @Override
@@ -258,17 +258,17 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public void addSpecialItemToCart(UserSpecialItemCart item, int userId) throws DevException {
+    public void addSpecialItemToCart(UserSpecialItemCart item, int userId) throws DevException, UIException {
         getRegisteredUser(userId).addSpecialItemToCart(item);
     }
 
     @Override
-    public List<UserSpecialItemCart> getAllSpecialItems(int userId) {
+    public List<UserSpecialItemCart> getAllSpecialItems(int userId) throws UIException {
         return getRegisteredUser(userId).getSpecialCart();
     }
 
     @Override
-    public UserDTO getUserDTO(int userId) {
+    public UserDTO getUserDTO(int userId) throws UIException {
         if (isRegistered(userId)) {
             logger.log(Level.INFO, "getUserDTO for registered user ID={}", userId);
             return getRegisteredUser(userId).getUserDTO();
@@ -276,8 +276,18 @@ public class UserRepository implements IUserRepo {
             logger.log(Level.INFO, "getUserDTO for guests user ID={}", userId);
             return guests.get(userId).getUserDTO();
         } else {
-            throw new RuntimeException(new UIException("User not found with ID: " + userId, ErrorCodes.USER_NOT_FOUND));
+            throw new UIException("User not found with ID: " + userId, ErrorCodes.USER_NOT_FOUND);
         }
+    }
+
+    @Override
+    public List<UserDTO> getAllUserDTOs() {
+        List<UserDTO> result = new ArrayList<>();
+        for (String username : users.keySet()) {
+            Registered user = users.get(username);
+            result.add(user.getUserDTO());
+        }
+        return result;
     }
 
     public void clear() {
@@ -304,40 +314,39 @@ public class UserRepository implements IUserRepo {
         return user;
     }
 
- public void removeSpecialItem(int userId, UserSpecialItemCart itemToRemove) throws UIException {
-    Registered user = getRegisteredUser(userId);
+    public void removeSpecialItem(int userId, UserSpecialItemCart itemToRemove) throws UIException {
+        Registered user = getRegisteredUser(userId);
 
-    user.getSpecialCart().removeIf(item ->
-        item.storeId == itemToRemove.storeId &&
-        item.specialId == itemToRemove.specialId &&
-        item.bidId == itemToRemove.bidId &&
-        item.type == itemToRemove.type
-    );
-}
-public void removeBoughtSpecialItems(int userId, List<SingleBid> winningBids, List<ParticipationInRandomDTO> winningRandoms) throws UIException {
-    Registered user = getRegisteredUser(userId);
-    List<UserSpecialItemCart> cart = user.getSpecialCart();
-
-    for (SingleBid bid : winningBids) {
-        cart.removeIf(item ->
-            item.storeId == bid.getStoreId() &&
-            item.specialId == bid.getSpecialId() &&
-            item.bidId == bid.getId() &&
-            item.type == bid.getType()
+        user.getSpecialCart().removeIf(item
+                -> item.storeId == itemToRemove.storeId
+                && item.specialId == itemToRemove.specialId
+                && item.bidId == itemToRemove.bidId
+                && item.type == itemToRemove.type
         );
     }
 
-    for (ParticipationInRandomDTO card : winningRandoms) {
-        cart.removeIf(item ->
-            item.storeId == card.storeId &&
-            item.specialId == card.randomId &&
-            item.type == SpecialType.Random
-        );
+    public void removeBoughtSpecialItems(int userId, List<SingleBid> winningBids, List<ParticipationInRandomDTO> winningRandoms) throws UIException {
+        Registered user = getRegisteredUser(userId);
+        List<UserSpecialItemCart> cart = user.getSpecialCart();
+
+        for (SingleBid bid : winningBids) {
+            cart.removeIf(item
+                    -> item.storeId == bid.getStoreId()
+                    && item.specialId == bid.getSpecialId()
+                    && item.bidId == bid.getId()
+                    && item.type == bid.getType()
+            );
+        }
+
+        for (ParticipationInRandomDTO card : winningRandoms) {
+            cart.removeIf(item
+                    -> item.storeId == card.storeId
+                    && item.specialId == card.randomId
+                    && item.type == SpecialType.Random
+            );
+        }
+
+        logger.log(Level.INFO, "Removed bought special items from user {}'s cart", userId);
     }
-
-    logger.log(Level.INFO,"Removed bought special items from user {}'s cart", userId);
-}
-
-
 
 }
