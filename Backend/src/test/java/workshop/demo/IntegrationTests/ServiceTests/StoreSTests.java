@@ -6,6 +6,7 @@ import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
@@ -532,8 +533,21 @@ public class StoreSTests {
         DevException ex = assertThrows(DevException.class, () -> {
             storeRepository.checkStoreIsActive(1);
         });
+        userService.addToUserCart(GToken, itemStoreDTO, 2);
+            PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+      ReceiptDTO[] receipts =   purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
+      assertNotNull(receipts);
+        assertEquals(0, receipts.length);
+        
+    assertTrue(userRepo.getUserCart(authRepo.getUserId(GToken)).getAllCart().size()==0);
+   
+
+assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==2); 
+
 
         assertEquals(ex.getMessage(), " store is not active");
+
 
     }
 
