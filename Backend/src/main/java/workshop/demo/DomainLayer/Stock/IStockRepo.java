@@ -109,4 +109,7 @@ public interface IStockRepo {
     public ItemStoreDTO[] search(ProductSearchCriteria criteria,String storeName) throws UIException;
 
     ProductDTO[] getAllProducts();
+
+      public void changequantity(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
+            throws Exception;
 }
