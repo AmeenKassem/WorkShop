@@ -73,7 +73,11 @@ public class LoginPresenter {
                 VaadinSession.getCurrent().setAttribute("username", username);
                 NotificationView.showSuccess("Logged in successfully!");
                 if (checkIfAdmin(newUserToken)) {
+                    System.out.println("adminnnnn");
                     VaadinSession.getCurrent().setAttribute("user-type", "admin");
+                    VaadinSession.getCurrent().setAttribute("auth-token", newUserToken);
+                    System.out.println("the token:");
+                    System.out.println(newUserToken);
                 }
                 NotificationView notificationView = new NotificationView();
                 notificationView.createWS(UI.getCurrent(), username);
@@ -103,7 +107,7 @@ public class LoginPresenter {
                     NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
                 }
             } catch (Exception parsingEx) {
-                NotificationView.showError("HTTP error: " + e.getMessage());
+                NotificationView.showError("HTTP error: " + parsingEx.getMessage());
             }
 
         } catch (Exception e) {
@@ -114,20 +118,22 @@ public class LoginPresenter {
 
     private boolean checkIfAdmin(String token) {
         try {
-            String url = String.format("http://localhost:8080/api/user/getUserDTO?token=%s",
+            System.out.println("in check if admin exception");
+            String url = String.format("http://localhost:8080/api/users/getUserDTO?token=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
-
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);
             ApiResponse body = response.getBody();
-
             if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
                 ObjectMapper mapper = new ObjectMapper();
                 UserDTO dto = mapper.convertValue(body.getData(), UserDTO.class);
+                System.out.println(dto.getIsAdmin());
                 return dto.getIsAdmin();
             }
         } catch (Exception e) {
-            System.out.println("Failed to fetch user info: " + e.getMessage());
+            System.out.println("in check if admin exception");
+            ExceptionHandlers.handleException(e);
+
         }
         return false;
     }

@@ -3,18 +3,16 @@ package workshop.demo.DomainLayer.Store;
 import java.util.List;
 
 import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public interface IStoreRepo {
 
     List<StoreDTO> viewAllStores();
 
-    public int addStoreToSystem(int bossID, String storeName, String Category);
+    public int addStoreToSystem(int bossID, String storeName, String Category) throws UIException;
 
     Store findStoreByID(int Id);
 

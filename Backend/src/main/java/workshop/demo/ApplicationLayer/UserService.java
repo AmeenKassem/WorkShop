@@ -6,17 +6,23 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.stereotype.Service;
 
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.SpecialCartItemDTO;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
-import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
+import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.IUserRepo;
-import workshop.demo.InfrastructureLayer.UserRepository;
 
 @Service
 public class UserService {
@@ -26,20 +32,18 @@ public class UserService {
     private IUserRepo userRepo;
     private IAuthRepo authRepo;
     private IStockRepo stockRepo;
+    private IStoreRepo storeRepo;
     private final AdminInitilizer adminInitilizer;
-    private AdminService adminService;
+    private final AdminHandler adminHandler;
 
     @Autowired
-    public UserService(IUserRepo userRepo, IAuthRepo authRepo,IStockRepo stockRepo,AdminInitilizer adminInitilizer,AdminService adminService) {
+    public UserService(IUserRepo userRepo, IAuthRepo authRepo, IStockRepo stockRepo, AdminInitilizer adminInitilizer, AdminHandler adminHandler, IStoreRepo storeRepo) {
         this.userRepo = userRepo;
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
+        this.storeRepo = storeRepo;
         this.adminInitilizer = adminInitilizer;
-        this.adminService = adminService;
-
-
-
-
+        this.adminHandler = adminHandler;
     }
 
     public String generateGuest() throws UIException, Exception {
@@ -49,15 +53,13 @@ public class UserService {
         return authRepo.generateGuestToken(id);
     }
 
-    public boolean register(String token, String username, String password,int age) throws UIException {
+    public boolean register(String token, String username, String password, int age) throws UIException {
         logger.info("register called for username={}", username);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        userRepo.registerUser(username, password,age);
-        //Hmode
-        adminService.recordRegisterEvent();
+        userRepo.registerUser(username, password, age);
+        adminHandler.recordRegisterEvent();
         return true;
-        //HmodeEnd
-        
+
     }
 
     public String login(String token, String username, String pass) throws UIException {
@@ -65,11 +67,11 @@ public class UserService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int id = userRepo.login(username, pass);
         //Hmode
-        adminService.recordLoginEvent();
+        adminHandler.recordLoginEvent();
         //HmodeEnd
         logger.info("User {} logged in .", username);
         return authRepo.generateUserToken(id, username);
-      
+
     }
 
     public Boolean destroyGuest(String token) throws UIException {
@@ -88,7 +90,7 @@ public class UserService {
         String userName = authRepo.getUserName(token);
         int id = userRepo.logoutUser(userName);
         //Hmode
-        adminService.recordLogoutEvent();
+        adminHandler.recordLogoutEvent();
         //HmodeEnd
         logger.info("User {} logged out", userName);
         return authRepo.generateGuestToken(id);
@@ -97,16 +99,15 @@ public class UserService {
     public boolean setAdmin(String token, String adminKey, int id) throws UIException {
         logger.info("setAdmin called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        logger.info("User {} set as admin: {}");
         return userRepo.setUserAsAdmin(id, adminKey);
 
     }
 
-
-  public boolean addToUserCart(String token, ItemStoreDTO itemToAdd,int quantity) throws UIException {
+    public boolean addToUserCart(String token, ItemStoreDTO itemToAdd, int quantity) throws UIException {
         logger.info("addToUserCart called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        ItemCartDTO item = new ItemCartDTO(itemToAdd,quantity);
+        String storeName = this.storeRepo.getStoreNameById(itemToAdd.getStoreId());
+        ItemCartDTO item = new ItemCartDTO(itemToAdd.getStoreId(), itemToAdd.getProductId(), quantity, itemToAdd.getPrice(), itemToAdd.getProductName(), storeName, itemToAdd.getCategory());
         userRepo.addItemToGeustCart(authRepo.getUserId(token), item);
         logger.info("Item added to user cart");
         return true;
@@ -128,8 +129,7 @@ public class UserService {
         return true;
     }
 
-
-    public SpecialCartItemDTO[] getSpecialCart(String token) throws UIException{
+    public SpecialCartItemDTO[] getSpecialCart(String token) throws UIException {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
@@ -137,27 +137,39 @@ public class UserService {
         List<SpecialCartItemDTO> result = new ArrayList<>();
         for (UserSpecialItemCart item : specialIds) {
             SpecialCartItemDTO itemToSend = new SpecialCartItemDTO();
-            itemToSend.setIds(item.storeId , item.specialId, item.bidId,item.type);
-            if(item.type==SpecialType.Random){  
-                ParticipationInRandomDTO card = stockRepo.getRandomCard(item.storeId,item.specialId,item.bidId);
-                itemToSend.setValues(stockRepo.GetProductNameForBid(item.storeId,item.specialId,item.type), card.isWinner, card.ended);
-            }else{
-                SingleBid bid = stockRepo.getBid(item.storeId,item.specialId,item.bidId,item.type);
-                itemToSend.setValues(stockRepo.GetProductNameForBid(item.storeId,item.specialId,item.type), bid.isWinner()||bid.isAccepted(), bid.isEnded());
+            itemToSend.setIds(item.storeId, item.specialId, item.bidId, item.type);
+            if (item.type == SpecialType.Random) {
+                ParticipationInRandomDTO card = stockRepo.getRandomCard(item.storeId, item.specialId, item.bidId);
+                itemToSend.setValues(stockRepo.GetProductNameForBid(item.storeId, item.specialId, item.type), card.isWinner, card.ended);
+            } else {
+                SingleBid bid = stockRepo.getBid(item.storeId, item.specialId, item.bidId, item.type);
+                itemToSend.setValues(stockRepo.GetProductNameForBid(item.storeId, item.specialId, item.type), bid.isWinner() || bid.isAccepted(), bid.isEnded());
             }
             result.add(itemToSend);
         }
         return result.toArray(new SpecialCartItemDTO[0]);
     }
 
-    public ItemCartDTO[] getRegularCart(String token)throws UIException{
+    public ItemCartDTO[] getRegularCart(String token) throws UIException {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
-        List<ItemCartDTO> regularCartItems = userRepo.getUserCart(userId).getAllCart();
-        return regularCartItems.toArray(new ItemCartDTO[0]);
-    }
+        //userRepo.checkUserRegisterOnline_ThrowException(userId);
+        List<CartItem> regularCartItems = userRepo.getUserCart(userId).getAllCart();
+        ItemCartDTO[] dtos = new ItemCartDTO[regularCartItems.size()];
+        for (int i = 0; i < regularCartItems.size(); i++) {
+            CartItem item = regularCartItems.get(i);
+            ItemCartDTO dto = new ItemCartDTO();
+            dto.storeId = item.storeId;
+            dto.productId = item.productId;
+            dto.quantity = item.quantity;
+            dto.price = item.price;
+            dto.name = item.name;
+            dto.storeName = this.storeRepo.getStoreNameById(item.storeId);
+            dtos[i] = dto;
+        }
 
+        return dtos;
+    }
 
     public UserDTO getUserDTO(String token) throws UIException {
         logger.info("getUserDTO");
@@ -166,37 +178,11 @@ public class UserService {
         return userRepo.getUserDTO(userId);
     }
 
-    public void registerAdminIfNotExists(String username, String password, int age) throws Exception {
-        try {
-            int id = userRepo.login(username, password);
-            System.out.println("🟡 Admin already exists with username: " + username);
-            return;
-        } catch (UIException e) {
-            System.out.println("🔄 Admin doesn't exist. Proceeding with creation.");
-        }
-
-        String guestToken = this.generateGuest();
-
-        this.register(guestToken, username, password, age);
-
-        String userToken = this.login(guestToken, username, password);
-
-        System.out.println(userToken);
-        int adminId = userRepo.login(username, password);
-        this.setAdmin(userToken, adminInitilizer.getPassword(), adminId);
-
-        //  Print all registered usernames:
-        System.out.println(" Registered users:");
-        for (String u : ((UserRepository) userRepo).getAllUsernames()) {
-            System.out.println(" - " + u);
-        }
-
-
-        System.out.println(" Admin registered and promoted: " + username);
-        System.out.println(" All registered usernames: " + userRepo.getAllUsernames().get(0));
-
+    public List<UserDTO> getAllUsers(String token) throws UIException {
+        logger.info("getAllUsers");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkAdmin_ThrowException(userId);
+        return userRepo.getAllUserDTOs();
     }
-
-
-
 }

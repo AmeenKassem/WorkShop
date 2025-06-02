@@ -1,7 +1,6 @@
 package workshop.demo.DomainLayer.Store;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -9,9 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import workshop.demo.DTOs.OfferDTO;
 import workshop.demo.DTOs.StoreDTO;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public class Store {
 
@@ -105,6 +102,7 @@ public class Store {
     public void setDiscount(Discount discount) {
         this.discount = discount;
     }
+
     public void addDiscount(Discount d) {
         if (discount instanceof CompositeDiscount) {
             ((CompositeDiscount) discount).addDiscount(d);
@@ -118,6 +116,7 @@ public class Store {
             this.discount = combo;
         }
     }
+
     public boolean removeDiscountByName(String name) {
         if (discount instanceof CompositeDiscount composite) {
             return composite.removeDiscountByName(name);
@@ -127,6 +126,5 @@ public class Store {
         }
         return false;
     }
-
 
 }

@@ -2,7 +2,6 @@ package workshop.demo.IntegrationTests.ServiceTests;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -15,8 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
-import workshop.demo.ApplicationLayer.AdminService;
-import workshop.demo.ApplicationLayer.AdminService;
+import workshop.demo.ApplicationLayer.AdminHandler;
+import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
 import workshop.demo.ApplicationLayer.ReviewService;
@@ -36,13 +35,11 @@ import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
 import workshop.demo.InfrastructureLayer.OrderRepository;
 import workshop.demo.InfrastructureLayer.PurchaseRepository;
-import workshop.demo.InfrastructureLayer.ReviewRepository;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
@@ -53,58 +50,58 @@ import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class StoreSTests {
 
-    PaymentServiceImp payment = new PaymentServiceImp();
-    SupplyServiceImp serviceImp = new SupplyServiceImp();
-    PurchaseRepository purchaseRepository = new PurchaseRepository();
-    UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
+    @Autowired
+    private NotificationRepository notificationRepository;
+    @Autowired
+    private StoreRepository storeRepository;
+    @Autowired
+    private StockRepository stockRepository;
+    @Autowired
+    private OrderRepository orderRepository;
+    @Autowired
+    private PurchaseRepository purchaseRepository;
+    @Autowired
+    private UserSuspensionRepo suspensionRepo;
+    @Autowired
+    private AuthenticationRepo authRepo;
 
     @Autowired
-    NotificationRepository notificationRepository;
-    OrderRepository orderRepository = new OrderRepository();
-    StoreRepository storeRepository = new StoreRepository();
-    StockRepository stockRepository = new StockRepository();
-    SUConnectionRepository sIsuConnectionRepo = new SUConnectionRepository();
-    ReviewRepository reviewRepository = new ReviewRepository();
-    AuthenticationRepo authRepo = new AuthenticationRepo();
-    Encoder encoder = new Encoder();
-    AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
-    UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
-    UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-    AdminService adminService = new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"), adminService);
-    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
+    PaymentServiceImp payment;
+    @Autowired
+    SupplyServiceImp serviceImp;
 
-    StoreService storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
-    PurchaseService purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
-    ReviewService reviewService = new ReviewService(reviewRepository, authRepo, userRepo, storeRepository, stockRepository);
+    @Autowired
+    SUConnectionRepository sIsuConnectionRepo;
+
+    @Autowired
+    Encoder encoder;
+    @Autowired
+    UserRepository userRepo;
+    @Autowired
+    UserSuspensionService suspensionService;
+    @Autowired
+    AdminHandler adminService;
+    @Autowired
+    UserService userService;
+    @Autowired
+    StockService stockService;
+    @Autowired
+    StoreService storeService;
+    @Autowired
+    PurchaseService purchaseService;
+    @Autowired
+    OrderService orderService;
+    @Autowired
+    ReviewService reviewService;
+
     String NOToken;
     String NGToken;
     ItemStoreDTO itemStoreDTO;
     String GToken;
+    String Admin;
 
     @BeforeEach
     void setup() throws Exception {
-        System.out.println("===== SETUP RUNNING =====");
-        reviewRepository = new ReviewRepository();
-
-        purchaseRepository = new PurchaseRepository();
-        suspensionRepo = new UserSuspensionRepo();
-        orderRepository = new OrderRepository();
-        storeRepository = new StoreRepository();
-        stockRepository = new StockRepository();
-        sIsuConnectionRepo = new SUConnectionRepository();
-        authRepo = new AuthenticationRepo();
-        encoder = new Encoder();
-        adminInitilizer = new AdminInitilizer("123321");
-        userRepo = new UserRepository(encoder, adminInitilizer);
-        suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-
-        adminService = new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-        userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"), adminService);
-        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo, suspensionRepo);
-        storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
-        purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
-        reviewService = new ReviewService(reviewRepository, authRepo, userRepo, storeRepository, stockRepository);
 
         GToken = userService.generateGuest();
         userService.register(GToken, "User", "User", 25);
@@ -131,7 +128,7 @@ public class StoreSTests {
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1, "Laptop");
+        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1, "Laptop","TestStore");
 
         // ======================= SECOND GUEST SETUP =======================
     }
@@ -212,7 +209,7 @@ public class StoreSTests {
         stockService.removeItem(1, NOToken, 1);
 
         // Assert
-        assertTrue(stockService.getProductsInStore(1)[0].quantity == 0);
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 0);
     }
 
     @Test
@@ -230,7 +227,7 @@ public class StoreSTests {
         assertDoesNotThrow(()
                 -> stockService.updateQuantity(1, NOToken, 1, 1)
         );
-        assertTrue(stockService.getProductsInStore(1)[0].quantity == 1);
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 1);
 
     }
 
@@ -272,7 +269,7 @@ public class StoreSTests {
         // === Act ===
         //must make an offer before:
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
-        storeService.AddOwnershipToStore(1, 4, authRepo.getUserId(token1), true);
+        storeService.AddOwnershipToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
         // ask bhaa i dont know what is happening ,  help help help
 
         // shouldnt work without offer
@@ -290,7 +287,7 @@ public class StoreSTests {
 
         // === Act ===
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
-        storeService.AddOwnershipToStore(1, 4, authRepo.getUserId(token1), true);
+        storeService.AddOwnershipToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
 
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
         UIException ex = assertThrows(UIException.class, ()
@@ -310,15 +307,15 @@ public class StoreSTests {
 // this function need to take id to use this test guest doesnt have a username
         // === Act + Assert
         UIException ex = assertThrows(UIException.class, ()
-                        -> storeService.AddOwnershipToStore(1, 3, authRepo.getUserId(token), true)
-                // shouldnt be able to add a guest
+                -> storeService.AddOwnershipToStore(1, 3, authRepo.getUserId(token), true)
+        // shouldnt be able to add a guest
         );
 
         assertEquals("You are not regestered user!", ex.getMessage());
         assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ex.getNumber());
     }
 
-    //todo:: send approval to user 
+    //todo:: send approval to user
     @Test
     void testOwner_AddStoreOwner_Rejected() throws Exception {
         String token = userService.generateGuest();
@@ -328,7 +325,7 @@ public class StoreSTests {
         // === Act ===
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
 
-        storeService.AddOwnershipToStore(1, 4, authRepo.getUserId(token1), false);
+        storeService.AddOwnershipToStore(1, authRepo.getUserId(NGToken), authRepo.getUserId(token1), false);
         assertTrue(storeService.ViewRolesAndPermissions(token1, 1).size() == 1);
 
     }
@@ -342,7 +339,7 @@ public class StoreSTests {
         // === Act ===
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
 
-        storeService.AddOwnershipToStore(1, 4, authRepo.getUserId(token1), true);
+        storeService.AddOwnershipToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
 
         assertDoesNotThrow(() -> storeService.DeleteOwnershipFromStore(1, NOToken, authRepo.getUserId(token1)));
@@ -373,7 +370,7 @@ public class StoreSTests {
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, authRepo.getUserName(token1), a);
-        storeService.AddManagerToStore(1, 4, authRepo.getUserId(token1), true);
+        storeService.AddManagerToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
         // when decide equals true some list is null (i think its permissions list)
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
 
@@ -389,7 +386,7 @@ public class StoreSTests {
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
-        storeService.AddManagerToStore(1, 4, authRepo.getUserId(token1), false);
+        storeService.AddManagerToStore(1, authRepo.getUserId(NGToken), authRepo.getUserId(token1), false);
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 1);
 
     }
@@ -419,7 +416,7 @@ public class StoreSTests {
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
-        storeService.AddManagerToStore(1, 4, authRepo.getUserId(token1), true);
+        storeService.AddManagerToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
 
         UIException ex = assertThrows(UIException.class, () -> {
             storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
@@ -472,7 +469,7 @@ public class StoreSTests {
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
-        storeService.AddManagerToStore(1, 4, authRepo.getUserId(token1), true);
+        storeService.AddManagerToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
 
         storeService.deleteManager(1, NOToken, authRepo.getUserId(token1));
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 1);
@@ -488,7 +485,7 @@ public class StoreSTests {
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
 
-        int result = storeService.AddManagerToStore(1, 4, authRepo.getUserId(token1), true);
+        int result = storeService.AddManagerToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
         // dunno why it doesnt work with true ????
         // when decide true some list is null (i think its permissions list)
 
@@ -510,7 +507,7 @@ public class StoreSTests {
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
 
-        int result = storeService.AddManagerToStore(1, 4, authRepo.getUserId(token1), true);
+        int result = storeService.AddManagerToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
         // dunno why it doesnt work with true ????
         storeService.deactivateteStore(1, NOToken);
 
@@ -568,7 +565,7 @@ public class StoreSTests {
         assertTrue(history.get(0).getStoreId() == 1);
         assertTrue(history.get(0).getFinalPrice() == 2000);
         assertTrue(history.get(0).getProductsList().size() == 1);
-        assertTrue(history.get(0).getUserId() == 1);
+        assertTrue(history.get(0).getUserId() == authRepo.getUserId(GToken));
 
     }
 
@@ -716,7 +713,7 @@ public class StoreSTests {
 
 
 
-        /// 3 is deafult
+    /// 3 is deafult
 
 
 
@@ -726,7 +723,7 @@ public class StoreSTests {
     void testOwner_rankstore_Invalidstore() throws Exception {
 
         UIException ex = assertThrows(UIException.class, ()
-                -> storeService.rankStore(NGToken, 2, 4)
+                -> storeService.rankStore(NGToken, 2, authRepo.getUserId(NGToken))
         );
 
     }
@@ -735,26 +732,25 @@ public class StoreSTests {
     void testOwner_rankstore_Invalidtoken() throws Exception {
 
         UIException ex = assertThrows(UIException.class, ()
-                -> storeService.rankStore(GToken, 1, 4)
+                -> storeService.rankStore(GToken, 1, authRepo.getUserId(NGToken))
         );
     }
 
     @Test
     void testOwner_rankitem_Success() throws Exception {
 
-        assertTrue(stockService.getProductsInStore(1)[0].rank == 3);
+        assertTrue(stockService.getProductsInStore(1)[0].getRank() == 3);
 
         stockService.rankProduct(1, NGToken, 1, 1);
-        stockService.rankProduct(1, NGToken, 1, 4);
-
-        assertTrue(stockService.getProductsInStore(1)[0].rank == 3);
+        //System.out.println("afhwlsdfkjEGn  " + stockService.getProductsInStore(1)[0].rank);
+        assertTrue(stockService.getProductsInStore(1)[0].getRank() == 1);
 
     }
 
     @Test
     void testOwner_rankitem_Invalidrating() throws Exception {
 
-        assertTrue(stockService.getProductsInStore(1)[0].rank == 3);
+        assertTrue(stockService.getProductsInStore(1)[0].getRank() == 3);
         UIException ex = assertThrows(UIException.class, ()
                 -> stockService.rankProduct(1, NGToken, 1, -1)
         );

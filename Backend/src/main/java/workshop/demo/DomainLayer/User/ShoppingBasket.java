@@ -3,23 +3,21 @@ package workshop.demo.DomainLayer.User;
 import java.util.ArrayList;
 import java.util.List;
 
-import workshop.demo.DTOs.ItemCartDTO;
-
 public class ShoppingBasket {
 
-    private List<ItemCartDTO> itemsOnCart=new ArrayList<>();
-    
-    private int storeId ;
+    //private List<ItemCartDTO> itemsOnCart=new ArrayList<>();
+    private List<CartItem> itemsOnCart = new ArrayList<>();
+    private int storeId;
 
-    public ShoppingBasket(int id){
-        storeId= id;
+    public ShoppingBasket(int id) {
+        storeId = id;
     }
 
-    public void addItem(ItemCartDTO item) {
+    public void addItem(CartItem item) {
         itemsOnCart.add(item);
     }
 
-    public List<ItemCartDTO> getItems() {
+    public List<CartItem> getItems() {
         return itemsOnCart;
     }
 
@@ -28,7 +26,7 @@ public class ShoppingBasket {
     }
 
     public void ModifyCartAddQToBuy(int productId, int quantity) {
-        for (ItemCartDTO item : itemsOnCart) {
+        for (CartItem item : itemsOnCart) {
             if (item.productId == productId) {
                 item.quantity = quantity;
                 return;

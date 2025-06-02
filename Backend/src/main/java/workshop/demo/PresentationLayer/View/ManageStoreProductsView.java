@@ -10,6 +10,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -48,10 +49,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         Button addProductBtn = new Button("+ Add Item", e -> openAddItemDialog());
         addProductBtn.addClassName("add-product-btn");
 
-        Button backBtn = new Button("⬅ Back", e -> getUI().ifPresent(ui -> ui.navigate("my stores")));
-        backBtn.addClassName("back-btn");
-
-        HorizontalLayout footer = new HorizontalLayout(backBtn, addProductBtn);
+        HorizontalLayout footer = new HorizontalLayout(addProductBtn);
         footer.addClassName("footer-buttons");
         footer.setWidthFull();
 
@@ -79,7 +77,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         TextField priceField = new TextField("Price");
         TextField quantityField = new TextField("Quantity");
 
-        Button addBtn = new Button("✅ Add", e -> {
+        Button addBtn = new Button(" Add", e -> {
             ProductDTO selected = productSelect.getValue();
             if (selected == null || priceField.isEmpty() || quantityField.isEmpty()) {
                 Notification.show("Please fill in all fields.");
@@ -96,7 +94,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             );
         });
 
-        Button newProductBtn = new Button("➕ Add New Product", e -> {
+        Button newProductBtn = new Button("Add New Product", e -> {
             dialog.close();
             openAddNewProductDialog();
         });
@@ -138,8 +136,11 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
             Button edit = new Button("✏️ Edit", e -> openEditDialog(item, product.getDescription()));
             Button delete = new Button("🗑️ Delete", e -> presenter.deleteProduct(storeId, token, item.getProductId()));
-
-            HorizontalLayout actions = new HorizontalLayout(edit, delete);
+            Button auctionButton = new Button("🎯 Start Auction", e
+                    -> showAuctionDialog(storeId, token, item.getProductId()));
+            Button bidButton = new Button("💸 Enable Bidding", e -> showBidDialog(storeId, token, item.getProductId()));
+            Button randomButton = new Button("🎲 Start Random Draw", e -> showRandomDialog(storeId, token, item.getProductId()));
+            VerticalLayout actions = new VerticalLayout(edit, auctionButton, bidButton, randomButton, delete);
             actions.addClassName("button-row");
 
             card.add(actions);
@@ -182,7 +183,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         TextField quantity = new TextField("Quantity");
 
         // Add button
-        Button add = new Button("✅ Add to Store", e -> {
+        Button add = new Button("Add to Store", e -> {
             if (name.isEmpty() || description.isEmpty() || category.isEmpty()
                     || price.isEmpty() || quantity.isEmpty()) {
                 Notification.show("Please fill in all fields");
@@ -211,4 +212,95 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         errorMessage.setText(msg);
         errorMessage.setVisible(true);
     }
+
+    private void showAuctionDialog(int storeId, String token, int productId) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("🎯 Set Product to Auction");
+
+        NumberField quantityField = new NumberField("Quantity");
+        NumberField startPriceField = new NumberField("Start Price");
+        NumberField timeField = new NumberField("Duration (minutes)");
+
+        quantityField.setValue(1.0);
+        startPriceField.setValue(10.0);
+        timeField.setValue(60.0);
+
+        quantityField.setMin(1);
+        startPriceField.setMin(0.1);
+        timeField.setMin(1);
+        VerticalLayout form = new VerticalLayout(quantityField, startPriceField, timeField);
+        dialog.add(form);
+
+        Button confirm = new Button("Set Auction", event -> {
+            int quantity = quantityField.getValue().intValue();
+            double startPrice = startPriceField.getValue();
+            long timeInMinutes = timeField.getValue().longValue();
+            long timeInMillis = timeInMinutes * 60 * 1000;
+
+            presenter.setProductToAuction(storeId, token, productId, quantity, timeInMillis, startPrice);
+            dialog.close();
+        });
+
+        Button cancel = new Button("Cancel", e -> dialog.close());
+
+        HorizontalLayout buttons = new HorizontalLayout(confirm, cancel);
+        dialog.getFooter().add(buttons);
+
+        dialog.open();
+    }
+
+    private void showBidDialog(int storeId, String token, int productId) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("💰 Set Product to Bid");
+
+        NumberField quantityField = new NumberField("Quantity");
+        quantityField.setValue(1.0);
+        quantityField.setMin(1.0);
+
+        VerticalLayout form = new VerticalLayout(quantityField);
+        dialog.add(form);
+
+        Button confirm = new Button("Set Bid", event -> {
+            int quantity = quantityField.getValue().intValue();
+            presenter.setProductToBid(storeId, token, productId, quantity);
+            dialog.close();
+        });
+
+        Button cancel = new Button("Cancel", e -> dialog.close());
+        dialog.getFooter().add(new HorizontalLayout(confirm, cancel));
+        dialog.open();
+    }
+
+    private void showRandomDialog(int storeId, String token, int productId) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("🎲 Set Product to Random Draw");
+
+        NumberField quantityField = new NumberField("Quantity");
+        NumberField priceField = new NumberField("Price per Ticket");
+        NumberField timeField = new NumberField("Duration (minutes)");
+
+        quantityField.setValue(1.0);
+        quantityField.setMin(1.0);
+        priceField.setValue(5.0);
+        priceField.setMin(0.1);
+        timeField.setValue(60.0);
+        timeField.setMin(1.0);
+
+        VerticalLayout form = new VerticalLayout(quantityField, priceField, timeField);
+        dialog.add(form);
+
+        Button confirm = new Button("Set Random Draw", event -> {
+            int quantity = quantityField.getValue().intValue();
+            double price = priceField.getValue();
+            long timeInMillis = timeField.getValue().longValue() * 60 * 1000;
+
+            presenter.setProductToRandom(storeId, token, productId, quantity, price, timeInMillis);
+            dialog.close();
+        });
+
+        Button cancel = new Button("Cancel", e -> dialog.close());
+        dialog.getFooter().add(new HorizontalLayout(confirm, cancel));
+        dialog.open();
+    }
+
 }

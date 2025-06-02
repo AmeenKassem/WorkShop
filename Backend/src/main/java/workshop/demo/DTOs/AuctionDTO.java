@@ -1,7 +1,7 @@
 package workshop.demo.DTOs;
 
-
 public class AuctionDTO {
+
     public SingleBid[] bids;
     public int storeId;
     public int productId;
@@ -12,6 +12,7 @@ public class AuctionDTO {
     public SingleBid winner;
     public int quantity;
 
-    
+    public AuctionDTO() {
+    }
 
 }

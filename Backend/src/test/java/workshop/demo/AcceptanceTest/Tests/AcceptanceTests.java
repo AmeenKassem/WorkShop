@@ -12,7 +12,11 @@ import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 public abstract class AcceptanceTests {
+
     private final Bridge bridge = new Proxy();
+
+    protected AcceptanceTests() throws Exception {
+    }
 
     // System
     String testSystem_InitMarket(String admin) throws Exception {
@@ -58,8 +62,8 @@ public abstract class AcceptanceTests {
         return bridge.testGuest_SearchProductInStore(token, storeID, productID);
     }
 
-    boolean testGuest_AddProductToCart(String token, ItemStoreDTO a,int quantity) throws Exception {
-        return bridge.testGuest_AddProductToCart(token, a,quantity);
+    boolean testGuest_AddProductToCart(String token, ItemStoreDTO a, int quantity) throws Exception {
+        return bridge.testGuest_AddProductToCart(token, a, quantity);
     }
 
     String testGuest_ModifyCartAddQToBuy(int storeId, String token, int productId) throws Exception {
@@ -111,7 +115,6 @@ public abstract class AcceptanceTests {
         return bridge.testUser_SendMessageToAdmin(msg, userId, adminId);
     }
 
-
     List<ReceiptDTO> testUser_CheckPurchaseHistory(String token) throws Exception {
         return bridge.testUser_CheckPurchaseHistory(token);
     }
@@ -119,7 +122,6 @@ public abstract class AcceptanceTests {
 //    String testUser_updateProfile(String token) throws Exception {
 //        return bridge.testUser_updateProfile(token);
 //    }
-
     String testUser_AddBid(String token, int bitId, int storeId, double price) throws Exception {
         return bridge.testUser_AddBid(token, bitId, storeId, price);
     }
@@ -150,7 +152,7 @@ public abstract class AcceptanceTests {
 
     // Owner
     String testOwner_ManageInventory_AddProduct(int storeId, String token, int productId, int quantity,
-                                                int price, Category category) throws Exception {
+            int price, Category category) throws Exception {
         return bridge.testOwner_ManageInventory_AddProduct(storeId, token, productId, quantity, price, category);
     }
 
@@ -171,8 +173,8 @@ public abstract class AcceptanceTests {
         return bridge.testOwner_SetDiscountPolicies(token, storeID, newPolicies);
     }
 
-    String testOwner_AssignNewOwner(int token, int storeID, int NewOwner,boolean decide) throws Exception {
-        return bridge.testOwner_AssignNewOwner(token, storeID, NewOwner,decide);
+    String testOwner_AssignNewOwner(int token, int storeID, int NewOwner, boolean decide) throws Exception {
+        return bridge.testOwner_AssignNewOwner(token, storeID, NewOwner, decide);
     }
 
     String testOwner_RemoveOwner(String token, int storeID, int ownerToRemoveId) throws Exception {
@@ -184,7 +186,7 @@ public abstract class AcceptanceTests {
 //    }
 
     String testOwner_EditManagerPermissions(String token, int managerId, int storeID,
-                                            List<Permission> autorization) throws Exception {
+            List<Permission> autorization) throws Exception {
         return bridge.testOwner_EditManagerPermissions(token, managerId, storeID, autorization);
     }
 
@@ -221,7 +223,7 @@ public abstract class AcceptanceTests {
     }
 
     String testOwner_addProductToAucation(String token, int id, int productId, int quantity, long time,
-                                          double startPrice) throws Exception {
+            double startPrice) throws Exception {
         return bridge.testOwner_addProductToAucation(token, id, productId, quantity, time, startPrice);
     }
 
@@ -242,7 +244,7 @@ public abstract class AcceptanceTests {
     }
 
     String testOwner_addProductToRandom(String token, int storeId, int quantity, int productId,
-                                        int numberOfCards, double priceForCard) throws Exception {
+            int numberOfCards, double priceForCard) throws Exception {
         return bridge.testOwner_addProductToRandom(token, storeId, quantity, productId, numberOfCards, priceForCard);
     }
 

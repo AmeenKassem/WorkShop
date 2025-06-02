@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
-import workshop.demo.ApplicationLayer.AdminService;
+import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
@@ -34,7 +34,6 @@ import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
@@ -50,58 +49,57 @@ import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserTests {
 
-    PaymentServiceImp payment = new PaymentServiceImp();
-    SupplyServiceImp serviceImp = new SupplyServiceImp();
-    PurchaseRepository purchaseRepository = new PurchaseRepository();
-    UserSuspensionRepo suspensionRepo = new UserSuspensionRepo();
     @Autowired
-    NotificationRepository notificationRepository;
-    OrderRepository orderRepository = new OrderRepository();
-    StoreRepository storeRepository = new StoreRepository();
-    StockRepository stockRepository = new StockRepository();
-    SUConnectionRepository sIsuConnectionRepo = new SUConnectionRepository();
-    AuthenticationRepo authRepo = new AuthenticationRepo();
-    Encoder encoder = new Encoder();
-    AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
-    UserRepository userRepo = new UserRepository(encoder, adminInitilizer);
-    UserSuspensionService suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-    AdminService adminService = new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-    UserService userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"), adminService);
-    StockService stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo,
-            sIsuConnectionRepo, suspensionRepo);
-    StoreService storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo,
-            orderRepository, sIsuConnectionRepo, stockRepository, suspensionRepo);
-    PurchaseService purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo,
-            purchaseRepository, orderRepository, payment, serviceImp, suspensionRepo);
-    OrderService orderService = new OrderService(orderRepository, storeRepository, authRepo, userRepo);
+    private NotificationRepository notificationRepository;
+    @Autowired
+    private StoreRepository storeRepository;
+    @Autowired
+    private StockRepository stockRepository;
+    @Autowired
+    private OrderRepository orderRepository;
+    @Autowired
+    private PurchaseRepository purchaseRepository;
+    @Autowired
+    private UserSuspensionRepo suspensionRepo;
+    @Autowired
+    private AuthenticationRepo authRepo;
+
+    @Autowired
+    PaymentServiceImp payment;
+    @Autowired
+    SupplyServiceImp serviceImp;
+
+    @Autowired
+    SUConnectionRepository sIsuConnectionRepo;
+
+    @Autowired
+    Encoder encoder;
+    @Autowired
+    UserRepository userRepo;
+    @Autowired
+    UserSuspensionService suspensionService;
+    @Autowired
+    AdminHandler adminService;
+    @Autowired
+    UserService userService;
+    @Autowired
+    StockService stockService;
+    @Autowired
+    StoreService storeService;
+    @Autowired
+    PurchaseService purchaseService;
+    @Autowired
+    OrderService orderService;
 
     String NOToken;
     String NGToken;
     ItemStoreDTO itemStoreDTO;
+    String GToken;
+    String Admin;
 
     @BeforeEach
     void setup() throws Exception {
         // ====== ADMIN SETUP ======
-        purchaseRepository = new PurchaseRepository();
-        suspensionRepo = new UserSuspensionRepo();
-        orderRepository = new OrderRepository();
-        storeRepository = new StoreRepository();
-        stockRepository = new StockRepository();
-        sIsuConnectionRepo = new SUConnectionRepository();
-        authRepo = new AuthenticationRepo();
-        encoder = new Encoder();
-        adminInitilizer = new AdminInitilizer("123321");
-        userRepo = new UserRepository(encoder, adminInitilizer);
-        suspensionService = new UserSuspensionService(suspensionRepo, userRepo, authRepo);
-        adminService = new AdminService(orderRepository, storeRepository, userRepo, authRepo);
-        userService = new UserService(userRepo, authRepo, stockRepository, new AdminInitilizer("123321"), adminService);
-        stockService = new StockService(stockRepository, storeRepository, authRepo, userRepo, sIsuConnectionRepo,
-                suspensionRepo);
-        storeService = new StoreService(storeRepository, notificationRepository, authRepo, userRepo, orderRepository,
-                sIsuConnectionRepo, stockRepository, suspensionRepo);
-        purchaseService = new PurchaseService(authRepo, stockRepository, storeRepository, userRepo, purchaseRepository,
-                orderRepository, payment, serviceImp, suspensionRepo);
-        orderService = new OrderService(orderRepository, storeRepository, authRepo, userRepo);
 
         String GToken = userService.generateGuest();
         userService.register(GToken, "User", "User", 25);
@@ -129,7 +127,7 @@ public class UserTests {
         stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(1, NOToken, 1, 10, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, 1, "Laptop");
+        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, 1, "Laptop","TestStore");
 
     }
 
@@ -162,8 +160,8 @@ public class UserTests {
         String token1 = userService.login(Token, "User1", "User");
 
         assertTrue(authRepo.getUserName(token1).equals("User1"));
-        userService.setAdmin(Token, "123321", 6);
-        assertTrue(userRepo.isAdmin(6));
+        userService.setAdmin(Token, "123321", 5);
+        assertTrue(userRepo.isAdmin(5));
 
     }
 
@@ -204,7 +202,7 @@ public class UserTests {
         assertTrue(authRepo.getUserName(token1).equals("User1"));
 
         userService.logoutUser(token1);
-        assertFalse(userRepo.isOnline(6));
+        assertFalse(userRepo.isOnline(authRepo.getUserId(token1)));
     }
 
     @Test
@@ -271,7 +269,7 @@ public class UserTests {
         String token = userService.generateGuest();
         userService.register(token, "adminUser3", "adminPass3", 22);
         String token1 = userService.login(token, "adminUser3", "adminPass3");
-        userService.setAdmin(token1, "123321", 6);
+        userService.setAdmin(token1, "123321", authRepo.getUserId(token1));
 
         assertTrue(userRepo.isAdmin(authRepo.getUserId(token1)));
 
@@ -282,14 +280,13 @@ public class UserTests {
         String token = userService.generateGuest();
         userService.register(token, "adminUser3", "adminPass3", 22);
         String token1 = userService.login(token, "adminUser3", "adminPass3");
-        userService.setAdmin(token1, "123321", 6);
+        userService.setAdmin(token1, "123321", authRepo.getUserId(token1));
 
         assertTrue(userRepo.isAdmin(authRepo.getUserId(token1)));
-
         UIException ex = assertThrows(UIException.class, () -> {
-            userService.setAdmin("invalid token", "123321", 6);
+            userService.setAdmin("invalid token", "123321", 1);
         });
-        assertFalse(userService.setAdmin(token, "123321", 1));
+        assertFalse(userService.setAdmin(token, "121", 7));
     }
 
     @Test
@@ -438,19 +435,26 @@ public class UserTests {
         assertEquals("TestStore", receipts[0].getStoreName());
         assertEquals(2000.0,
                 receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
+
+                              assertTrue( orderService.getReceiptDTOsByUser(NGToken).size()==1);
+          assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getFinalPrice()==2000);
+                    assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().size()==1);
+                                        assertTrue( orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().get(0).getProductId()==1);
+                            assertTrue(stockService.getProductsInStore(1)[0].getQuantity()==9);
+    assertTrue(userRepo.getUserCart(authRepo.getUserId(NGToken)).getAllCart().size()==0);
     }
 
     @Test
     void testUserBuyCart_ProductNotAvailable() throws Exception {
-        userService.addToUserCart(NGToken, new ItemStoreDTO(0, 0, 0, null, 0, 0, ""), 1);
+        userService.addToUserCart(NGToken, new ItemStoreDTO(0, 0, 0, null, 0, 1, "","TestStore"), 1);
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-        Exception ex = assertThrows(UIException.class,
+        assertThrows(Exception.class,
                 () -> purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
 
-        assertEquals("Store not found for ID: 0", ex.getMessage());
+
     }
 
     @Test

@@ -1,5 +1,6 @@
 package workshop.demo.Controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,8 +98,9 @@ public class StoreController {
     public ResponseEntity<?> addManager(@RequestParam int storeId,
             @RequestParam String token,
             @RequestParam String managerName,
-            @RequestBody List<Permission> permissions) {
+            @RequestParam List<Permission> permissions) {
         try {
+            //List<Permission> pers= new ArrayList<>();
             storeService.MakeOfferToAddManagerToStore(storeId, token, managerName, permissions);
             return ResponseEntity.ok(new ApiResponse<>("made an offer successfuly", null));
         } catch (UIException ex) {

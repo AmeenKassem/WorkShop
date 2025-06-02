@@ -67,14 +67,9 @@ public class MyCartPresenter {
                         .map(obj -> mapper.convertValue(obj, ItemCartDTO.class))
                         .collect(Collectors.toList());
                 view.displayRegularItems(items.toArray(new ItemCartDTO[0]));
-            } else {
-                showError(rawResponse);
             }
-
-        } catch (HttpClientErrorException e) {
-            handleHttpClientError(e);
         } catch (Exception e) {
-            NotificationView.showError("Unexpected Error: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -107,14 +102,9 @@ public class MyCartPresenter {
                         .map(obj -> mapper.convertValue(obj, SpecialCartItemDTO.class))
                         .collect(Collectors.toList());
                 view.displaySpecialItems(items.toArray(new SpecialCartItemDTO[0]));
-            } else {
-                showError(rawResponse);
             }
-
-        } catch (HttpClientErrorException e) {
-            handleHttpClientError(e);
         } catch (Exception e) {
-            NotificationView.showError("Unexpected Error: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -128,23 +118,4 @@ public class MyCartPresenter {
         return token;
     }
 
-    private void handleHttpClientError(HttpClientErrorException e) {
-        try {
-            String responseBody = e.getResponseBodyAsString();
-            ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-            showError(errorBody);
-        } catch (Exception parsingEx) {
-            NotificationView.showError("HTTP Error: " + e.getMessage());
-        }
-    }
-
-    private void showError(ApiResponse errorBody) {
-        if (errorBody == null) {
-            NotificationView.showError("Empty response from server.");
-        } else if (errorBody.getErrNumber() != -1) {
-            NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-        } else {
-            NotificationView.showError("Error: " + errorBody.getErrorMsg());
-        }
-    }
 }

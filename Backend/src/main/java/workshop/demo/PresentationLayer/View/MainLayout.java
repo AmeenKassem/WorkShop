@@ -151,17 +151,8 @@ public class MainLayout extends AppLayout {
 
         }
         if (userType.equals("admin")) {
-            //here must add a butoon for the admin activites
             Button adminButton = new Button("Admin Panel", e -> UI.getCurrent().navigate("admin"));
-
-            adminButton.getStyle()
-                    .set("background-color", "#007bff")
-                    .set("color", "white")
-                    .set("font-weight", "bold")
-                    .set("border-radius", "8px")
-                    .set("padding", "0.5rem 1.5rem")
-                    .set("margin", "1rem 0");
-
+            adminButton.addClassName("right-button");
             buttonColumn.add(adminButton);
         }
         addToNavbar(buttonColumn);
