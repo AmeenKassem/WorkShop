@@ -15,6 +15,9 @@ public class SupplyDetails {
         this.state = state;
         this.zipCode = zipCode;
     }
+     public SupplyDetails() {
+        
+    }
 
     public SupplyDetails() {
     }

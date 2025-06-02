@@ -28,6 +28,9 @@ import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.ActivePurcheses;
+import workshop.demo.DomainLayer.Store.Auction;
+import workshop.demo.DomainLayer.Store.BID;
+import workshop.demo.DomainLayer.Store.Random;
 import workshop.demo.DomainLayer.User.CartItem;
 
 @Repository
@@ -195,7 +198,7 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public ItemStoreDTO[] getProductsInStore(int storeId) throws UIException, DevException {
-        return search(new ProductSearchCriteria(null, null, null, storeId, null, null, null, null), null);
+        return search(new ProductSearchCriteria(null, null, null, storeId, null, null, null, null));
     }
 
     @Override
@@ -335,6 +338,26 @@ public class StockRepository implements IStockRepo {
         }
         return storeStock.ProcessCartItems(dtoList, isGuest, StoreName);
     }
+     public void changequantity(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
+            throws Exception {
+        StoreStock storeStock = storeStocks.get(storeId);
+        if (storeStock == null) {
+            throw new DevException("Store stock not initialized for storeId: " + storeId);
+        }
+        List<ItemCartDTO> dtoList = new ArrayList<>();
+        for (CartItem item : cartItems) {
+            ItemCartDTO dto = new ItemCartDTO();
+            dto.storeId = item.storeId;
+            dto.productId = item.productId;
+            dto.quantity = item.quantity;
+            dto.price = item.price;
+            dto.name = item.name;
+            dto.storeName = StoreName;
+            dto.category=item.category;
+            dtoList.add(dto);
+        }
+         storeStock.changequantity(dtoList, isGuest, StoreName);
+    }
 
     @Override
     public void checkProductExists_ThrowException(int productId) throws UIException {
@@ -404,7 +427,7 @@ public class StockRepository implements IStockRepo {
     // 'getMatchesItems'");
     // }
     @Override
-    public ItemStoreDTO[] search(ProductSearchCriteria criteria, String storeName) throws UIException {
+    public ItemStoreDTO[] search(ProductSearchCriteria criteria) throws UIException {
         List<Product> matchesCategoryProduct = getProductsFilteredByCategory(criteria);
         List<ItemStoreDTO> result = new ArrayList<>();
         for (Product product : matchesCategoryProduct) {
@@ -415,7 +438,7 @@ public class StockRepository implements IStockRepo {
             for (StoreStock store : matchesStores) {
                 item item = store.getItemByProductId(product.getProductId());
                 if (criteria.matchesForStore(item)) {
-                    ItemStoreDTO toAdd = convertToItemStoreDTO(item, product, store.getStoreStockId(), storeName);
+                    ItemStoreDTO toAdd = convertToItemStoreDTO(item, product, store.getStoreStockId());
                     result.add(toAdd);
                 }
             }
@@ -424,8 +447,44 @@ public class StockRepository implements IStockRepo {
 
     }
 
-    private ItemStoreDTO convertToItemStoreDTO(item item, Product product, int storeId, String storeName) {
-        return new ItemStoreDTO(product.getProductId(), item.getQuantity(), item.getPrice(), product.getCategory(), item.getFinalRank(), storeId, product.getName(), storeName);
+    @Override
+    public RandomDTO[] searchActiveRandoms(ProductSearchCriteria criteria) throws UIException {
+        ItemStoreDTO[] storeItems = search(criteria);
+        List<RandomDTO> result = new ArrayList<>();
+        for (ItemStoreDTO item : storeItems) { 
+            int productId = item.getProductId();
+            ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
+            result.addAll(active.getRandomsForProduct(productId));
+        }
+        return result.toArray(new RandomDTO[0]);
+    }
+
+    @Override
+    public BidDTO[] searchActiveBids(ProductSearchCriteria criteria, String storeName) throws UIException {
+        ItemStoreDTO[] storeItems = search(criteria);
+        List<BidDTO> result = new ArrayList<>();
+        for (ItemStoreDTO item : storeItems) {
+            int productId = item.getProductId();
+            ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
+            result.addAll(active.getBidsForProduct(productId));
+        }
+        return result.toArray(new BidDTO[0]);
+    }
+
+    @Override
+    public AuctionDTO[] searchActiveAuctions(ProductSearchCriteria criteria, String storeName) throws UIException {
+        ItemStoreDTO[] storeItems = search(criteria);
+        List<AuctionDTO> result = new ArrayList<>();
+        for (ItemStoreDTO item : storeItems) {
+            int productId = item.getProductId();
+            ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
+            result.addAll(active.getAuctionsForProduct(productId));
+        }
+        return result.toArray(new AuctionDTO[0]);
+    }
+
+    private ItemStoreDTO convertToItemStoreDTO(item item, Product product, int storeId) {
+        return new ItemStoreDTO(product.getProductId(), item.getQuantity(), item.getPrice(), product.getCategory(), item.getFinalRank(), storeId, product.getName(),null);
     }
 
     private List<StoreStock> getMatchesStore(ProductSearchCriteria criteria) {
