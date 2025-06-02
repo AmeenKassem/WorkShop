@@ -7,7 +7,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.PresentationLayer.View.NotificationView;
 

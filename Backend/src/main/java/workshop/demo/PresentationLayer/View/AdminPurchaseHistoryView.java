@@ -12,7 +12,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriUtils;
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.PurchaseHistoryDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
