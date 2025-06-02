@@ -338,6 +338,26 @@ public class StockRepository implements IStockRepo {
         }
         return storeStock.ProcessCartItems(dtoList, isGuest, StoreName);
     }
+     public void changequantity(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
+            throws Exception {
+        StoreStock storeStock = storeStocks.get(storeId);
+        if (storeStock == null) {
+            throw new DevException("Store stock not initialized for storeId: " + storeId);
+        }
+        List<ItemCartDTO> dtoList = new ArrayList<>();
+        for (CartItem item : cartItems) {
+            ItemCartDTO dto = new ItemCartDTO();
+            dto.storeId = item.storeId;
+            dto.productId = item.productId;
+            dto.quantity = item.quantity;
+            dto.price = item.price;
+            dto.name = item.name;
+            dto.storeName = StoreName;
+            dto.category=item.category;
+            dtoList.add(dto);
+        }
+         storeStock.changequantity(dtoList, isGuest, StoreName);
+    }
 
     @Override
     public void checkProductExists_ThrowException(int productId) throws UIException {

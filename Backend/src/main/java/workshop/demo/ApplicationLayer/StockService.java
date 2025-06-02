@@ -148,6 +148,16 @@ public class StockService {
         }
         return stockRepo.getAuctionsOnStore(storeId);
     }
+     public AuctionDTO[] getAllAuctions_user(String token, int storeId) throws Exception {
+        logger.info("User requesting all auctions in store: {}", storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        logger.info("Returning auction list to user: {}", userId);
+        storeRepo.checkStoreExistance(storeId);
+       
+        return stockRepo.getAuctionsOnStore(storeId);
+    }
 
     public int setProductToAuction(String token, int storeId, int productId, int quantity, long time, double startPrice)
             throws Exception, DevException {
@@ -192,7 +202,16 @@ public class StockService {
 
         return stockRepo.getAllBids(storeId);
     }
+    public BidDTO[] getAllBidsStatus_user(String token, int storeId) throws Exception, DevException {
+        logger.info("Fetching bid status for store: {}", storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
 
+        storeRepo.checkStoreExistance(storeId);
+
+        return stockRepo.getAllBids(storeId);
+    }
     public SingleBid acceptBid(String token, int storeId, int bidId, int bidToAcceptId) throws Exception, DevException {
         logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidToAcceptId, bidId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -253,7 +272,15 @@ public class StockService {
         }
         return stockRepo.getRandomsInStore(storeId);
     }
-
+public RandomDTO[] getAllRandomInStore_user(String token, int storeId) throws Exception, DevException {
+        logger.info("Fetching all randoms in store {}", storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        storeRepo.checkStoreExistance(storeId);
+       
+        return stockRepo.getRandomsInStore(storeId);
+    }
     // stock managment:
     public ItemStoreDTO[] getProductsInStore(int storeId) throws UIException, DevException {
         logger.info("Fetching all products in store: {}", storeId);
