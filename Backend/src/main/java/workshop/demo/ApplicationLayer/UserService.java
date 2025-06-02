@@ -23,8 +23,6 @@ import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.IUserRepo;
-import workshop.demo.DomainLayer.User.Registered;
-import workshop.demo.InfrastructureLayer.StoreRepository;
 
 @Service
 public class UserService {

@@ -183,7 +183,6 @@ public class UserRepository implements IUserRepo {
                 return users.get(username);
             } else {
                 throw new UIException("User not found: " + username, ErrorCodes.USER_NOT_FOUND);
-                new UIException("User not found: " + username, ErrorCodes.USER_NOT_FOUND);
             }
         }
         return null;
@@ -218,9 +217,6 @@ public class UserRepository implements IUserRepo {
     }
 
     @Override
-    public ShoppingCart getUserCart(int userId) throws UIException {
-    
-
     public ShoppingCart getUserCart(int userId) throws UIException {
         if (guests.containsKey(userId)) {
             return guests.get(userId).geCart();

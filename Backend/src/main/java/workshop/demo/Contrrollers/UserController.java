@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.http.MediaType;
+
 import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.UserService;
@@ -266,52 +267,57 @@ public class UserController {
     // return res.toJson();
     // }
     @PostMapping("/suspendUser")
-    public String suspendUser(@RequestParam Integer userId,
+    public ResponseEntity<ApiResponse<Boolean>> suspendUser(@RequestParam Integer userId,
             @RequestParam int minutes,
             @RequestParam String token) {
-
         ApiResponse<Boolean> res;
         try {
             userSuspensionService.suspendRegisteredUser(userId, minutes, token);
             res = new ApiResponse<>(true, null);
+            return ResponseEntity.ok(res);
         } catch (UIException ex) {
             res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
         } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
         }
-        return res.toJson();
     }
 
     @PostMapping("/pauseSuspension")
-    public String pauseSuspension(@RequestParam Integer userId,
+    public ResponseEntity<ApiResponse<Boolean>> pauseSuspension(@RequestParam Integer userId,
             @RequestParam String token) {
 
         ApiResponse<Boolean> res;
         try {
             userSuspensionService.pauseSuspension(userId, token);
             res = new ApiResponse<>(true, null);
+            return ResponseEntity.ok(res);
         } catch (UIException ex) {
             res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
         } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
         }
-        return res.toJson();
     }
 
     @PostMapping("/resumeSuspension")
-    public String resumeSuspension(@RequestParam Integer userId,
+    public ResponseEntity<ApiResponse<Boolean>> resumeSuspension(@RequestParam Integer userId,
             @RequestParam String token) {
 
         ApiResponse<Boolean> res;
         try {
             userSuspensionService.resumeSuspension(userId, token);
             res = new ApiResponse<>(true, null);
+            return ResponseEntity.ok(res);
         } catch (UIException ex) {
             res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
         } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
         }
-        return res.toJson();
     }
 
     // Additional admin methods can be added here...
@@ -343,18 +349,20 @@ public class UserController {
     }
 
     @GetMapping("/getAllUsers")
-    public String getAllUsers(@RequestParam String token) {
+    public ResponseEntity<ApiResponse<List<UserDTO>>> getAllUsers(@RequestParam String token) {
         ApiResponse<List<UserDTO>> res;
         try {
             List<UserDTO> users = userService.getAllUsers(token);
             res = new ApiResponse<>(users, null);
+            return ResponseEntity.ok(res);
         } catch (UIException ex) {
             res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
         } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
         }
-        return res.toJson();
-    }
 
+    }
 
 }
