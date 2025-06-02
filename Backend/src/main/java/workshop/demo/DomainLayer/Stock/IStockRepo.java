@@ -109,4 +109,10 @@ public interface IStockRepo {
     public ItemStoreDTO[] search(ProductSearchCriteria criteria,String storeName) throws UIException;
 
     ProductDTO[] getAllProducts();
+
+    RandomDTO[] searchActiveRandoms(ProductSearchCriteria criteria, String storeName) throws UIException;
+
+    AuctionDTO[] searchActiveAuctions(ProductSearchCriteria criteria, String storeName) throws UIException ;
+
+    BidDTO[] searchActiveBids(ProductSearchCriteria criteria, String storeName) throws UIException;
 }

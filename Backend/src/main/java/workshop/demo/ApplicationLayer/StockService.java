@@ -54,7 +54,7 @@ public class StockService {
     public ItemStoreDTO[] searchProducts(String token, ProductSearchCriteria criteria) throws Exception {
         //int x = storeRepo.getFinalRateInStore(1);
         //logger.info("gfnedsm," + 0);
-        logger.info("tarting searchProducts with criteria: {}", criteria);
+        logger.info("Starting searchProducts with criteria: {}", criteria);
 
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
 
@@ -63,6 +63,33 @@ public class StockService {
         ItemStoreDTO[] items = stockRepo.search(criteria,storeName);
         storeRepo.fillWithStoreName(items);
         return items;
+    }
+
+    public RandomDTO[] searchActiveRandoms(String token, ProductSearchCriteria criteria) throws Exception {
+        logger.info("Starting searchRandoms with criteria: {}", criteria);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
+        RandomDTO[] randoms = stockRepo.searchActiveRandoms(criteria, storeName);
+        storeRepo.fillWithStoreName(randoms);
+        return randoms;
+    }
+
+    public BidDTO[] searchActiveBids(String token, ProductSearchCriteria criteria) throws Exception {
+        logger.info("Starting searchBids with criteria: {}", criteria);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
+        BidDTO[] bids = stockRepo.searchActiveBids(criteria, storeName);
+        storeRepo.fillWithStoreName(bids);
+        return bids;
+    }
+
+    public AuctionDTO[] searchActiveAuctions(String token, ProductSearchCriteria criteria) throws Exception {
+        logger.info("Starting searchAuctions with criteria: {}", criteria);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
+        AuctionDTO[] auctions = stockRepo.searchActiveAuctions(criteria, storeName);
+        storeRepo.fillWithStoreName(auctions);
+        return auctions;
     }
 
     public ProductDTO getProductInfo(String token, int productId) throws UIException {
