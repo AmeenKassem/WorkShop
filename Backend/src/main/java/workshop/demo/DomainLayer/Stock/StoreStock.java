@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.stereotype.Component;
+
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
@@ -67,7 +69,13 @@ public class StoreStock {
         if (foundItem == null) {
             throw new UIException("Item not found with ID " + itemId, ErrorCodes.PRODUCT_NOT_FOUND);
         }
-        foundItem.changeQuantity(foundItem.getQuantity() - quantity);
+        synchronized (foundItem) {
+            if (foundItem.getQuantity() < quantity) {
+                throw new UIException("Insufficient stock", ErrorCodes.INSUFFICIENT_STOCK);
+            }
+            foundItem.changeQuantity(foundItem.getQuantity() - quantity);
+        }
+        //foundItem.changeQuantity(foundItem.getQuantity() - quantity);
     }
 
     public void updatePrice(int itemId, int newPrice) throws UIException {
@@ -116,7 +124,6 @@ public class StoreStock {
     //     }
     //     return itemStoreDTOList;
     // }
-
     //may be changed later:
     public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems, boolean isGuest, int storeid) throws UIException {
         List<ReceiptProduct> boughtItems = new ArrayList<>();

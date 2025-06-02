@@ -1,14 +1,39 @@
 package workshop.demo.AcceptanceTest.Tests;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import workshop.demo.AcceptanceTest.Utill.Real;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
-import workshop.demo.ApplicationLayer.ReviewService;
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.Product;
@@ -16,24 +41,16 @@ import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-
 public class UserAT extends AcceptanceTests {
+
     Real real = new Real();
     private static final Logger logger = LoggerFactory.getLogger(PaymentServiceImp.class);
+
+    public UserAT() throws Exception {
+    }
 
     @BeforeEach
     void setup() throws Exception {
@@ -129,7 +146,6 @@ public class UserAT extends AcceptanceTests {
         assertTrue(itemAdded == productId);
     }
 
-
     @Test
     void testUser_LogIn_Success() throws Exception {
         int newId = 21;
@@ -211,25 +227,21 @@ public class UserAT extends AcceptanceTests {
 
         assertEquals(userToken, actualToken);
 
-
         String invalidToken = "invalid-token";
 
         when(real.mockAuthRepo.validToken(invalidToken)).thenReturn(false);
-
 
         doCallRealMethod()
                 .when(real.mockAuthRepo)
                 .checkAuth_ThrowTimeOutException(eq(invalidToken), any());
 
-
-        UIException ex = assertThrows(UIException.class, () ->
-                real.userService.logoutUser(invalidToken)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.userService.logoutUser(invalidToken)
         );
 
         assertEquals("Invalid token!", ex.getMessage());
         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
     }
-
 
     @Test
     void testUserLogin_Failure_InvalidToken() throws UIException {
@@ -237,20 +249,17 @@ public class UserAT extends AcceptanceTests {
 
         when(real.mockAuthRepo.validToken(invalidToken)).thenReturn(false);
 
-
         doCallRealMethod()
                 .when(real.mockAuthRepo)
                 .checkAuth_ThrowTimeOutException(eq(invalidToken), any());
 
-
-        UIException exception = assertThrows(UIException.class, () ->
-                real.userService.login(invalidToken, "userX", "passX")
+        UIException exception = assertThrows(UIException.class, ()
+                -> real.userService.login(invalidToken, "userX", "passX")
         );
 
         assertEquals("Invalid token!", exception.getMessage());
         assertEquals(ErrorCodes.INVALID_TOKEN, exception.getNumber());
     }
-
 
     @Test
     void testUserLogin_Failure_UserNotFound() throws Exception {
@@ -264,8 +273,8 @@ public class UserAT extends AcceptanceTests {
         String generatedToken = real.userService.generateGuest();
         assertEquals(guestToken, generatedToken);
 
-        UIException exception = assertThrows(UIException.class, () ->
-                real.userService.login(generatedToken, "ghost", "nopass")
+        UIException exception = assertThrows(UIException.class, ()
+                -> real.userService.login(generatedToken, "ghost", "nopass")
         );
 
         assertEquals("User not found", exception.getMessage());
@@ -278,8 +287,8 @@ public class UserAT extends AcceptanceTests {
         when(real.mockAuthRepo.getUserName(token)).thenReturn("ghost");
         when(real.mockUserRepo.logoutUser("ghost")).thenThrow(new UIException("User not found: ghost", 101));
 
-        UIException exception = assertThrows(UIException.class, () ->
-                real.userService.logoutUser(token)
+        UIException exception = assertThrows(UIException.class, ()
+                -> real.userService.logoutUser(token)
         );
 
         assertEquals("User not found: ghost", exception.getMessage());
@@ -295,8 +304,8 @@ public class UserAT extends AcceptanceTests {
         when(real.mockUserRepo.logoutUser("guestUser")).thenReturn(userId);
         when(real.mockAuthRepo.generateGuestToken(userId)).thenThrow(new RuntimeException("Token generation failed"));
 
-        Exception ex = assertThrows(RuntimeException.class, () ->
-                real.userService.logoutUser(token)
+        Exception ex = assertThrows(RuntimeException.class, ()
+                -> real.userService.logoutUser(token)
         );
         assertEquals("Token generation failed", ex.getMessage());
     }
@@ -328,9 +337,6 @@ public class UserAT extends AcceptanceTests {
 
         assertEquals(real.userService.setAdmin(token, adminKey, userIdToPromote), false);
     }
-
-
-
 
     @Test
     void testUser_CheckPurchaseHistory_Success() throws Exception {
@@ -414,9 +420,8 @@ public class UserAT extends AcceptanceTests {
         int storeId = 100;
         int productId = 111;
 
-
         ItemStoreDTO[] mockProducts = new ItemStoreDTO[]{
-                new ItemStoreDTO(productId, 5, 1500, Category.ELECTRONICS, 0, 4, "Laptop")};
+            new ItemStoreDTO(productId, 5, 1500, Category.ELECTRONICS, 0, 4, "Laptop")};
         when(real.mockStockRepo.getProductsInStore(storeId)).thenReturn(mockProducts);
 
         ItemStoreDTO[] products = real.stockService.getProductsInStore(storeId);
@@ -463,8 +468,8 @@ public class UserAT extends AcceptanceTests {
 
         when(real.mockStockRepo.getProductsInStore(storeId))
                 .thenReturn(new ItemStoreDTO[]{
-                        new ItemStoreDTO(1, 5, 1500, Category.ELECTRONICS, 0, 4, "Laptop")
-                });
+            new ItemStoreDTO(1, 5, 1500, Category.ELECTRONICS, 0, 4, "Laptop")
+        });
 
         ItemStoreDTO[] products = real.stockService.getProductsInStore(storeId);
 
@@ -641,8 +646,8 @@ public class UserAT extends AcceptanceTests {
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-        UIException ex = assertThrows(UIException.class, () ->
-                real.purchaseService.buyRegisteredCart(userToken, paymentDetails, supplyDetails));
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.purchaseService.buyRegisteredCart(userToken, paymentDetails, supplyDetails));
 
         assertEquals("Shopping cart is empty or not found", ex.getMessage());
         assertEquals(1009, ex.getNumber());
@@ -664,8 +669,8 @@ public class UserAT extends AcceptanceTests {
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-        UIException ex = assertThrows(UIException.class, () ->
-                real.purchaseService.buyRegisteredCart(userToken, paymentDetails, supplyDetails));
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.purchaseService.buyRegisteredCart(userToken, paymentDetails, supplyDetails));
 
         assertEquals("Shopping cart is empty or not found", ex.getMessage());
     }
@@ -695,7 +700,6 @@ public class UserAT extends AcceptanceTests {
 
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(mockCart);
 
-
         when(real.mockStockRepo.checkAvailability(any())).thenReturn(false);
 
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), eq(items), eq(false)))
@@ -704,15 +708,14 @@ public class UserAT extends AcceptanceTests {
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-        UIException ex = assertThrows(UIException.class, () ->
-                real.purchaseService.buyRegisteredCart(userToken, paymentDetails, supplyDetails));
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.purchaseService.buyRegisteredCart(userToken, paymentDetails, supplyDetails));
 
         assertEquals("Not all items are available for user purchase", ex.getMessage());
 
         verify(real.mockUserRepo).getUserCart(userId);
         verify(real.mockStockRepo).processCartItemsForStore(eq(storeId), eq(items), eq(false));
     }
-
 
     @Test
     void testUserBuyCart_PaymentFails() throws Exception {
@@ -745,8 +748,8 @@ public class UserAT extends AcceptanceTests {
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () ->
-                real.purchaseService.buyRegisteredCart(userToken, paymentDetails, supplyDetails));
+        RuntimeException ex = assertThrows(RuntimeException.class, ()
+                -> real.purchaseService.buyRegisteredCart(userToken, paymentDetails, supplyDetails));
 
         assertEquals("Payment failed", ex.getMessage());
     }
@@ -767,11 +770,11 @@ public class UserAT extends AcceptanceTests {
         when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
 
         ProductDTO[] products = {
-                new ProductDTO(productId, "Laptop", Category.ELECTRONICS, "Gaming Laptop")
+            new ProductDTO(productId, "Laptop", Category.ELECTRONICS, "Gaming Laptop")
         };
 
         ItemStoreDTO[] items = {
-                new ItemStoreDTO(productId, 5, 1500, Category.ELECTRONICS, 0, 100, "Laptop")};
+            new ItemStoreDTO(productId, 5, 1500, Category.ELECTRONICS, 0, 100, "Laptop")};
 
         when(real.mockStockRepo.search(criteria)).thenReturn(items);
 
@@ -779,12 +782,11 @@ public class UserAT extends AcceptanceTests {
 
         assertNotNull(result);
         assertEquals(1, result.length);
-        assertEquals(productId, result[0].getId());
+        assertEquals(productId, result[0].getProductId());
         assertEquals(1500, result[0].getPrice());
         assertEquals(storeId, result[0].getStoreId());
 
     }
-
 
     @Test
     void testUserSearchProducts_InvalidToken() throws Exception {
@@ -805,25 +807,23 @@ public class UserAT extends AcceptanceTests {
         assertEquals("Invalid token!", exception.getMessage());
     }
 
-
     @Test
     void testUserSearchProducts_NoMatches() throws Exception {
         String userToken = "user-token-2";
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null,                     // productNameFilter
-                Category.ELECTRONICS,     // categoryFilter
-                null,                     // keywordFilter
-                0,                        // storeId (not restricted)
-                0,                        // minPrice
-                0,                        // maxPrice
-                0,                        // minStoreRating
-                0                         // maxStoreRating
+                null, // productNameFilter
+                Category.ELECTRONICS, // categoryFilter
+                null, // keywordFilter
+                0, // storeId (not restricted)
+                0, // minPrice
+                0, // maxPrice
+                0, // minStoreRating
+                0 // maxStoreRating
         );
 
         when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
         when(real.mockAuthRepo.getUserId(userToken)).thenReturn(20);
-
 
         ItemStoreDTO[] result = real.stockService.searchProducts(userToken, criteria);
 
@@ -851,7 +851,6 @@ public class UserAT extends AcceptanceTests {
         assertEquals("Invalid token!", exception.getMessage());
     }
 
-
     @Test
     void testUserSearchProductInStore_ProductNotFound() throws Exception {
         int storeId = 100;
@@ -868,12 +867,10 @@ public class UserAT extends AcceptanceTests {
 
         ProductDTO[] emptyProducts = new ProductDTO[0];
 
-
         ItemStoreDTO[] result = real.stockService.searchProducts(userToken, criteria);
 
         assertNull(result);
     }
-
 
     @Test
     void testUserSearchProductInStore_ProductNotInStore() throws Exception {
@@ -890,14 +887,13 @@ public class UserAT extends AcceptanceTests {
         when(real.mockAuthRepo.getUserId(userToken)).thenReturn(20);
 
         ProductDTO[] products = {
-                new ProductDTO(productId, "Laptop", Category.ELECTRONICS, "Gaming Laptop")
+            new ProductDTO(productId, "Laptop", Category.ELECTRONICS, "Gaming Laptop")
         };
 
         ItemStoreDTO[] result = real.stockService.searchProducts(userToken, criteria);
 
         assertNull(result);
     }
-
 
     @Test
     void testUserGetPurchasePolicy_Success() throws Exception {
@@ -911,11 +907,11 @@ public class UserAT extends AcceptanceTests {
 
     @Test
     void testRankStore_Success() throws Exception {
-         String validToken = "user-token";
-         String invalidToken = "guest-token";
-         int userId = 10;
-         int storeId = 100;
-         int productId = 200;
+        String validToken = "user-token";
+        String invalidToken = "guest-token";
+        int userId = 10;
+        int storeId = 100;
+        int productId = 200;
         doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(validToken, logger);
         when(real.mockAuthRepo.getUserId(validToken)).thenReturn(userId);
         doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userId);
@@ -939,8 +935,8 @@ public class UserAT extends AcceptanceTests {
                 .when(real.mockAuthRepo)
                 .checkAuth_ThrowTimeOutException(eq(invalidToken), any(Logger.class));
 
-        UIException ex = assertThrows(UIException.class, () ->
-                real.storeService.rankStore(invalidToken, storeId, 4)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.storeService.rankStore(invalidToken, storeId, 4)
         );
 
         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
@@ -960,8 +956,8 @@ public class UserAT extends AcceptanceTests {
         doThrow(new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND))
                 .when(real.mockStoreRepo).checkStoreExistance(storeId);
 
-        UIException ex = assertThrows(UIException.class, () ->
-                real.storeService.rankStore(validToken, storeId, 5)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.storeService.rankStore(validToken, storeId, 5)
         );
         assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getNumber());
     }
@@ -996,8 +992,8 @@ public class UserAT extends AcceptanceTests {
                 .when(real.mockAuthRepo)
                 .checkAuth_ThrowTimeOutException(eq(invalidToken), any(Logger.class));
 
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.rankProduct(storeId, invalidToken, productId, 3)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.stockService.rankProduct(storeId, invalidToken, productId, 3)
         );
 
         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
@@ -1017,8 +1013,8 @@ public class UserAT extends AcceptanceTests {
         doThrow(new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND))
                 .when(real.mockStoreRepo).checkStoreExistance(storeId);
 
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.rankProduct(storeId, validToken, productId, 3)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.stockService.rankProduct(storeId, validToken, productId, 3)
         );
 
         assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getNumber());
@@ -1039,8 +1035,8 @@ public class UserAT extends AcceptanceTests {
         doThrow(new UIException("Product not found", ErrorCodes.PRODUCT_NOT_FOUND))
                 .when(real.mockStockRepo).rankProduct(storeId, invalidProductId, 3);
 
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.rankProduct(storeId, validToken, invalidProductId, 3)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.stockService.rankProduct(storeId, validToken, invalidProductId, 3)
         );
 
         assertEquals(ErrorCodes.PRODUCT_NOT_FOUND, ex.getNumber());
@@ -1063,6 +1059,7 @@ public class UserAT extends AcceptanceTests {
 
         verify(real.mockReviewRepo).AddReviewToStore(storeId, userId, username, review);
     }
+
     @Test
     void testUser_AddReviewToProduct_Success() throws Exception {
         String token = "user-token-2";
@@ -1072,9 +1069,8 @@ public class UserAT extends AcceptanceTests {
         String username = "user2";
         String review = "Amazing laptop, very fast!";
         ItemStoreDTO[] itemsInStore = {
-                new ItemStoreDTO(productId, 10, 1500, Category.ELECTRONICS, 4, storeId, "Laptop")
+            new ItemStoreDTO(productId, 10, 1500, Category.ELECTRONICS, 4, storeId, "Laptop")
         };
-
 
         doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(token, logger);
         when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
@@ -1144,7 +1140,6 @@ public class UserAT extends AcceptanceTests {
         assertTrue(ex.getMessage().contains("Invalid token"));
     }
 
-
     @Test
     void testUser_AddReviewToProduct_Failure_ProductNotFound() throws Exception {
         String token = "user-token-2";
@@ -1155,7 +1150,7 @@ public class UserAT extends AcceptanceTests {
         String review = "This product does not exist!";
 
         ItemStoreDTO[] itemsInStore = {
-                new ItemStoreDTO(111, 10, 1500, Category.ELECTRONICS, 4, storeId, "Laptop")
+            new ItemStoreDTO(111, 10, 1500, Category.ELECTRONICS, 4, storeId, "Laptop")
         };
 
         doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(token, logger);

@@ -1,5 +1,7 @@
 package workshop.demo.Contrrollers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,33 +15,38 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
-import workshop.demo.ApplicationLayer.OrderService;
+import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.UserService;
-import workshop.demo.DTOs.AddToCartRequest;
+import workshop.demo.ApplicationLayer.UserSuspensionService;
 import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.PurchaseHistoryDTO;
 import workshop.demo.DTOs.SpecialCartItemDTO;
+import workshop.demo.DTOs.SystemAnalyticsDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.PresentationLayer.Requests.AddToCartRequest;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
-    private UserService userService;
-    private OrderService orderService;
+    private final UserService userService;
+    private final UserSuspensionService userSuspensionService;
+    private final AdminHandler adminHandler;
 
     @Autowired
-    public UserController(Repos repos) {
-        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer, repos.adminService);
-        this.orderService = new OrderService(repos.orderRepo, repos.storeRepo, repos.auth, repos.userRepo);
+    public UserController(Repos repos) throws Exception {
+        //this.userService = repos.userService;
+        this.adminHandler = new AdminHandler(repos.orderRepo, repos.storeRepo, repos.userRepo, repos.auth);
+        this.userSuspensionService = new UserSuspensionService(repos.UserSuspensionRepo, repos.userRepo, repos.auth);
+        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer, adminHandler);
+
     }
 
-    @ModelAttribute
-    public void beforeEveryRequest(HttpServletRequest request) {
-        System.out.println("must check if the system get published by admin ...");
-    }
-
+    // @ModelAttribute
+    // public void beforeEveryRequest(HttpServletRequest request) {
+    //     System.out.println("must check if the system get published by admin ...");
+    // }
     @GetMapping("/generateGuest")
     public ResponseEntity<?> generateGuest() {
         try {
@@ -61,7 +68,6 @@ public class UserController {
             @RequestParam String username,
             @RequestParam String password,
             @RequestParam int age) {
-        ApiResponse<Boolean> res;
         try {
             userService.register(token, username, password, age);
             return ResponseEntity
@@ -223,6 +229,116 @@ public class UserController {
             res = new ApiResponse<>(null, e.getMessage(), -1);
         }
         return res.toJson();
+    }
+
+    //------------admin activites:
+    @ModelAttribute
+    public void beforeEveryRequest(HttpServletRequest request) {
+        System.out.println("Checking admin access...");
+    }
+
+    // @DeleteMapping("/removeUser")
+    // public String removeUser(@RequestParam String token,
+    // @RequestParam String userToRemove) {
+    // ApiResponse<String> res;
+    // try {
+    // userService.RemoveUser(token, userToRemove);
+    // res = new ApiResponse<>("done", null);
+    // } catch (UIException ex) {
+    // res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+    // } catch (Exception e) {
+    // res = new ApiResponse<>(null, e.getMessage(), -1);
+    // }
+    // return res.toJson();
+    // }
+    // @GetMapping("/viewSystemInfo")
+    // public String viewSystemInfo(@RequestParam String token) {
+    // ApiResponse<String> res;
+    // try {
+    // userService.ViewSystemInfo(token);
+    // res = new ApiResponse<>("done", null);
+    // } catch (UIException ex) {
+    // res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+    // } catch (Exception e) {
+    // res = new ApiResponse<>(null, e.getMessage(), -1);
+    // }
+    // return res.toJson();
+    // }
+    @PostMapping("/suspendUser")
+    public String suspendUser(@RequestParam Integer userId,
+            @RequestParam int minutes,
+            @RequestParam String token) {
+
+        ApiResponse<Boolean> res;
+        try {
+            userSuspensionService.suspendRegisteredUser(userId, minutes, token);
+            res = new ApiResponse<>(true, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
+    }
+
+    @PostMapping("/pauseSuspension")
+    public String pauseSuspension(@RequestParam Integer userId,
+            @RequestParam String token) {
+
+        ApiResponse<Boolean> res;
+        try {
+            userSuspensionService.pauseSuspension(userId, token);
+            res = new ApiResponse<>(true, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
+    }
+
+    @PostMapping("/resumeSuspension")
+    public String resumeSuspension(@RequestParam Integer userId,
+            @RequestParam String token) {
+
+        ApiResponse<Boolean> res;
+        try {
+            userSuspensionService.resumeSuspension(userId, token);
+            res = new ApiResponse<>(true, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
+    }
+
+    // Additional admin methods can be added here...
+    @GetMapping("/purchaseHistory")
+    public ResponseEntity<List<PurchaseHistoryDTO>> getSystemPurchaseHistory(@RequestParam String token) {
+        try {
+            List<PurchaseHistoryDTO> history = adminHandler.viewPurchaseHistory(token);
+            return ResponseEntity.ok(history);
+        } catch (UIException ex) {
+            // Return an error response if token is invalid or user is not admin
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(null);
+        } catch (Exception ex) {
+            // Handle other exceptions as needed
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/analytics")
+    public ResponseEntity<SystemAnalyticsDTO> getSystemAnalytics(@RequestParam String token) {
+        try {
+            SystemAnalyticsDTO analytics = adminHandler.getSystemAnalytics(token);
+            return ResponseEntity.ok(analytics);
+        } catch (UIException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
 }

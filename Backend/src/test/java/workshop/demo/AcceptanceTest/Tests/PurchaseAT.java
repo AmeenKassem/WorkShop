@@ -1,35 +1,53 @@
 package workshop.demo.AcceptanceTest.Tests;
 
-import org.junit.jupiter.api.BeforeEach;
+import java.util.List;
+import java.util.function.Predicate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import org.slf4j.Logger;
+
 import workshop.demo.AcceptanceTest.Utill.Real;
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.item;
-import workshop.demo.DomainLayer.Store.*;
+import workshop.demo.DomainLayer.Store.AndDiscount;
+import workshop.demo.DomainLayer.Store.Discount;
+import workshop.demo.DomainLayer.Store.DiscountConditions;
+import workshop.demo.DomainLayer.Store.DiscountScope;
+import workshop.demo.DomainLayer.Store.OrDiscount;
+import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.Store.VisibleDiscount;
+import workshop.demo.DomainLayer.Store.XorDiscount;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
-import java.util.List;
-import java.util.function.Predicate;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
-
 public class PurchaseAT extends AcceptanceTests {
+
     Real real = new Real();
+
+    public PurchaseAT() throws Exception {
+    }
 
     @BeforeEach
     void setup() throws Exception {
@@ -92,7 +110,6 @@ public class PurchaseAT extends AcceptanceTests {
         int itemAdded = real.stockService.addItem(storeId, ownerToken, productId, 10, 100, Category.ELECTRONICS);
         assertEquals(itemAdded, productId);
 
-
         int userId = 20;
         String userGuestToken = "guest-token-2";
         String userToken = "user-token-2";
@@ -129,10 +146,10 @@ public class PurchaseAT extends AcceptanceTests {
         double price = 30.0;
 
         doNothing().when(real.mockUserRepo).checkUserRegister_ThrowException(userId);
-doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
-doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userId);
+        doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userId);
 
-                when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
+        when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
 
         int specialId = 5000;
         SingleBid mockBid = Mockito.mock(SingleBid.class);
@@ -152,12 +169,11 @@ doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userI
         String token = "bad-token";
 
         doCallRealMethod()
-    .when(real.mockAuthRepo)
-    .checkAuth_ThrowTimeOutException(eq(token), any()); 
+                .when(real.mockAuthRepo)
+                .checkAuth_ThrowTimeOutException(eq(token), any());
 
-
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.addRegularBid(token, 0, 100, 30.0)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.stockService.addRegularBid(token, 0, 100, 30.0)
         );
 
         assertEquals("Invalid token!", ex.getMessage());
@@ -171,12 +187,11 @@ doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userI
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         doThrow(new UIException("suspended user trying to make something", ErrorCodes.USER_SUSPENDED))
-    .when(real.mockSusRepo)
-    .checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+                .when(real.mockSusRepo)
+                .checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
 
-
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.addRegularBid(token, 0, 100, 30.0)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.stockService.addRegularBid(token, 0, 100, 30.0)
         );
 
         assertEquals("suspended user trying to make something", ex.getMessage());
@@ -188,14 +203,13 @@ doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userI
         int userId = 20;
         int storeId = 100;
 
-
-                when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
+        when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         when(real.mockStockRepo.bidOnBid(0, 30.0, userId, storeId))
                 .thenThrow(new UIException("store not found on active purchases hashmap", ErrorCodes.STORE_NOT_FOUND));
 
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.addRegularBid(token, 0, storeId, 30.0)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.stockService.addRegularBid(token, 0, storeId, 30.0)
         );
 
         assertEquals("store not found on active purchases hashmap", ex.getMessage());
@@ -213,13 +227,12 @@ doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userI
         when(real.mockStockRepo.bidOnBid(bidId, 30.0, userId, storeId))
                 .thenThrow(new DevException("Bid ID not found in active bids!"));
 
-        DevException ex = assertThrows(DevException.class, () ->
-                real.stockService.addRegularBid(token, bidId, storeId, 30.0)
+        DevException ex = assertThrows(DevException.class, ()
+                -> real.stockService.addRegularBid(token, bidId, storeId, 30.0)
         );
 
         assertEquals("Bid ID not found in active bids!", ex.getMessage());
     }
-
 
     @Test
     void Add_AuctionBidToSpecialCart_Success() throws UIException, DevException {
@@ -229,9 +242,7 @@ doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userI
         int auctionId = 555;
         double price = 60.0;
 
-    
         when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
-
 
         int specialId = 6000;
         SingleBid mockBid = Mockito.mock(SingleBid.class);
@@ -250,13 +261,12 @@ doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userI
     void Add_AuctionBid_Failure_InvalidToken() throws UIException {
         String token = "bad-token";
 
-     doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
-    .when(real.mockAuthRepo)
-    .checkAuth_ThrowTimeOutException(eq(token), any(Logger.class));
+        doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
+                .when(real.mockAuthRepo)
+                .checkAuth_ThrowTimeOutException(eq(token), any(Logger.class));
 
-
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.addBidOnAucction(token, 555, 100, 60.0)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.stockService.addBidOnAucction(token, 555, 100, 60.0)
         );
 
         assertEquals("Invalid token!", ex.getMessage());
@@ -268,11 +278,10 @@ doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userI
         int userId = 20;
 
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
-doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
 
-
-        NullPointerException ex = assertThrows(NullPointerException.class, () ->
-                real.stockService.addBidOnAucction(token, 555, 100, 60.0)
+        NullPointerException ex = assertThrows(NullPointerException.class, ()
+                -> real.stockService.addBidOnAucction(token, 555, 100, 60.0)
         );
 
     }
@@ -289,8 +298,8 @@ doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspenede
         when(real.mockStockRepo.bidOnAuction(storeId, userId, auctionId, 60.0))
                 .thenThrow(new UIException("store not found on active purchases hashmap", ErrorCodes.STORE_NOT_FOUND));
 
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.addBidOnAucction(token, auctionId, storeId, 60.0)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.stockService.addBidOnAucction(token, auctionId, storeId, 60.0)
         );
 
         assertEquals("store not found on active purchases hashmap", ex.getMessage());
@@ -308,13 +317,12 @@ doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspenede
         when(real.mockStockRepo.bidOnAuction(storeId, userId, auctionId, 60.0))
                 .thenThrow(new DevException("Auction ID not found in active auctions!"));
 
-        DevException ex = assertThrows(DevException.class, () ->
-                real.stockService.addBidOnAucction(token, auctionId, storeId, 60.0)
+        DevException ex = assertThrows(DevException.class, ()
+                -> real.stockService.addBidOnAucction(token, auctionId, storeId, 60.0)
         );
 
         assertEquals("Auction ID not found in active auctions!", ex.getMessage());
     }
-
 
     @Test
     void Set_ProductToRandom_Success() throws Exception {
@@ -327,8 +335,8 @@ doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspenede
         long time = 5000L;
 
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
-        when(real.mockIOSrepo.manipulateItem(userId,storeId,Permission.SpecialType)).thenReturn(true);
-        when(real.mockStockRepo.addProductToRandom(productId, quantity, price, storeId, time)).thenReturn(777); 
+        when(real.mockIOSrepo.manipulateItem(userId, storeId, Permission.SpecialType)).thenReturn(true);
+        when(real.mockStockRepo.addProductToRandom(productId, quantity, price, storeId, time)).thenReturn(777);
 
         int randomId = real.stockService.setProductToRandom(token, productId, quantity, price, storeId, time);
         assertEquals(777, randomId);
@@ -339,12 +347,11 @@ doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspenede
         String token = "bad-token";
 
         doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
-    .when(real.mockAuthRepo)
-    .checkAuth_ThrowTimeOutException(eq(token), any(Logger.class));
+                .when(real.mockAuthRepo)
+                .checkAuth_ThrowTimeOutException(eq(token), any(Logger.class));
 
-
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.setProductToRandom(token, 200, 1, 100.0, 100, 5000L)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.stockService.setProductToRandom(token, 200, 1, 100.0, 100, 5000L)
         );
 
         assertEquals("Invalid token!", ex.getMessage());
@@ -355,13 +362,12 @@ doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspenede
         String token = "user-token-2";
         int userId = 20;
 
-doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.USER_SUSPENDED))
-    .when(real.mockSusRepo)
-    .checkUserSuspensoin_ThrowExceptionIfSuspeneded(eq(userId));
+        doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.USER_SUSPENDED))
+                .when(real.mockSusRepo)
+                .checkUserSuspensoin_ThrowExceptionIfSuspeneded(eq(userId));
 
-
-        UIException ex = assertThrows(UIException.class, () ->
-                real.stockService.setProductToRandom(token, 200, 1, 100.0, 100, 5000L)
+        UIException ex = assertThrows(UIException.class, ()
+                -> real.stockService.setProductToRandom(token, 200, 1, 100.0, 100, 5000L)
         );
 
     }
@@ -385,7 +391,7 @@ doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.US
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
         doNothing().when(real.mockOrderRepo).setOrderToStore(eq(storeId), eq(userId), any(), eq("TestStore"));
-        when(real.mockStoreRepo.findStoreByID(100)).thenReturn(new Store(100,"TestStore","ELECTRONICS"));
+        when(real.mockStoreRepo.findStoreByID(100)).thenReturn(new Store(100, "TestStore", "ELECTRONICS"));
 
         PaymentDetails payment = new PaymentDetails("1234123412341234", "Test User", "12/26", "123");
         SupplyDetails supply = new SupplyDetails("City", "State", "Zip", "Address");
@@ -398,6 +404,7 @@ doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.US
         assertEquals("TestStore", receipts[0].getStoreName());
         assertEquals(200.0, receipts[0].getFinalPrice());
     }
+
     @Test
     void testBuyRegisteredCart_WithDiscount_Success() throws Exception {
         String token = "user-token-2";
@@ -419,7 +426,7 @@ doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.US
         );
         Discount discount = new VisibleDiscount("50percent", 50,
                 scope -> scope != null && scope.getItems().stream()
-                        .anyMatch(scopeItem -> scopeItem.getStoreId() == storeId && scopeItem.getId() == productId)
+                        .anyMatch(scopeItem -> scopeItem.getStoreId() == storeId && scopeItem.getProductId() == productId)
         );
 
         store.addDiscount(discount);
@@ -631,7 +638,6 @@ doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.US
         );
         DiscountScope scope = new DiscountScope(scopeItems);
 
-
         Predicate<DiscountScope> cond1 = DiscountConditions.fromString("CATEGORY:ELECTRONICS");
         Predicate<DiscountScope> cond2 = DiscountConditions.fromString("TOTAL>1000");//no match
 
@@ -664,9 +670,5 @@ doThrow(new UIException("Suspended user trying to perform action", ErrorCodes.US
         assertEquals("TestStore", receipts[0].getStoreName());
         assertEquals(200.0, receipts[0].getFinalPrice());
     }
-
-
-
-
 
 }

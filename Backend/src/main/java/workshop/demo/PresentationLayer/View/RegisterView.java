@@ -3,8 +3,9 @@ package workshop.demo.PresentationLayer.View;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
@@ -17,14 +18,31 @@ public class RegisterView extends VerticalLayout {
 
     private final TextField usernameField = new TextField("Username");
     private final PasswordField passwordField = new PasswordField("Password");
-    private final TextField ageField = new TextField("Age");
+    private final IntegerField ageField = new IntegerField("Age");
     private final Button registerButton = new Button("Register");
+    private final Span passwordFeedback = new Span();
     private RegisterPresenter presenter;
 
     public RegisterView() {
         addClassName("register-view");
+        // Set placeholders and constraints
+        usernameField.setPlaceholder("Enter your username");
+        passwordField.setPlaceholder("Enter your password");
+        passwordFeedback.getStyle().set("color", "red");
+        passwordFeedback.setText("Password must be 8+ chars, include uppercase, lowercase, and a number.");
+        passwordFeedback.setVisible(false);
 
-        add(new H1("Create Account"), usernameField, passwordField, ageField, registerButton);
+        passwordField.addValueChangeListener(event -> {
+            boolean valid = isPasswordValid(passwordField.getValue());
+            passwordFeedback.setVisible(!valid);
+        });
+
+        ageField.setPlaceholder("Enter your age");
+        ageField.setMin(18);
+        ageField.setMax(120);
+        ageField.setHelperText("You must be 18 or older");
+
+        add(new H1("Create Account"), usernameField, passwordField, passwordFeedback, ageField, registerButton);
 
         presenter = new RegisterPresenter(this);
 
@@ -40,19 +58,16 @@ public class RegisterView extends VerticalLayout {
     }
 
     public int getAge() {
-        try {
-            return Integer.parseInt(ageField.getValue());
-        } catch (NumberFormatException e) {
-            return -1;//invalied
-        }
+        Integer value = ageField.getValue();
+        return (value != null && value >= 18) ? value : -1;
     }
 
-    public void showSuccess(String message) {
-        Notification.show("✅ " + message, 3000, Notification.Position.BOTTOM_CENTER);
-    }
-
-    public void showError(String message) {
-        Notification.show("❌ " + message, 5000, Notification.Position.BOTTOM_CENTER);
+    public boolean isPasswordValid(String password) {
+        return password != null
+                && password.length() >= 5
+                && password.matches(".*[a-z].*")
+                //&& password.matches(".*[A-Z].*")
+                && password.matches(".*\\d.*");
     }
 
 }

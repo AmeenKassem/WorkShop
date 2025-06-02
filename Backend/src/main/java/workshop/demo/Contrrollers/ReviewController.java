@@ -20,7 +20,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 @RequestMapping("/api/Review")
 public class ReviewController {
 
-    private ReviewService reviewService;
+    private final ReviewService reviewService;
 
     public ReviewController(Repos repo) {
         this.reviewService = new ReviewService(repo.reviewRepo, repo.auth, repo.userRepo, repo.storeRepo, repo.stockrepo);

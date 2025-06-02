@@ -42,15 +42,6 @@ public class UserRepository implements IUserRepo {
         users = new ConcurrentHashMap<>();
         guests = new ConcurrentHashMap<>();
         idToUsername = new ConcurrentHashMap<>();
-//        int a=generateGuest();
-//        try{
-//            registerUser("name","pass",30);
-//            int x=login("name","pass");
-//            setUserAsAdmin(x,"123321");
-//        }
-//         catch (UIException e) {
-//            throw new RuntimeException(e);
-//        }
     }
 
     public List<String> getAllUsernames() {
@@ -130,10 +121,10 @@ public class UserRepository implements IUserRepo {
         if (guestExist(guestId)) {
             Guest geust = guests.get(guestId);
             geust.addToCart(item);
-            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProdutId(), guestId});
+            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProductId(), guestId});
         } else if (userExist(guestId)) {
             getRegisteredUser(guestId).addToCart(item);
-            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProdutId(), guestId});
+            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProductId(), guestId});
         } else {
             throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
 

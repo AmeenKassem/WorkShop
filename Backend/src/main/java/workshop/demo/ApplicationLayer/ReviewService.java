@@ -31,38 +31,37 @@ public class ReviewService {
     private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
 
     @Autowired
-    public ReviewService(IReviewRepo reviewRepo, IAuthRepo authRepo, IUserRepo userRepo, IStoreRepo storeRepo,IStockRepo stockRepo) {
+    public ReviewService(IReviewRepo reviewRepo, IAuthRepo authRepo, IUserRepo userRepo, IStoreRepo storeRepo, IStockRepo stockRepo) {
         this.authRepo = authRepo;
         this.reviewRepo = reviewRepo;
         this.storeRepo = storeRepo;
         this.userRepo = userRepo;
-        this.stockRepo=stockRepo;
+        this.stockRepo = stockRepo;
         logger.info("created review service");
     }
 
     public boolean AddReviewToProduct(String token, int storeId, int productId, String review) throws UIException, DevException {
-    logger.info("About to add review to product: {} in store: {}", productId, storeId);
+        logger.info("About to add review to product: {} in store: {}", productId, storeId);
 
-    // Check user and store
-    authRepo.checkAuth_ThrowTimeOutException(token, logger);
-    storeRepo.checkStoreExistance(storeId);
+        // Check user and store
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        storeRepo.checkStoreExistance(storeId);
 
-    ItemStoreDTO[] items = stockRepo.getProductsInStore(storeId);
-    boolean found = Arrays.stream(items)
-        .anyMatch(item -> item.getId() == productId);
+        ItemStoreDTO[] items = stockRepo.getProductsInStore(storeId);
+        boolean found = Arrays.stream(items)
+                .anyMatch(item -> item.getProductId() == productId);
 
-    if (!found) {
-        throw new UIException("Product with ID " + productId + " not found in store " + storeId, ErrorCodes.PRODUCT_NOT_FOUND);
+        if (!found) {
+            throw new UIException("Product with ID " + productId + " not found in store " + storeId, ErrorCodes.PRODUCT_NOT_FOUND);
+        }
+
+        int userId = authRepo.getUserId(token);
+        String username = authRepo.getUserName(token);
+        reviewRepo.AddReviewToProduct(storeId, productId, userId, username, review);
+
+        logger.info("Added review successfully!");
+        return true;
     }
-
-    int userId = authRepo.getUserId(token);
-    String username = authRepo.getUserName(token);
-    reviewRepo.AddReviewToProduct(storeId, productId, userId, username, review);
-
-    logger.info("Added review successfully!");
-    return true;
-}
-
 
     public boolean AddReviewToStore(String token, int storeId, String review) throws UIException {
         logger.info("about to add review to store: {}", storeId);
