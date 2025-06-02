@@ -784,7 +784,7 @@ public class UserAT extends AcceptanceTests {
             new ItemStoreDTO(productId, 5, 1500, Category.ELECTRONICS, 0, 100, "Laptop","TestStore")};
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        when(real.mockStockRepo.search(criteria,"TestStore")).thenReturn(items);
+        when(real.mockStockRepo.search(criteria)).thenReturn(items);
 
         ItemStoreDTO[] result = real.stockService.searchProducts(userToken, criteria);
 
