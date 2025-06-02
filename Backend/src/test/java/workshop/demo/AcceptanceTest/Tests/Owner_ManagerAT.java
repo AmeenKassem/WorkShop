@@ -18,6 +18,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import workshop.demo.AcceptanceTest.Utill.Real;
 import workshop.demo.ApplicationLayer.ReviewService;
@@ -34,6 +35,12 @@ import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.Registered;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+@SpringBootTest
 public class Owner_ManagerAT extends AcceptanceTests {
 
     Real real = new Real();

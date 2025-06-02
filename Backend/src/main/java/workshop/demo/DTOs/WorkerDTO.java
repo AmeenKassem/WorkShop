@@ -10,7 +10,7 @@ public class WorkerDTO {
     private boolean manager;
     private boolean owner;
     private String storeName;
-    private Permission[] permissions;
+    private Permission[] permessions;
     private boolean setByMe;
     private int workerId;
 
@@ -20,7 +20,7 @@ public class WorkerDTO {
         this.manager = manager;
         this.owner = owner;
         this.storeName = storeName;
-        this.permissions = permissions;
+        this.permessions = permissions;
         this.setByMe = setByMe;
         this.workerId = workerId;
     }
@@ -45,7 +45,7 @@ public class WorkerDTO {
     }
 
     public Permission[] getPermessions() {
-        return permissions;
+        return permessions;
     }
 
     public boolean isSetByMe() {

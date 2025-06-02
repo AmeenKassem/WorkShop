@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
 
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ReceiptDTO;
 
@@ -96,14 +96,15 @@ public class PurchasePresenter {
                 NotificationView.showSuccess("Purchase successful!");
                 ReceiptDTO[] receipts = (ReceiptDTO[]) responseBody.getData();
                 NotificationView.showSuccess("Purchase successful!");
-                view.showReceiptDialog(receipts); // ✅ Show dialog with receipt
+                view.showReceiptDialog(receipts);
                 UI.getCurrent().navigate("");
             } else {
                 NotificationView.showError(ExceptionHandlers.getErrorMessage(responseBody.getErrNumber()));
             }
 
         } catch (Exception e) {
-            NotificationView.showError("Failed to complete purchase: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
+            //NotificationView.showError("Failed to complete purchase: " + e.getMessage());
         }
     }
 }

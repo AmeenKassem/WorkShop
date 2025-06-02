@@ -18,6 +18,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import org.slf4j.Logger;
+import org.springframework.boot.test.context.SpringBootTest;
+
 
 import org.slf4j.LoggerFactory;
 import workshop.demo.AcceptanceTest.Utill.Real;
@@ -39,6 +41,17 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
+import java.util.List;
+import java.util.function.Predicate;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
+@SpringBootTest
 public class PurchaseAT extends AcceptanceTests {
     private static final Logger logger = LoggerFactory.getLogger(PurchaseAT.class);
 

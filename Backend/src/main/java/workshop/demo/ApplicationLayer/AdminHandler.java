@@ -48,6 +48,7 @@ public class AdminHandler {
         } catch (UIException e) {
             // TODO Auto-generated catch block
             //here must do something
+            System.err.println("Admin initialization failed: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -56,6 +57,7 @@ public class AdminHandler {
     private void initAdmin() throws UIException {
 
         this.userRepo.registerUser("admin", "Admin123", 23);
+        this.userRepo.getRegisteredUserByName("admin").setAdmin();
     }
 
     public List<PurchaseHistoryDTO> viewPurchaseHistory(String adminToken) throws Exception {
