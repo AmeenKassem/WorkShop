@@ -246,6 +246,7 @@ public class GuestTests {
         assertDoesNotThrow(() -> {
             userService.addToUserCart(GToken, itemStoreDTO, 1);
         });
+        assertTrue(userService.getRegularCart(GToken).length==1);
     }
 
     @Test
@@ -257,6 +258,8 @@ public class GuestTests {
 
         assertEquals("Invalid token!", exception.getMessage());
         assertEquals(ErrorCodes.INVALID_TOKEN, exception.getNumber());
+                assertTrue(userService.getRegularCart(GToken).length==0);
+
 
         // Assert
     }
@@ -295,6 +298,8 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==9);
                 () -> purchaseService.buyGuestCart(guestToken, paymentDetails, supplyDetails));
 
         assertEquals("Invalid token!", ex.getMessage());
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10); 
+
     }
 
     @Test
@@ -320,6 +325,7 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==9);
                 () -> purchaseService.buyGuestCart(GToken, PaymentDetails.test_fail_Payment(), supplyDetails));
 
         assertEquals("Payment failed", ex.getMessage());
+assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10); 
     }
 
     @Test
@@ -329,7 +335,10 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==9);
                 PaymentDetails.testPayment(), SupplyDetails.test_fail_supply()));
 
         assertEquals("supplier failed", ex.getMessage());
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10); 
+
     }
+
 
     @Test
     void testGuestSearchProductInStore_Success() throws Exception {
@@ -436,6 +445,8 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==9);
         userService.ModifyCartAddQToBuy(GToken, 1, 3);
         ReceiptDTO[] re = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
         assertTrue(re[0].getFinalPrice() == 6000);
+                assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==7); 
+
 
     }
 

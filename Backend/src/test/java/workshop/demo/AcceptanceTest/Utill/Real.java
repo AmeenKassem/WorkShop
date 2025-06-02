@@ -27,6 +27,7 @@ import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
+import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
 import workshop.demo.InfrastructureLayer.OrderRepository;
@@ -36,6 +37,8 @@ import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
+
+import static org.mockito.Mockito.when;
 
 public class Real implements Bridge {
 
@@ -72,7 +75,10 @@ public class Real implements Bridge {
     }
 
     private void initServices() throws Exception {
+        when (this.mockUserRepo.getRegisteredUserByName("admin")).thenReturn(new Registered(1,"admin","Admin123",23));
+
         orderService = new OrderService(mockOrderRepo, mockStoreRepo, mockAuthRepo, mockUserRepo);
+
         AdminHandler admin = new AdminHandler(mockOrderRepo, mockStoreRepo, mockUserRepo, mockAuthRepo);
         stockService = new StockService(mockStockRepo, mockStoreRepo, mockAuthRepo, mockUserRepo, mockIOSrepo, mockSusRepo);
         adminHandler = new AdminHandler(mockOrderRepo, mockStoreRepo, mockUserRepo, mockAuthRepo);
@@ -82,6 +88,7 @@ public class Real implements Bridge {
         purchaseService = new PurchaseService(mockAuthRepo, mockStockRepo, mockStoreRepo, mockUserRepo,
                 mockPurchaseRepo, mockOrderRepo, mockPay, mockSupply, mockSusRepo);
         reviewService = new ReviewService(mockReviewRepo, mockAuthRepo, mockUserRepo, mockStoreRepo, mockStockRepo);
+
     }
 
     /////////////////////// System /////////////////////////////

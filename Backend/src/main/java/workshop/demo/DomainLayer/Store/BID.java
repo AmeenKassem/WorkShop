@@ -40,6 +40,7 @@ public class BID {
         bidDTO.isAccepted = isAccepted;
         bidDTO.bidId = bidId;
         bidDTO.winner = winner;
+        bidDTO.storeId = storeId;
 
         SingleBid[] arrayBids = new SingleBid[bids.size()];
         int i = 0;

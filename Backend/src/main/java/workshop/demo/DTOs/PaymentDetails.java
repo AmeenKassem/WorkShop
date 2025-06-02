@@ -28,6 +28,7 @@ public class PaymentDetails {
     public static PaymentDetails test_fail_Payment() throws Exception {
         throw new Exception("Payment failed");
     }
+     
 
     public static PaymentDetails getPaymentDetailsFromJSON(String json) throws Exception {
         ObjectMapper mapper = new ObjectMapper();

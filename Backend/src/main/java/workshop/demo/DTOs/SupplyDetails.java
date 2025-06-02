@@ -15,6 +15,9 @@ public class SupplyDetails {
         this.state = state;
         this.zipCode = zipCode;
     }
+     public SupplyDetails() {
+        
+    }
 
     public static SupplyDetails getTestDetails() {
         return new SupplyDetails("123 Test Street", "Testville", "TS", "00000");
