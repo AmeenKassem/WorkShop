@@ -418,7 +418,7 @@ public class StockRepository implements IStockRepo {
             for (StoreStock store : matchesStores) {
                 item item = store.getItemByProductId(product.getProductId());
                 if (criteria.matchesForStore(item)) {
-                    ItemStoreDTO toAdd = convertToItemStoreDTO(item, product, store.getStoreStockId(), storeName);
+                    ItemStoreDTO toAdd = convertToItemStoreDTO(item, product, store.getStoreStockId(), null);
                     result.add(toAdd);
                 }
             }
