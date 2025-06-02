@@ -28,6 +28,8 @@ public class SingleBid {
             status = Status.BID_PENDING;
         }
     }
+     public SingleBid(){}
+     
 
     public double getBidPrice() {
         return this.price;

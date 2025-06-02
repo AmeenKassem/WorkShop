@@ -9,7 +9,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriUtils;
 
@@ -35,7 +34,10 @@ public class MyCartPresenter {
 
     public void loadCartItems() {
         loadRegularCartItems();
-        loadSpecialCartItems();
+        String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
+        if (userType.equals("user")) {
+            loadSpecialCartItems();
+        }
     }
 
     private void loadRegularCartItems() {

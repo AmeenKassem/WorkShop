@@ -11,6 +11,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.SpecialCartItemDTO;
@@ -35,7 +36,10 @@ public class MyCartView extends VerticalLayout {
 
         setupHeader();
         setupNormalCartSection();
-        setupSpecialCartSection();
+        String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
+        if (userType.equals("user")) {
+            setupSpecialCartSection();
+        }
         setupActionButtons();
 
         // Use test data

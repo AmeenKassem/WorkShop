@@ -20,12 +20,14 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ProductDTO;
@@ -374,5 +376,51 @@ public class StoreDetailsPresenter {
         }
 
     }
+
+    public List<BidDTO> getBidProduct(int storeId, String token) {
+        try {
+            String url = String.format(
+                    "http://localhost:8080/stock/getAllBidsInStore?token=%s&storeId=%d",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                    storeId
+            );
+
+            ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);
+
+            if (response.getBody() != null && response.getBody().getErrNumber() == -1) {
+                ObjectMapper mapper = new ObjectMapper();
+                BidDTO[] bids = mapper.convertValue(response.getBody().getData(), BidDTO[].class);
+                return Arrays.asList(bids);
+            }
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+        return new ArrayList<>();
+    }
+
+    public boolean addRegularBid(String token, int bidId, int storeId, double price) {
+    try {
+        String url = String.format(
+                "http://localhost:8080/stock/addRegularBid?token=%s&bitId=%d&storeId=%d&price=%s",
+                UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                bidId,
+                storeId,
+                Double.toString(price)
+        );
+
+        ResponseEntity<ApiResponse> response = restTemplate.postForEntity(url, null, ApiResponse.class);
+
+        if (response.getBody() != null && response.getBody().getErrNumber() == -1) {
+            NotificationView.showSuccess("Bid placed successfully!");
+            return true;
+        } 
+
+    } catch (Exception e) {
+        ExceptionHandlers.handleException(e);
+    }
+
+    return false;
+}
+
 
 }

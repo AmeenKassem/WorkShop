@@ -2,7 +2,6 @@ package workshop.demo.PresentationLayer.View;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -26,6 +25,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ProductDTO;
@@ -91,9 +91,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
 
     private Div createProductCard(ItemStoreDTO item, ProductDTO product) {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-        List<RandomDTO> randomProductIds = presenter.getRandomProductIds(myStoreId, token);
-        List<AuctionDTO> auctionProductIds = presenter.getAuctionProductIds(myStoreId, token);
-
+        int storeId = item.getStoreId();
         Div card = new Div();
         card.getStyle()
                 .set("border", "1px solid #ddd")
@@ -116,39 +114,61 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Paragraph description = new Paragraph("📄 Description: " + product.getDescription());
         Button addToCart = new Button("🛒 Add to Cart", e -> openAddToCartDialog(item));
         //here manage the special  items:
-        //auction:
-        boolean isAuction = auctionProductIds.stream()
-                .anyMatch(a -> a.productId == item.getProductId());
-        if (isAuction) {
-            AuctionDTO matchingAuction = auctionProductIds.stream()
-                    .filter(a -> a.productId == item.getProductId())
-                    .findFirst()
-                    .orElse(null);
+        String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
+        if (userType.equals("user")) {
 
-            if (matchingAuction != null) {
-                Button auctionButton = new Button("🎯 Join Auction", e -> showAuctionBidDialog(matchingAuction));
-                auctionButton.setWidthFull();
-                actions.add(auctionButton);
+            List<RandomDTO> randomProductIds = presenter.getRandomProductIds(myStoreId, token);
+            List<AuctionDTO> auctionProductIds = presenter.getAuctionProductIds(myStoreId, token);
+            List<BidDTO> bidProductIds = presenter.getBidProduct(myStoreId, token);
+            //auction:
+            boolean isAuction = auctionProductIds.stream()
+                    .anyMatch(a -> a.productId == item.getProductId());
+            if (isAuction) {
+                AuctionDTO matchingAuction = auctionProductIds.stream()
+                        .filter(a -> a.productId == item.getProductId())
+                        .findFirst()
+                        .orElse(null);
 
+                if (matchingAuction != null) {
+                    Button auctionButton = new Button("🎯 Join Auction", e -> showAuctionBidDialog(matchingAuction));
+                    auctionButton.setWidthFull();
+                    actions.add(auctionButton);
+
+                }
+            }
+
+            //random:
+            boolean isRandom = randomProductIds.stream()
+                    .anyMatch(r -> r.productId == item.getProductId());
+            if (isRandom) {
+                RandomDTO matchingRandom = randomProductIds.stream()
+                        .filter(r -> r.productId == item.getProductId())
+                        .findFirst()
+                        .orElse(null);
+
+                if (matchingRandom != null) {
+                    Button randomButton = new Button("🎲 Buy Random Card", e -> showRandomParticipationDialog(matchingRandom));
+                    randomButton.setWidthFull();
+                    actions.add(randomButton);
+                }
+            }
+            //bid:
+            boolean isBid = bidProductIds.stream()
+                    .anyMatch(b -> b.productId == item.getProductId());
+
+            if (isBid) {
+                BidDTO matchingBid = bidProductIds.stream()
+                        .filter(b -> b.productId == item.getProductId())
+                        .findFirst()
+                        .orElse(null);
+
+                if (matchingBid != null) {
+                    Button bidButton = new Button("💰 Make a Bid", e -> showBidDialog(matchingBid, storeId));
+                    bidButton.setWidthFull();
+                    actions.add(bidButton);
+                }
             }
         }
-
-        //random:
-        boolean isRandom = randomProductIds.stream()
-                .anyMatch(r -> r.productId == item.getProductId());
-        if (isRandom) {
-            RandomDTO matchingRandom = randomProductIds.stream()
-                    .filter(r -> r.productId == item.getProductId())
-                    .findFirst()
-                    .orElse(null);
-
-            if (matchingRandom != null) {
-                Button randomButton = new Button("🎲 Buy Random Card", e -> showRandomParticipationDialog(matchingRandom));
-                randomButton.setWidthFull();
-                actions.add(randomButton);
-            }
-        }
-        //bid:
 
         //other:
         Button addReview = new Button("💬 Add Review", e -> openProductReviewDialog(item));
@@ -421,6 +441,31 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Button cancel = new Button("Cancel", e -> dialog.close());
         dialog.add(form);
         dialog.getFooter().add(new HorizontalLayout(confirm, cancel));
+        dialog.open();
+    }
+
+    private void showBidDialog(BidDTO bid, int storeId) {
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("💰 Submit Your Bid Offer");
+
+        IntegerField priceField = new IntegerField("Your Bid Price");
+        priceField.setMin(1); // prevent 0 or negative bids
+        priceField.setStepButtonsVisible(true);
+        priceField.setValue(1); // default to 1
+
+        VerticalLayout layout = new VerticalLayout(priceField);
+        dialog.add(layout);
+
+        Button confirm = new Button("Submit Bid", e -> {
+            int price = priceField.getValue();
+            presenter.addRegularBid(token, bid.bidId, storeId, price);
+            dialog.close();
+        });
+
+        Button cancel = new Button("Cancel", e -> dialog.close());
+        dialog.getFooter().add(new HorizontalLayout(confirm, cancel));
+
         dialog.open();
     }
 

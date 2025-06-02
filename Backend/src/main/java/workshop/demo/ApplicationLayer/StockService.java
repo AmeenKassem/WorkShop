@@ -59,8 +59,8 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
 
         logger.info("Returning matched items to client ");
-        String storeName= this.storeRepo.getStoreNameById(criteria.getStoreId());
-        ItemStoreDTO[] items = stockRepo.search(criteria,storeName);
+        String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
+        ItemStoreDTO[] items = stockRepo.search(criteria, storeName);
         storeRepo.fillWithStoreName(items);
         return items;
     }
@@ -162,6 +162,16 @@ public class StockService {
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to see auctions info.", ErrorCodes.NO_PERMISSION);
         }
+        storeRepo.checkStoreExistance(storeId);
+
+        return stockRepo.getAllBids(storeId);
+    }
+
+    public BidDTO[] getAllBidsInStore(String token, int storeId) throws Exception, DevException {
+        logger.info("Fetching bid for store: {}", storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
         storeRepo.checkStoreExistance(storeId);
 
         return stockRepo.getAllBids(storeId);
@@ -337,7 +347,7 @@ public class StockService {
         return stockRepo.getAllProducts();
     }
 
-    public ParticipationInRandomDTO participateInRandom(String token, int storeId, int randomId, double price)throws Exception {
+    public ParticipationInRandomDTO participateInRandom(String token, int storeId, int randomId, double price) throws Exception {
         logger.info("user participating in randomId: {} in store: {} with price: {}", randomId, storeId, price);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
