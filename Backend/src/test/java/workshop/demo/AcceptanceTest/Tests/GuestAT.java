@@ -606,7 +606,7 @@ public class GuestAT extends AcceptanceTests {
 
         ItemStoreDTO[] mockItems = {mockItem};
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
-        when(real.mockStockRepo.search(criteria,"TestStore")).thenReturn(mockItems);
+        when(real.mockStockRepo.search(criteria)).thenReturn(mockItems);
 
         ItemStoreDTO[] result = real.stockService.searchProducts(guestToken, criteria);
 
@@ -640,7 +640,7 @@ public class GuestAT extends AcceptanceTests {
             new ItemStoreDTO(productId, 5, 1500, Category.ELECTRONICS, 0, 100, "Laptop","TestStore")};
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        when(real.mockStockRepo.search(criteria,"TestStore")).thenReturn(matchedItems);
+        when(real.mockStockRepo.search(criteria)).thenReturn(matchedItems);
 
         ItemStoreDTO[] result = real.stockService.searchProducts(guestToken, criteria);
 
