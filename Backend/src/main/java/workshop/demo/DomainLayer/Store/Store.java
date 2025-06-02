@@ -1,5 +1,6 @@
 package workshop.demo.DomainLayer.Store;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -8,7 +9,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public class Store {
 
@@ -22,6 +27,7 @@ public class Store {
     //must add something for messages
     private List<String> messgesInStore;
     private Discount discount;
+    private final List<PurchasePolicy> purchasePolicies = new ArrayList<>();
 
     public Store(int storeID, String storeName, String category) {
         logger.debug("Creating store: ID={}, Name={}, Category={}", storeID, storeName, category);
@@ -125,6 +131,23 @@ public class Store {
             return true;
         }
         return false;
+    }
+    public void addPurchasePolicy(PurchasePolicy p) throws Exception {
+        if(p==null)
+            throw new Exception("Policy must not be null");
+        purchasePolicies.add(p);
+    }
+    public void removePurchasePolicy(PurchasePolicy p){
+        purchasePolicies.remove(p);
+    }
+    public List<PurchasePolicy> getPurchasePolicies(){
+        return Collections.unmodifiableList(purchasePolicies);
+    }
+    public void assertPurchasePolicies(UserDTO buyer, List<ItemStoreDTO> cart) throws Exception {
+        for(PurchasePolicy p : purchasePolicies){
+            if(!p.isSatisfied(buyer,cart))
+                throw new Exception(p.violationMessage());
+        }
     }
 
 }
