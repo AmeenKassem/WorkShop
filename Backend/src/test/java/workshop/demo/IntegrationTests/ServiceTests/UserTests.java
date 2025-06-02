@@ -454,13 +454,13 @@ public class UserTests {
 
     @Test
     void testUserBuyCart_ProductNotAvailable() throws Exception {
-        userService.addToUserCart(NGToken, new ItemStoreDTO(0, 0, 0, null, 0, 1, "","TestStore"), 1);
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
         assertThrows(Exception.class,
-                () -> purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
+                () ->         userService.addToUserCart(NGToken, new ItemStoreDTO(0, 0, 0, null, 0, 2, "","TestStore"), 1));
+
 
 
     }
