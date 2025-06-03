@@ -6,6 +6,8 @@ import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.Auction;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Store.*;
 import workshop.demo.DomainLayer.StoreUserConnection.*;
 

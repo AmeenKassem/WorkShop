@@ -1,4 +1,4 @@
-package workshop.demo.DomainLayer.Store;
+package workshop.demo.DomainLayer.Stock;
 
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 // import org.hibernate.validator.internal.util.logging.Log_.logger;
 
 import workshop.demo.DTOs.BidDTO;
-import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.SingleBidDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -42,10 +42,10 @@ public class BID {
         bidDTO.winner = winner;
         bidDTO.storeId = storeId;
 
-        SingleBid[] arrayBids = new SingleBid[bids.size()];
+        SingleBidDTO[] arrayBids = new SingleBidDTO[bids.size()];
         int i = 0;
         for (SingleBid bid : bids.values()) {
-            arrayBids[i] = bid;
+            arrayBids[i] = bid.convertToDTO();
             i++;
         }
         bidDTO.bids = arrayBids;

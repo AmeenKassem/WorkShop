@@ -25,6 +25,7 @@ import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;

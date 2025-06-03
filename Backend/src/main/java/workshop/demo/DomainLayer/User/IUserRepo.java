@@ -4,11 +4,11 @@ import java.util.List;
 
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 
 public interface IUserRepo {
 

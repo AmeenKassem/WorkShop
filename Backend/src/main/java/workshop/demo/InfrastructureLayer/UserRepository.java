@@ -12,13 +12,13 @@ import org.springframework.stereotype.Repository;
 
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;

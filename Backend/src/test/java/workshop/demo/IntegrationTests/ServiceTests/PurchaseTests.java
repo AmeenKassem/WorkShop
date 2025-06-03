@@ -24,9 +24,10 @@ import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.BID;
 import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.item;
-import workshop.demo.DomainLayer.Store.BID;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
@@ -166,13 +167,13 @@ public class PurchaseTests {
             System.err.println(iterable_element.bidId);
         }
         assertTrue(a);
-        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_PENDING));
+        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].status.equals(Status.BID_PENDING));
         stockService.getAllBidsStatus(NOToken, 1);
 
         assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
-        stockService.acceptBid(NOToken, 1, 1, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getId());
+        stockService.acceptBid(NOToken, 1, 1, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].id);
 
-        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_ACCEPTED));
+        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].status.equals(Status.BID_ACCEPTED));
 
         assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
@@ -217,7 +218,7 @@ public class PurchaseTests {
         stockService.addRegularBid(NGToken, x, 1, 10);
 
         assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
-        stockService.rejectBid(NOToken, 1, x, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getId());
+        stockService.rejectBid(NOToken, 1, x, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].id);
 
         assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
@@ -279,16 +280,16 @@ public class PurchaseTests {
         stockService.addBidOnAucction(NGToken, 1, 1, 10);
         assertTrue(stockService.getAllAuctions(NOToken, 1).length == 1);
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids.length == 1);
-        assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].getStatus().equals(Status.AUCTION_PENDING));
+        assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].status.equals(Status.AUCTION_PENDING));
 
         Thread.sleep(500);
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].status.equals(AuctionStatus.IN_PROGRESS));
-        assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].getStatus().equals(Status.AUCTION_PENDING));
+        assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].status.equals(Status.AUCTION_PENDING));
 
         Thread.sleep(500);
 
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].status.equals(AuctionStatus.FINISH));
-        assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].getStatus().equals(Status.AUCTION_WON));
+        assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].status.equals(Status.AUCTION_WON));
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
@@ -323,19 +324,19 @@ public class PurchaseTests {
         stockService.addBidOnAucction(NGToken, 1, 1, 10);
         assertTrue(stockService.getAllAuctions(NOToken, 1).length == 1);
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids.length == 1);
-        assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].getStatus().equals(Status.AUCTION_PENDING));
+        assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].status.equals(Status.AUCTION_PENDING));
 
         Thread.sleep(500);
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].status.equals(AuctionStatus.IN_PROGRESS));
-        assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].getStatus().equals(Status.AUCTION_PENDING));
+        assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].status.equals(Status.AUCTION_PENDING));
         stockService.addBidOnAucction(NOToken, 1, 1, 20);
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids.length == 2);
 
         Thread.sleep(500);
 
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].status.equals(AuctionStatus.FINISH));
-        assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].getStatus().equals(Status.AUCTION_LOSED));
-        assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[1].getStatus().equals(Status.AUCTION_WON));
+        assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].status.equals(Status.AUCTION_LOSED));
+        assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[1].status.equals(Status.AUCTION_WON));
 
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
@@ -640,7 +641,7 @@ public class PurchaseTests {
 
         stockService.setProductToBid(NOToken, 1, itemStoreDTO.getProductId(), 1);
         stockService.addRegularBid(NGToken, 1, itemStoreDTO.getProductId(), 10);
-        int bidToAcceptId = stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getId();
+        int bidToAcceptId = stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].id;
 
         UIException ex = assertThrows(UIException.class, () -> {
             stockService.acceptBid(managerToken, 1, 1, bidToAcceptId);
@@ -663,7 +664,7 @@ public class PurchaseTests {
         stockService.setProductToBid(NOToken, 1, itemStoreDTO.getProductId(), 1);
         stockService.addRegularBid(NGToken, 1, itemStoreDTO.getProductId(), 10);
         int bidId = 1;
-        int bidToRejectId = stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getId();
+        int bidToRejectId = stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].id;
 
         UIException ex = assertThrows(UIException.class, () -> {
             stockService.rejectBid(managerToken, 1, bidId, bidToRejectId);
@@ -775,10 +776,10 @@ public class PurchaseTests {
             System.err.println(iterable_element.bidId);
         }
         assertTrue(a);
-        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_PENDING));
+        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].status.equals(Status.BID_PENDING));
         assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
-        stockService.acceptBid(NOToken, 1, 1, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getId());
-        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_ACCEPTED));
+        stockService.acceptBid(NOToken, 1, 1, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].id);
+        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].status.equals(Status.BID_ACCEPTED));
 
         assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
         PaymentDetails paymentDetails = PaymentDetails.test_fail_Payment(); // fill if needed
@@ -803,10 +804,10 @@ public class PurchaseTests {
             System.err.println(iterable_element.bidId);
         }
         assertTrue(a);
-        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_PENDING));
+        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].status.equals(Status.BID_PENDING));
         assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
-        stockService.acceptBid(NOToken, 1, 1, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getId());
-        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_ACCEPTED));
+        stockService.acceptBid(NOToken, 1, 1, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].id);
+        assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].status.equals(Status.BID_ACCEPTED));
 
         assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
@@ -842,7 +843,7 @@ public class PurchaseTests {
         // ===== SETUP FOR BID =====
         int bidId = stockService.setProductToBid(NOToken, 1, 1, 1); // bidId = 1
         stockService.addRegularBid(NGToken, bidId, 1, 15);
-        stockService.acceptBid(NOToken, 1, 1, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getId());
+        stockService.acceptBid(NOToken, 1, 1, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].id);
 
         // ===== SETUP FOR RANDOM =====
 
@@ -1012,7 +1013,7 @@ public class PurchaseTests {
         assertFalse(dto.isAccepted);
         assertEquals(200, dto.bidId);
         assertEquals(1, dto.bids.length);
-        assertEquals(b.getId(), dto.bids[0].getId());
+        assertEquals(b.getId(), dto.bids[0].id);
     }
 
 

@@ -24,6 +24,7 @@ import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.ISupplyService;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Store.Discount;
 import workshop.demo.DomainLayer.Store.DiscountScope;
 import workshop.demo.DomainLayer.Store.IStoreRepo;

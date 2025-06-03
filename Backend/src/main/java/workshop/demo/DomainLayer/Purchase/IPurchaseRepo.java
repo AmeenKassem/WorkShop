@@ -2,7 +2,7 @@ package workshop.demo.DomainLayer.Purchase;
 
 import java.util.*;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 
 
 public interface IPurchaseRepo {

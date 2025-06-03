@@ -1,8 +1,10 @@
 package workshop.demo.DTOs;
 
+import workshop.demo.DomainLayer.Stock.SingleBid;
+
 public class AuctionDTO {
 
-    public SingleBid[] bids;
+    public SingleBidDTO[] bids;
     public int storeId;
     public int productId;
     public AuctionStatus status;

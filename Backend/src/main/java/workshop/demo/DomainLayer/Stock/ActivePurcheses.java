@@ -1,4 +1,4 @@
-package workshop.demo.DomainLayer.Store;
+package workshop.demo.DomainLayer.Stock;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,11 +13,11 @@ import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.RandomDTO;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Store.Random;
 
 public class ActivePurcheses {
 
