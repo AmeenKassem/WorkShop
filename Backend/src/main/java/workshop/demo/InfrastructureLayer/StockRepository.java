@@ -195,7 +195,7 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public ItemStoreDTO[] getProductsInStore(int storeId) throws UIException, DevException {
-        return search(new ProductSearchCriteria(null, null, null, storeId, null, null, null, null), null);
+        return search(new ProductSearchCriteria(null, null, null, storeId, null, null, null, null));
     }
 
     @Override
@@ -424,7 +424,7 @@ public class StockRepository implements IStockRepo {
     // 'getMatchesItems'");
     // }
     @Override
-    public ItemStoreDTO[] search(ProductSearchCriteria criteria, String storeName) throws UIException {
+    public ItemStoreDTO[] search(ProductSearchCriteria criteria) throws UIException {
         List<Product> matchesCategoryProduct = getProductsFilteredByCategory(criteria);
         List<ItemStoreDTO> result = new ArrayList<>();
         for (Product product : matchesCategoryProduct) {
@@ -435,7 +435,7 @@ public class StockRepository implements IStockRepo {
             for (StoreStock store : matchesStores) {
                 item item = store.getItemByProductId(product.getProductId());
                 if (criteria.matchesForStore(item)) {
-                    ItemStoreDTO toAdd = convertToItemStoreDTO(item, product, store.getStoreStockId(), storeName);
+                    ItemStoreDTO toAdd = convertToItemStoreDTO(item, product, store.getStoreStockId());
                     result.add(toAdd);
                 }
             }
@@ -444,8 +444,8 @@ public class StockRepository implements IStockRepo {
 
     }
 
-    private ItemStoreDTO convertToItemStoreDTO(item item, Product product, int storeId, String storeName) {
-        return new ItemStoreDTO(product.getProductId(), item.getQuantity(), item.getPrice(), product.getCategory(), item.getFinalRank(), storeId, product.getName(), storeName);
+    private ItemStoreDTO convertToItemStoreDTO(item item, Product product, int storeId) {
+        return new ItemStoreDTO(product.getProductId(), item.getQuantity(), item.getPrice(), product.getCategory(), item.getFinalRank(), storeId, product.getName(),null);
     }
 
     private List<StoreStock> getMatchesStore(ProductSearchCriteria criteria) {

@@ -228,10 +228,10 @@ public class UserRepository implements IUserRepo {
         throw new UIException("User with ID " + userId + " not found", ErrorCodes.USER_NOT_FOUND);
     }
 
-    @Override
-    public List<ItemCartDTO> getCartForUser(int ownerId) {
-        throw new UnsupportedOperationException("Unimplemented method 'getCartForUser'");
-    }
+  //  @Override
+//    public List<ItemCartDTO> getCartForUser(int ownerId) {
+//      //  throw new UnsupportedOperationException("Unimplemented method 'getCartForUser'");
+//    }
 
     @Override
     public void checkUserRegisterOnline_ThrowException(int userId) throws UIException {

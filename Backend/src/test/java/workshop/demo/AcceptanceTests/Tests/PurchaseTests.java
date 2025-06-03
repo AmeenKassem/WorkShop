@@ -1,9 +1,6 @@
-package workshop.demo.AcceptanceTest.Tests;
+package workshop.demo.AcceptanceTests.Tests;
 
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Predicate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,42 +19,29 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 
 import org.slf4j.LoggerFactory;
-import workshop.demo.AcceptanceTest.Utill.Real;
+import workshop.demo.AcceptanceTests.Utill.Real;
 import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.item;
-import workshop.demo.DomainLayer.Store.AndDiscount;
-import workshop.demo.DomainLayer.Store.Discount;
-import workshop.demo.DomainLayer.Store.DiscountConditions;
-import workshop.demo.DomainLayer.Store.DiscountScope;
-import workshop.demo.DomainLayer.Store.OrDiscount;
 import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.Store.VisibleDiscount;
-import workshop.demo.DomainLayer.Store.XorDiscount;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
-import java.util.List;
-import java.util.function.Predicate;
-
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+
 @SpringBootTest
-public class PurchaseAT extends AcceptanceTests {
-    private static final Logger logger = LoggerFactory.getLogger(PurchaseAT.class);
+public class PurchaseTests extends AcceptanceTests {
+    private static final Logger logger = LoggerFactory.getLogger(PurchaseTests.class);
 
     Real real = new Real();
 
-    public PurchaseAT() throws Exception {
+    public PurchaseTests() throws Exception {
     }
 
     @BeforeEach
@@ -80,7 +64,7 @@ public class PurchaseAT extends AcceptanceTests {
         assertTrue(real.userService.register(adminGuest, "admin", "adminPass", 18));
         String adminToken = real.userService.login(adminGuest, "admin", "adminPass");
         assertEquals(adminUserToken, adminToken);
-        testSystem_InitMarket(adminUserToken);
+        real.testSystem_InitMarket(adminUserToken);
 
         int ownerId = 10;
         String ownerGuestToken = "guest-token";
@@ -657,281 +641,5 @@ public class PurchaseAT extends AcceptanceTests {
         assertEquals(200.0, receipts[0].getFinalPrice());
     }
 
-//    @Test
-//    void testBuyRegisteredCart_WithDiscount_Success() throws Exception {
-//        String token = "user-token-2";
-//        int userId = 20;
-//        int storeId = 100;
-//        int productId = 200;
-//
-//        when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
-//
-//        ShoppingCart cart = new ShoppingCart();
-//        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore",Category.ELECTRONICS);
-//        CartItem item1=new CartItem(item);
-//        cart.addItem(storeId, item1);
-//        List <CartItem>a=new LinkedList<>();
-//        a.add(item1);
-//        when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
-//
-//        Store store = new Store(storeId, "TestStore", "ELECTRONICS");
-//
-//        List<ItemStoreDTO> scopeItems = List.of(
-//                new ItemStoreDTO(productId, 1, 200, Category.ELECTRONICS, 0, storeId, "Phone","TestStore")
-//        );
-//        List <ReceiptProduct> aa=new LinkedList<>();
-//        aa.add(new ReceiptProduct("Phone","TestStore",1,10000,100,Category.ELECTRONICS)
-//        );
-//        when(real.mockStockRepo.processCartItemsForStore(storeId,a,true,"TestStore")).thenReturn(aa);
-//        Discount discount = new VisibleDiscount("50percent", 0.5,
-//                scope -> scope != null && scope.getItems().stream()
-//                        .anyMatch(scopeItem -> scopeItem.getStoreId() == storeId && scopeItem.getProductId() == productId)
-//        );
-//
-//        store.addDiscount(discount);
-//
-//        when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
-//        when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
-//
-//        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200,productId,Category.ELECTRONICS);
-//        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false),eq("TestStore")))
-//                .thenReturn(List.of(receiptProduct));
-//        when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(100.0);
-//
-//        PaymentDetails payment = new PaymentDetails("1234123412341234", "Test User", "12/26", "123");
-//        SupplyDetails supply = new SupplyDetails("City", "State", "Zip", "Address");
-//        when(real.mockPay.processPayment(payment, 100.0)).thenReturn(true);
-//        when(real.mockSupply.processSupply(supply)).thenReturn(true);
-//
-//        doNothing().when(real.mockOrderRepo).setOrderToStore(eq(storeId), eq(userId), any(), eq("TestStore"));
-//
-//        ReceiptDTO[] receipts = real.purchaseService.buyRegisteredCart(token, payment, supply);
-//
-//        assertEquals(1, receipts.length);
-//        assertEquals("TestStore", receipts[0].getStoreName());
-//        assertEquals(100.0, receipts[0].getFinalPrice()); // Confirm discount was applied
-//    }
-
-    @Test
-    void testBuyRegisteredCart_WithOrDiscount_OneConditionApplies_OnlyHighestUsed() throws Exception {
-        String token = "user-token-2";
-        int userId = 20;
-        int storeId = 100;
-        int productId = 200;
-
-        when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
-
-        ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
-        CartItem item1 = new CartItem(item);
-        cart.addItem(storeId, item1);
-        when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
-
-        Store store = new Store(storeId, "TestStore", "ELECTRONICS");
-
-        List<ItemStoreDTO> scopeItems = List.of(
-                new ItemStoreDTO(productId, 1, 200, Category.ELECTRONICS, 0, storeId, "Phone", "TestStore")
-        );
-        DiscountScope scope = new DiscountScope(scopeItems);
-
-        Predicate<DiscountScope> cond1 = DiscountConditions.fromString("CATEGORY:ELECTRONICS");
-
-        Predicate<DiscountScope> cond2 = DiscountConditions.fromString("CATEGORY:ELECTRONICS");
-
-        Discount d1 = new VisibleDiscount("d1", 0.3, cond1);
-
-        Discount d2 = new VisibleDiscount("d2", 0.5, cond2);
-
-        OrDiscount orDiscount = new OrDiscount("OrDiscount");
-        orDiscount.addDiscount(d1);
-        orDiscount.addDiscount(d2);
-        store.setDiscount(orDiscount);
-
-        when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
-        when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
-
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
-                .thenReturn(List.of(receiptProduct));
-        when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0); // total before discount
-
-        PaymentDetails payment = new PaymentDetails("1234123412341234", "Test User", "12/26", "123");
-        SupplyDetails supply = new SupplyDetails("City", "State", "Zip", "Address");
-        when(real.mockPay.processPayment(payment, 100.0)).thenReturn(true);
-        when(real.mockSupply.processSupply(supply)).thenReturn(true);
-
-        doNothing().when(real.mockOrderRepo).setOrderToStore(eq(storeId), eq(userId), any(), eq("TestStore"));
-
-        ReceiptDTO[] receipts = real.purchaseService.buyRegisteredCart(token, payment, supply);
-
-        assertEquals(1, receipts.length);
-        assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(40, receipts[0].getFinalPrice());
-    }
-
-    @Test
-    void testBuyRegisteredCart_WithXorDiscount_OnlyFirstApplied() throws Exception {
-        String token = "user-token-2";
-        int userId = 20;
-        int storeId = 100;
-        int productId = 200;
-
-        when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
-
-        ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
-        CartItem item1 = new CartItem(item);
-        cart.addItem(storeId, item1);
-        when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
-
-        Store store = new Store(storeId, "TestStore", "ELECTRONICS");
-
-        List<ItemStoreDTO> scopeItems = List.of(
-                new ItemStoreDTO(productId, 1, 200, Category.ELECTRONICS, 0, storeId, "Phone", "TestStore")
-        );
-        DiscountScope scope = new DiscountScope(scopeItems);
-
-        Predicate<DiscountScope> cond1 = DiscountConditions.fromString("CATEGORY:ELECTRONICS");
-        Predicate<DiscountScope> cond2 = DiscountConditions.fromString("CATEGORY:ELECTRONICS");
-
-        Discount d1 = new VisibleDiscount("d1", 0.3, cond1);
-        Discount d2 = new VisibleDiscount("d2", 0.5, cond2);
-
-        XorDiscount xorDiscount = new XorDiscount("XorTest");
-        xorDiscount.addDiscount(d1);
-        xorDiscount.addDiscount(d2);
-        store.setDiscount(xorDiscount);
-
-        when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
-        when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
-
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
-                .thenReturn(List.of(receiptProduct));
-        when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0); // before discount
-
-        PaymentDetails payment = new PaymentDetails("1234123412341234", "Test User", "12/26", "123");
-        SupplyDetails supply = new SupplyDetails("City", "State", "Zip", "Address");
-        when(real.mockPay.processPayment(payment, 140.0)).thenReturn(true); // 200 - 30% = 140
-        when(real.mockSupply.processSupply(supply)).thenReturn(true);
-
-        doNothing().when(real.mockOrderRepo).setOrderToStore(eq(storeId), eq(userId), any(), eq("TestStore"));
-
-        ReceiptDTO[] receipts = real.purchaseService.buyRegisteredCart(token, payment, supply);
-
-        assertEquals(1, receipts.length);
-        assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(200, receipts[0].getFinalPrice());
-    }
-
-    @Test
-    void testBuyRegisteredCart_WithAndDiscount_BothConditionsApply() throws Exception {
-        String token = "user-token-2";
-        int userId = 20;
-        int storeId = 100;
-        int productId = 200;
-
-        when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
-
-        ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
-        CartItem item1 = new CartItem(item);
-        cart.addItem(storeId, item1);
-        when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
-
-        Store store = new Store(storeId, "TestStore", "ELECTRONICS");
-
-        List<ItemStoreDTO> scopeItems = List.of(
-                new ItemStoreDTO(productId, 1, 200, Category.ELECTRONICS, 0, storeId, "Phone", "TestStore")
-        );
-        DiscountScope scope = new DiscountScope(scopeItems);
-
-        Predicate<DiscountScope> cond1 = DiscountConditions.fromString("CATEGORY:ELECTRONICS");
-        Predicate<DiscountScope> cond2 = DiscountConditions.fromString("CATEGORY:ELECTRONICS");
-
-        Discount d1 = new VisibleDiscount("d1", 0.3, cond1); // 30%
-        Discount d2 = new VisibleDiscount("d2", 0.1, cond2); // 10%
-
-        AndDiscount andDiscount = new AndDiscount("AndTest");
-        andDiscount.addDiscount(d1);
-        andDiscount.addDiscount(d2);
-        store.setDiscount(andDiscount);
-
-        when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
-        when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
-
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
-                .thenReturn(List.of(receiptProduct));
-        when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
-
-        PaymentDetails payment = new PaymentDetails("1234123412341234", "Test User", "12/26", "123");
-        SupplyDetails supply = new SupplyDetails("City", "State", "Zip", "Address");
-        when(real.mockPay.processPayment(payment, 120.0)).thenReturn(true); // pay 120
-        when(real.mockSupply.processSupply(supply)).thenReturn(true);
-
-        doNothing().when(real.mockOrderRepo).setOrderToStore(eq(storeId), eq(userId), any(), eq("TestStore"));
-
-        ReceiptDTO[] receipts = real.purchaseService.buyRegisteredCart(token, payment, supply);
-
-        assertEquals(1, receipts.length);
-        assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(120, receipts[0].getFinalPrice());
-    }
-
-    @Test
-    void testBuyRegisteredCart_WithAndDiscount_OneConditionFails() throws Exception {
-        String token = "user-token-2";
-        int userId = 20;
-        int storeId = 100;
-        int productId = 200;
-
-        when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
-
-        ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
-        CartItem item1 = new CartItem(item);
-        cart.addItem(storeId, item1);
-        when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
-
-        Store store = new Store(storeId, "TestStore", "ELECTRONICS");
-
-        List<ItemStoreDTO> scopeItems = List.of(
-                new ItemStoreDTO(productId, 1, 200, Category.ELECTRONICS, 0, storeId, "Phone", "TestStore")
-        );
-        DiscountScope scope = new DiscountScope(scopeItems);
-
-        Predicate<DiscountScope> cond1 = DiscountConditions.fromString("CATEGORY:ELECTRONICS");
-        Predicate<DiscountScope> cond2 = DiscountConditions.fromString("TOTAL>1000");//no match
-
-        Discount d1 = new VisibleDiscount("d1", 30, cond1);
-        Discount d2 = new VisibleDiscount("d2", 20, cond2);
-
-        AndDiscount andDiscount = new AndDiscount("AndFailTest");
-        andDiscount.addDiscount(d1);
-        andDiscount.addDiscount(d2);
-        store.setDiscount(andDiscount);
-
-        when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
-        when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
-
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
-                .thenReturn(List.of(receiptProduct));
-        when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
-
-        PaymentDetails payment = new PaymentDetails("1234123412341234", "Test User", "12/26", "123");
-        SupplyDetails supply = new SupplyDetails("City", "State", "Zip", "Address");
-        when(real.mockPay.processPayment(payment, 200.0)).thenReturn(true);
-        when(real.mockSupply.processSupply(supply)).thenReturn(true);
-
-        doNothing().when(real.mockOrderRepo).setOrderToStore(eq(storeId), eq(userId), any(), eq("TestStore"));
-
-        ReceiptDTO[] receipts = real.purchaseService.buyRegisteredCart(token, payment, supply);
-
-        assertEquals(1, receipts.length);
-        assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(200.0, receipts[0].getFinalPrice());
-    }
 
 }

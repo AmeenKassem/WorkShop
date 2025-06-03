@@ -1,16 +1,16 @@
-package workshop.demo.AcceptanceTest.Tests;
+package workshop.demo.AcceptanceTests.Tests;
 
 import java.util.List;
 
-import workshop.demo.AcceptanceTest.Utill.Bridge;
-import workshop.demo.AcceptanceTest.Utill.Proxy;
+import org.springframework.boot.test.context.SpringBootTest;
+import workshop.demo.AcceptanceTests.Utill.Bridge;
+import workshop.demo.AcceptanceTests.Utill.Proxy;
 import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-
+@SpringBootTest
 public abstract class AcceptanceTests {
 
     private final Bridge bridge = new Proxy();
