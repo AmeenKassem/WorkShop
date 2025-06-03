@@ -32,7 +32,7 @@ public class StockController {
 
     @Autowired
     public StockController(Repos repos) {
-        this.stockService = new StockService(repos.stockrepo, repos.storeRepo, repos.auth, repos.userRepo,
+        this.stockService = new StockService(repos.stockrepo, repos.notificationRepo,repos.storeRepo, repos.auth, repos.userRepo,
                 repos.sUConnectionRepo, repos.UserSuspensionRepo);
     }
 

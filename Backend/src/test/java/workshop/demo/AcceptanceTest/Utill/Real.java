@@ -74,7 +74,7 @@ public class Real implements Bridge {
     private void initServices() throws Exception {
         orderService = new OrderService(mockOrderRepo, mockStoreRepo, mockAuthRepo, mockUserRepo);
         AdminHandler admin = new AdminHandler(mockOrderRepo, mockStoreRepo, mockUserRepo, mockAuthRepo);
-        stockService = new StockService(mockStockRepo, mockStoreRepo, mockAuthRepo, mockUserRepo, mockIOSrepo, mockSusRepo);
+        stockService = new StockService(mockStockRepo,mockNotiRepo, mockStoreRepo, mockAuthRepo, mockUserRepo, mockIOSrepo, mockSusRepo);
         adminHandler = new AdminHandler(mockOrderRepo, mockStoreRepo, mockUserRepo, mockAuthRepo);
         userService = new UserService(mockUserRepo, mockAuthRepo, mockStockRepo, new AdminInitilizer("123321"), adminHandler,mockStoreRepo);
         storeService = new StoreService(mockStoreRepo, mockNotiRepo, mockAuthRepo, mockUserRepo, mockOrderRepo, mockIOSrepo, mockStockRepo, mockSusRepo);

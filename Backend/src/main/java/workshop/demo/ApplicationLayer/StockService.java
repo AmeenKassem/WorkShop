@@ -1,5 +1,7 @@
 package workshop.demo.ApplicationLayer;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +21,13 @@ import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
+import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
@@ -39,9 +43,11 @@ public class StockService {
     private ISUConnectionRepo suConnectionRepo;
     private IUserRepo userRepo;
     private IUserSuspensionRepo susRepo;
+    private INotificationRepo notificationRepo;
 
     @Autowired
-    public StockService(IStockRepo stockRepo, IStoreRepo storeRepo, IAuthRepo authRepo, IUserRepo userRepo,
+    public StockService(IStockRepo stockRepo, INotificationRepo notiRepo, IStoreRepo storeRepo, IAuthRepo authRepo,
+            IUserRepo userRepo,
             ISUConnectionRepo cons, IUserSuspensionRepo susRepo) {
         this.stockRepo = stockRepo;
         this.authRepo = authRepo;
@@ -49,18 +55,20 @@ public class StockService {
         this.userRepo = userRepo;
         this.suConnectionRepo = cons;
         this.susRepo = susRepo;
+        this.notificationRepo = notiRepo;
+
     }
 
     public ItemStoreDTO[] searchProducts(String token, ProductSearchCriteria criteria) throws Exception {
-        //int x = storeRepo.getFinalRateInStore(1);
-        //logger.info("gfnedsm," + 0);
+        // int x = storeRepo.getFinalRateInStore(1);
+        // logger.info("gfnedsm," + 0);
         logger.info("tarting searchProducts with criteria: {}", criteria);
 
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
 
         logger.info("Returning matched items to client ");
-        String storeName= this.storeRepo.getStoreNameById(criteria.getStoreId());
-        ItemStoreDTO[] items = stockRepo.search(criteria,storeName);
+        String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
+        ItemStoreDTO[] items = stockRepo.search(criteria, storeName);
         storeRepo.fillWithStoreName(items);
         return items;
     }
@@ -122,14 +130,15 @@ public class StockService {
         }
         return stockRepo.getAuctionsOnStore(storeId);
     }
-     public AuctionDTO[] getAllAuctions_user(String token, int storeId) throws Exception {
+
+    public AuctionDTO[] getAllAuctions_user(String token, int storeId) throws Exception {
         logger.info("User requesting all auctions in store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         logger.info("Returning auction list to user: {}", userId);
         storeRepo.checkStoreExistance(storeId);
-       
+
         return stockRepo.getAuctionsOnStore(storeId);
     }
 
@@ -148,19 +157,45 @@ public class StockService {
         return stockRepo.addAuctionToStore(storeId, productId, quantity, time, startPrice);
     }
 
-    public int setProductToBid(String token, int storeid, int productId, int quantity) throws Exception {
-        logger.info("User attempting to set product {} as bid in store {}", productId, storeid);
+    public int setProductToBid(String token, int storeId, int productId, int quantity) throws Exception {
+        logger.info("User attempting to set product {} as bid in store {}", productId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
-        storeRepo.checkStoreExistance(storeid);
-        // Node Worker= this.
-        if (!this.suConnectionRepo.manipulateItem(userId, storeid, Permission.SpecialType)) {
-            throw new UIException("you have no permession to set product to bid.", ErrorCodes.NO_PERMISSION);
+        storeRepo.checkStoreExistance(storeId);
+        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+            throw new UIException("You have no permission to set product to bid.", ErrorCodes.NO_PERMISSION);
+        }
+        int bidId = stockRepo.addProductToBid(storeId, productId, quantity);
+        try {
+            String productName = stockRepo.GetProductInfo(productId).getName();
+            String actorUsername = userRepo.getUserDTO(userId).username;
+            String message = "User '" + actorUsername + "' added a bid for product '" + productName + "' in store "
+                    + storeId;
+            List<Node> workers = suConnectionRepo.getAllWorkers(storeId);
+
+            for (Node worker : workers) {
+                int workerId = worker.getMyId();
+                if (workerId == userId)
+                    continue;
+
+                String receiverUsername = userRepo.getUserDTO(workerId).username;
+                // boolean isOnline = userRepo.isOnline(workerId);
+
+                // if (isOnline) {
+                // notificationRepo.sendImmediateMessage(receiverUsername, message);
+                // } else {
+                // notificationRepo.sendDelayedMessageToUser(receiverUsername, message);
+                // }
+                notificationRepo.sendDelayedMessageToUser(receiverUsername, message);
+            }
+
+        } catch (Exception e) {
+            logger.warn("Notification failed after setting bid: {}", e.getMessage());
         }
 
-        return stockRepo.addProductToBid(storeid, productId, quantity);
+        return bidId;
     }
 
     public BidDTO[] getAllBidsStatus(String token, int storeId) throws Exception, DevException {
@@ -176,6 +211,7 @@ public class StockService {
 
         return stockRepo.getAllBids(storeId);
     }
+
     public BidDTO[] getAllBidsStatus_user(String token, int storeId) throws Exception, DevException {
         logger.info("Fetching bid status for store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -186,6 +222,7 @@ public class StockService {
 
         return stockRepo.getAllBids(storeId);
     }
+
     public SingleBid acceptBid(String token, int storeId, int bidId, int bidToAcceptId) throws Exception, DevException {
         logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidToAcceptId, bidId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -246,15 +283,17 @@ public class StockService {
         }
         return stockRepo.getRandomsInStore(storeId);
     }
-public RandomDTO[] getAllRandomInStore_user(String token, int storeId) throws Exception, DevException {
+
+    public RandomDTO[] getAllRandomInStore_user(String token, int storeId) throws Exception, DevException {
         logger.info("Fetching all randoms in store {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         storeRepo.checkStoreExistance(storeId);
-       
+
         return stockRepo.getRandomsInStore(storeId);
     }
+
     // stock managment:
     public ItemStoreDTO[] getProductsInStore(int storeId) throws UIException, DevException {
         logger.info("Fetching all products in store: {}", storeId);
@@ -364,7 +403,7 @@ public RandomDTO[] getAllRandomInStore_user(String token, int storeId) throws Ex
         return stockRepo.getAllProducts();
     }
 
-    public ParticipationInRandomDTO participateInRandom(String token, int storeId, int randomId, double price)throws Exception {
+     public ParticipationInRandomDTO participateInRandom(String token, int storeId, int randomId, double price)throws Exception {
         logger.info("user participating in randomId: {} in store: {} with price: {}", randomId, storeId, price);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
