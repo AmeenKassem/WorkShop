@@ -201,9 +201,9 @@ public class StockRepository implements IStockRepo {
     @Override
     public item addItem(int storeId, int productId, int quantity, int price, Category category)
             throws UIException, DevException {
-        if (storeStocks.get(storeId) == null) {
-            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        }
+       // if (storeStocks.get(storeId) == null) {
+         //   throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
+        //}
         item toAdd = new item(productId, quantity, price, category);
         this.storeStocks.get(storeId).addItem(toAdd);
         return toAdd;
@@ -211,45 +211,45 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public void removeItem(int storeId, int productId) throws UIException, DevException {
-        if (storeStocks.get(storeId) == null) {
-            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        }
+      //  if (storeStocks.get(storeId) == null) {
+        //    throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
+        //}
         this.storeStocks.get(storeId).removeItem(productId);
 
     }
 
     @Override
     public void decreaseQuantitytoBuy(int storeId, int productId, int quantity) throws UIException, DevException {
-        if (storeStocks.get(storeId) == null) {
-            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        }
+      //  if (storeStocks.get(storeId) == null) {
+        //    throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
+        //}
         this.storeStocks.get(storeId).decreaseQuantitytoBuy(productId, quantity);
 
     }
 
     @Override
     public boolean updateQuantity(int storeId, int productId, int newQuantity) throws UIException, DevException {
-        if (storeStocks.get(storeId) == null) {
-            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        }
+       // if (storeStocks.get(storeId) == null) {
+         //   throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
+        //}
         this.storeStocks.get(storeId).changeQuantity(productId, newQuantity);
         return true;
     }
 
     @Override
     public boolean updatePrice(int storeId, int productId, int newPrice) throws UIException, DevException {
-        if (storeStocks.get(storeId) == null) {
-            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        }
+      //  if (storeStocks.get(storeId) == null) {
+        //    throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
+        //}
         this.storeStocks.get(storeId).updatePrice(productId, newPrice);
         return true;
     }
 
     @Override
     public void rankProduct(int storeId, int productId, int newRank) throws DevException, UIException {
-        if (storeStocks.get(storeId) == null) {
-            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        }
+      //  if (storeStocks.get(storeId) == null) {
+        //    throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
+        //}
         this.storeStocks.get(storeId).rankProduct(productId, newRank);
     }
 
@@ -257,9 +257,9 @@ public class StockRepository implements IStockRepo {
     public boolean checkAvailability(List<CartItem> cartItems) {
         for (CartItem itemDTO : cartItems) {
             StoreStock stock = storeStocks.get(itemDTO.storeId);
-            if (stock == null) {
-                return false;
-            }
+            //if (stock == null) {
+              //  return false;
+            //}
             item storeItem = stock.getItemByProductId(itemDTO.productId);
             if (storeItem == null || storeItem.getQuantity() < itemDTO.quantity) {
                 return false;
@@ -270,9 +270,9 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public item getItemByStoreAndProductId(int storeId, int productId) throws DevException {
-        if (storeStocks.get(storeId) == null) {
-            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        }
+       // if (storeStocks.get(storeId) == null) {
+         //   throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
+        //}
         return storeStocks.get(storeId).getItemByProductId(productId);
     }
 
@@ -301,9 +301,9 @@ public class StockRepository implements IStockRepo {
 
     public ParticipationInRandomDTO validatedParticipation(int userId, int randomId, int storeId, double amountPaid)
             throws DevException, UIException {
-        if (storeStocks.get(storeId) == null) {
-            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        }
+    //    if (storeStocks.get(storeId) == null) {
+      //      throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
+        //}
         // double requiredPrice = getProductPrice(storeId, randomId);// total price
         // if (amountPaid > requiredPrice) {
         //     throw new DevException("Insufficient payment");
@@ -318,9 +318,9 @@ public class StockRepository implements IStockRepo {
     public List<ReceiptProduct> processCartItemsForStore(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
             throws Exception {
         StoreStock storeStock = storeStocks.get(storeId);
-        if (storeStock == null) {
-            throw new DevException("Store stock not initialized for storeId: " + storeId);
-        }
+       // if (storeStock == null) {
+         //   throw new DevException("Store stock not initialized for storeId: " + storeId);
+        //}
         List<ItemCartDTO> dtoList = new ArrayList<>();
         for (CartItem item : cartItems) {
             ItemCartDTO dto = new ItemCartDTO();
@@ -338,9 +338,9 @@ public class StockRepository implements IStockRepo {
      public void changequantity(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
             throws Exception {
         StoreStock storeStock = storeStocks.get(storeId);
-        if (storeStock == null) {
-            throw new DevException("Store stock not initialized for storeId: " + storeId);
-        }
+        //if (storeStock == null) {
+      //      throw new DevException("Store stock not initialized for storeId: " + storeId);
+        //}
         List<ItemCartDTO> dtoList = new ArrayList<>();
         for (CartItem item : cartItems) {
             ItemCartDTO dto = new ItemCartDTO();
@@ -402,17 +402,14 @@ public class StockRepository implements IStockRepo {
         for (ActivePurcheses activePurchases : storeId2ActivePurchases.values()) {
             activePurchases.clear();
         }
-        if (storeId2ActivePurchases != null) {
             storeId2ActivePurchases.clear();
-        }
 
-        if (allProducts != null) {
+
             allProducts.clear();
-        }
 
-        if (storeStocks != null) {
+
             storeStocks.clear();
-        }
+
     }
 
     // @Override

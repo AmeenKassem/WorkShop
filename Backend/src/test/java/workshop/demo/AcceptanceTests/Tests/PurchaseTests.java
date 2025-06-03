@@ -194,6 +194,11 @@ public class PurchaseTests extends AcceptanceTests {
 
         // ===== MOCK: Cart Preparation Phase =====
         List<UserSpecialItemCart> specialItems = List.of(new UserSpecialItemCart(storeId, specialId, bidId, SpecialType.BID));
+        UserSpecialItemCart a=new UserSpecialItemCart(8,9,9,SpecialType.Auction);
+        a.equals(specialItems.get(0));
+
+
+
         when(real.mockUserRepo.getAllSpecialItems(userId)).thenReturn(specialItems);
 
         // Ensure bid is returned as winner + ended

@@ -26,6 +26,7 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.item;
+import workshop.demo.DomainLayer.Store.BID;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
@@ -166,8 +167,11 @@ public class PurchaseTests {
         }
         assertTrue(a);
         assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_PENDING));
+        stockService.getAllBidsStatus(NOToken, 1);
+
         assertFalse(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
         stockService.acceptBid(NOToken, 1, 1, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getId());
+
         assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].getStatus().equals(Status.BID_ACCEPTED));
 
         assertTrue(stockService.getAllBidsStatus(NOToken, 1)[0].isAccepted);
@@ -866,6 +870,151 @@ public class PurchaseTests {
         }
 
     }
+    @Test
+    void test_addProductToBid_invalidQuantity_throwsException() {
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            stockService.setProductToBid(NOToken, 1,1,0); // or -1
+        });
+
+        assertEquals("Quantity must be positive!", ex.getMessage());
+        assertEquals(ErrorCodes.INVALID_BID_PARAMETERS, ex.getErrorCode());
+    }
+
+
+    @Test
+    void test_acceptBid_invalidBidId_throwsException() throws UIException {
+        // Arrange
+        int invalidBidId = 999; // assume not created
+        int anyUserId = authRepo.getUserId(NGToken); // assuming valid logged-in user
+
+        // Act + Assert
+        DevException ex = assertThrows(DevException.class, () -> {
+            stockService.acceptBid(NOToken, 1, invalidBidId,1);
+        });
+
+        assertEquals("Bid ID not found in active bids!", ex.getMessage());
+    }
+    @Test
+    void test_rejectBid_invalidBidId_throwsException() throws UIException {
+        // Arrange
+        int invalidBidId = 999;
+        int anyUserId = authRepo.getUserId(NGToken);
+
+        // Act + Assert
+        DevException ex = assertThrows(DevException.class, () -> {
+            stockService.rejectBid(NOToken, 1, invalidBidId,1);
+        });
+
+        assertEquals("Bid ID not found in active bids!", ex.getMessage());
+    }
+    @Test
+    void test_addProductToRandom_invalidQuantity_throwsException() {
+        UIException ex = assertThrows(UIException.class, () -> {
+            stockService.setProductToRandom(NOToken, 1, 0, 2000, 1, 1000); // quantity = 0
+        });
+
+        assertEquals("Quantity must be positive!", ex.getMessage());
+        assertEquals(ErrorCodes.INVALID_RANDOM_PARAMETERS, ex.getErrorCode());
+    }
+    @Test
+    void test_addProductToRandom_invalidPrice_throwsException() {
+        UIException ex = assertThrows(UIException.class, () -> {
+            stockService.setProductToRandom(NOToken, 1, 1, 0, 1, 1000); // price = 0
+        });
+
+        assertEquals("Product price must be positive!", ex.getMessage());
+        assertEquals(ErrorCodes.INVALID_RANDOM_PARAMETERS, ex.getErrorCode());
+    }
+    @Test
+    void test_addProductToRandom_invalidTime_throwsException() {
+        UIException ex = assertThrows(UIException.class, () -> {
+            stockService.setProductToRandom(NOToken, 1, 1, 2000, 1, 0); // time = 0
+        });
+
+        assertEquals("Random time must be positive!", ex.getMessage());
+        assertEquals(ErrorCodes.INVALID_RANDOM_PARAMETERS, ex.getErrorCode());
+    }
+    @Test
+    void test_participateInRandom_invalidRandomId_throwsException() {
+        UIException ex = assertThrows(UIException.class, () -> {
+            // 999 is a non-existing randomId
+            PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+
+            purchaseService.participateInRandom(NGToken, 999, 1,11,paymentDetails);
+        });
+
+        assertEquals("Random ID not found!", ex.getMessage());
+        assertEquals(ErrorCodes.RANDOM_NOT_FOUND, ex.getErrorCode());
+    }
+
+    @Test
+    void test_participateInRandom_invalidPrice_throwsException() throws Exception {
+        int randomId = stockService.setProductToRandom(NOToken, 1, 1, 2000, 1, 1000);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+
+            purchaseService.participateInRandom(NGToken, randomId, 1,0,paymentDetails);
+        });
+
+        assertEquals("Product price must be positive!", ex.getMessage());
+    }
+    @Test
+    void test_getProductPrice_success() throws Exception {
+        var price=stockService.getAllRandomInStore(NOToken, 1)[0].productPrice;
+        assertEquals(2000, price);
+    }
+
+    @Test
+    void test_acceptBid_invalidBidId_throwsDevException() throws Exception {
+        BID bid = new BID(1, 1, 100, 1);
+        bid.bid(20, 50.0); // adds one bid, get id
+
+        DevException ex = assertThrows(DevException.class, () -> {
+            bid.acceptBid(999); // ID that doesn't exist
+        });
+
+        assertEquals("Trying to accept bid for non-existent ID.", ex.getMessage());
+    }
+    @Test
+    void test_rejectBid_invalidBidId_throwsDevException() throws Exception {
+        BID bid = new BID(1, 1, 101, 1);
+        bid.bid(21, 50.0); // valid one
+
+        DevException ex = assertThrows(DevException.class, () -> {
+            bid.rejectBid(999); // bid ID doesn't exist
+        });
+
+        assertEquals("Trying to reject bid with non-existent ID.", ex.getMessage());
+    }
+    @Test
+    void test_bidIsWinner_nullBid() {
+        BID bid = new BID(1, 1, 102, 1);
+            Exception exception = assertThrows(Exception.class, () -> {
+                bid.bidIsWinner(1234); // ID does not exist
+            });
+        }
+
+    @Test
+    void test_userIsWinner_falseWhenNoWinner() {
+        BID bid = new BID(1, 1, 103, 1);
+        assertFalse(bid.userIsWinner(999)); // no bids yet
+    }
+    @Test
+    void test_getDTO_containsCorrectValues() throws Exception {
+        BID bid = new BID(5, 2, 200, 10);
+        SingleBid b = bid.bid(77, 100.0);
+        BidDTO dto = bid.getDTO();
+
+        assertEquals(5, dto.productId);
+        assertEquals(2, dto.quantity);
+        assertFalse(dto.isAccepted);
+        assertEquals(200, dto.bidId);
+        assertEquals(1, dto.bids.length);
+        assertEquals(b.getId(), dto.bids[0].getId());
+    }
+
 
 
 

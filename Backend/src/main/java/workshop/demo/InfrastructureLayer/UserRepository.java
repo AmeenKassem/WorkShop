@@ -291,18 +291,14 @@ public class UserRepository implements IUserRepo {
     }
 
     public void clear() {
-        if (guests != null) {
             guests.clear();
-        }
-        if (users != null) {
+
             users.clear();
-        }
-        if (idToUsername != null) {
+
             idToUsername.clear();
-        }
-        if (idGen != null) {
+
             idGen.set(1); // Reset to starting ID
-        }
+
     }
 
     @Override
