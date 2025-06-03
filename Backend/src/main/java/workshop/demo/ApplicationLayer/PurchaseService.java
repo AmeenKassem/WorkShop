@@ -161,7 +161,7 @@ public class PurchaseService {
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
-        UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, -1, SpecialType.Random);
+        UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random);
         userRepo.addSpecialItemToCart(item, userId);
         paymentService.processPayment(paymentDetails, amountPaid);
         logger.info("User {} participated in random draw {}", userId, randomId);

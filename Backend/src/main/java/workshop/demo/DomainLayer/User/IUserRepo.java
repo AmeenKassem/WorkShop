@@ -98,7 +98,7 @@ public interface IUserRepo {
 
     public ShoppingCart getUserCart(int userId) throws UIException;
 
-    public List<ItemCartDTO> getCartForUser(int ownerId) throws UIException;
+ //   public List<ItemCartDTO> getCartForUser(int ownerId) throws UIException;
 
     public void checkUserRegisterOnline_ThrowException(int userId) throws UIException;
 

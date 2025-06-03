@@ -165,7 +165,7 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public int addProductToRandom(int productId, int quantity, double productPrice, int storeId,
-            long RandomTime) throws UIException, DevException {
+                                  long RandomTime) throws UIException, DevException {
         checkQuantity(productId, quantity, storeId);
         int res = getActivePurchases(storeId).addProductToRandom(productId, quantity, productPrice, storeId,
                 RandomTime);
@@ -338,7 +338,7 @@ public class StockRepository implements IStockRepo {
         }
         return storeStock.ProcessCartItems(dtoList, isGuest, StoreName);
     }
-     public void changequantity(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
+    public void changequantity(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
             throws Exception {
         StoreStock storeStock = storeStocks.get(storeId);
         if (storeStock == null) {
@@ -356,7 +356,7 @@ public class StockRepository implements IStockRepo {
             dto.category=item.category;
             dtoList.add(dto);
         }
-         storeStock.changequantity(dtoList, isGuest, StoreName);
+        storeStock.changequantity(dtoList, isGuest, StoreName);
     }
 
     @Override
@@ -451,7 +451,7 @@ public class StockRepository implements IStockRepo {
     public RandomDTO[] searchActiveRandoms(ProductSearchCriteria criteria) throws UIException {
         ItemStoreDTO[] storeItems = search(criteria);
         List<RandomDTO> result = new ArrayList<>();
-        for (ItemStoreDTO item : storeItems) { 
+        for (ItemStoreDTO item : storeItems) {
             int productId = item.getProductId();
             ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
             List<RandomDTO> randoms = active.getRandomsForProduct(productId);
