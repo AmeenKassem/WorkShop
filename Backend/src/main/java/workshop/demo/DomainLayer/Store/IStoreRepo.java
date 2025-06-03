@@ -2,7 +2,10 @@ package workshop.demo.DomainLayer.Store;
 
 import java.util.List;
 
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -41,4 +44,10 @@ public interface IStoreRepo {
     public StoreDTO getStoreDTO(int storeId) throws UIException;
 
     void fillWithStoreName(ItemStoreDTO[] items);
+
+    void fillWithStoreName(RandomDTO[] randoms);
+
+    void fillWithStoreName(AuctionDTO[] auctions);
+
+    void fillWithStoreName(BidDTO[] bids);
 }

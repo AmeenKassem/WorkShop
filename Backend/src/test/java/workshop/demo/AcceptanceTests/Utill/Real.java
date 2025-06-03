@@ -75,8 +75,10 @@ public class Real implements Bridge {
     }
 
     private void initServices() throws Exception {
-        when(this.mockUserRepo.getRegisteredUserByName("admin")).thenReturn(new Registered(1,"admin","Admin123",23));
+        when (this.mockUserRepo.getRegisteredUserByName("admin")).thenReturn(new Registered(1,"admin","Admin123",23));
+
         orderService = new OrderService(mockOrderRepo, mockStoreRepo, mockAuthRepo, mockUserRepo);
+
         AdminHandler admin = new AdminHandler(mockOrderRepo, mockStoreRepo, mockUserRepo, mockAuthRepo);
         stockService = new StockService(mockStockRepo, mockStoreRepo, mockAuthRepo, mockUserRepo, mockIOSrepo, mockSusRepo);
         adminHandler = new AdminHandler(mockOrderRepo, mockStoreRepo, mockUserRepo, mockAuthRepo);
@@ -86,6 +88,7 @@ public class Real implements Bridge {
         purchaseService = new PurchaseService(mockAuthRepo, mockStockRepo, mockStoreRepo, mockUserRepo,
                 mockPurchaseRepo, mockOrderRepo, mockPay, mockSupply, mockSusRepo);
         reviewService = new ReviewService(mockReviewRepo, mockAuthRepo, mockUserRepo, mockStoreRepo, mockStockRepo);
+
     }
 
     /////////////////////// System /////////////////////////////

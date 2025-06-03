@@ -40,6 +40,7 @@ import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.CartItem;
+import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
@@ -58,6 +59,7 @@ public class GuestTests extends AcceptanceTests {
 
 
         // when (real.mockUserRepo.getRegisteredUserByName("admin")).thenReturn(new Registered(1,"admin","Admin123",23));
+       // when (real.mockUserRepo.getRegisteredUserByName("admin")).thenReturn(new Registered(1,"admin","Admin123",23));
         int adminId = 999;
         String adminGuestToken = "admin-guest-token";
         String adminUserToken = "admin-user-token";
