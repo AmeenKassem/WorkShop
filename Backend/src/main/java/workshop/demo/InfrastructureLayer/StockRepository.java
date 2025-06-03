@@ -41,7 +41,7 @@ public class StockRepository implements IStockRepo {
     private ConcurrentHashMap<Category, List<Product>> allProducts;
     private ConcurrentHashMap<Integer, StoreStock> storeStocks;// storeId, stock of store
 
-    //@Autowired
+    @Autowired
     public StockRepository() {
         this.storeId2ActivePurchases = new ConcurrentHashMap<>();// must be thread safe
         this.allProducts = new ConcurrentHashMap<>();
