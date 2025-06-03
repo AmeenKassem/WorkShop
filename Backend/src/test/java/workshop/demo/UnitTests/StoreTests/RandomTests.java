@@ -531,7 +531,7 @@ class RandomTests {
         List<Permission> perms = List.of(Permission.AddToStock, Permission.SpecialType);
         manager.addAuthrization(perms, 1);
         assertNotNull(manager.getMyAuth());
-        assertEquals(7, manager.getMyAuth().getMyAutho().size());
+        assertEquals(8, manager.getMyAuth().getMyAutho().size());
     }
 
     @Test
