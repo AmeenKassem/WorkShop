@@ -7,10 +7,7 @@ import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.*;
-import workshop.demo.DomainLayer.StoreUserConnection.Node;
-import workshop.demo.DomainLayer.StoreUserConnection.Offer;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
+import workshop.demo.DomainLayer.StoreUserConnection.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -619,88 +616,81 @@ class RandomTests {
         List<Node> children = owner.getChildren();
         assertEquals(1, children.size());
     }
-//    @Test
-//    void testCheckToAddOwner_AllBranches() throws Exception {
-//        int storeId = 101;
-//        int ownerId = 10;
-//        int newOwnerId = 11;
-//
-//        superDS.addNewStore(storeId, ownerId); // creates root owner
-//
-//        // Case 1: ownerId is not in store
-//        Exception ex1 = assertThrows(UIException.class, () ->
-//                superDS.checkToAddOwner(storeId, 999, newOwnerId)
-//        );
-//        assertEquals(ErrorCodes.NO_PERMISSION, ((UIException) ex1).getErrorCode());
-//
-//        // Case 2: ownerId is a manager
-//        superDS.deleteManager(storeId, ownerId, ownerId); // force no owner if needed
-//        superDS.getEmployees().get(storeId).getRoot().addChild(new Node(ownerId, true, -1));
-//        Exception ex2 = assertThrows(UIException.class, () ->
-//                superDS.checkToAddOwner(storeId, ownerId, newOwnerId)
-//        );
-//        assertEquals(ErrorCodes.NO_PERMISSION, ((UIException) ex2).getErrorCode());
-//
-//        // Fix back to owner node
-//        superDS.getEmployees().get(storeId).deleteNode(ownerId);
-//        superDS.getEmployees().get(storeId).getRoot().addChild(new Node(ownerId, false, -1));
-//
-//        // Case 3: newOwnerId already exists and isOwner
-//        superDS.getEmployees().get(storeId).getRoot().addChild(new Node(newOwnerId, false, ownerId));
-//        Exception ex3 = assertThrows(UIException.class, () ->
-//                superDS.checkToAddOwner(storeId, ownerId, newOwnerId)
-//        );
-//        assertEquals(ErrorCodes.NO_PERMISSION, ((UIException) ex3).getErrorCode());
-//
-//        // Case 4: success
-//        int freshId = 99;
-//        assertTrue(superDS.checkToAddOwner(storeId, ownerId, freshId));
-//    }
+    @Test
+    void testCheckToAddOwner_AllBranches() throws Exception {
+        int storeId = 101;
+        int ownerId = 10;
+        int newOwnerId = 11;
 
-//    @Test
-//    void testCheckToAddManager_AllBranches() throws Exception {
-//        int storeId = 102;
-//        int ownerId = 20;
-//        int newManagerId = 21;
-//
-//        superDS.addNewStore(storeId, ownerId);
-//
-//        // Case 1: store doesn't exist
-//        DevException ex1 = assertThrows(DevException.class, () ->
-//                superDS.checkToAddManager(9999, ownerId, newManagerId)
-//        );
-//        assertEquals("store does not exist in superDS", ex1.getMessage());
-//
-//        // Case 2: owner not found
-//        UIException ex2 = assertThrows(UIException.class, () ->
-//                superDS.checkToAddManager(storeId, 999, newManagerId)
-//        );
-//        assertEquals(ErrorCodes.NO_PERMISSION, ex2.getErrorCode());
-//
-//        // Case 3: ownerId is a manager
-//        Node fakeManager = new Node(ownerId, true, -1);
-//        superDS.getEmployees().get(storeId).deleteNode(ownerId);
-//      //  superDS.getEmployees().get(storeId).getRoot().addChild(fakeManager);
-//        Exception ex3 = assertThrows(Exception.class, () ->
-//                superDS.checkToAddManager(storeId, ownerId, newManagerId)
-//        );
-//
-//        // Fix owner node
-//        superDS.getEmployees().get(storeId).deleteNode(ownerId);
-//        superDS.getEmployees().get(storeId).getRoot().addChild(new Node(ownerId, false, -1));
-//
-//        // Case 4: newManager already exists and is a manager
-//        Node newManager = new Node(newManagerId, true, ownerId);
-//        superDS.getEmployees().get(storeId).getRoot().addChild(newManager);
-//        UIException ex4 = assertThrows(UIException.class, () ->
-//                superDS.checkToAddManager(storeId, ownerId, newManagerId)
-//        );
-//        assertEquals(ErrorCodes.NO_PERMISSION, ex4.getErrorCode());
-//
-//        // Case 5: success
-//        int freshId = 999;
-//        assertTrue(superDS.checkToAddManager(storeId, ownerId, freshId));
-//    }
+        superDS.addNewStore(storeId, ownerId); // Creates a Tree with root ownerId (not manager)
+
+        // Case 1: ownerId is not in store
+        UIException ex1 = assertThrows(UIException.class, () ->
+                superDS.checkToAddOwner(storeId, 999, newOwnerId)
+        );
+        assertEquals(ErrorCodes.NO_PERMISSION, ex1.getErrorCode());
+
+        // Case 2: ownerId is a manager
+        superDS.getEmployees().put(storeId, new Tree(ownerId, true, -1)); // Set owner as manager
+        UIException ex2 = assertThrows(UIException.class, () ->
+                superDS.checkToAddOwner(storeId, ownerId, newOwnerId)
+        );
+        assertEquals(ErrorCodes.NO_PERMISSION, ex2.getErrorCode());
+
+        // Fix back to valid owner root
+        superDS.getEmployees().put(storeId, new Tree(ownerId, false, -1)); // Set as owner again
+
+        // Case 3: newOwnerId already exists and isOwner
+        superDS.getEmployees().get(storeId).getRoot().addChild(new Node(newOwnerId, false, ownerId));
+        UIException ex3 = assertThrows(UIException.class, () ->
+                superDS.checkToAddOwner(storeId, ownerId, newOwnerId)
+        );
+        assertEquals(ErrorCodes.NO_PERMISSION, ex3.getErrorCode());
+
+        // Case 4: success path
+        int freshId = 99;
+        assertTrue(superDS.checkToAddOwner(storeId, ownerId, freshId));
+    }
+
+
+    @Test
+    void testCheckToAddManager_AllBranches() throws Exception {
+        int storeId = 102;
+        int ownerId = 20;
+        int newManagerId = 21;
+
+        // Setup store and root owner
+        superDS.addNewStore(storeId, ownerId);
+
+        // === Case 1: store doesn't exist ===
+        DevException ex1 = assertThrows(DevException.class, () ->
+                superDS.checkToAddManager(9999, ownerId, newManagerId)
+        );
+        assertEquals("store does not exist in superDS", ex1.getMessage());
+
+        // === Case 2: owner not found ===
+        UIException ex2 = assertThrows(UIException.class, () ->
+                superDS.checkToAddManager(storeId, 999, newManagerId)
+        );
+        assertEquals(ErrorCodes.NO_PERMISSION, ex2.getErrorCode());
+
+        superDS.getEmployees().put(storeId, new Tree(ownerId, true, -1));
+        UIException ex3 = assertThrows(UIException.class, () ->
+                superDS.checkToAddManager(storeId, ownerId, newManagerId)
+        );
+        assertEquals(ErrorCodes.NO_PERMISSION, ex3.getErrorCode());
+
+// === Case 4: newManager already exists and is a manager ===
+        superDS.getEmployees().put(storeId, new Tree(ownerId, false, -1)); // reset to owner
+        superDS.getEmployees().get(storeId).getRoot().addChild(new Node(newManagerId, true, ownerId));
+        UIException ex4 = assertThrows(UIException.class, () ->
+                superDS.checkToAddManager(storeId, ownerId, newManagerId)
+        );
+        // === Case 5: Success ===
+        int freshId = 999;
+        assertTrue(superDS.checkToAddManager(storeId, ownerId, freshId));
+    }
+
     @Test
     void testAddNewOwner_StoreDoesNotExist_ThrowsException() {
         Exception ex = assertThrows(Exception.class, () -> {
