@@ -58,7 +58,7 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
 
         logger.info("Returning matched items to client ");
-        String storeName= this.storeRepo.getStoreNameById(criteria.getStoreId());
+        // String storeName= this.storeRepo.getStoreNameById(criteria.getStoreId());
         ItemStoreDTO[] items = stockRepo.search(criteria);
         storeRepo.fillWithStoreName(items);
         return items;
