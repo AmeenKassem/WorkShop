@@ -454,7 +454,11 @@ public class StockRepository implements IStockRepo {
         for (ItemStoreDTO item : storeItems) { 
             int productId = item.getProductId();
             ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
-            result.addAll(active.getRandomsForProduct(productId));
+            List<RandomDTO> randoms = active.getRandomsForProduct(productId);
+            for (RandomDTO random : randoms) {
+                random.productName = item.getProductName();
+                result.add(random);
+            }
         }
         return result.toArray(new RandomDTO[0]);
     }
@@ -466,7 +470,11 @@ public class StockRepository implements IStockRepo {
         for (ItemStoreDTO item : storeItems) {
             int productId = item.getProductId();
             ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
-            result.addAll(active.getBidsForProduct(productId));
+            List<BidDTO> bids = active.getBidsForProduct(productId);
+            for (BidDTO bid : bids) {
+                bid.productName = item.getProductName(); 
+                result.add(bid);
+            }
         }
         return result.toArray(new BidDTO[0]);
     }
@@ -478,7 +486,11 @@ public class StockRepository implements IStockRepo {
         for (ItemStoreDTO item : storeItems) {
             int productId = item.getProductId();
             ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
-            result.addAll(active.getAuctionsForProduct(productId));
+            List<AuctionDTO> auctions = active.getAuctionsForProduct(productId);
+            for (AuctionDTO auction : auctions) {
+                auction.productName = item.getProductName(); 
+                result.add(auction);
+            }
         }
         return result.toArray(new AuctionDTO[0]);
     }

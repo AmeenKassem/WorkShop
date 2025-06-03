@@ -14,6 +14,7 @@ public class RandomDTO {
     public ParticipationInRandomDTO winner;
     public double productPrice;
     public double amountLeft;
+    public String productName;
 
     public RandomDTO() {
     }
