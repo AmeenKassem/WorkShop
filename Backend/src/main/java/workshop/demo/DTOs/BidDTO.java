@@ -9,4 +9,5 @@ public class BidDTO {
     public SingleBid[] bids;
     public int storeId;
     public String storeName;
+    public String productName;
 }
