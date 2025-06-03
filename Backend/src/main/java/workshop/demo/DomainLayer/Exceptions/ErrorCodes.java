@@ -37,5 +37,6 @@ public class ErrorCodes {
     public static final int DISCOUNT_NOT_FOUND = 1033;
     public static final int INVALID_QUANTITY = 1034;
     public static final int STORE_EXIST = 1035;
+    public static final int NO_POLICY = 1036;
 
 }

@@ -11,6 +11,8 @@ public class AuctionDTO {
     public int auctionId;
     public SingleBid winner;
     public int quantity;
+    public String storeName;
+    public String productName;
 
     public AuctionDTO() {
     }

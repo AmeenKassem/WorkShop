@@ -6,21 +6,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.catalina.User;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.PaymentDetails;
-import workshop.demo.DTOs.ReceiptDTO;
-import workshop.demo.DTOs.ReceiptProduct;
-import workshop.demo.DTOs.SingleBid;
-import workshop.demo.DTOs.SpecialType;
-import workshop.demo.DTOs.SupplyDetails;
-import workshop.demo.DTOs.UserSpecialItemCart;
+import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -138,6 +131,10 @@ public class PurchaseService {
         }
 
         DiscountScope scope = new DiscountScope(itemStoreDTOS);
+        //Hmode
+            UserDTO buyer = userRepo.getUserDTO(userId);
+            store.assertPurchasePolicies(buyer,itemStoreDTOS);
+            //Hmode
         Discount discount = store.getDiscount();
         double discountAmount = (discount != null) ? discount.apply(scope) : 0.0;
         double total = stockRepo.calculateTotalPrice(boughtItems);
