@@ -1015,8 +1015,22 @@ public class PurchaseTests {
         assertEquals(1, dto.bids.length);
         assertEquals(b.getId(), dto.bids[0].id);
     }
+//
+//    @Test
+//    void updatePrice_throwDevException_whenStoreNotExists() {
+//        int nonExistingStoreId = 999;
+//        assertThrows(DevException.class, () -> {
+//            stockRepository.updatePrice(nonExistingStoreId, 1, 10);
+//        });
+//    }
 
-
+//    @Test
+//    void updatePrice_success_whenStoreExists() throws Exception {
+//        int existingStoreId = 1;
+//        storeService.addStoreToSystem(NOToken,); // or however you initialize a store
+//        boolean result = stockRepository.updatePrice(existingStoreId, 1, 10);
+//        assertTrue(result);
+//    }
 
 
 

@@ -2,6 +2,7 @@ package workshop.demo.IntegrationTests.ServiceTests;
 
 import org.junit.jupiter.api.Test;
 import workshop.demo.DTOs.*;
+import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 import java.time.LocalDate;
@@ -430,5 +431,8 @@ public class dtosTests {
         dto.markAsLoser();
         assertFalse(dto.won());
     }
+
+
+
 
 }

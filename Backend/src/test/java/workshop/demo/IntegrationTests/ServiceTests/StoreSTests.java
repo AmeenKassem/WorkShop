@@ -5,17 +5,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
+import org.springframework.test.util.ReflectionTestUtils;
 import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
@@ -30,7 +26,14 @@ import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Notification.BaseNotifier;
+import workshop.demo.DomainLayer.Notification.DelayedNotificationDecorator;
+import workshop.demo.DomainLayer.Notification.RealTimeNotificationDecorator;
+import workshop.demo.DomainLayer.Stock.SingleBid;
+import workshop.demo.DomainLayer.StoreUserConnection.Node;
+import workshop.demo.DomainLayer.StoreUserConnection.Offer;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
@@ -41,6 +44,10 @@ import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
+import workshop.demo.SocketCommunication.SocketHandler;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -1106,13 +1113,378 @@ for (Permission perm : storeService.ViewRolesAndPermissions(NOToken,1).get(1).ge
         assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getErrorCode());
         assertEquals("Store not found", ex.getMessage());
     }
+    //Bashar ..........
+    @Test
+    void testAddtwostoresamename() throws UIException, DevException {
+        storeService.addStoreToSystem(NOToken,"AA","ELECTRONICS");
+        //assertThrows(storeService.addStoreToSystem(NGToken,"AA","ELECTRONICS"));
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.addStoreToSystem(NGToken,"AA","ELECTRONICS"); // store doesn't exist
+        });
+
+    }
+    @Test
+    void test_closeStore_storeDoesNotExist_shouldNotRemoveOtherStores() throws Exception {
+        int before = storeRepository.getStores().size();
+        assertDoesNotThrow(() -> storeRepository.closeStore(999));
+        int after = storeRepository.getStores().size();
+        assertEquals(before, after); // size should stay the same
+    }
+    @Test
+    void test_closeStore_storeDoesNotExist_shouldNotThrow() {
+        assertDoesNotThrow(() -> storeRepository.closeStore(999)); // storeId 999 does not exist
+    }
+
+
+    @Test
+    void test_rankStore_storeDoesNotExist_throwsException() {
+        UIException exception = assertThrows(UIException.class, () ->
+                storeRepository.rankStore(999, 5)
+        );
+        assertEquals(ErrorCodes.STORE_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    void test_getFinalRateInStore_storeDoesNotExist_throwsException() {
+        UIException exception = assertThrows(UIException.class, () ->
+                storeRepository.getFinalRateInStore(999)
+        );
+        assertEquals(ErrorCodes.STORE_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    void test_checkStoreIsActive_storeNotFound_throwsDevException() {
+        DevException exception = assertThrows(DevException.class, () -> {
+            storeRepository.checkStoreIsActive(999); // 999 does not exist
+        });
+        assertTrue(exception.getMessage().contains("Store not found with ID"));
+    }
+
+    @Test
+    void test_getStoreDTO_storeNotFound_throwsUIException() {
+        UIException exception = assertThrows(UIException.class, () -> {
+            storeRepository.getStoreDTO(999); // 999 does not exist
+        });
+        assertEquals(ErrorCodes.STORE_NOT_FOUND, exception.getErrorCode());
+    }
+    @Test
+    void test_checkStoreIsActive_storeExistsButNotActive_throwsDevException() throws Exception {
+        int storeId = storeService.addStoreToSystem(NOToken, "InactiveStore", "ELECTRONICS");
+
+        // simulate the store being inactive (you may need a method or reflection if not public)
+        storeRepository.getStores().stream()
+                .filter(s -> s.getStoreID() == storeId)
+                .findFirst()
+                .ifPresent(store -> store.setActive(false)); // assuming such setter exists
+
+        DevException exception = assertThrows(DevException.class, () -> {
+            storeRepository.checkStoreIsActive(storeId);
+        });
+
+        assertTrue(exception.getMessage().contains("not active"));
+    }
+
+
+    @Test
+    void test_fillWithStoreName_randomDTO_storeNotFound() {
+        RandomDTO[] randoms = new RandomDTO[1];
+        randoms[0] = new RandomDTO();
+        randoms[0].storeId = 999; // store does not exist
+
+        storeRepository.fillWithStoreName(randoms);
+
+        assertNull(randoms[0].storeName); // storeName should remain null
+    }
+
+    @Test
+    void test_fillWithStoreName_auctionDTO_storeNotFound() {
+        AuctionDTO[] auctions = new AuctionDTO[1];
+        auctions[0] = new AuctionDTO();
+        auctions[0].storeId = 999; // store does not exist
+
+        storeRepository.fillWithStoreName(auctions);
+
+        assertNull(auctions[0].storeName); // storeName should remain null
+    }
+
+    @Test
+    void test_fillWithStoreName_bidDTO_storeNotFound() {
+        BidDTO[] bids = new BidDTO[1];
+        bids[0] = new BidDTO();
+        bids[0].storeId = 999; // store does not exist
+
+        storeRepository.fillWithStoreName(bids);
+
+        assertNull(bids[0].storeName); // storeName should remain null
+    }
+
+    @Test
+    void test_validatedParticipation_storeNotInitialized_throwsDevException() {
+        DevException ex = assertThrows(DevException.class, () ->
+                stockRepository.validatedParticipation(10, 1, 999, 200.0) // storeId 999 doesn't exist
+        );
+        assertTrue(ex.getMessage().contains("Store stock not initialized"));
+    }
 
 
 
 
+    @Test
+    void test_getRandomCardIfWinner_exception_returnsNull() {
+        ParticipationInRandomDTO result = stockRepository.getRandomCardIfWinner(999, 1, 10); // storeId 999 not set up
+        assertNull(result);
+    }
+
+    @Test
+    void test_getBidIfWinner_exception_returnsNull() {
+        SingleBid result = stockRepository.getBidIfWinner(999, 1, 1, SpecialType.BID); // storeId 999 not set up
+        assertNull(result);
+    }
+    @Test
+    void test_getOrderDTOsByUserId_shouldReturnOrderForUser() throws Exception {
+        int userId = authRepo.getUserId(NGToken);
+
+        // Add item to user cart using UserService
+        userService.addToUserCart(NGToken, itemStoreDTO, 1); // quantity = 1
+
+        PaymentDetails payment = PaymentDetails.testPayment();
+        SupplyDetails supply = new SupplyDetails("Israel", "Beer Sheva", "8410501", "Ringelblum");
+
+        // Purchase cart
+        ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(NGToken, payment, supply);
+
+        // Fetch and assert order
+        List<OrderDTO> orders = orderRepository.getOrderDTOsByUserId(userId);
+
+        assertNotNull(orders);
+        assertEquals(1, orders.size());
+
+        OrderDTO order = orders.get(0);
+        assertEquals(userId, order.getUserId());
+        assertEquals(1, order.getStoreId()); // from setup
+        assertEquals(1, order.getProductsList().size());
+        assertTrue(order.getFinalPrice() > 0);
+    }
 
 
 
+    @Test
+    void testSendDelayedMessage_UserOnline() {
+        BaseNotifier mockBase = mock(BaseNotifier.class);
+        when(mockBase.isUserOnline("user")).thenReturn(true);
 
+        DelayedNotificationDecorator decorator = new DelayedNotificationDecorator(mockBase);
+        decorator.sendDelayedMessageToUser("user", "hello");
+
+        verify(mockBase).send("user", "hello");
+    }
+
+    @Test
+    void testSendDelayedMessage_UserOffline_NewEntry() {
+        BaseNotifier mockBase = mock(BaseNotifier.class);
+        when(mockBase.isUserOnline("user")).thenReturn(false);
+
+        DelayedNotificationDecorator decorator = new DelayedNotificationDecorator(mockBase);
+        decorator.sendDelayedMessageToUser("user", "offline-msg");
+
+        assertEquals(1, decorator.getDelayedMessages("user").length);
+    }
+
+    @Test
+    void testSendDelayedMessage_UserOffline_ExistingEntry() {
+        BaseNotifier mockBase = mock(BaseNotifier.class);
+        when(mockBase.isUserOnline("user")).thenReturn(false);
+
+        DelayedNotificationDecorator decorator = new DelayedNotificationDecorator(mockBase);
+        decorator.sendDelayedMessageToUser("user", "msg1");
+        decorator.sendDelayedMessageToUser("user", "msg2");
+
+        String[] messages = decorator.getDelayedMessages("user");
+        assertArrayEquals(new String[]{"msg1", "msg2"}, messages);
+    }
+
+    @Test
+    void testGetDelayedMessages_NoMessages() {
+        BaseNotifier mockBase = mock(BaseNotifier.class);
+        DelayedNotificationDecorator decorator = new DelayedNotificationDecorator(mockBase);
+
+        assertNull(decorator.getDelayedMessages("unknown"));
+    }
+    @Test
+    void testSendRTMessageToUser_Online() {
+        BaseNotifier mockBase = mock(BaseNotifier.class);
+        when(mockBase.isUserOnline("user")).thenReturn(true);
+
+        RealTimeNotificationDecorator decorator = new RealTimeNotificationDecorator(mockBase);
+        decorator.sendRTMessageToUser("user", "realtime");
+
+        verify(mockBase).send("user", "realtime");
+    }
+
+    @Test
+    void testSendRTMessageToUser_Offline() {
+        BaseNotifier mockBase = mock(BaseNotifier.class);
+        when(mockBase.isUserOnline("user")).thenReturn(false);
+
+        RealTimeNotificationDecorator decorator = new RealTimeNotificationDecorator(mockBase);
+        decorator.sendRTMessageToUser("user", "delayed");
+
+        // No send call expected
+        verify(mockBase, never()).send(any(), any());
+    }
+    @Test
+    void testBaseNotifierSend_Success() throws Exception {
+        SocketHandler handler = mock(SocketHandler.class);
+        BaseNotifier notifier = new BaseNotifier();
+        ReflectionTestUtils.setField(notifier, "socketHandler", handler);
+
+        notifier.send("user", "msg");
+        verify(handler).sendMessage("user", "msg");
+    }
+
+//    @Test
+//    void testBaseNotifierSend_ExceptionThrown() throws Exception {
+//        SocketHandler handler = mock(SocketHandler.class);
+//        doThrow(new Exception("fail")).when(handler).sendMessage(any(), any());
+//
+//        BaseNotifier notifier = new BaseNotifier();
+//        ReflectionTestUtils.setField(notifier, "socketHandler", handler);
+//
+//        assertThrows(RuntimeException.class, () -> notifier.send("user", "msg"));
+//    }
+
+    @Test
+    void testBaseNotifierIsUserOnline() {
+        SocketHandler handler = mock(SocketHandler.class);
+        when(handler.hasUserSession("user")).thenReturn(true);
+
+        BaseNotifier notifier = new BaseNotifier();
+        ReflectionTestUtils.setField(notifier, "socketHandler", handler);
+
+        assertTrue(notifier.isUserOnline("user"));
+    }
+    private SuperDataStructure setupStoreTreeWithOwner(int storeId, int ownerId) {
+        SuperDataStructure superDS = new SuperDataStructure();
+        superDS.addNewStore(storeId, ownerId);
+        return superDS;
+    }
+
+    @Test
+    void testGetWorkersTreeInStore_StoreNotExists() {
+        SuperDataStructure superDS = new SuperDataStructure();
+        Exception ex = assertThrows(Exception.class, () ->
+                superDS.getWorkersTreeInStore(999)
+        );
+        assertEquals("store does not exist in superDS", ex.getMessage());
+    }
+
+    @Test
+    void testDeleteManager_StoreNotExists() {
+        SuperDataStructure superDS = new SuperDataStructure();
+        DevException ex = assertThrows(DevException.class, () ->
+                superDS.deleteManager(999, 1, 2)
+        );
+        assertEquals("store does not exist in superDS", ex.getMessage());
+    }
+
+    @Test
+    void testDeleteManager_ManagerNotFound() throws Exception {
+        SuperDataStructure superDS = setupStoreTreeWithOwner(1, 10);
+        UIException ex = assertThrows(UIException.class, () ->
+                superDS.deleteManager(1, 10, 999)
+        );
+        assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getErrorCode());
+    }
+
+    @Test
+    void testDeleteManager_NotAManager() throws Exception {
+        SuperDataStructure superDS = setupStoreTreeWithOwner(1, 10);
+        superDS.addNewOwner(1, 10, 11); // not a manager
+        UIException ex = assertThrows(UIException.class, () ->
+                superDS.deleteManager(1, 10, 11)
+        );
+        assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
+    }
+
+    @Test
+    void testDeleteManager_NotParent() throws Exception {
+        SuperDataStructure superDS = setupStoreTreeWithOwner(1, 10);
+        superDS.addNewOwner(1, 10, 11);
+        superDS.addNewManager(1, 10, 12);
+        // now 11 is owner, but try deleting 12 using 11 (not the parent)
+        UIException ex = assertThrows(UIException.class, () ->
+                superDS.deleteManager(1, 11, 12)
+        );
+        assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
+    }
+
+    @Test
+    void testCheckDeactivateStore_StoreNotExists() {
+        SuperDataStructure superDS = new SuperDataStructure();
+        DevException ex = assertThrows(DevException.class, () ->
+                superDS.checkDeactivateStore(999, 1)
+        );
+        assertEquals("store does not exist in superDS", ex.getMessage());
+    }
+
+    @Test
+    void testGetWorkersInStore_StoreNotExists() {
+        SuperDataStructure superDS = new SuperDataStructure();
+        Exception ex = assertThrows(Exception.class, () ->
+                superDS.getWorkersInStore(999)
+        );
+        assertEquals("store does not exist in superDS", ex.getMessage());
+    }
+
+    @Test
+    void testCloseStore_StoreNotExists() {
+        SuperDataStructure superDS = new SuperDataStructure();
+        Exception ex = assertThrows(Exception.class, () ->
+                superDS.closeStore(999)
+        );
+        assertEquals("store does not exist in superDS", ex.getMessage());
+    }
+
+    @Test
+    void testDeleteOffer_StoreOffersNull() {
+        SuperDataStructure superDS = new SuperDataStructure();
+        Exception ex = assertThrows(Exception.class, () ->
+                superDS.deleteOffer(1, 10, 20)
+        );
+        assertEquals("store offers is null", ex.getMessage());
+    }
+
+    @Test
+    void testGetOffer_OfferNotFound() throws Exception {
+        SuperDataStructure superDS = new SuperDataStructure();
+        superDS.makeOffer(new Offer(1, 10, true, List.of(), "sdfsd"),1);
+        Exception ex = assertThrows(Exception.class, () ->
+                superDS.getOffer(1, 99, 88)
+        );
+        assertTrue(ex.getMessage().contains("No offer found"));
+    }
+
+    @Test
+    void testRemoveUserAccordingly_UserNotExistsAnywhere() throws Exception {
+        SuperDataStructure superDS = new SuperDataStructure();
+        int result = superDS.removeUserAccordingly(999);
+        assertEquals(-1, result);
+    }
+
+    @Test
+    void testRemoveUserAccordingly_UserExistsInOffer() throws Exception {
+        SuperDataStructure superDS = new SuperDataStructure();
+        superDS.makeOffer(new Offer(1, 10, true, List.of(), "sdfsd"),1);
+        int result = superDS.removeUserAccordingly(10);
+        assertEquals(10, result);
+    }
+
+    @Test
+    void testRemoveUserAccordingly_UserExistsInTree() throws Exception {
+        SuperDataStructure superDS = setupStoreTreeWithOwner(1, 10);
+        superDS.addNewOwner(1, 10, 20);
+        int result = superDS.removeUserAccordingly(20);
+        assertEquals(20, result);
+    }
 
 }
