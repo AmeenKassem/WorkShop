@@ -12,8 +12,7 @@ public class SingleBid {
     private int userId;
     private int productId;
 
-    public SingleBid(int productId, int amount, int userId, double price, SpecialType type, int storeId, int id,
-            int specialId) {
+    public SingleBid(int productId, int amount, int userId, double price, SpecialType type, int storeId, int id, int specialId) {
         this.productId = productId;
         this.amount = amount;
         this.userId = userId;

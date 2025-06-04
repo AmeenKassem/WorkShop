@@ -17,6 +17,7 @@ public class SupplyDetails {
     }
 
     public SupplyDetails() {
+
     }
 
     public static SupplyDetails getTestDetails() {

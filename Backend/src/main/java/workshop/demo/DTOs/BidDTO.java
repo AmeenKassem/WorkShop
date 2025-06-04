@@ -11,4 +11,6 @@ public class BidDTO {
 
     public BidDTO() {
     }
+    public int storeId;
+    public String storeName;
 }

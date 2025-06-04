@@ -8,7 +8,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -180,5 +183,36 @@ public class StoreRepository implements IStoreRepo {
             itemStoreDTO.setStoreName(store.getStoreName());
         }
     }
+
+    public void fillWithStoreName(RandomDTO[] randoms) {
+        for (RandomDTO random : randoms) {
+            int storeId = random.storeId;
+            Store store = this.findStoreByID(storeId);
+            if (store != null) {
+                random.storeName = store.getStoreName();
+            }
+        }
+    }
+
+    public void fillWithStoreName(AuctionDTO[] auctions) {
+        for (AuctionDTO auction : auctions) {
+            int storeId = auction.storeId;
+            Store store = this.findStoreByID(storeId);
+            if (store != null) {
+                auction.storeName = store.getStoreName();
+            }
+        }
+    }
+    
+    public void fillWithStoreName(BidDTO[] bids) {
+        for (BidDTO bid : bids) {
+            int storeId = bid.storeId;
+            Store store = this.findStoreByID(storeId);
+            if (store != null) {
+                bid.storeName = store.getStoreName();
+            }
+        }
+    }
+
 
 }

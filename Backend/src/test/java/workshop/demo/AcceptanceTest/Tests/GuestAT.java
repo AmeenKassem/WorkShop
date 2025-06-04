@@ -40,6 +40,7 @@ import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.CartItem;
+import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
@@ -55,6 +56,9 @@ public class GuestAT extends AcceptanceTests {
 
     @BeforeEach
     void setup() throws Exception {
+
+
+       // when (real.mockUserRepo.getRegisteredUserByName("admin")).thenReturn(new Registered(1,"admin","Admin123",23));
         int adminId = 999;
         String adminGuestToken = "admin-guest-token";
         String adminUserToken = "admin-user-token";
@@ -606,7 +610,7 @@ public class GuestAT extends AcceptanceTests {
 
         ItemStoreDTO[] mockItems = {mockItem};
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
-        when(real.mockStockRepo.search(criteria,"TestStore")).thenReturn(mockItems);
+        when(real.mockStockRepo.search(criteria)).thenReturn(mockItems);
 
         ItemStoreDTO[] result = real.stockService.searchProducts(guestToken, criteria);
 
@@ -640,7 +644,7 @@ public class GuestAT extends AcceptanceTests {
             new ItemStoreDTO(productId, 5, 1500, Category.ELECTRONICS, 0, 100, "Laptop","TestStore")};
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        when(real.mockStockRepo.search(criteria,"TestStore")).thenReturn(matchedItems);
+        when(real.mockStockRepo.search(criteria)).thenReturn(matchedItems);
 
         ItemStoreDTO[] result = real.stockService.searchProducts(guestToken, criteria);
 
