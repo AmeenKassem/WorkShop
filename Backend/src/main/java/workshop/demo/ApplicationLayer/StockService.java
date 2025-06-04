@@ -191,7 +191,7 @@ public class StockService {
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         storeRepo.checkStoreExistance(storeId);
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-            throw new UIException("You have no permission to set product to bid.", ErrorCodes.NO_PERMISSION);
+            throw new UIException("you have no permession to set product to bid.", ErrorCodes.NO_PERMISSION);
         }
         int bidId = stockRepo.addProductToBid(storeId, productId, quantity);
         try {
