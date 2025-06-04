@@ -1,4 +1,4 @@
-package workshop.demo.UnitTests.Users;
+package workshop.demo.UnitTests.UsersTests;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

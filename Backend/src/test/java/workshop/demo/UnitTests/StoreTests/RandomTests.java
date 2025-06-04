@@ -7,12 +7,16 @@ import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.Auction;
+import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.SingleBid;
+import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.*;
 import workshop.demo.DomainLayer.StoreUserConnection.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -856,6 +860,220 @@ class RandomTests {
         });
         assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
     }
+        @Test
+    public void testMatchesForStore_AllFiltersMatch() {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null,                          // productNameFilter
+                Category.Sports,              // categoryFilter
+                null,                          // keywordFilter
+                Integer.valueOf(1),           // storeId
+                Double.valueOf(10.0),         // minPrice
+                Double.valueOf(50.0),         // maxPrice
+                Double.valueOf(4.0),          // minStoreRating
+                Double.valueOf(5.0)           // maxStoreRating
+        );
+        item testItem = new item(1, 1, 3, Category.Sports);
+        AtomicInteger[] rank = new AtomicInteger[]{new AtomicInteger(0), new AtomicInteger(0), new AtomicInteger(1), new AtomicInteger(0), new AtomicInteger(0)};
+        testItem.setRank(rank);
+        assertFalse(criteria.matchesForStore(testItem));
+    }
+
+    @Test
+    public void testMatchesForStore_CategoryMismatch() {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null,                          // productNameFilter
+                Category.Sports,              // categoryFilter
+                null,                          // keywordFilter
+                Integer.valueOf(1),           // storeId
+                Double.valueOf(10.0),         // minPrice
+                Double.valueOf(50.0),         // maxPrice
+                Double.valueOf(4.0),          // minStoreRating
+                Double.valueOf(5.0)           // maxStoreRating
+        );        item testItem = new item(1, 1, 3, Category.Clothing);
+        assertFalse(criteria.matchesForStore(testItem));
+    }
+
+    @Test
+    public void testMatchesForStore_MinPriceFails() {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null,                          // productNameFilter
+                Category.Sports,              // categoryFilter
+                null,                          // keywordFilter
+                Integer.valueOf(1),           // storeId
+                Double.valueOf(10.0),         // minPrice
+                Double.valueOf(50.0),         // maxPrice
+                Double.valueOf(4.0),          // minStoreRating
+                Double.valueOf(5.0)           // maxStoreRating
+        );        item testItem = new item(1, 1, 3, Category.Sports);
+        assertFalse(criteria.matchesForStore(testItem));
+    }
+
+    @Test
+    public void testMatchesForStore_MaxPriceFails() {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null,                          // productNameFilter
+                Category.Sports,              // categoryFilter
+                null,                          // keywordFilter
+                Integer.valueOf(1),           // storeId
+                Double.valueOf(10.0),         // minPrice
+                Double.valueOf(50.0),         // maxPrice
+                Double.valueOf(4.0),          // minStoreRating
+                Double.valueOf(5.0)           // maxStoreRating
+        );        item testItem = new item(1, 1, 3, Category.Sports);
+        assertFalse(criteria.matchesForStore(testItem));
+    }
+
+    @Test
+    public void testMatchesForStore_MinRatingFails() {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null,                          // productNameFilter
+                Category.Sports,              // categoryFilter
+                null,                          // keywordFilter
+                Integer.valueOf(1),           // storeId
+                Double.valueOf(10.0),         // minPrice
+                Double.valueOf(50.0),         // maxPrice
+                Double.valueOf(4.0),          // minStoreRating
+                Double.valueOf(5.0)           // maxStoreRating
+        );        item testItem = new item(1, 1, 3, Category.Sports);
+        AtomicInteger[] rank = new AtomicInteger[]{new AtomicInteger(1), new AtomicInteger(0), new AtomicInteger(0), new AtomicInteger(0), new AtomicInteger(0)};
+        testItem.setRank(rank);
+        assertFalse(criteria.matchesForStore(testItem));
+    }
+
+    @Test
+    public void testMatchesForStore_MaxRatingFails() {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null,                          // productNameFilter
+                Category.Sports,              // categoryFilter
+                null,                          // keywordFilter
+                Integer.valueOf(1),           // storeId
+                Double.valueOf(10.0),         // minPrice
+                Double.valueOf(50.0),         // maxPrice
+                Double.valueOf(4.0),          // minStoreRating
+                Double.valueOf(5.0)           // maxStoreRating
+        );        item testItem = new item(1, 1, 3, Category.Sports);
+        AtomicInteger[] rank = new AtomicInteger[]{new AtomicInteger(0), new AtomicInteger(0), new AtomicInteger(0), new AtomicInteger(0), new AtomicInteger(1)};
+        testItem.setRank(rank);
+        assertFalse(criteria.matchesForStore(testItem));
+    }
+
+    @Test
+    public void testProductIsMatch_AllFiltersMatch() {
+        Product product = new Product("Fresh Milk", 1, Category.Sports, "Healthy and Cold", new String[]{"cold", "fresh"});
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null,                          // productNameFilter
+                Category.Sports,              // categoryFilter
+                null,                          // keywordFilter
+                Integer.valueOf(1),           // storeId
+                Double.valueOf(10.0),         // minPrice
+                Double.valueOf(50.0),         // maxPrice
+                Double.valueOf(4.0),          // minStoreRating
+                Double.valueOf(5.0)           // maxStoreRating
+        );        assertTrue(criteria.productIsMatch(product));
+    }
+
+    @Test
+    public void testProductIsMatch_NameFilterFails() {
+        Product product = new Product("Bread", 1, Category.Sports, "Healthy and Cold", new String[]{"cold", "fresh"});
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null,                          // productNameFilter
+                Category.Sports,              // categoryFilter
+                null,                          // keywordFilter
+                Integer.valueOf(1),           // storeId
+                Double.valueOf(10.0),         // minPrice
+                Double.valueOf(50.0),         // maxPrice
+                Double.valueOf(4.0),          // minStoreRating
+                Double.valueOf(5.0)           // maxStoreRating
+        );        assertTrue(criteria.productIsMatch(product));
+    }
+
+    @Test
+    public void testProductIsMatch_CategoryMismatch() {
+        Product product = new Product("Fresh Milk", 1, Category.Clothing, "Healthy and Cold", new String[]{"cold", "fresh"});
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null,                          // productNameFilter
+                Category.Sports,              // categoryFilter
+                null,                          // keywordFilter
+                Integer.valueOf(1),           // storeId
+                Double.valueOf(10.0),         // minPrice
+                Double.valueOf(50.0),         // maxPrice
+                Double.valueOf(4.0),          // minStoreRating
+                Double.valueOf(5.0)           // maxStoreRating
+        );        assertFalse(criteria.productIsMatch(product));
+    }
+
+    @Test
+    public void testProductIsMatch_KeywordFails() {
+        Product product = new Product("Fresh Milk", 1, Category.Sports, "Healthy and Cold", new String[]{"sweet", "soft"});
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null,                          // productNameFilter
+                Category.Sports,              // categoryFilter
+                null,                          // keywordFilter
+                Integer.valueOf(1),           // storeId
+                Double.valueOf(10.0),         // minPrice
+                Double.valueOf(50.0),         // maxPrice
+                Double.valueOf(4.0),          // minStoreRating
+                Double.valueOf(5.0)           // maxStoreRating
+        );        assertTrue(criteria.productIsMatch(product));
+    }
+
+    @Test
+    public void testSpecificStore() {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(null, null, null, 10, null, null, null, null);
+        assertTrue(criteria.specificStore());
+    }
+
+    @Test
+    public void testSpecificCategory() {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(null, Category.Clothing, null, null, null, null, null, null);
+        assertTrue(criteria.specificCategory());
+    }
+    @Test
+    void testEquals_SameReference() {
+        UserSpecialItemCart cart = new UserSpecialItemCart(1, 2, 3, SpecialType.BID);
+        assertTrue(cart.equals(cart)); // Line 20
+    }
+
+    @Test
+    void testEquals_NullObject() {
+        UserSpecialItemCart cart = new UserSpecialItemCart(1, 2, 3, SpecialType.BID);
+        assertFalse(cart.equals(null)); // Line 21
+    }
+
+    @Test
+    void testEquals_DifferentClass() {
+        UserSpecialItemCart cart = new UserSpecialItemCart(1, 2, 3, SpecialType.BID);
+        assertFalse(cart.equals("not a cart")); // Line 21
+    }
+
+    @Test
+    void testEquals_DifferentStoreId() {
+        UserSpecialItemCart c1 = new UserSpecialItemCart(1, 2, 3, SpecialType.BID);
+        UserSpecialItemCart c2 = new UserSpecialItemCart(99, 2, 3, SpecialType.BID);
+        assertFalse(c1.equals(c2)); 
+    }
+
+    @Test
+    void testEquals_DifferentSpecialId() {
+        UserSpecialItemCart c1 = new UserSpecialItemCart(1, 2, 3, SpecialType.BID);
+        UserSpecialItemCart c2 = new UserSpecialItemCart(1, 99, 3, SpecialType.BID);
+        assertFalse(c1.equals(c2));
+    }
+
+    @Test
+    void testEquals_DifferentType() {
+        UserSpecialItemCart c1 = new UserSpecialItemCart(1, 2, 3, SpecialType.BID);
+        UserSpecialItemCart c2 = new UserSpecialItemCart(1, 2, 3, SpecialType.Auction);
+        assertFalse(c1.equals(c2));
+    }
+
+    @Test
+    void testEquals_ExactMatch() {
+        UserSpecialItemCart c1 = new UserSpecialItemCart(1, 2, 3, SpecialType.Random);
+        UserSpecialItemCart c2 = new UserSpecialItemCart(1, 2, 999, SpecialType.Random); // bidId ignored
+        assertTrue(c1.equals(c2));
+    }
+
 
 }
 
