@@ -32,15 +32,15 @@ public class MyCartPresenter {
         this.view = view;
     }
 
-    public void loadCartItems() {
-        loadRegularCartItems();
-        String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
-        if (userType.equals("user")) {
-            loadSpecialCartItems();
-        }
-    }
+    // public void loadCartItems() {
+    //     loadRegularCartItems();
+    //     String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
+    //     if (userType.equals("user")) {
+    //         loadSpecialCartItems();
+    //     }
+    // }
 
-    private void loadRegularCartItems() {
+    public void loadRegularCartItems() {
         String token = getToken();
         if (token == null) {
             return;
@@ -75,7 +75,7 @@ public class MyCartPresenter {
         }
     }
 
-    private void loadSpecialCartItems() {
+    public void loadSpecialCartItems() {
         String token = getToken();
         if (token == null) {
             return;

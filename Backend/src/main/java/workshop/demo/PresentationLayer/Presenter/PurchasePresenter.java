@@ -89,7 +89,6 @@ public class PurchasePresenter {
                     entity,
                     String.class);
 
-            System.out.println("fuck1");
             ObjectMapper objectMapper = new ObjectMapper();
             ApiResponse responseBody = objectMapper.readValue(response.getBody(), ApiResponse.class);
             if (responseBody != null && responseBody.getErrNumber() == -1) {

@@ -1,5 +1,8 @@
 package workshop.demo.Controllers;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.PurchaseService;
 import workshop.demo.Controllers.ApiResponse;
+import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.CouponContext;
@@ -42,7 +47,7 @@ public class PurcheseContoller {
     @PostMapping("/guest")
     public ResponseEntity<?> buyGuestCart(@RequestParam String token,
             @RequestParam String paymentJson,
-            @RequestParam String supplyJson,@RequestParam(required = false) String coupon) {
+            @RequestParam String supplyJson, @RequestParam(required = false) String coupon) {
         ApiResponse<ReceiptDTO[]> res;
         try {
             CouponContext.set(coupon);
@@ -50,7 +55,27 @@ public class PurcheseContoller {
             PaymentDetails paymentdetails = PaymentDetails.getPaymentDetailsFromJSON(paymentJson);
             SupplyDetails supplydetails = SupplyDetails.getSupplyDetailsFromJSON(supplyJson);
 
-            ReceiptDTO[] receipts = purchaseService.buyGuestCart(token, paymentdetails, supplydetails);
+            //ReceiptDTO[] receipts = purchaseService.buyGuestCart(token, paymentdetails, supplydetails);
+            // Receipt 1 products
+            List<ReceiptProduct> products1 = Arrays.asList(
+                    new ReceiptProduct("Bananas", "Fresh Market", 3, 10, 101, Category.Beauty),
+                    new ReceiptProduct("Milk", "Fresh Market", 2, 8, 102, Category.ELECTRONICS));
+
+            // Receipt 2 products
+            List<ReceiptProduct> products2 = Arrays.asList(
+                    new ReceiptProduct("Bluetooth Speaker", "Tech Hub", 1, 199, 201, Category.ELECTRONICS),
+                    new ReceiptProduct("Headphones", "Tech Hub", 1, 150, 202, Category.ELECTRONICS));
+
+            // Receipt 3 products
+            List<ReceiptProduct> products3 = Arrays.asList(
+                    new ReceiptProduct("Pillow", "Home Comforts", 2, 30, 301, Category.Home),
+                    new ReceiptProduct("Blanket", "Home Comforts", 1, 60, 302, Category.Home));
+
+             ReceiptDTO[] receipts = new ReceiptDTO[] {
+                    new ReceiptDTO("Fresh Market", "2025-06-01", products1, 90),
+                    new ReceiptDTO("Tech Hub", "2025-06-02", products2, 999),
+                    new ReceiptDTO("Home Comforts", "2025-06-03", products3, 77)
+            };
             res = new ApiResponse<>(receipts, null);
             return ResponseEntity.ok(res.toJson());
         } catch (UIException e) {
@@ -60,8 +85,7 @@ public class PurcheseContoller {
             res = new ApiResponse<>(null, e.getMessage(), -1);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(res.toJson());
-        }
-        finally {
+        } finally {
             CouponContext.clear();
         }
     }
@@ -69,7 +93,7 @@ public class PurcheseContoller {
     @PostMapping("/registered")
     public ResponseEntity<?> buyRegisteredCart(@RequestParam String token,
             @RequestParam String paymentJson,
-            @RequestParam String supplyJson,@RequestParam(required = false) String coupon) {
+            @RequestParam String supplyJson, @RequestParam(required = false) String coupon) {
         ApiResponse<ReceiptDTO[]> res;
         try {
             CouponContext.set(coupon);
@@ -90,8 +114,7 @@ public class PurcheseContoller {
             // Return 500 Internal Server Error for server errors
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(res.toJson());
-        }
-        finally {
+        } finally {
             CouponContext.clear();
         }
     }

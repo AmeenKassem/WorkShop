@@ -19,9 +19,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
+import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.PurchaseHistoryDTO;
 import workshop.demo.DTOs.SpecialCartItemDTO;
+import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.SystemAnalyticsDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -37,16 +39,17 @@ public class UserController {
 
     @Autowired
     public UserController(Repos repos) throws Exception {
-        //this.userService = repos.userService;
+        // this.userService = repos.userService;
         this.adminHandler = new AdminHandler(repos.orderRepo, repos.storeRepo, repos.userRepo, repos.auth);
         this.userSuspensionService = new UserSuspensionService(repos.UserSuspensionRepo, repos.userRepo, repos.auth);
-        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer, adminHandler, repos.storeRepo);
+        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer,
+                adminHandler, repos.storeRepo);
 
     }
 
     // @ModelAttribute
     // public void beforeEveryRequest(HttpServletRequest request) {
-    //     System.out.println("must check if the system get published by admin ...");
+    // System.out.println("must check if the system get published by admin ...");
     // }
     @GetMapping("/generateGuest")
     public ResponseEntity<?> generateGuest() {
@@ -85,15 +88,14 @@ public class UserController {
 
     }
 
-    //@PostMapping("/login")
+    // @PostMapping("/login")
     @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse> login(
             @RequestParam String token,
             @RequestParam String username,
-            @RequestParam String password
-    ) {
+            @RequestParam String password) {
         try {
-            String data = userService.login(token, username, password);//data new token for user
+            String data = userService.login(token, username, password);// data new token for user
             return ResponseEntity.ok(new ApiResponse<>(data, null)); // success: return new token
         } catch (UIException ex) {
             return ResponseEntity
@@ -124,8 +126,7 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logoutUser(@RequestParam String token
-    ) {
+    public ResponseEntity<?> logoutUser(@RequestParam String token) {
         try {
             String newToken = userService.logoutUser(token);
             return ResponseEntity.ok(new ApiResponse<>(newToken, null));
@@ -141,8 +142,7 @@ public class UserController {
     @PostMapping("/setAdmin")
     public ResponseEntity<?> setAdmin(
             @RequestParam String token,
-            @RequestParam String adminKey
-    ) {
+            @RequestParam String adminKey) {
         try {
             boolean data = userService.setAdmin(token, adminKey, 2);
             return ResponseEntity.ok(new ApiResponse<>(data, null));
@@ -160,8 +160,7 @@ public class UserController {
     @PostMapping("/addToCart")
     public ResponseEntity<?> addToUserCart(
             @RequestParam String token,
-            @RequestBody AddToCartRequest request
-    ) {
+            @RequestBody AddToCartRequest request) {
         try {
             boolean data = userService.addToUserCart(token, request.getItem(), request.getQuantity());
             return ResponseEntity.ok(new ApiResponse<>(data, null));
@@ -175,54 +174,52 @@ public class UserController {
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
     }
+
     @PostMapping("/ModifyCart")
-public String ModifyCart(
-        @RequestParam String token,
-        @RequestParam int productId,
-        @RequestParam int quantity
-) {
-    ApiResponse<Boolean> res;
-    try {
-        boolean result = userService.ModifyCartAddQToBuy(token, productId, quantity);
-        res = new ApiResponse<>(result, null);
-    } catch (UIException ex) {
-        res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
-    } catch (Exception e) {
-        res = new ApiResponse<>(null, e.getMessage(), -1);
+    public String ModifyCart(
+            @RequestParam String token,
+            @RequestParam int productId,
+            @RequestParam int quantity) {
+        ApiResponse<Boolean> res;
+        try {
+            boolean result = userService.ModifyCartAddQToBuy(token, productId, quantity);
+            res = new ApiResponse<>(result, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
     }
-    return res.toJson();
-}
-@PostMapping("/removeFromCart")
-public String removeFromCart(
-        @RequestParam String token,
-        @RequestParam int productId
-) {
-    ApiResponse<Boolean> res;
-    try {
-        boolean result = userService.removeItemFromCart(token, productId);
-        res = new ApiResponse<>(result, null);
-    } catch (UIException ex) {
-        res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
-    } catch (Exception e) {
-        res = new ApiResponse<>(null, e.getMessage(), -1);
+
+    @PostMapping("/removeFromCart")
+    public String removeFromCart(
+            @RequestParam String token,
+            @RequestParam int productId) {
+        ApiResponse<Boolean> res;
+        try {
+            boolean result = userService.removeItemFromCart(token, productId);
+            res = new ApiResponse<>(result, null);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+        }
+        return res.toJson();
     }
-    return res.toJson();
-}
-
-
 
     // @PutMapping("/updateProfile")
     // public String updateProfile(@RequestParam String token) {
-    //     Response<String> res;
-    //     try {
-    //         userService.updateProfile(token);
-    //         res = new Response<>("done", null);
-    //     } catch (UIException ex) {
-    //         res = new Response<>(null, ex.getMessage(), ex.getNumber());
-    //     } catch (Exception e) {
-    //         res = new Response<>(null, e.getMessage(), -1);
-    //     }
-    //     return res.toJson();
+    // Response<String> res;
+    // try {
+    // userService.updateProfile(token);
+    // res = new Response<>("done", null);
+    // } catch (UIException ex) {
+    // res = new Response<>(null, ex.getMessage(), ex.getNumber());
+    // } catch (Exception e) {
+    // res = new Response<>(null, e.getMessage(), -1);
+    // }
+    // return res.toJson();
     // }''
     @GetMapping(value = "/getUserDTO", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<UserDTO>> getUserDTO(@RequestParam String token) {
@@ -241,34 +238,54 @@ public String removeFromCart(
     }
 
     @GetMapping("/getspecialcart")
-    public String getSpecialCart(@RequestParam String token) {
+    public ResponseEntity<?> getSpecialCart(@RequestParam String token) {
         ApiResponse<SpecialCartItemDTO[]> res;
         try {
-            SpecialCartItemDTO[] cartItems = userService.getSpecialCart(token);
+            //SpecialCartItemDTO[] cartItems = userService.getSpecialCart(token);
+
+            SpecialCartItemDTO special1 = new SpecialCartItemDTO();
+            special1.setIds(201, 1001, 0, SpecialType.Random);
+            special1.setValues("Mystery Box", false, false);
+
+            SpecialCartItemDTO special2 = new SpecialCartItemDTO();
+            special2.setIds(202, 1002, 0, SpecialType.Auction);
+            special2.setValues("Rare Coin", true, true);
+
+            SpecialCartItemDTO special3 = new SpecialCartItemDTO();
+            special3.setIds(203, 1003, 10001, SpecialType.BID);
+            special3.setValues("Gaming Chair", false, true);
+            SpecialCartItemDTO[] cartItems = new SpecialCartItemDTO[] { special1, special2, special3 };
             res = new ApiResponse<>(cartItems, null);
-        } catch (UIException ex) {
-            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+        // } catch (UIException ex) {
+        //     res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
         } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
         }
-        return res.toJson();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(res.toJson());
     }
 
     @GetMapping("/getregularcart")
-    public String getRegularCart(@RequestParam String token) {
+    public ResponseEntity<?> getRegularCart(@RequestParam String token) {
         ApiResponse<ItemCartDTO[]> res;
         try {
-            ItemCartDTO[] cartItems = userService.getRegularCart(token);
+            // ItemCartDTO[] cartItems = userService.getRegularCart(token);
+            ItemCartDTO item1 = new ItemCartDTO(1, 2, 101, 10, "Bananas", "Fresh bananas", Category.Beauty);
+            ItemCartDTO item2 = new ItemCartDTO(2, 1, 102, 199, "Bluetooth Speaker", "Loud and portable",
+                    Category.Clothing);
+            ItemCartDTO item3 = new ItemCartDTO(3, 3, 103, 15, "Pillow", "Soft pillow", Category.Home);
+            ItemCartDTO[] cartItems = new ItemCartDTO[] { item1, item2, item3 };
             res = new ApiResponse<>(cartItems, null);
-        } catch (UIException ex) {
-            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            // } catch (UIException ex) {
+            // res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
         } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
         }
-        return res.toJson();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(res.toJson());
     }
 
-    //------------admin activites:
+    // ------------admin activites:
     @ModelAttribute
     public void beforeEveryRequest(HttpServletRequest request) {
         System.out.println("Checking admin access...");
