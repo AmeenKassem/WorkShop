@@ -33,7 +33,7 @@ public class StockController {
     @Autowired
     public StockController(Repos repos) {
         this.stockService = new StockService(repos.stockrepo, repos.storeRepo, repos.auth, repos.userRepo,
-                repos.sUConnectionRepo, repos.UserSuspensionRepo);
+                repos.sUConnectionRepo, repos.UserSuspensionRepo,repos.notificationRepo);
     }
 
     @GetMapping("/getProductInfo")

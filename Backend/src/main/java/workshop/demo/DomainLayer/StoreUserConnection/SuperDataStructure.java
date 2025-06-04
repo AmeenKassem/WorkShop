@@ -10,6 +10,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.springframework.stereotype.Component;
 
+import com.vaadin.flow.component.UI;
+
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -376,12 +378,12 @@ public class SuperDataStructure {
         storeLocks.clear();
     }
 
-    public List<Node> getAllWorkers(int storeId) throws Exception {
+    public List<Node> getAllWorkers(int storeId) throws UIException {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeId, k -> new ReentrantLock());
         lock.lock();
         try {
             if (!employees.containsKey(storeId)) {
-                throw new Exception("Store does not exist");
+                throw new UIException("Store does not exist", ErrorCodes.STORE_NOT_FOUND);
             }
             Tree tree = employees.get(storeId);
             List<Node> result = new ArrayList<>();

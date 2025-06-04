@@ -11,6 +11,7 @@ public class ParticipationInRandomDTO {
     public boolean ended;
     public int randomId;
     public boolean mustRefund;
+    public int transactionIdForPayment = 0;
 
     public ParticipationInRandomDTO(int productId, int storeId, int userId, int randomId, double amountPaid) {
         this.amountPaid = amountPaid;
@@ -23,7 +24,6 @@ public class ParticipationInRandomDTO {
 
     public ParticipationInRandomDTO() {
     }
-
     public void markAsWinner() {
         isWinner = true;
         ended = true;

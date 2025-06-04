@@ -64,29 +64,35 @@ public class BID {
         }
     }
 
-    public SingleBid acceptBid(int userBidId) throws DevException ,UIException {
+    public SingleBid acceptBid(int userBidId) throws DevException, UIException {
         synchronized (lock) {
+            SingleBid curr = null;
             if (isAccepted)
                 throw new UIException("This bid is already closed!", ErrorCodes.BID_FINISHED);
 
             for (Integer id : bids.keySet()) {
                 if (id == userBidId) {
                     bids.get(id).acceptBid();
-                    winner = bids.get(id);
+                    curr = bids.get(id);
+                    if (bids.get(id).isWinner()) {
+                        winner = bids.get(id);
+                        isAccepted = true;
+                        return winner;
+                    }
                 } else {
                     bids.get(id).rejectBid();
                 }
             }
             if (!bids.containsKey(userBidId) || winner == null) {
-                
+
                 throw new DevException("Trying to accept bid for non-existent ID.");
             }
-            isAccepted = true;
-            return winner;
+
+            return curr;
         }
     }
 
-    public boolean rejectBid(int userBidId) throws DevException ,UIException {
+    public boolean rejectBid(int userBidId) throws DevException, UIException {
         synchronized (lock) {
             if (isAccepted)
                 throw new UIException("The bid is already closed!", ErrorCodes.BID_FINISHED);
@@ -105,7 +111,7 @@ public class BID {
     }
 
     public boolean userIsWinner(int userId) {
-        return winner!=null && winner.getUserId()==userId;
+        return winner != null && winner.getUserId() == userId;
     }
 
     public SingleBid getWinner() {
@@ -113,14 +119,15 @@ public class BID {
     }
 
     public boolean bidIsWinner(int bidId2) {
-        
+
         return getBid(bidId2).isAccepted();
     }
 
-   // was infinite loop PLEASE CHANGE IT TO THIS
-   public SingleBid getBid(int bidId) {
-    return bids.get(bidId);
-}
+    // was infinite loop PLEASE CHANGE IT TO THIS
+    public SingleBid getBid(int bidId) {
+        return bids.get(bidId);
+    }
+
     public int getProductId() {
         return productId;
     }

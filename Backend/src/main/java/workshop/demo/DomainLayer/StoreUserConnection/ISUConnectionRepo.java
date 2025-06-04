@@ -3,6 +3,7 @@ package workshop.demo.DomainLayer.StoreUserConnection;
 import java.util.List;
 
 import workshop.demo.DomainLayer.Exceptions.DevException;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public interface ISUConnectionRepo {
 
@@ -52,5 +53,7 @@ public interface ISUConnectionRepo {
     SuperDataStructure getData();
 
     public boolean hasPermission(int userId, int storeId, Permission permission);
+
+    public List<Node> getOwnersInStore(int storeId) throws UIException, DevException;
 
 }

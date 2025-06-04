@@ -11,6 +11,8 @@ public class SingleBid {
     private int storeId;
     private int userId;
     private int productId;
+    public int ownersNum;// number of owners at the time i added my bid
+    private int acceptCounter;
 
     public SingleBid(int productId, int amount, int userId, double price, SpecialType type, int storeId, int id, int specialId) {
         this.productId = productId;
@@ -21,6 +23,7 @@ public class SingleBid {
         this.storeId = storeId;
         this.id = id;
         this.specialId = specialId;
+        this.acceptCounter = 0;
         if (type == SpecialType.Auction) {
             status = Status.AUCTION_PENDING;
         } else {
@@ -48,7 +51,10 @@ public class SingleBid {
     }
 
     public void acceptBid() {
-        this.status = Status.BID_ACCEPTED;
+        acceptCounter++;
+        if (acceptCounter == ownersNum) {
+            this.status = Status.BID_ACCEPTED;
+        }
     }
 
     public void rejectBid() {
