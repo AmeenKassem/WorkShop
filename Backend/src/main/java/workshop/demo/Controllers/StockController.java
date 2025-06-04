@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,7 +32,8 @@ public class StockController {
 
     @Autowired
     public StockController(Repos repos) {
-        this.stockService = new StockService(repos.stockrepo, repos.notificationRepo,repos.storeRepo, repos.auth, repos.userRepo,
+        this.stockService = new StockService(repos.stockrepo, repos.notificationRepo, repos.storeRepo, repos.auth,
+                repos.userRepo,
                 repos.sUConnectionRepo, repos.UserSuspensionRepo);
     }
 
@@ -74,7 +74,7 @@ public class StockController {
             @RequestParam int productId,
             @RequestParam int quantity,
             @RequestParam int price,
-            @RequestParam workshop.demo.DTOs.Category category) {
+            @RequestParam Category category) {
 
         try {
             stockService.addItem(storeId, token, productId, quantity, price, category);
@@ -92,7 +92,7 @@ public class StockController {
     @PostMapping("/addProduct")
     public ResponseEntity<?> addProduct(@RequestParam String token,
             @RequestParam String name,
-            @RequestParam workshop.demo.DTOs.Category category,
+            @RequestParam Category category,
             @RequestParam String description,
             @RequestParam String[] keywords) {
         try {
@@ -193,7 +193,8 @@ public class StockController {
             @RequestParam(required = false) Double minProductRating,
             @RequestParam(required = false) Double maxProductRating) {
         try {
-            ItemStoreDTO[] items = stockService.searchProducts(token, new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter, storeId, minPrice, maxPrice, minProductRating, maxProductRating));
+            ItemStoreDTO[] items = stockService.searchProducts(token, new ProductSearchCriteria(productNameFilter,
+                    categoryFilter, keywordFilter, storeId, minPrice, maxPrice, minProductRating, maxProductRating));
             return ResponseEntity.ok(new ApiResponse<>(items, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
@@ -216,7 +217,8 @@ public class StockController {
             @RequestParam(required = false) Double minProductRating,
             @RequestParam(required = false) Double maxProductRating) {
         try {
-            ProductSearchCriteria criteria = new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter,storeId, minPrice, maxPrice, minProductRating, maxProductRating);
+            ProductSearchCriteria criteria = new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter,
+                    storeId, minPrice, maxPrice, minProductRating, maxProductRating);
             RandomDTO[] results = stockService.searchActiveRandoms(token, criteria);
             return ResponseEntity.ok(new ApiResponse<>(results, null));
         } catch (UIException ex) {
@@ -238,7 +240,8 @@ public class StockController {
             @RequestParam(required = false) Double minProductRating,
             @RequestParam(required = false) Double maxProductRating) {
         try {
-            ProductSearchCriteria criteria = new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter,storeId, minPrice, maxPrice, minProductRating, maxProductRating);
+            ProductSearchCriteria criteria = new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter,
+                    storeId, minPrice, maxPrice, minProductRating, maxProductRating);
             BidDTO[] results = stockService.searchActiveBids(token, criteria);
             return ResponseEntity.ok(new ApiResponse<>(results, null));
         } catch (UIException ex) {
@@ -260,7 +263,8 @@ public class StockController {
             @RequestParam(required = false) Double minProductRating,
             @RequestParam(required = false) Double maxProductRating) {
         try {
-            ProductSearchCriteria criteria = new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter,storeId, minPrice, maxPrice, minProductRating, maxProductRating);
+            ProductSearchCriteria criteria = new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter,
+                    storeId, minPrice, maxPrice, minProductRating, maxProductRating);
             AuctionDTO[] results = stockService.searchActiveAuctions(token, criteria);
             return ResponseEntity.ok(new ApiResponse<>(results, null));
         } catch (UIException ex) {
@@ -350,7 +354,8 @@ public class StockController {
     }
 
     @PostMapping("/setProductToBid")
-    public ResponseEntity<?> setProductToBid(@RequestParam String token, @RequestParam int storeId, @RequestParam int productId, @RequestParam int quantity) {
+    public ResponseEntity<?> setProductToBid(@RequestParam String token, @RequestParam int storeId,
+            @RequestParam int productId, @RequestParam int quantity) {
         try {
             int id = stockService.setProductToBid(token, storeId, productId, quantity);
             return ResponseEntity.ok(new ApiResponse<>(id, null));
@@ -378,7 +383,8 @@ public class StockController {
     }
 
     @PostMapping("/endRandom")
-    public ResponseEntity<?> endRandom(@RequestParam String token, @RequestParam int storeId, @RequestParam int randomId) {
+    public ResponseEntity<?> endRandom(@RequestParam String token, @RequestParam int storeId,
+            @RequestParam int randomId) {
         try {
             ParticipationInRandomDTO result = stockService.endBid(token, storeId, randomId);
             return ResponseEntity.ok(new ApiResponse<>(result, null));
@@ -406,7 +412,8 @@ public class StockController {
     }
 
     @PostMapping("/setProductToRandom")
-    public ResponseEntity<?> setProductToRandom(@RequestParam String token, @RequestParam int productId, @RequestParam int quantity,
+    public ResponseEntity<?> setProductToRandom(@RequestParam String token, @RequestParam int productId,
+            @RequestParam int quantity,
             @RequestParam double productPrice, @RequestParam int storeId, @RequestParam long randomTime) {
         try {
             int result = stockService.setProductToRandom(token, productId, quantity, productPrice, storeId, randomTime);
@@ -435,7 +442,8 @@ public class StockController {
     }
 
     @PostMapping("/rejectBid")
-    public ResponseEntity<?> rejectBid(@RequestParam String token,@RequestParam int storeId, @RequestParam int bidId,@RequestParam int bidToRejectId) {
+    public ResponseEntity<?> rejectBid(@RequestParam String token, @RequestParam int storeId, @RequestParam int bidId,
+            @RequestParam int bidToRejectId) {
         try {
             stockService.rejectBid(token, storeId, bidId, bidToRejectId);
             return ResponseEntity.ok(new ApiResponse<>("Bid rejected successfully", null));
@@ -447,7 +455,5 @@ public class StockController {
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
     }
-
-
 
 }
