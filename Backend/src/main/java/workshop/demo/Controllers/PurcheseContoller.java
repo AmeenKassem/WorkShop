@@ -18,6 +18,7 @@ import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Store.CouponContext;
 
 @RestController
 @RequestMapping("/purchase")
@@ -41,9 +42,10 @@ public class PurcheseContoller {
     @PostMapping("/guest")
     public ResponseEntity<?> buyGuestCart(@RequestParam String token,
             @RequestParam String paymentJson,
-            @RequestParam String supplyJson) {
+            @RequestParam String supplyJson,@RequestParam(required = false) String coupon) {
         ApiResponse<ReceiptDTO[]> res;
         try {
+            CouponContext.set(coupon);
             System.out.println("payment received for guest");
             PaymentDetails paymentdetails = PaymentDetails.getPaymentDetailsFromJSON(paymentJson);
             SupplyDetails supplydetails = SupplyDetails.getSupplyDetailsFromJSON(supplyJson);
@@ -59,14 +61,18 @@ public class PurcheseContoller {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(res.toJson());
         }
+        finally {
+            CouponContext.clear();
+        }
     }
 
     @PostMapping("/registered")
     public ResponseEntity<?> buyRegisteredCart(@RequestParam String token,
             @RequestParam String paymentJson,
-            @RequestParam String supplyJson) {
+            @RequestParam String supplyJson,@RequestParam(required = false) String coupon) {
         ApiResponse<ReceiptDTO[]> res;
         try {
+            CouponContext.set(coupon);
             System.out.println("payment received for registered");
             PaymentDetails paymentdetails = PaymentDetails.getPaymentDetailsFromJSON(paymentJson);
             SupplyDetails supplydetails = SupplyDetails.getSupplyDetailsFromJSON(supplyJson);
@@ -84,6 +90,9 @@ public class PurcheseContoller {
             // Return 500 Internal Server Error for server errors
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(res.toJson());
+        }
+        finally {
+            CouponContext.clear();
         }
     }
 

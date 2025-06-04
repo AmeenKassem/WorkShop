@@ -1,4 +1,4 @@
-package workshop.demo.AcceptanceTest.Tests;
+package workshop.demo.AcceptanceTests.Tests;
 //UpdateProductInStock_Failure_InvalidData() throws Exception
 
 import java.util.LinkedList;
@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import workshop.demo.AcceptanceTest.Utill.Real;
+import workshop.demo.AcceptanceTests.Utill.Real;
 import workshop.demo.ApplicationLayer.ReviewService;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.OrderDTO;
@@ -35,18 +35,13 @@ import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.Registered;
 
-import java.util.LinkedList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 @SpringBootTest
-public class Owner_ManagerAT extends AcceptanceTests {
+public class Owner_ManagerTests extends AcceptanceTests {
 
     Real real = new Real();
     private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
 
-    public Owner_ManagerAT() throws Exception {
+    public Owner_ManagerTests() throws Exception {
     }
 
     @BeforeEach

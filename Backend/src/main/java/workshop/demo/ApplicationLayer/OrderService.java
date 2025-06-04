@@ -36,17 +36,7 @@ public class OrderService {
         logger.info("created Order/history service");
     }
 
-    //no nneed this in service:
-    public void setOrderToStore(int storeId, int userId, ReceiptDTO receiptDTO) throws UIException {
-        logger.info("about to set an order to the history");
-        Store store = this.storeRepo.findStoreByID(storeId);
-        if (store == null) {
-            logger.error("store not found!");
-            throw new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND);
-        }
-        this.orderRepo.setOrderToStore(storeId, userId, receiptDTO, store.getStoreName());
-        logger.info("added the order to the history succeesfully!");
-    }
+
 
     public List<OrderDTO> getAllOrderByStore(int storeId) throws Exception {
         logger.info("about to get all the orders that have been made in this history!");

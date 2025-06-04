@@ -1,9 +1,6 @@
-package workshop.demo.AcceptanceTest.Tests;
+package workshop.demo.AcceptanceTests.Tests;
 
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Predicate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,42 +19,30 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 
 import org.slf4j.LoggerFactory;
-import workshop.demo.AcceptanceTest.Utill.Real;
+import workshop.demo.AcceptanceTests.Utill.Real;
 import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.item;
-import workshop.demo.DomainLayer.Store.AndDiscount;
-import workshop.demo.DomainLayer.Store.Discount;
-import workshop.demo.DomainLayer.Store.DiscountConditions;
-import workshop.demo.DomainLayer.Store.DiscountScope;
-import workshop.demo.DomainLayer.Store.OrDiscount;
 import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.Store.VisibleDiscount;
-import workshop.demo.DomainLayer.Store.XorDiscount;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
-import java.util.List;
-import java.util.function.Predicate;
-
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+
 @SpringBootTest
-public class PurchaseAT extends AcceptanceTests {
-    private static final Logger logger = LoggerFactory.getLogger(PurchaseAT.class);
+public class PurchaseTests extends AcceptanceTests {
+    private static final Logger logger = LoggerFactory.getLogger(PurchaseTests.class);
 
     Real real = new Real();
 
-    public PurchaseAT() throws Exception {
+    public PurchaseTests() throws Exception {
     }
 
     @BeforeEach
@@ -210,6 +195,11 @@ public class PurchaseAT extends AcceptanceTests {
 
         // ===== MOCK: Cart Preparation Phase =====
         List<UserSpecialItemCart> specialItems = List.of(new UserSpecialItemCart(storeId, specialId, bidId, SpecialType.BID));
+        UserSpecialItemCart a=new UserSpecialItemCart(8,9,9,SpecialType.Auction);
+        a.equals(specialItems.get(0));
+
+
+
         when(real.mockUserRepo.getAllSpecialItems(userId)).thenReturn(specialItems);
 
         // Ensure bid is returned as winner + ended

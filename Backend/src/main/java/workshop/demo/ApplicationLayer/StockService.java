@@ -1,20 +1,19 @@
 package workshop.demo.ApplicationLayer;
 
+import java.security.Permission;
 import java.util.List;
+import java.util.Locale.Category;
 
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
-import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
@@ -24,11 +23,10 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
-import workshop.demo.DomainLayer.StoreUserConnection.Node;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
@@ -67,9 +65,8 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
 
         logger.info("Returning matched items to client ");
-        String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
-        ItemStoreDTO[] items = stockRepo.search(criteria, storeName);
-
+        // String storeName= this.storeRepo.getStoreNameById(criteria.getStoreId());
+        ItemStoreDTO[] items = stockRepo.search(criteria);
         storeRepo.fillWithStoreName(items);
         return items;
     }
@@ -431,12 +428,4 @@ public class StockService {
         return stockRepo.getAllProducts();
     }
 
-     public ParticipationInRandomDTO participateInRandom(String token, int storeId, int randomId, double price)throws Exception {
-        logger.info("user participating in randomId: {} in store: {} with price: {}", randomId, storeId, price);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
-        return stockRepo.participateInRandom(userId, randomId, storeId, price);
-    }
 }

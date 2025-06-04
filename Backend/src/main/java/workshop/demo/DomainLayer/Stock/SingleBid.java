@@ -1,4 +1,8 @@
-package workshop.demo.DTOs;
+package workshop.demo.DomainLayer.Stock;
+
+import workshop.demo.DTOs.SingleBidDTO;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.Status;
 
 public class SingleBid {
 
@@ -10,7 +14,7 @@ public class SingleBid {
     private Status status;
     private int storeId;
     private int userId;
-        private int productId;
+    private int productId;
 
 
     public SingleBid(int productId, int amount, int userId, double price, SpecialType type, int storeId, int id, int specialId) {
@@ -28,6 +32,23 @@ public class SingleBid {
             status = Status.BID_PENDING;
         }
     }
+
+  public SingleBidDTO convertToDTO() {
+    return new SingleBidDTO(
+        this.id,
+        this.productId,
+        this.amount,
+        this.price,
+        this.type,
+        this.specialId,
+        this.status,
+        this.storeId,
+        this.userId,
+        this.isWinner(),
+        this.isAccepted(),
+        this.isEnded()
+    );
+}
 
     public double getBidPrice() {
         return this.price;

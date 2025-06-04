@@ -8,10 +8,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Store.ActivePurcheses;
+import workshop.demo.DomainLayer.Stock.ActivePurcheses;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 
 @SpringBootTest
 public class ActivePurchasesTest {
