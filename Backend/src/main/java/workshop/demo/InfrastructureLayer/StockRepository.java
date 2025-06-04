@@ -17,19 +17,19 @@ import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.ReceiptProduct;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.ActivePurcheses;
+import workshop.demo.DomainLayer.Stock.Auction;
+import workshop.demo.DomainLayer.Stock.BID;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
-import workshop.demo.DomainLayer.Store.ActivePurcheses;
-import workshop.demo.DomainLayer.Store.Auction;
-import workshop.demo.DomainLayer.Store.BID;
 import workshop.demo.DomainLayer.Store.Random;
 import workshop.demo.DomainLayer.User.CartItem;
 
@@ -165,7 +165,7 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public int addProductToRandom(int productId, int quantity, double productPrice, int storeId,
-            long RandomTime) throws UIException, DevException {
+                                  long RandomTime) throws UIException, DevException {
         checkQuantity(productId, quantity, storeId);
         int res = getActivePurchases(storeId).addProductToRandom(productId, quantity, productPrice, storeId,
                 RandomTime);
@@ -338,7 +338,7 @@ public class StockRepository implements IStockRepo {
         }
         return storeStock.ProcessCartItems(dtoList, isGuest, StoreName);
     }
-     public void changequantity(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
+    public void changequantity(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
             throws Exception {
         StoreStock storeStock = storeStocks.get(storeId);
         if (storeStock == null) {
@@ -356,7 +356,7 @@ public class StockRepository implements IStockRepo {
             dto.category=item.category;
             dtoList.add(dto);
         }
-         storeStock.changequantity(dtoList, isGuest, StoreName);
+        storeStock.changequantity(dtoList, isGuest, StoreName);
     }
 
     @Override
@@ -451,10 +451,14 @@ public class StockRepository implements IStockRepo {
     public RandomDTO[] searchActiveRandoms(ProductSearchCriteria criteria) throws UIException {
         ItemStoreDTO[] storeItems = search(criteria);
         List<RandomDTO> result = new ArrayList<>();
-        for (ItemStoreDTO item : storeItems) { 
+        for (ItemStoreDTO item : storeItems) {
             int productId = item.getProductId();
             ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
-            result.addAll(active.getRandomsForProduct(productId));
+            List<RandomDTO> randoms = active.getRandomsForProduct(productId);
+            for (RandomDTO random : randoms) {
+                random.productName = item.getProductName();
+                result.add(random);
+            }
         }
         return result.toArray(new RandomDTO[0]);
     }
@@ -466,7 +470,11 @@ public class StockRepository implements IStockRepo {
         for (ItemStoreDTO item : storeItems) {
             int productId = item.getProductId();
             ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
-            result.addAll(active.getBidsForProduct(productId));
+            List<BidDTO> bids = active.getBidsForProduct(productId);
+            for (BidDTO bid : bids) {
+                bid.productName = item.getProductName(); 
+                result.add(bid);
+            }
         }
         return result.toArray(new BidDTO[0]);
     }
@@ -478,7 +486,11 @@ public class StockRepository implements IStockRepo {
         for (ItemStoreDTO item : storeItems) {
             int productId = item.getProductId();
             ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
-            result.addAll(active.getAuctionsForProduct(productId));
+            List<AuctionDTO> auctions = active.getAuctionsForProduct(productId);
+            for (AuctionDTO auction : auctions) {
+                auction.productName = item.getProductName(); 
+                result.add(auction);
+            }
         }
         return result.toArray(new AuctionDTO[0]);
     }

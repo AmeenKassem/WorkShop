@@ -1,10 +1,11 @@
-package workshop.demo.AcceptanceTest.Tests;
+package workshop.demo.AcceptanceTests.Tests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import workshop.demo.AcceptanceTest.Utill.Real;
+import org.springframework.boot.test.context.SpringBootTest;
+import workshop.demo.AcceptanceTests.Utill.Real;
 import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.item;
@@ -22,14 +23,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+@SpringBootTest
+public class DiscountTests {
 
-public class DiscountAT {
-
-    private static final Logger logger = LoggerFactory.getLogger(DiscountAT.class);
+    private static final Logger logger = LoggerFactory.getLogger(DiscountTests.class);
 
     Real real = new Real();
 
-    public DiscountAT() throws Exception {
+    public DiscountTests() throws Exception {
     }
 
     @BeforeEach

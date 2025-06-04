@@ -12,13 +12,13 @@ import org.springframework.stereotype.Repository;
 
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
@@ -228,10 +228,10 @@ public class UserRepository implements IUserRepo {
         throw new UIException("User with ID " + userId + " not found", ErrorCodes.USER_NOT_FOUND);
     }
 
-    @Override
-    public List<ItemCartDTO> getCartForUser(int ownerId) {
-        throw new UnsupportedOperationException("Unimplemented method 'getCartForUser'");
-    }
+  //  @Override
+//    public List<ItemCartDTO> getCartForUser(int ownerId) {
+//      //  throw new UnsupportedOperationException("Unimplemented method 'getCartForUser'");
+//    }
 
     @Override
     public void checkUserRegisterOnline_ThrowException(int userId) throws UIException {
@@ -291,18 +291,14 @@ public class UserRepository implements IUserRepo {
     }
 
     public void clear() {
-        if (guests != null) {
             guests.clear();
-        }
-        if (users != null) {
+
             users.clear();
-        }
-        if (idToUsername != null) {
+
             idToUsername.clear();
-        }
-        if (idGen != null) {
+
             idGen.set(1); // Reset to starting ID
-        }
+
     }
 
     @Override

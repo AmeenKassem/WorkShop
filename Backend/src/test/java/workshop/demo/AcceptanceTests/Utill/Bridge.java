@@ -1,9 +1,8 @@
-package workshop.demo.AcceptanceTest.Utill;
+package workshop.demo.AcceptanceTests.Utill;
 
 import java.util.List;
 
 import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
