@@ -182,6 +182,11 @@ public class PurchaseService {
                 winningRandoms.add(card); // Won
             } else if ((card != null && !card.isWinner && card.ended) || card == null) {
                 userRepo.removeSpecialItem(userId, specialItem); // Lost or not found → remove
+            } else if( card.mustRefund()){
+                // If the card must be refunded, we remove it from the user's cart
+                userRepo.removeSpecialItem(userId, specialItem);
+                // And we refund the payment
+                paymentService.processRefund(payment, card.amountPaid);
             }
 
         } else { // BID or AUCTION
@@ -192,7 +197,7 @@ public class PurchaseService {
                 winningBids.add(bid); // Won
             } else if ((bid != null && !bid.isWinner() && bid.isEnded()) || bid == null) {
                 userRepo.removeSpecialItem(userId, specialItem); // Lost or not found → remove
-            }
+            } 
         }
     }
 

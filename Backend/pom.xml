@@ -127,6 +127,8 @@
                         <excludes>
                             <exclude>workshop/demo/PresentationLayer/**</exclude>
                             <exclude>workshop/demo/Controllers/**</exclude>
+                            <exclude>workshop/demo/SocketCommunication/**</exclude>
+                            <exclude>workshop/demo/DomainLayer/Exceptions/**</exclude>
                         </excludes>
                     </configuration>
                 </execution>
