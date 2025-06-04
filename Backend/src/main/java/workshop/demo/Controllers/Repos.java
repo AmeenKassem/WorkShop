@@ -2,6 +2,7 @@ package workshop.demo.Controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.SupplyServiceImp;
@@ -19,6 +20,7 @@ import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
+import workshop.demo.InfrastructureLayer.IUserRepoDB;
 import workshop.demo.InfrastructureLayer.OrderRepository;
 import workshop.demo.InfrastructureLayer.PurchaseRepository;
 import workshop.demo.InfrastructureLayer.ReviewRepository;
@@ -28,12 +30,15 @@ import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 
-@Component
+// @Component
+@Service
 public class Repos {
 
+    // @Autowired
+    public IUserRepoDB db;
     public IUserSuspensionRepo UserSuspensionRepo = new UserSuspensionRepo();
     public AdminInitilizer adminInitilizer = new AdminInitilizer("123321");
-    public IUserRepo userRepo = new UserRepository(new Encoder(), adminInitilizer);
+    public IUserRepo userRepo = new UserRepository(new Encoder(), adminInitilizer,db);
     public IStoreRepo storeRepo = new StoreRepository();
     public AuthenticationRepo auth = new AuthenticationRepo();
     @Autowired
@@ -46,4 +51,6 @@ public class Repos {
     public ISupplyService supplyService = new SupplyServiceImp();
     public ISUConnectionRepo sUConnectionRepo = new SUConnectionRepository();
 
+
+    
 }

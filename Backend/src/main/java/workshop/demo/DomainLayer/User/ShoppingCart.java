@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.persistence.Embeddable;
 public class ShoppingCart {
 
     private static final Logger logger = LoggerFactory.getLogger(ShoppingCart.class);

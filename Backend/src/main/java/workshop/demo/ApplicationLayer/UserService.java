@@ -44,7 +44,9 @@ public class UserService {
         this.storeRepo = storeRepo;
         this.adminInitilizer = adminInitilizer;
         this.adminHandler = adminHandler;
+        
     }
+    
 
     public String generateGuest() throws UIException, Exception {
         logger.info("generateGuest called");

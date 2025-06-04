@@ -12,9 +12,14 @@ import workshop.demo.InfrastructureLayer.Encoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
+
 public class Registered extends Guest {
     private static final Logger logger = LoggerFactory.getLogger(Registered.class);
 
+    @Id
     private String username;
     private String encrybtedPassword;
     private boolean isOnline;

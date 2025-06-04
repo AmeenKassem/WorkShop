@@ -9,8 +9,11 @@ import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.SingleBid;
+import workshop.demo.InfrastructureLayer.IUserRepoDB;
 
 public interface IUserRepo {
+
+    public void setDb(IUserRepoDB db);
 
     // added for tests
     public boolean guestExist(int id);

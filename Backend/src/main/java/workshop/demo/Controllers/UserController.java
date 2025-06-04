@@ -25,6 +25,7 @@ import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.SystemAnalyticsDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.InfrastructureLayer.IUserRepoDB;
 import workshop.demo.PresentationLayer.Requests.AddToCartRequest;
 
 @RestController
@@ -36,8 +37,9 @@ public class UserController {
     private final AdminHandler adminHandler;
 
     @Autowired
-    public UserController(Repos repos) throws Exception {
+    public UserController(Repos repos,IUserRepoDB db) throws Exception {
         //this.userService = repos.userService;
+        repos.userRepo.setDb(db);
         this.adminHandler = new AdminHandler(repos.orderRepo, repos.storeRepo, repos.userRepo, repos.auth);
         this.userSuspensionService = new UserSuspensionService(repos.UserSuspensionRepo, repos.userRepo, repos.auth);
         this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer, adminHandler, repos.storeRepo);

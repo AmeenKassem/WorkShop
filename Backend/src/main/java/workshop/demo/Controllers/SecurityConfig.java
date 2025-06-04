@@ -13,10 +13,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf().disable()
-            .authorizeHttpRequests()
-            .anyRequest().permitAll();
+                .csrf().disable()
+                .authorizeHttpRequests()
+                .anyRequest().permitAll();
 
         return http.build();
+    }
+
+    // @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.authorizeRequests()
+                .requestMatchers("/h2-console/**").permitAll()
+                .anyRequest().authenticated()
+                .and().csrf().disable()
+                .headers().frameOptions().disable(); // Allow H2 console in frames
     }
 }

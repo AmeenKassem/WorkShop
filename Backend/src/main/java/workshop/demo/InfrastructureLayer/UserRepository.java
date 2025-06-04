@@ -36,17 +36,18 @@ public class UserRepository implements IUserRepo {
     private ConcurrentHashMap<Integer, String> idToUsername; // id -> username
     private Encoder encoder;
     private AdminInitilizer adminInit;
-
+    private IUserRepoDB guestDb;
     private static final Logger logger = Logger.getLogger(UserRepository.class.getName());
 
-    @Autowired
-    public UserRepository(Encoder encoder, AdminInitilizer adminInit) {
+    // @Autowired
+    public UserRepository(Encoder encoder, AdminInitilizer adminInit,IUserRepoDB db) {
         this.encoder = encoder;
         this.idGen = new AtomicInteger(1);
         this.adminInit = adminInit;
         users = new ConcurrentHashMap<>();
         guests = new ConcurrentHashMap<>();
         idToUsername = new ConcurrentHashMap<>();
+        guestDb = db;
     }
 
     public List<String> getAllUsernames() {
@@ -87,6 +88,10 @@ public class UserRepository implements IUserRepo {
         int id = idGen.getAndIncrement();
         Guest newGuest = new Guest(id);
         guests.put(id, newGuest);
+        logger.log(Level.INFO, "INIT DATAAAAAA "+ (guestDb==null));
+        logger.log(Level.INFO,"geust generated!");
+        guestDb.save(newGuest);
+        logger.log(Level.INFO,"geust persisted!");
         return id;
     }
 
@@ -343,6 +348,12 @@ public class UserRepository implements IUserRepo {
         }
 
         logger.log(Level.INFO, "Removed bought special items from user {}'s cart", userId);
+    }
+
+    @Override
+    public void setDb(IUserRepoDB db) {
+        logger.log(Level.INFO, "INIT DATAAAAAA "+ (db==null));
+        this.guestDb = db;
     }
 
 }
