@@ -95,9 +95,8 @@ public class OrderRepository implements IOrderRepo {
     }
 
     public void clear() {
-        if (history != null) {
             history.clear();
-        }
+
         counterOId.set(1);
     }
 

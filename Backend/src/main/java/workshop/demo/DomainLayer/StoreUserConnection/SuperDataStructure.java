@@ -371,9 +371,8 @@ public class SuperDataStructure {
     }
 
     public void clearData() {
-        if (employees != null) {
             employees.clear();
-        }
+
         offers.clear();
         storeLocks.clear();
     }

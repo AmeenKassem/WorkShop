@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.AfterEach;
+
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +30,7 @@ import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DTOs.CreateDiscountDTO.Logic;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.AndDiscount;
 import workshop.demo.DomainLayer.Store.Discount;
 import workshop.demo.DomainLayer.Store.DiscountScope;
@@ -373,7 +376,7 @@ void or_discount_both_match_first_applies() throws Exception {
     userService.addToUserCart(NGToken, itemStoreDTO, 2);
 
     ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
-    assertEquals(2800, receipts[0].getFinalPrice()); 
+    assertEquals(2800, receipts[0].getFinalPrice());
 }
 
 @Test
@@ -412,7 +415,7 @@ void or_discount_item_matches_first() throws Exception {
     userService.addToUserCart(NGToken, itemStoreDTO, 1);
 
     ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
-    assertEquals(1200, receipts[0].getFinalPrice()); 
+    assertEquals(1200, receipts[0].getFinalPrice());
 }
 
 @Test
@@ -1091,6 +1094,101 @@ void buy_MAX_discount_fail_dueToItemID() throws Exception {
 
     assertEquals(8000, receipts[0].getFinalPrice());
 }
+
+    @Test
+    void testRemoveDiscountFromStore_Success() throws Exception {
+        // Step 1: Add discount
+        CreateDiscountDTO dto = new CreateDiscountDTO("10% Off Electronics", 0.10,
+                CreateDiscountDTO.Type.VISIBLE, "CATEGORY:ELECTRONICS", CreateDiscountDTO.Logic.SINGLE, null);
+        storeService.addDiscountToStore(1, NOToken, dto);
+
+        // Step 2: Add to cart and buy with discount
+        userService.addToUserCart(NGToken, itemStoreDTO, 2); // 2 * 2000 = 4000
+        ReceiptDTO[] receipts1 = purchaseService.buyGuestCart(NGToken, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
+        assertEquals(3600, receipts1[0].getFinalPrice()); // 10% off → 4000 → 3600
+
+        // Step 3: Remove discount
+        storeService.removeDiscountFromStore(NOToken, 1, "10% Off Electronics");
+
+        // Step 4: Add to cart again and check full price
+        userService.addToUserCart(NGToken, itemStoreDTO, 2); // 2 * 2000 again
+        ReceiptDTO[] receipts2 = purchaseService.buyGuestCart(NGToken, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
+        assertEquals(4000, receipts2[0].getFinalPrice()); // Full price after removal
+    }
+    @Test
+    void testRemoveDiscountFromStore_DiscountNotFound() {
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.removeDiscountFromStore(NOToken, 1, "ThisDiscountDoesNotExist");
+        });
+    }
+    @Test
+    void testRemoveDiscountFromStore_InvalidToken() {
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.removeDiscountFromStore("bad-token", 1, "any");
+        });
+
+
+    }
+    @Test
+    void testRemoveDiscountFromStore_UserNotOnline() {
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.removeDiscountFromStore(GToken, 1, "any");
+        });
+    }
+
+
+    @Test
+    void testRemoveDiscountFromStore_UserSuspended() throws Exception {
+        suspensionRepo.suspendRegisteredUser(authRepo.getUserId(NOToken),2);
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.removeDiscountFromStore(NOToken, 1, "any");
+        });
+    }
+    @Test
+    void testRemoveDiscountFromStore_StoreNotFound() {
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.removeDiscountFromStore(NOToken, 9999, "any");
+        });
+    }
+    @Test
+    void testRemoveDiscountFromStore_StoreInactive() throws Exception {
+        storeService.closeStore(1, Admin);
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.removeDiscountFromStore(NOToken, 1, "any");
+        });
+    }
+
+    @Test
+    void testRemoveDiscountFromStore_NoPermission() throws Exception {
+        String token = userService.generateGuest();
+        userService.register(token, "noPerm", "noPerm", 20);
+        String userToken = userService.login(token, "noPerm", "noPerm");
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.removeDiscountFromStore(userToken, 1, "any");
+        });
+    }
+
+    @Test
+    void testAddDiscountToStore_NoPermission() throws Exception {
+        String token = userService.generateGuest();
+        userService.register(token, "noPerm", "noPerm", 30);
+        String userToken = userService.login(token, "noPerm", "noPerm");
+
+        CreateDiscountDTO dto = new CreateDiscountDTO("5% off", 0.05,
+                CreateDiscountDTO.Type.VISIBLE, "CATEGORY:ELECTRONICS", CreateDiscountDTO.Logic.SINGLE, null);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.addDiscountToStore(1, userToken, dto);
+        });
+
+        // Step 4: Assert
+        assertEquals("You do not have permission to add discounts to this store", ex.getMessage());
+    }
+
+
+
+
 
 
 

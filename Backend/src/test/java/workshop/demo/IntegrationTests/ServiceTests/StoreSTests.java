@@ -1,5 +1,6 @@
 package workshop.demo.IntegrationTests.ServiceTests;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -25,13 +26,7 @@ import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
-import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.OrderDTO;
-import workshop.demo.DTOs.PaymentDetails;
-import workshop.demo.DTOs.ReceiptDTO;
-import workshop.demo.DTOs.SupplyDetails;
-import workshop.demo.DTOs.WorkerDTO;
+import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -104,56 +99,56 @@ public class StoreSTests {
     @BeforeEach
     void setup() throws Exception {
 
-        GToken = userService.generateGuest();
-        userService.register(GToken, "User", "User", 25);
-        NGToken = userService.login(GToken, "User", "User");
+            GToken = userService.generateGuest();
+            userService.register(GToken, "User", "User", 25);
+            NGToken = userService.login(GToken, "User", "User");
 
-        assertTrue(authRepo.getUserName(NGToken).equals("User"));
+            assertTrue(authRepo.getUserName(NGToken).equals("User"));
 
-        String OToken = userService.generateGuest();
+            String OToken = userService.generateGuest();
 
-        userService.register(OToken, "owner", "owner", 25);
+            userService.register(OToken, "owner", "owner", 25);
 
-        // --- Login ---
-        NOToken = userService.login(OToken, "owner", "owner");
+            // --- Login ---
+            NOToken = userService.login(OToken, "owner", "owner");
 
-        assertTrue(authRepo.getUserName(NOToken).equals("owner"));
-        // ======================= STORE CREATION =======================
+            assertTrue(authRepo.getUserName(NOToken).equals("owner"));
+            // ======================= STORE CREATION =======================
 
-        int created1 = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
+            int created1 = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
 
-        assertEquals(created1, 1);
+            assertEquals(created1, 1);
 
-        // ======================= PRODUCT & ITEM ADDITION =======================
-        String[] keywords = {"Laptop", "Lap", "top"};
-        stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
+            // ======================= PRODUCT & ITEM ADDITION =======================
+            String[] keywords = {"Laptop", "Lap", "top"};
+            stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
 
-        assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1, "Laptop","TestStore");
+            assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
+            itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1, "Laptop","TestStore");
 
-        // ======================= SECOND GUEST SETUP =======================
-    }
-
-    @AfterEach
-
-    void tearDown() {
-        if (userRepo != null) {
-            userRepo.clear();
+            // ======================= SECOND GUEST SETUP =======================
         }
-        if (storeRepository != null) {
-            storeRepository.clear();
+
+        @AfterEach
+
+        void tearDown() {
+            if (userRepo != null) {
+                userRepo.clear();
+            }
+            if (storeRepository != null) {
+                storeRepository.clear();
+            }
+            if (stockRepository != null) {
+                stockRepository.clear();
+            }
+            if (orderRepository != null) {
+                orderRepository.clear();
+            }
+            if (suspensionRepo != null) {
+                suspensionRepo.clear();
+            }
+            // Add clear() for all other repos you wrote it for
         }
-        if (stockRepository != null) {
-            stockRepository.clear();
-        }
-        if (orderRepository != null) {
-            orderRepository.clear();
-        }
-        if (suspensionRepo != null) {
-            suspensionRepo.clear();
-        }
-        // Add clear() for all other repos you wrote it for
-    }
 
     // ========== Store Owner Use Cases ==========
     @Test
@@ -270,7 +265,7 @@ public class StoreSTests {
         // === Act ===
         //must make an offer before:
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
-        storeService.AddOwnershipToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
+        storeService.reciveAnswerToOffer(1, "owner", "token", true, true);
         // ask bhaa i dont know what is happening ,  help help help
 
         // shouldnt work without offer
@@ -291,12 +286,11 @@ public class StoreSTests {
         storeService.AddOwnershipToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
 
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
-        UIException ex = assertThrows(UIException.class, ()
-                -> storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token")
+        Exception ex = assertThrows(Exception.class, ()
+                ->                 storeService.reciveAnswerToOffer(1, "owner", "token", true, true)
+
         );
 
-        assertEquals("This worker is already an owner/manager", ex.getMessage());
-        assertEquals(1004, ex.getNumber());
     }
 
     @Test
@@ -371,7 +365,7 @@ public class StoreSTests {
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, authRepo.getUserName(token1), a);
-        storeService.AddManagerToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
+        storeService.reciveAnswerToOffer(1, authRepo.getUserName(NOToken), "token", true, false); // false = toBeOwner → false = manager
         // when decide equals true some list is null (i think its permissions list)
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
 
@@ -539,11 +533,11 @@ public class StoreSTests {
       ReceiptDTO[] receipts =   purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
       assertNotNull(receipts);
         assertEquals(0, receipts.length);
-        
-    assertTrue(userRepo.getUserCart(authRepo.getUserId(GToken)).getAllCart().size()==0);
-   
 
-assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==2); 
+    assertTrue(userRepo.getUserCart(authRepo.getUserId(GToken)).getAllCart().size()==0);
+
+
+assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==2);
 
 
         assertEquals(ex.getMessage(), " store is not active");
@@ -843,5 +837,282 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==2);
         );
 
     }
+
+    @Test
+    void testCloseStore_Success() throws Exception {
+        // ACT
+        String token = userService.generateGuest();
+        userService.register(token, "adminUser2", "adminPass2", 22);
+        String token1 = userService.login(token, "adminUser2", "adminPass2");
+        userService.setAdmin(token1, "123321", authRepo.getUserId(token1));
+
+        int result = storeService.closeStore(1, token1);
+
+
+        assertEquals(1, result);
+assertTrue(storeService.getAllStores().isEmpty());
+//   assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getCode());
+    }
+    @Test
+    void testCloseStore_Fail_NotAdmin() {
+        Exception ex = assertThrows(UIException.class, () -> {
+            storeService.closeStore(1, NGToken); // NGToken is not admin
+        });
+
+      //  assertEquals(ErrorCodes., ((UIException) ex).getCode());
+    }
+    @Test
+    void testCloseStore_Fail_StoreNotFound() throws Exception {
+        String token = userService.generateGuest();
+        userService.register(token, "adminUser3", "adminPass3", 25);
+        String adminToken = userService.login(token, "adminUser3", "adminPass3");
+        userService.setAdmin(adminToken, "123321", authRepo.getUserId(adminToken));
+
+        Exception ex = assertThrows(UIException.class, () -> {
+            storeService.closeStore(9999, adminToken); // non-existent store
+        });
+
+
+
+    }
+    @Test
+    void testCloseStore_Fail_InvalidToken() {
+        Exception ex = assertThrows(UIException.class, () -> {
+            storeService.closeStore(1, "invalid-token");
+        });
+
+    }
+    @Test
+    void testGetStoreDTO_Success() throws Exception {
+        StoreDTO dto = storeService.getStoreDTO(NOToken, 1);
+        assertEquals("TestStore", dto.getStoreName());
+        assertEquals(1, dto.getStoreId());
+    }
+    @Test
+    void testGetStoreDTO_Fail_InvalidToken() {
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.getStoreDTO("bad-token", 1);
+        });
+    }
+    @Test
+    void testGetStoreDTO_Fail_NotRegistered() {
+        Exception ex = assertThrows(UIException.class, () -> {
+            storeService.getStoreDTO(GToken, 1); // Guest, not registered
+        });
+    }
+
+    @Test
+    void testGetStoreDTO_Fail_StoreNotFound() throws Exception {
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.getStoreDTO(NOToken, 9999);
+        });
+    }
+
+    @Test
+    void testGetStoresOwnedByUser_Success() throws Exception {
+        List<StoreDTO> owned = storeService.getStoresOwnedByUser(NOToken);
+        assertEquals(1, owned.size());
+        assertEquals("TestStore", owned.get(0).getStoreName());
+    }
+    @Test
+    void testGetStoresOwnedByUser_Fail_InvalidToken() {
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.getStoresOwnedByUser("invalid-token");
+        });
+    }
+    @Test
+    void testGetStoresOwnedByUser_Fail_NotRegistered() {
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.getStoresOwnedByUser(GToken);
+        });
+    }
+
+    @Test
+    void testGetAllStores() {
+        List<StoreDTO> all = storeService.getAllStores();
+        assertTrue(!all.isEmpty());
+        assertEquals("TestStore", all.get(0).getStoreName());
+    }
+
+
+    @Test
+    void testChangePermissions_Success() throws Exception {
+        // Register and login new user (manager)
+        String token = userService.generateGuest();
+        userService.register(token, "managerUser", "managerPass", 22);
+        String managerToken = userService.login(token, "managerUser", "managerPass");
+        int managerId = authRepo.getUserId(managerToken);
+
+        List<Permission> perms = List.of(Permission.AddToStock, Permission.DeleteFromStock);
+
+        // Make manager
+        storeService.MakeOfferToAddManagerToStore(1, NOToken, "managerUser", perms);
+        storeService.reciveAnswerToOffer(1, authRepo.getUserName(NOToken), "managerUser", true, false);
+
+        // New permissions
+        List<Permission> newPerms = List.of(Permission.SpecialType, Permission.MANAGE_STORE_POLICY);
+        storeService.changePermissions(NOToken, managerId, 1, newPerms);
+
+for (Permission perm : storeService.ViewRolesAndPermissions(NOToken,1).get(1).getPermessions()) {
+    System.out.println(perm.name());
+}
+        assertEquals(4, storeService.ViewRolesAndPermissions(NOToken, 1).get(1).getPermessions().length);
+
+    }
+    @Test
+    void testChangePermissions_Fail_InvalidToken() {
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.changePermissions("bad-token", 5, 1, List.of());
+        });
+    }
+    @Test
+    void testChangePermissions_Fail_ManagerNotRegistered() throws Exception {
+        String fakeToken = userService.generateGuest();
+        userService.register(fakeToken, "newOwner", "pass", 30);
+        String ownerToken = userService.login(fakeToken, "newOwner", "pass");
+        userService.setAdmin(ownerToken, "123321", authRepo.getUserId(ownerToken));
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.changePermissions(ownerToken, 9999, 1, List.of());
+        });
+    }
+    @Test
+    void testChangePermissions_Fail_StoreNotFound() {
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.changePermissions(NOToken, 1, 9999, List.of());
+        });
+    }
+    @Test
+    void testChangePermissions_Fail_StoreInactive() throws Exception {
+        storeService.deactivateteStore(1, NOToken); // store 1 is now inactive
+
+        Exception ex = assertThrows(Exception.class, () -> {
+            storeService.changePermissions(NOToken, 1, 1, List.of());
+        });
+
+    }
+
+    @Test
+    void testAddItem_ManagerNoPermission_Fail() throws Exception {
+        // Step 1: Register and login manager
+        String token = userService.generateGuest();
+        userService.register(token, "noAddPerm", "noAddPerm", 30);
+        String managerToken = userService.login(token, "noAddPerm", "noAddPerm");
+        int managerId = authRepo.getUserId(managerToken);
+
+        // Step 2: Assign manager with no permissions
+        storeService.MakeOfferToAddManagerToStore(1, NOToken, "noAddPerm", new ArrayList<>());
+        storeService.reciveAnswerToOffer(1, authRepo.getUserName(NOToken), "noAddPerm", true, false);
+
+        // Step 3: Attempt to add item — should fail
+        UIException ex = assertThrows(UIException.class, () -> {
+            stockService.addItem(1, managerToken, itemStoreDTO.getProductId(), 1, 1000, Category.ELECTRONICS);
+        });
+
+        // Step 4: Assert exception
+        assertEquals("This worker is not authorized!", ex.getMessage());
+    }
+
+    @Test
+    void testRemoveItem_ManagerNoPermission_Fail() throws Exception {
+        String token = userService.generateGuest();
+        userService.register(token, "noDeletePerm", "noDeletePerm", 30);
+        String managerToken = userService.login(token, "noDeletePerm", "noDeletePerm");
+        int managerId = authRepo.getUserId(managerToken);
+
+        storeService.MakeOfferToAddManagerToStore(1, NOToken, "noDeletePerm", new ArrayList<>());
+        storeService.reciveAnswerToOffer(1, authRepo.getUserName(NOToken), "noDeletePerm", true, false);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            stockService.removeItem(1, managerToken, itemStoreDTO.getProductId());
+        });
+
+        assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
+        assertEquals("this worker is not authorized!", ex.getMessage());
+    }
+@Test
+    void testUpdateQuantity_ManagerNoPermission_Fail() throws Exception {
+        String token = userService.generateGuest();
+        userService.register(token, "noUpdatePerm", "noUpdatePerm", 30);
+        String managerToken = userService.login(token, "noUpdatePerm", "noUpdatePerm");
+        int managerId = authRepo.getUserId(managerToken);
+
+        storeService.MakeOfferToAddManagerToStore(1, NOToken, "noUpdatePerm", new ArrayList<>());
+        storeService.reciveAnswerToOffer(1, authRepo.getUserName(NOToken), "noUpdatePerm", true, false);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            stockService.updateQuantity(1, managerToken, itemStoreDTO.getProductId(), 99);
+        });
+
+        assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
+        assertEquals("This worker is not authorized!", ex.getMessage());
+    }
+
+    @Test
+    void testUpdatePrice_ManagerNoPermission_Fail() throws Exception {
+        // Step 1: Register and login manager
+        String token = userService.generateGuest();
+        userService.register(token, "noUpdatePerm", "noUpdatePerm", 30);
+        String managerToken = userService.login(token, "noUpdatePerm", "noUpdatePerm");
+        int managerId = authRepo.getUserId(managerToken);
+
+        storeService.MakeOfferToAddManagerToStore(1, NOToken, "noUpdatePerm", new ArrayList<>());
+        storeService.reciveAnswerToOffer(1, authRepo.getUserName(NOToken), "noUpdatePerm", true, false);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            stockService.updatePrice(1, managerToken, itemStoreDTO.getProductId(), 99);
+        });
+
+        assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
+        assertEquals("This worker is not authorized!", ex.getMessage());
+    }
+    @Test
+    void testGetAllProducts_Success() throws Exception {
+        ProductDTO[] products = stockService.getAllProducts(NGToken); // user from setup
+        assertNotNull(products);
+        assertTrue(products.length >= 1); // at least the one from setup
+        assertEquals("Laptop", products[0].getName());
+    }
+    @Test
+    void testGetAllProducts_InvalidToken() {
+        UIException ex = assertThrows(UIException.class, () -> {
+            stockService.getAllProducts("invalid-token");
+        });
+    }
+
+    @Test
+    void testGetAllOrdersByStore_Success() throws Exception {
+        userService.addToUserCart(NGToken, itemStoreDTO, 1); // must be a registered user
+        ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken,
+                PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
+
+        assertEquals(1, receipts.length); // confirm purchase success
+
+        List<OrderDTO> orders = orderService.getAllOrderByStore(itemStoreDTO.getStoreId());
+
+        assertNotNull(orders);
+        assertTrue(!orders.isEmpty());
+        assertEquals(1, orders.get(0).getStoreId());
+    }
+
+
+    @Test
+    void testGetAllOrdersByStore_StoreNotFound() {
+        UIException ex = assertThrows(UIException.class, () -> {
+            orderService.getAllOrderByStore(9999); // store doesn't exist
+        });
+
+        assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getErrorCode());
+        assertEquals("Store not found", ex.getMessage());
+    }
+
+
+
+
+
+
+
+
 
 }

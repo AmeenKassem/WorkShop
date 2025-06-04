@@ -1,4 +1,4 @@
-package workshop.demo.AcceptanceTest.Utill;
+package workshop.demo.AcceptanceTests.Utill;
 
 import java.util.List;
 

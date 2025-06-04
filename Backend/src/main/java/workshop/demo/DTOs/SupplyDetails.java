@@ -26,7 +26,7 @@ public class SupplyDetails {
 
     //added this for tests
     public static SupplyDetails test_fail_supply() throws Exception {
-        throw new Exception("supplier failed");
+        return new SupplyDetails(null, "Testville", "TS", null);
     }
 
     public static SupplyDetails getSupplyDetailsFromJSON(String json) throws Exception {

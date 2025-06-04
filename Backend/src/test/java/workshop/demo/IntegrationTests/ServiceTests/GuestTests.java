@@ -1,6 +1,8 @@
 package workshop.demo.IntegrationTests.ServiceTests;
 
 import org.junit.jupiter.api.AfterEach;
+
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -22,15 +24,11 @@ import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
-import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.PaymentDetails;
-import workshop.demo.DTOs.ProductDTO;
-import workshop.demo.DTOs.ReceiptDTO;
-import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
+import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
@@ -41,6 +39,8 @@ import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
+
+import java.util.List;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -281,9 +281,9 @@ public class GuestTests {
 
                             int guestId = authRepo.getUserId(GToken);
     assertTrue(userRepo.getUserCart(guestId).getAllCart().size()==0);
-   
 
-assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==9); 
+
+assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==9);
 
     }
 
@@ -298,7 +298,7 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==9);
                 () -> purchaseService.buyGuestCart(guestToken, paymentDetails, supplyDetails));
 
         assertEquals("Invalid token!", ex.getMessage());
-        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10); 
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
 
     }
 
@@ -320,22 +320,26 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==9);
     void testGuestBuyCart_PaymentFails() throws Exception {
 
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+        userService.addToUserCart(GToken, itemStoreDTO, 1);
 
         Exception ex = assertThrows(Exception.class,
                 () -> purchaseService.buyGuestCart(GToken, PaymentDetails.test_fail_Payment(), supplyDetails));
 
-        assertEquals("Payment failed", ex.getMessage());
-assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10); 
+        assertEquals("Invalid payment details.", ex.getMessage());
+assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
     }
 
     @Test
     void testGuestBuyCart_supplier_Fails() throws Exception {
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+        userService.addToUserCart(GToken, itemStoreDTO, 1);
+
 
         Exception ex = assertThrows(Exception.class, () -> purchaseService.buyGuestCart(GToken,
                 PaymentDetails.testPayment(), SupplyDetails.test_fail_supply()));
 
-        assertEquals("supplier failed", ex.getMessage());
-        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10); 
+        assertEquals("Invalid supply details.", ex.getMessage());
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
 
     }
 
@@ -445,9 +449,134 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
         userService.ModifyCartAddQToBuy(GToken, 1, 3);
         ReceiptDTO[] re = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
         assertTrue(re[0].getFinalPrice() == 6000);
-                assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==7); 
+                assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==7);
 
 
     }
+    @Test
+    void testRemoveItemFromCart_InvalidToken() {
+        UIException ex = assertThrows(UIException.class, () -> {
+            userService.removeItemFromCart("bad-token", 1); // productId can be any value
+        });
+
+    }
+    @Test
+    void testRemoveItemFromCart_Success() throws Exception {
+        userService.addToUserCart(GToken, itemStoreDTO, 1); // Add item first
+        boolean result = userService.removeItemFromCart(GToken, itemStoreDTO.getProductId());
+        assertTrue(result);
+        assertTrue(userService.getRegularCart(GToken).length==0);
+    }
+    @Test
+    void test_getAllUsernames_returnsAllKeys() throws UIException {
+        // Arrange
+
+        // Suppose there's a way to register/add users
+        userRepo.registerUser("alice", "password1", 22);
+        userRepo.registerUser("bob", "password2", 30);
+        userRepo.registerUser("charlie", "password3", 28);
+
+        // Act
+        List<String> usernames = userRepo.getAllUsernames();
+
+        // Assert
+        assertEquals(5, usernames.size());
+        assertTrue(usernames.contains("alice"));
+        assertTrue(usernames.contains("bob"));
+        assertTrue(usernames.contains("charlie"));
+    }
+    @Test
+    void test_logoutUser_success() throws Exception {
+
+        // Arrange: Register and login a user
+        userRepo.registerUser("john", "pass123", 25);
+
+        // Act
+        int guestId = userRepo.logoutUser("john");
+
+        // Assert
+        assertTrue(guestId >= 0); // guest ID should be valid (or assertNotEquals(oldID, guestID))
+        assertNull(userRepo.getRegisteredUser(guestId));
+    }
+
+    @Test
+    void test_logoutUser_userNotFound_throwsException() {
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            userRepo.logoutUser("nonexistent_user");
+        });
+
+        assertEquals("User not found: nonexistent_user", ex.getMessage());
+        assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getErrorCode());
+    }
+    @Test
+    void test_addItemToGuestCart_guestNotFound_throwsException() {
+        int invalidGuestId = 9999; // not a valid guest or user ID
+        ItemCartDTO fakeItem = new ItemCartDTO();
+        fakeItem.setProductId(1);
+        fakeItem.setQuantity(1);
+        fakeItem.setStoreId(1);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            userRepo.addItemToGeustCart(invalidGuestId, fakeItem);
+        });
+
+        assertEquals("Guest not found: 9999", ex.getMessage());
+        assertEquals(ErrorCodes.GUEST_NOT_FOUND, ex.getErrorCode());
+    }
+    @Test
+    void test_modifyCartAddToBuy_guestNotFound_throwsException() {
+        int invalidGuestId = 9999;
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            userRepo.ModifyCartAddQToBuy(invalidGuestId, 1, 2);
+        });
+
+        assertEquals("Guest not found: 9999", ex.getMessage());
+        assertEquals(ErrorCodes.GUEST_NOT_FOUND, ex.getErrorCode());
+    }
+    @Test
+    void test_removeItemFromGuestCart_guestNotFound_throwsException() {
+        int invalidId = 9999; // not a guest, not a user
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            userRepo.removeItemFromGeustCart(invalidId, 1);
+        });
+
+        assertEquals("Guest not found: " + invalidId, ex.getMessage());
+        assertEquals(ErrorCodes.GUEST_NOT_FOUND, ex.getErrorCode());
+    }
+    @Test
+    void test_getUserCart_guestUser_returnsCart() throws Exception {
+        String t= userService.generateGuest(); // generates guest and stores in `guests`
+
+        ShoppingCart cart = userRepo.getUserCart(authRepo.getUserId(t));
+
+        assertNotNull(cart);
+        assertTrue(cart.getAllCart().isEmpty()); // assuming empty cart initially
+    }
+    @Test
+    void test_getUserCart_userNotFound_throwsException() {
+        int invalidId = 9999; // not in guests, not in users
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            userRepo.getUserCart(invalidId);
+        });
+
+        assertEquals("User with ID " + invalidId + " not found", ex.getMessage());
+        assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getErrorCode());
+    }
+    @Test
+    void test_getUserDTO_guestUser_success() throws Exception {
+        String guestToken = userService.generateGuest();
+        int guestId = authRepo.getUserId(guestToken);
+
+        UserDTO dto = userRepo.getUserDTO(guestId);
+
+        assertNotNull(dto);
+        assertTrue(dto.id==guestId); // assuming guest naming convention
+    }
+
+
 
 }

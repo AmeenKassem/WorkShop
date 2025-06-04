@@ -26,7 +26,7 @@ public class PaymentDetails {
     //added this for tests
 
     public static PaymentDetails test_fail_Payment() throws Exception {
-        throw new Exception("Payment failed");
+        return new PaymentDetails(null, "Test User", "12/30", null);
     }
      
 

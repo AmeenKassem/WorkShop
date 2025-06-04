@@ -13,7 +13,6 @@ import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
@@ -23,6 +22,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
@@ -62,7 +62,7 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
 
         logger.info("Returning matched items to client ");
-        String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
+        // String storeName= this.storeRepo.getStoreNameById(criteria.getStoreId());
         ItemStoreDTO[] items = stockRepo.search(criteria);
         storeRepo.fillWithStoreName(items);
         return items;
@@ -427,5 +427,16 @@ public class StockService {
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         return stockRepo.participateInRandom(userId, randomId, storeId, price);
+    }
+
+    public BidDTO[] getAllBidsStatus_user(String token, int storeId) throws Exception, DevException {
+        logger.info("Fetching bid status for store: {}", storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+
+        storeRepo.checkStoreExistance(storeId);
+
+        return stockRepo.getAllBids(storeId);
     }
 }

@@ -1,4 +1,4 @@
-package workshop.demo.DomainLayer.Store;
+package workshop.demo.DomainLayer.Stock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.AuctionStatus;
-import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.SingleBidDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -81,9 +81,9 @@ public class Auction {
         res.winner = winner;
         res.storeId = storeId;
 
-        SingleBid[] arrayBids = new SingleBid[bids.size()];
+        SingleBidDTO[] arrayBids = new SingleBidDTO[bids.size()];
         for (int i = 0; i < arrayBids.length; i++) {
-            arrayBids[i] = bids.get(i);
+            arrayBids[i] = bids.get(i).convertToDTO();
         }
 
         // TODO set a time date for ending product.

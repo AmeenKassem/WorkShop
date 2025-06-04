@@ -1,4 +1,4 @@
-package workshop.demo.ConcurrencyTest;
+package workshop.demo.ConcurrencyTests;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
