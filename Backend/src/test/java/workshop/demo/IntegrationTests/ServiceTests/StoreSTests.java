@@ -99,56 +99,56 @@ public class StoreSTests {
     @BeforeEach
     void setup() throws Exception {
 
-            GToken = userService.generateGuest();
-            userService.register(GToken, "User", "User", 25);
-            NGToken = userService.login(GToken, "User", "User");
+        GToken = userService.generateGuest();
+        userService.register(GToken, "User", "User", 25);
+        NGToken = userService.login(GToken, "User", "User");
 
-            assertTrue(authRepo.getUserName(NGToken).equals("User"));
+        assertTrue(authRepo.getUserName(NGToken).equals("User"));
 
-            String OToken = userService.generateGuest();
+        String OToken = userService.generateGuest();
 
-            userService.register(OToken, "owner", "owner", 25);
+        userService.register(OToken, "owner", "owner", 25);
 
-            // --- Login ---
-            NOToken = userService.login(OToken, "owner", "owner");
+        // --- Login ---
+        NOToken = userService.login(OToken, "owner", "owner");
 
-            assertTrue(authRepo.getUserName(NOToken).equals("owner"));
-            // ======================= STORE CREATION =======================
+        assertTrue(authRepo.getUserName(NOToken).equals("owner"));
+        // ======================= STORE CREATION =======================
 
-            int created1 = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
+        int created1 = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
 
-            assertEquals(created1, 1);
+        assertEquals(created1, 1);
 
-            // ======================= PRODUCT & ITEM ADDITION =======================
-            String[] keywords = {"Laptop", "Lap", "top"};
-            stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
+        // ======================= PRODUCT & ITEM ADDITION =======================
+        String[] keywords = {"Laptop", "Lap", "top"};
+        stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
 
-            assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.ELECTRONICS));
-            itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.ELECTRONICS, 0, 1, "Laptop","TestStore");
+        assertEquals(1, stockService.addItem(1, NOToken, 1, 2, 2000, Category.Electronics));
+        itemStoreDTO = new ItemStoreDTO(1, 2, 2000, Category.Electronics, 0, 1, "Laptop", "TestStore");
 
-            // ======================= SECOND GUEST SETUP =======================
+        // ======================= SECOND GUEST SETUP =======================
+    }
+
+    @AfterEach
+
+    void tearDown() {
+        if (userRepo != null) {
+            userRepo.clear();
         }
-
-        @AfterEach
-
-        void tearDown() {
-            if (userRepo != null) {
-                userRepo.clear();
-            }
-            if (storeRepository != null) {
-                storeRepository.clear();
-            }
-            if (stockRepository != null) {
-                stockRepository.clear();
-            }
-            if (orderRepository != null) {
-                orderRepository.clear();
-            }
-            if (suspensionRepo != null) {
-                suspensionRepo.clear();
-            }
-            // Add clear() for all other repos you wrote it for
+        if (storeRepository != null) {
+            storeRepository.clear();
         }
+        if (stockRepository != null) {
+            stockRepository.clear();
+        }
+        if (orderRepository != null) {
+            orderRepository.clear();
+        }
+        if (suspensionRepo != null) {
+            suspensionRepo.clear();
+        }
+        // Add clear() for all other repos you wrote it for
+    }
 
     // ========== Store Owner Use Cases ==========
     @Test
@@ -156,9 +156,9 @@ public class StoreSTests {
 
         String[] keywords = {"Tablet", "Touchscreen"};
 
-        stockService.addProduct(NOToken, "Tablet", Category.ELECTRONICS, "10-inch Tablet", keywords);
+        stockService.addProduct(NOToken, "Tablet", Category.Electronics, "10-inch Tablet", keywords);
 
-        int itemAdded = stockService.addItem(1, NOToken, 2, 10, 100, Category.ELECTRONICS);
+        int itemAdded = stockService.addItem(1, NOToken, 2, 10, 100, Category.Electronics);
         assertEquals(2, itemAdded);
         assertTrue(stockService.getProductInfo(NOToken, 2).getProductId() == 2);
 
@@ -169,7 +169,7 @@ public class StoreSTests {
 
         // === Act & Assert ===
         UIException ex = assertThrows(UIException.class, ()
-                -> stockService.addItem(1, NOToken, 2, 5, 999, Category.ELECTRONICS)
+                -> stockService.addItem(1, NOToken, 2, 5, 999, Category.Electronics)
         );
 
         assertEquals("Product not found", ex.getMessage());
@@ -181,7 +181,7 @@ public class StoreSTests {
 
         // === Act & Assert ===
         UIException ex = assertThrows(UIException.class, ()
-                -> stockService.addItem(1, NOToken, 2, -10, 999, Category.ELECTRONICS)
+                -> stockService.addItem(1, NOToken, 2, -10, 999, Category.Electronics)
         );
 
     }
@@ -190,7 +190,7 @@ public class StoreSTests {
     void testOwner_AddProductToStock_Failure_StoreNotFound() throws Exception {
 
         UIException ex = assertThrows(UIException.class, ()
-                -> stockService.addItem(22, NOToken, 1, 10, 100, Category.ELECTRONICS)
+                -> stockService.addItem(22, NOToken, 1, 10, 100, Category.Electronics)
         );
 
 //         // Optional: verify the details of the exception
@@ -287,8 +287,7 @@ public class StoreSTests {
 
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
         Exception ex = assertThrows(Exception.class, ()
-                ->                 storeService.reciveAnswerToOffer(1, "owner", "token", true, true)
-
+                -> storeService.reciveAnswerToOffer(1, "owner", "token", true, true)
         );
 
     }
@@ -528,20 +527,17 @@ public class StoreSTests {
             storeRepository.checkStoreIsActive(1);
         });
         userService.addToUserCart(GToken, itemStoreDTO, 2);
-            PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
-      ReceiptDTO[] receipts =   purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
-      assertNotNull(receipts);
+        ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
+        assertNotNull(receipts);
         assertEquals(0, receipts.length);
 
-    assertTrue(userRepo.getUserCart(authRepo.getUserId(GToken)).getAllCart().size()==0);
+        assertTrue(userRepo.getUserCart(authRepo.getUserId(GToken)).getAllCart().size() == 0);
 
-
-assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==2);
-
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 2);
 
         assertEquals(ex.getMessage(), " store is not active");
-
 
     }
 
@@ -719,7 +715,7 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==2);
         storeService.rankStore(NGToken, 1, 0);
         assertTrue(storeService.getFinalRateInStore(1) == 3);
 
-
+    
 
     /// 3 is deafult
 
@@ -848,19 +844,20 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==2);
 
         int result = storeService.closeStore(1, token1);
 
-
         assertEquals(1, result);
-assertTrue(storeService.getAllStores().isEmpty());
+        assertTrue(storeService.getAllStores().isEmpty());
 //   assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getCode());
     }
+
     @Test
     void testCloseStore_Fail_NotAdmin() {
         Exception ex = assertThrows(UIException.class, () -> {
             storeService.closeStore(1, NGToken); // NGToken is not admin
         });
 
-      //  assertEquals(ErrorCodes., ((UIException) ex).getCode());
+        //  assertEquals(ErrorCodes., ((UIException) ex).getCode());
     }
+
     @Test
     void testCloseStore_Fail_StoreNotFound() throws Exception {
         String token = userService.generateGuest();
@@ -872,9 +869,8 @@ assertTrue(storeService.getAllStores().isEmpty());
             storeService.closeStore(9999, adminToken); // non-existent store
         });
 
-
-
     }
+
     @Test
     void testCloseStore_Fail_InvalidToken() {
         Exception ex = assertThrows(UIException.class, () -> {
@@ -882,18 +878,21 @@ assertTrue(storeService.getAllStores().isEmpty());
         });
 
     }
+
     @Test
     void testGetStoreDTO_Success() throws Exception {
         StoreDTO dto = storeService.getStoreDTO(NOToken, 1);
         assertEquals("TestStore", dto.getStoreName());
         assertEquals(1, dto.getStoreId());
     }
+
     @Test
     void testGetStoreDTO_Fail_InvalidToken() {
         UIException ex = assertThrows(UIException.class, () -> {
             storeService.getStoreDTO("bad-token", 1);
         });
     }
+
     @Test
     void testGetStoreDTO_Fail_NotRegistered() {
         Exception ex = assertThrows(UIException.class, () -> {
@@ -915,12 +914,14 @@ assertTrue(storeService.getAllStores().isEmpty());
         assertEquals(1, owned.size());
         assertEquals("TestStore", owned.get(0).getStoreName());
     }
+
     @Test
     void testGetStoresOwnedByUser_Fail_InvalidToken() {
         UIException ex = assertThrows(UIException.class, () -> {
             storeService.getStoresOwnedByUser("invalid-token");
         });
     }
+
     @Test
     void testGetStoresOwnedByUser_Fail_NotRegistered() {
         UIException ex = assertThrows(UIException.class, () -> {
@@ -934,7 +935,6 @@ assertTrue(storeService.getAllStores().isEmpty());
         assertTrue(!all.isEmpty());
         assertEquals("TestStore", all.get(0).getStoreName());
     }
-
 
     @Test
     void testChangePermissions_Success() throws Exception {
@@ -954,18 +954,20 @@ assertTrue(storeService.getAllStores().isEmpty());
         List<Permission> newPerms = List.of(Permission.SpecialType, Permission.MANAGE_STORE_POLICY);
         storeService.changePermissions(NOToken, managerId, 1, newPerms);
 
-for (Permission perm : storeService.ViewRolesAndPermissions(NOToken,1).get(1).getPermessions()) {
-    System.out.println(perm.name());
-}
+        for (Permission perm : storeService.ViewRolesAndPermissions(NOToken, 1).get(1).getPermessions()) {
+            System.out.println(perm.name());
+        }
         assertEquals(4, storeService.ViewRolesAndPermissions(NOToken, 1).get(1).getPermessions().length);
 
     }
+
     @Test
     void testChangePermissions_Fail_InvalidToken() {
         UIException ex = assertThrows(UIException.class, () -> {
             storeService.changePermissions("bad-token", 5, 1, List.of());
         });
     }
+
     @Test
     void testChangePermissions_Fail_ManagerNotRegistered() throws Exception {
         String fakeToken = userService.generateGuest();
@@ -977,12 +979,14 @@ for (Permission perm : storeService.ViewRolesAndPermissions(NOToken,1).get(1).ge
             storeService.changePermissions(ownerToken, 9999, 1, List.of());
         });
     }
+
     @Test
     void testChangePermissions_Fail_StoreNotFound() {
         UIException ex = assertThrows(UIException.class, () -> {
             storeService.changePermissions(NOToken, 1, 9999, List.of());
         });
     }
+
     @Test
     void testChangePermissions_Fail_StoreInactive() throws Exception {
         storeService.deactivateteStore(1, NOToken); // store 1 is now inactive
@@ -1007,7 +1011,7 @@ for (Permission perm : storeService.ViewRolesAndPermissions(NOToken,1).get(1).ge
 
         // Step 3: Attempt to add item — should fail
         UIException ex = assertThrows(UIException.class, () -> {
-            stockService.addItem(1, managerToken, itemStoreDTO.getProductId(), 1, 1000, Category.ELECTRONICS);
+            stockService.addItem(1, managerToken, itemStoreDTO.getProductId(), 1, 1000, Category.Electronics);
         });
 
         // Step 4: Assert exception
@@ -1031,7 +1035,8 @@ for (Permission perm : storeService.ViewRolesAndPermissions(NOToken,1).get(1).ge
         assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
         assertEquals("this worker is not authorized!", ex.getMessage());
     }
-@Test
+
+    @Test
     void testUpdateQuantity_ManagerNoPermission_Fail() throws Exception {
         String token = userService.generateGuest();
         userService.register(token, "noUpdatePerm", "noUpdatePerm", 30);
@@ -1067,6 +1072,7 @@ for (Permission perm : storeService.ViewRolesAndPermissions(NOToken,1).get(1).ge
         assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
         assertEquals("This worker is not authorized!", ex.getMessage());
     }
+
     @Test
     void testGetAllProducts_Success() throws Exception {
         ProductDTO[] products = stockService.getAllProducts(NGToken); // user from setup
@@ -1074,6 +1080,7 @@ for (Permission perm : storeService.ViewRolesAndPermissions(NOToken,1).get(1).ge
         assertTrue(products.length >= 1); // at least the one from setup
         assertEquals("Laptop", products[0].getName());
     }
+
     @Test
     void testGetAllProducts_InvalidToken() {
         UIException ex = assertThrows(UIException.class, () -> {
@@ -1096,7 +1103,6 @@ for (Permission perm : storeService.ViewRolesAndPermissions(NOToken,1).get(1).ge
         assertEquals(1, orders.get(0).getStoreId());
     }
 
-
     @Test
     void testGetAllOrdersByStore_StoreNotFound() {
         UIException ex = assertThrows(UIException.class, () -> {
@@ -1106,13 +1112,5 @@ for (Permission perm : storeService.ViewRolesAndPermissions(NOToken,1).get(1).ge
         assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getErrorCode());
         assertEquals("Store not found", ex.getMessage());
     }
-
-
-
-
-
-
-
-
 
 }

@@ -98,18 +98,18 @@ public class MainLayout extends AppLayout {
 
         }
 
-        // Shared: My Cart
+        // Shared: My Cart, home page
         RouterLink myCart = new RouterLink("My Cart", MyCartView.class);
+        RouterLink homePage = new RouterLink("Home Page", HomePage.class);
         myCart.addClassName("right-button");
-        buttonColumn.add(myCart);
+        homePage.addClassName("right-button");
+        buttonColumn.add(myCart, homePage);
 
         if (userType.equals("guest")) {
             // Guest buttons: sign up and login -> might mix it
             RouterLink login = new RouterLink("Login", LoginView.class);
-            RouterLink signUp = new RouterLink("Sign Up", RegisterView.class);
             login.addClassName("right-button");
-            signUp.addClassName("right-button");
-            buttonColumn.add(login, signUp);
+            buttonColumn.add(login);
         } else if (userType.equals("user") || userType.equals("admin")) {
             // Logged-in user buttons: myStores and log out, notification, open my own store
             RouterLink myStore = new RouterLink("My Stores", MyStoresView.class);

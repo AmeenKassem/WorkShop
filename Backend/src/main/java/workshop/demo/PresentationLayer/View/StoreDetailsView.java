@@ -477,6 +477,8 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
     //------------------------------- for search:
     private VerticalLayout createSearchBar() {
         VerticalLayout layout = new VerticalLayout();
+        String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
+        boolean isUser = "user".equals(userType);
         layout.setSpacing(false);
         layout.setPadding(true);
         layout.getStyle().set("background-color", "#f5f6ff").set("border-radius", "12px").set("padding", "20px");
@@ -522,7 +524,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
             Double maxPrice = parseDouble(maxPriceField.getValue());
             Integer productRate = productRateCombo.getValue();
 
-            if (selectedType == null || searchBy == null) {
+            if ((isUser && selectedType == null) || searchBy == null) {
                 NotificationView.showError("Please select both product type and search mode.");
                 return;
             }
@@ -532,6 +534,18 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
             String keyword = searchBy.equals("Keyword") ? inputText : null;
 
             resultsContainer.removeAll();
+
+            if (!isUser) {
+                // guest search: Normal only
+                List<ItemStoreDTO> items = presenter.searchNormal(token, name, keyword, category, minPrice, maxPrice, productRate, myStoreId);
+                if (items == null || items.isEmpty()) {
+                    resultsContainer.add(new Paragraph("❌ No normal products found."));
+                } else {
+                    items.forEach(item -> resultsContainer.add(createItemCard(item)));
+                }
+                return;
+            }
+            //only for user:
             switch (selectedType) {
                 case "Bid" -> {
                     List<BidDTO> bids = presenter.searchBids(token, name, keyword, category, minPrice, maxPrice, productRate, myStoreId);
@@ -575,7 +589,12 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 .set("border-radius", "12px")
                 .set("padding", "6px 16px");
 
-        HorizontalLayout row1 = new HorizontalLayout(searchField, categoryCombo, typeSelector, searchBySelector);
+        HorizontalLayout row1;
+        if (isUser) {
+            row1 = new HorizontalLayout(searchField, categoryCombo, typeSelector, searchBySelector);
+        } else {
+            row1 = new HorizontalLayout(searchField, categoryCombo, searchBySelector);
+        }
         HorizontalLayout row2 = new HorizontalLayout(minPriceField, maxPriceField, productRateCombo, searchBtn);
         row1.setSpacing(true);
         row2.setSpacing(true);
@@ -592,7 +611,6 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
             return null;
         }
     }
-    //for now I put product Id -> change it to name when the backend make it
 
     private Div createBidCard(BidDTO bid) {
         Div card = new Div();
@@ -602,7 +620,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 .set("border-radius", "10px")
                 .set("margin-bottom", "10px");
 
-        Span name = new Span("📢 Product ID: " + bid.productId);
+        Span name = new Span("📢 Product Name: " + bid.productName);
         Paragraph store = new Paragraph("Store: " + bid.storeName);
 
         Button makeBid = new Button("Make a Bid", e -> showBidDialog(bid, bid.storeId));
@@ -620,7 +638,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 .set("border-radius", "10px")
                 .set("margin-bottom", "10px");
 
-        Span name = new Span("🏁 Product ID: " + auction.productId);
+        Span name = new Span("🏁 Product Name: " + auction.productName);
         Paragraph store = new Paragraph("Store: " + auction.storeName);
         Paragraph max = new Paragraph("Max Bid: $" + auction.maxBid);
 
@@ -644,14 +662,15 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 .set("border-radius", "10px")
                 .set("margin-bottom", "10px");
 
-        Span name = new Span("🎲 Product ID: " + random.productId);
+        Span name = new Span("🎲 Product Name: " + random.productName);
         Paragraph store = new Paragraph("Store: " + random.storeName);
+        Paragraph amountLeft = new Paragraph("Left Amount: " + random.amountLeft);
         Paragraph price = new Paragraph("Price: $" + random.productPrice);
 
         Button participate = new Button("Join Random Draw", e -> showRandomParticipationDialog(random));
         participate.getStyle().set("background-color", "#9c27b0").set("color", "white");
 
-        card.add(name, store, price, participate);
+        card.add(name, store, amountLeft, price, participate);
         return card;
     }
 

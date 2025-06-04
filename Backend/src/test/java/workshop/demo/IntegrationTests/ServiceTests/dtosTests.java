@@ -21,7 +21,7 @@ public class dtosTests {
         int quantity = 2;
         int price = 1500;
         int productId = 1;
-        Category category = Category.ELECTRONICS; // assuming enum value
+        Category category = Category.Electronics; // assuming enum value
 
         ReceiptProduct rp = new ReceiptProduct(productName, storeName, quantity, price, productId, category);
         List<ReceiptProduct> products = new ArrayList<>();
@@ -59,10 +59,11 @@ public class dtosTests {
         dto.setTotalPrice(999.99);
         assertEquals(999.99, dto.getTotalPrice());
     }
+
     @Test
     public void testItemCartDTO_AllSettersGettersAndConstructors() {
         // ========== Using parameterized constructor ==========
-        ItemCartDTO dto1 = new ItemCartDTO(1, 101, 3, 299, "Mouse", "TechStore", Category.ELECTRONICS);
+        ItemCartDTO dto1 = new ItemCartDTO(1, 101, 3, 299, "Mouse", "TechStore", Category.Electronics);
 
         assertEquals(1, dto1.getStoreId());
         assertEquals(101, dto1.getProductId());
@@ -70,7 +71,7 @@ public class dtosTests {
         assertEquals(299, dto1.getPrice());
         assertEquals("Mouse", dto1.getName());
         assertEquals("TechStore", dto1.getStoreName());
-        assertEquals(Category.ELECTRONICS, dto1.getCategory());
+        assertEquals(Category.Electronics, dto1.getCategory());
 
         // ========== Using default constructor + setters ==========
         ItemCartDTO dto2 = new ItemCartDTO();
@@ -95,12 +96,12 @@ public class dtosTests {
     @Test
     public void testItemStoreDTO_AllConstructorsSettersGetters() {
         // ==== Constructor with all parameters ====
-        ItemStoreDTO dto1 = new ItemStoreDTO(10, 5, 200, Category.ELECTRONICS, 4, 1, "Laptop", "TechStore");
+        ItemStoreDTO dto1 = new ItemStoreDTO(10, 5, 200, Category.Electronics, 4, 1, "Laptop", "TechStore");
 
         assertEquals(10, dto1.getProductId());
         assertEquals(5, dto1.getQuantity());
         assertEquals(200, dto1.getPrice());
-        assertEquals(Category.ELECTRONICS, dto1.getCategory());
+        assertEquals(Category.Electronics, dto1.getCategory());
         assertEquals(4, dto1.getRank());
         assertEquals(1, dto1.getStoreId());
         assertEquals("Laptop", dto1.getProductName());
@@ -124,6 +125,7 @@ public class dtosTests {
         assertEquals(2, dto2.getStoreId());
         assertEquals("GamePlanet", dto2.getStoreName());
     }
+
     @Test
     public void testSpecialCartItemDTO_SettersGetters() {
         SpecialCartItemDTO dto = new SpecialCartItemDTO();
@@ -146,7 +148,7 @@ public class dtosTests {
     @Test
     public void testOrderDTO_AllConstructorsSettersGetters() {
         // Dummy ReceiptProduct
-        ReceiptProduct product = new ReceiptProduct("Mouse", "BestBuy", 2, 50, 101, Category.ELECTRONICS);
+        ReceiptProduct product = new ReceiptProduct("Mouse", "BestBuy", 2, 50, 101, Category.Electronics);
         List<ReceiptProduct> productList = new ArrayList<>();
         productList.add(product);
 
@@ -177,7 +179,7 @@ public class dtosTests {
     @Test
     public void testReceiptDTO_AllConstructorsSettersGetters() {
         // Dummy ReceiptProduct
-        ReceiptProduct product = new ReceiptProduct("Keyboard", "StoreX", 1, 120, 501, Category.ELECTRONICS);
+        ReceiptProduct product = new ReceiptProduct("Keyboard", "StoreX", 1, 120, 501, Category.Electronics);
         List<ReceiptProduct> products = new ArrayList<>();
         products.add(product);
 
@@ -216,12 +218,12 @@ public class dtosTests {
         ProductDTO dto2 = new ProductDTO();
         dto2.setProductId(202);
         dto2.setName("Mechanical Keyboard");
-        dto2.setCategory(Category.ELECTRONICS);
+        dto2.setCategory(Category.Electronics);
         dto2.setDescription("RGB lighting and programmable keys");
 
         assertEquals(202, dto2.getProductId());
         assertEquals("Mechanical Keyboard", dto2.getName());
-        assertEquals(Category.ELECTRONICS, dto2.getCategory());
+        assertEquals(Category.Electronics, dto2.getCategory());
         assertEquals("RGB lighting and programmable keys", dto2.getDescription());
     }
 
@@ -268,6 +270,7 @@ public class dtosTests {
         assertNull(dto2.getIsOnline());
         assertNull(dto2.getIsAdmin());
     }
+
     @Test
     public void testStoreDTO_AllConstructorsSettersGetters() {
         StoreDTO dto1 = new StoreDTO(10, "SuperStore", "ELECTRONICS", true, 5);
@@ -322,6 +325,7 @@ public class dtosTests {
         assertEquals("Eve", dto1.getName());
         assertEquals("Needs improvement.", dto1.getReviewMsg());
     }
+
     @Test
     public void testPaymentDetails_AllMethods() throws Exception {
         PaymentDetails dto1 = new PaymentDetails("4111111111111111", "John Doe", "12/30", "123");
@@ -350,6 +354,7 @@ public class dtosTests {
         );
         assertEquals("Tester", dto4.cardHolderName);
     }
+
     @Test
     public void testSupplyDetails_AllMethods() throws Exception {
         SupplyDetails dto1 = new SupplyDetails("123 Main", "City", "ST", "12345");
@@ -378,16 +383,17 @@ public class dtosTests {
         );
         assertEquals("789 Road", dto4.address);
     }
+
     @Test
     public void testReceiptProduct_AllMethods() {
-        ReceiptProduct dto = new ReceiptProduct("Monitor", "TechShop", 2, 250, 1001, Category.ELECTRONICS);
+        ReceiptProduct dto = new ReceiptProduct("Monitor", "TechShop", 2, 250, 1001, Category.Electronics);
 
         assertEquals("Monitor", dto.getProductName());
         assertEquals("TechShop", dto.getStorename());
         assertEquals(2, dto.getQuantity());
         assertEquals(250, dto.getPrice());
         assertEquals(1001, dto.getProductId());
-        assertEquals(Category.ELECTRONICS, dto.getCategory());
+        assertEquals(Category.Electronics, dto.getCategory());
 
         dto.setPrice(300);
         dto.setstoreName("NewStore");
@@ -397,9 +403,10 @@ public class dtosTests {
         assertEquals("NewStore", dto.getStorename());
         assertEquals(2002, dto.getProductId());
     }
+
     @Test
     public void testWorkerDTO_AllMethods() {
-        Permission[] perms = new Permission[] {};
+        Permission[] perms = new Permission[]{};
         WorkerDTO dto = new WorkerDTO(1, "workerUser", true, false, "StoreX", perms, true);
 
         assertEquals(1, dto.getWorkerId());
@@ -413,6 +420,7 @@ public class dtosTests {
         WorkerDTO dto2 = new WorkerDTO();
         assertNull(dto2.getUsername());
     }
+
     @Test
     public void testParticipationInRandomDTO_AllMethods() {
         ParticipationInRandomDTO dto = new ParticipationInRandomDTO(200, 20, 2, 3000, 49.99);
