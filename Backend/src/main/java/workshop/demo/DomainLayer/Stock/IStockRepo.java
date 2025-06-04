@@ -51,7 +51,8 @@ public interface IStockRepo {
     public int addProductToRandom(int productId, int quantity, double productPrice, int storeId,
             long RandomTime) throws UIException, DevException;
 
-    //public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid) throws UIException, DevException;
+    public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
+            throws UIException, DevException;
 
     public ParticipationInRandomDTO endRandom(int storeId, int randomId) throws Exception;
 
@@ -113,7 +114,7 @@ public interface IStockRepo {
     AuctionDTO[] searchActiveAuctions(ProductSearchCriteria criteria, String storeName) throws UIException ;
 
     BidDTO[] searchActiveBids(ProductSearchCriteria criteria, String storeName) throws UIException;
-
+  
       public void changequantity(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
             throws Exception;
 

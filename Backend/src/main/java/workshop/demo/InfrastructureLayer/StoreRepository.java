@@ -93,11 +93,11 @@ public class StoreRepository implements IStoreRepo {
         throw new UIException(" store does not exist.", ErrorCodes.STORE_NOT_FOUND);
     }
 
-//    @Override
-//    public List<StoreDTO> viewAllStores() {// here must check it view it with products??
-//        // TODO Auto-generated method stub
-//        throw new UnsupportedOperationException("Unimplemented method 'viewAllStores'");
-//    }
+    @Override
+    public List<StoreDTO> viewAllStores() {// here must check it view it with products??
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'viewAllStores'");
+    }
 
     public String getStoreNameById(int storeId) throws UIException {
         Store store = findStoreByID(storeId);
@@ -128,12 +128,12 @@ public class StoreRepository implements IStoreRepo {
 
     }
 
-//    @Override
-//    public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws UIException, DevException {
-//        List<WorkerDTO> toReturn = new LinkedList<>();
-//
-//        return toReturn;
-//    }
+    @Override
+    public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws UIException, DevException {
+        List<WorkerDTO> toReturn = new LinkedList<>();
+
+        return toReturn;
+    }
 
     // public Random getRandomById(int randomId) throws UIException, DevException {
     //     for (Store store : stores) {
