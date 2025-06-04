@@ -16,8 +16,8 @@ public class SingleBidDTO {
     public boolean isEnded;
 
     public SingleBidDTO(int id, int productId, int amount, double price, SpecialType type, int specialId,
-                        Status status, int storeId, int userId,
-                        boolean isWinner, boolean isAccepted, boolean isEnded) {
+            Status status, int storeId, int userId,
+            boolean isWinner, boolean isAccepted, boolean isEnded) {
         this.id = id;
         this.productId = productId;
         this.amount = amount;
@@ -30,5 +30,8 @@ public class SingleBidDTO {
         this.isWinner = isWinner;
         this.isAccepted = isAccepted;
         this.isEnded = isEnded;
+    }
+
+    public SingleBidDTO() {
     }
 }

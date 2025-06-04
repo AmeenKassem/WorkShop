@@ -402,4 +402,15 @@ public class StockService {
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         return stockRepo.participateInRandom(userId, randomId, storeId, price);
     }
+
+    public BidDTO[] getAllBidsStatus_user(String token, int storeId) throws Exception, DevException {
+        logger.info("Fetching bid status for store: {}", storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+
+        storeRepo.checkStoreExistance(storeId);
+
+        return stockRepo.getAllBids(storeId);
+    }
 }

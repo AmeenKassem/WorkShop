@@ -42,6 +42,7 @@ import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
+import workshop.demo.DTOs.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -193,7 +194,6 @@ public class PurchaseTests {
             assertEquals("TestStore", r.getStoreName());
             assertEquals(10, r.getFinalPrice());
 
-
             assertTrue(orderService.getReceiptDTOsByUser(NGToken).size() == 1);
             assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getFinalPrice() == 10);
             assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().size() == 1);
@@ -201,7 +201,6 @@ public class PurchaseTests {
             assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 7);
             assertTrue(userRepo.getUserCart(authRepo.getUserId(NGToken)).getAllCart().size() == 0);
             assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
-
 
         } catch (Exception exception) {
             System.out.println(exception);
@@ -227,10 +226,7 @@ public class PurchaseTests {
         assertNotNull(receipts);
         assertEquals(0, receipts.length);
 
-
         assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
-
-
 
     }
 
@@ -274,7 +270,6 @@ public class PurchaseTests {
         assertEquals("Bid ID not found in active bids!", ex.getMessage());
     }
 
-
     @Test
     void Add_AuctionBidToSpecialCart_Success_won() throws Exception {
         stockService.addBidOnAucction(NGToken, 1, 1, 10);
@@ -308,7 +303,6 @@ public class PurchaseTests {
         assertEquals("TestStore", r.getStoreName());
         assertEquals(10, r.getFinalPrice());
 
-
         assertTrue(orderService.getReceiptDTOsByUser(NGToken).size() == 1);
         assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getFinalPrice() == 10);
         assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().size() == 1);
@@ -338,7 +332,6 @@ public class PurchaseTests {
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[0].status.equals(Status.AUCTION_LOSED));
         assertTrue(stockService.getAllAuctions(NOToken, 1)[0].bids[1].status.equals(Status.AUCTION_WON));
 
-
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
 
@@ -349,7 +342,6 @@ public class PurchaseTests {
         purchaseService.finalizeSpecialCart(NOToken, paymentDetails, supplyDetails);
 
         assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
-
 
     }
 
@@ -405,8 +397,6 @@ public class PurchaseTests {
         assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].participations.length == 1);
         assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].participations[0].won());
 
-
-
         ReceiptDTO[] receipts = purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
 
         assertNotNull(receipts);
@@ -429,7 +419,6 @@ public class PurchaseTests {
         assertTrue(userRepo.getUserCart(authRepo.getUserId(NGToken)).getAllCart().size() == 0);
         assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
 
-
     }
 
     // Needs Fixing!
@@ -450,7 +439,6 @@ public class PurchaseTests {
         assertNotNull(receipts);
         assertEquals(0, receipts.length);
         assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
-
 
     }
 
@@ -487,6 +475,7 @@ public class PurchaseTests {
 
         assertEquals("Product price must be positive!", ex.getMessage());
     }
+
     @Test
     void testGetAllAuctions_Fail_NoPermission() throws Exception {
         // Step 1: Register and login user who is NOT a store manager/owner
@@ -500,6 +489,7 @@ public class PurchaseTests {
         });
 
     }
+
     @Test
     void testGetAllAuctions_Fail_ManagerWithNoPermission() throws Exception {
         // Step 1: Register and login the manager
@@ -522,6 +512,7 @@ public class PurchaseTests {
         assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
         assertEquals("you have no permession to see auctions info.", ex.getMessage());
     }
+
     @Test
     void testGetAllAuctionsUser_Success() throws Exception {
         AuctionDTO[] auctions = stockService.getAllAuctions_user(NGToken, 1); // NGToken is a registered user in setup
@@ -529,12 +520,14 @@ public class PurchaseTests {
         assertEquals(1, auctions.length); // 1 auction set up in setup()
         assertEquals(1, auctions[0].productId); // or whatever name matches
     }
+
     @Test
     void testGetAllAuctionsUser_InvalidToken() {
         UIException ex = assertThrows(UIException.class, () -> {
             stockService.getAllAuctions_user("bad-token", 1);
         });
     }
+
     @Test
     void testGetAllAuctionsUser_NotRegisteredOnline() throws Exception {
         String guestToken = userService.generateGuest(); // not registered
@@ -542,12 +535,14 @@ public class PurchaseTests {
             stockService.getAllAuctions_user(guestToken, 1);
         });
     }
+
     @Test
     void testGetAllAuctionsUser_StoreNotFound() {
         UIException ex = assertThrows(UIException.class, () -> {
             stockService.getAllAuctions_user(NGToken, 9999); // non-existent store
         });
     }
+
     @Test
     void testSetProductToAuction_ManagerNoPermission_Fail() throws Exception {
         // Step 1: Create manager with NO permissions
@@ -603,6 +598,7 @@ public class PurchaseTests {
 
         assertEquals("you have no permession to see auctions info.", ex.getMessage());
     }
+
     @Test
     void testGetAllBidsStatusUser_Success() throws Exception {
         BidDTO[] bids = stockService.getAllBidsStatus_user(NGToken, 1);
@@ -610,12 +606,14 @@ public class PurchaseTests {
         // assuming at least one bid exists from setup or previous tests
         assertTrue(bids.length >= 0);
     }
+
     @Test
     void testGetAllBidsStatusUser_InvalidToken() {
         UIException ex = assertThrows(UIException.class, () -> {
             stockService.getAllBidsStatus_user("invalid-token", 1);
         });
     }
+
     @Test
     void testGetAllBidsStatusUser_NotRegistered() throws Exception {
         String guestToken = userService.generateGuest(); // Not registered
@@ -623,12 +621,14 @@ public class PurchaseTests {
             stockService.getAllBidsStatus_user(guestToken, 1);
         });
     }
+
     @Test
     void testGetAllBidsStatusUser_StoreNotFound() {
         UIException ex = assertThrows(UIException.class, () -> {
             stockService.getAllBidsStatus_user(NGToken, 9999); // invalid store ID
         });
     }
+
     @Test
     void testAcceptBid_ManagerNoPermission_Fail() throws Exception {
         String token = userService.generateGuest();
@@ -674,22 +674,23 @@ public class PurchaseTests {
         assertEquals("you have no permession to accept bid", ex.getMessage()); // Note: still says "accept bid"
     }
 
-
     @Test
     void testEndBid_Success() throws Exception {
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
 
-        purchaseService.participateInRandom(NGToken,1,1,2000,paymentDetails);
+        purchaseService.participateInRandom(NGToken, 1, 1, 2000, paymentDetails);
         ParticipationInRandomDTO result = stockService.endBid(NOToken, 1, 1);
         assertNotNull(result);
-          assertTrue(result.ended);
+        assertTrue(result.ended);
     }
+
     @Test
     void testEndBid_InvalidToken() {
         UIException ex = assertThrows(UIException.class, () -> {
             stockService.endBid("bad-token", 1, 1);
         });
     }
+
     @Test
     void testEndBid_UserNotRegistered() throws Exception {
         String guestToken = userService.generateGuest(); // not registered
@@ -697,20 +698,23 @@ public class PurchaseTests {
             stockService.endBid(guestToken, 1, 1);
         });
     }
+
     @Test
     void testEndBid_UserSuspended() throws Exception {
-        suspensionRepo.suspendRegisteredUser(authRepo.getUserId(NOToken),3);
+        suspensionRepo.suspendRegisteredUser(authRepo.getUserId(NOToken), 3);
         UIException ex = assertThrows(UIException.class, () -> {
             stockService.endBid(NOToken, 1, 1);
         });
 
     }
+
     @Test
     void testEndBid_InvalidRandomId() {
         Exception ex = assertThrows(Exception.class, () -> {
             stockService.endBid(NOToken, 1, 999); // Non-existent random ID
         });
     }
+
     @Test
     void testGetAllRandomInStore_ManagerNoPermission_Fail() throws Exception {
         // Step 1: Register & login manager
@@ -732,6 +736,7 @@ public class PurchaseTests {
         assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
         assertEquals("you have no permession to see random info.", ex.getMessage());
     }
+
     @Test
     void testGetAllRandomInStoreUser_Success() throws Exception {
         RandomDTO[] randoms = stockService.getAllRandomInStore_user(NGToken, 1);
@@ -739,12 +744,14 @@ public class PurchaseTests {
         assertTrue(randoms.length >= 1); // setup contains 1 random sale
         assertEquals(itemStoreDTO.getProductId(), randoms[0].productId);
     }
+
     @Test
     void testGetAllRandomInStoreUser_InvalidToken() {
         UIException ex = assertThrows(UIException.class, () -> {
             stockService.getAllRandomInStore_user("invalid-token", 1);
         });
     }
+
     @Test
     void testGetAllRandomInStoreUser_NotRegistered() throws Exception {
         String guestToken = userService.generateGuest(); // not registered
@@ -752,6 +759,7 @@ public class PurchaseTests {
             stockService.getAllRandomInStore_user(guestToken, 1);
         });
     }
+
     @Test
     void testGetAllRandomInStoreUser_StoreNotFound() {
         UIException ex = assertThrows(UIException.class, () -> {
@@ -759,11 +767,6 @@ public class PurchaseTests {
         });
         assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getErrorCode());
     }
-
-
-
-
-
 
     @Test
     void Add_BidProductToSpecialCart_Success_acceptBID_invalidpayment() throws Exception {
@@ -789,10 +792,10 @@ public class PurchaseTests {
             purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
         });
 
-
         // <<<<<<< HEAD
         // Assert
     }
+
     @Test
     void Add_BidProductToSpecialCart_Success_acceptBID_invalidsupply() throws Exception {
 
@@ -817,10 +820,10 @@ public class PurchaseTests {
             purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
         });
 
-
         // <<<<<<< HEAD
         // Assert
     }
+
     @Test
     void testSetReceiptMapForBids_ProductNotFound_ThrowsException() throws Exception {
         // Arrange
@@ -829,7 +832,6 @@ public class PurchaseTests {
         Map<Integer, List<ReceiptProduct>> res = new HashMap<>();
 
         // Mock: make stockRepo return null for productId 999
-
         // Act + Assert
         UIException ex = assertThrows(UIException.class, () -> {
             purchaseService.setRecieptMapForBids(bids, res);
@@ -846,12 +848,11 @@ public class PurchaseTests {
         stockService.acceptBid(NOToken, 1, 1, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].id);
 
         // ===== SETUP FOR RANDOM =====
-
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
-        purchaseService.participateInRandom(NGToken, 1, 1, 1200,paymentDetails);
+        purchaseService.participateInRandom(NGToken, 1, 1, 1200, paymentDetails);
 
         // ===== SETUP FOR AUCTION =====
-       int auctionId = stockService.setProductToAuction(NOToken, 1, 1, 1, 5000, 10);
+        int auctionId = stockService.setProductToAuction(NOToken, 1, 1, 1, 5000, 10);
         stockService.addBidOnAucction(NGToken, auctionId, 1, 10);
 
         // ===== EXECUTE =====
@@ -871,17 +872,17 @@ public class PurchaseTests {
         }
 
     }
+
     @Test
     void test_addProductToBid_invalidQuantity_throwsException() {
 
         UIException ex = assertThrows(UIException.class, () -> {
-            stockService.setProductToBid(NOToken, 1,1,0); // or -1
+            stockService.setProductToBid(NOToken, 1, 1, 0); // or -1
         });
 
         assertEquals("Quantity must be positive!", ex.getMessage());
         assertEquals(ErrorCodes.INVALID_BID_PARAMETERS, ex.getErrorCode());
     }
-
 
     @Test
     void test_acceptBid_invalidBidId_throwsException() throws UIException {
@@ -891,11 +892,12 @@ public class PurchaseTests {
 
         // Act + Assert
         DevException ex = assertThrows(DevException.class, () -> {
-            stockService.acceptBid(NOToken, 1, invalidBidId,1);
+            stockService.acceptBid(NOToken, 1, invalidBidId, 1);
         });
 
         assertEquals("Bid ID not found in active bids!", ex.getMessage());
     }
+
     @Test
     void test_rejectBid_invalidBidId_throwsException() throws UIException {
         // Arrange
@@ -904,11 +906,12 @@ public class PurchaseTests {
 
         // Act + Assert
         DevException ex = assertThrows(DevException.class, () -> {
-            stockService.rejectBid(NOToken, 1, invalidBidId,1);
+            stockService.rejectBid(NOToken, 1, invalidBidId, 1);
         });
 
         assertEquals("Bid ID not found in active bids!", ex.getMessage());
     }
+
     @Test
     void test_addProductToRandom_invalidQuantity_throwsException() {
         UIException ex = assertThrows(UIException.class, () -> {
@@ -918,6 +921,7 @@ public class PurchaseTests {
         assertEquals("Quantity must be positive!", ex.getMessage());
         assertEquals(ErrorCodes.INVALID_RANDOM_PARAMETERS, ex.getErrorCode());
     }
+
     @Test
     void test_addProductToRandom_invalidPrice_throwsException() {
         UIException ex = assertThrows(UIException.class, () -> {
@@ -927,6 +931,7 @@ public class PurchaseTests {
         assertEquals("Product price must be positive!", ex.getMessage());
         assertEquals(ErrorCodes.INVALID_RANDOM_PARAMETERS, ex.getErrorCode());
     }
+
     @Test
     void test_addProductToRandom_invalidTime_throwsException() {
         UIException ex = assertThrows(UIException.class, () -> {
@@ -936,13 +941,14 @@ public class PurchaseTests {
         assertEquals("Random time must be positive!", ex.getMessage());
         assertEquals(ErrorCodes.INVALID_RANDOM_PARAMETERS, ex.getErrorCode());
     }
+
     @Test
     void test_participateInRandom_invalidRandomId_throwsException() {
         UIException ex = assertThrows(UIException.class, () -> {
             // 999 is a non-existing randomId
             PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
 
-            purchaseService.participateInRandom(NGToken, 999, 1,11,paymentDetails);
+            purchaseService.participateInRandom(NGToken, 999, 1, 11, paymentDetails);
         });
 
         assertEquals("Random ID not found!", ex.getMessage());
@@ -956,14 +962,15 @@ public class PurchaseTests {
         UIException ex = assertThrows(UIException.class, () -> {
             PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
 
-            purchaseService.participateInRandom(NGToken, randomId, 1,0,paymentDetails);
+            purchaseService.participateInRandom(NGToken, randomId, 1, 0, paymentDetails);
         });
 
         assertEquals("Product price must be positive!", ex.getMessage());
     }
+
     @Test
     void test_getProductPrice_success() throws Exception {
-        var price=stockService.getAllRandomInStore(NOToken, 1)[0].productPrice;
+        var price = stockService.getAllRandomInStore(NOToken, 1)[0].productPrice;
         assertEquals(2000, price);
     }
 
@@ -978,6 +985,7 @@ public class PurchaseTests {
 
         assertEquals("Trying to accept bid for non-existent ID.", ex.getMessage());
     }
+
     @Test
     void test_rejectBid_invalidBidId_throwsDevException() throws Exception {
         BID bid = new BID(1, 1, 101, 1);
@@ -989,19 +997,21 @@ public class PurchaseTests {
 
         assertEquals("Trying to reject bid with non-existent ID.", ex.getMessage());
     }
+
     @Test
     void test_bidIsWinner_nullBid() {
         BID bid = new BID(1, 1, 102, 1);
-            Exception exception = assertThrows(Exception.class, () -> {
-                bid.bidIsWinner(1234); // ID does not exist
-            });
-        }
+        Exception exception = assertThrows(Exception.class, () -> {
+            bid.bidIsWinner(1234); // ID does not exist
+        });
+    }
 
     @Test
     void test_userIsWinner_falseWhenNoWinner() {
         BID bid = new BID(1, 1, 103, 1);
         assertFalse(bid.userIsWinner(999)); // no bids yet
     }
+
     @Test
     void test_getDTO_containsCorrectValues() throws Exception {
         BID bid = new BID(5, 2, 200, 10);
@@ -1015,9 +1025,5 @@ public class PurchaseTests {
         assertEquals(1, dto.bids.length);
         assertEquals(b.getId(), dto.bids[0].id);
     }
-
-
-
-
 
 }
