@@ -121,6 +121,7 @@ public class StockService {
 
     }
 
+    
     public boolean addRegularBid(String token, int bitId, int storeId, double price) throws UIException, DevException {
         logger.info("User attempting regular bid on bidId: {}, storeId: {}", bitId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);

@@ -25,13 +25,17 @@ public class Guest {
     @Transient
     private ShoppingCart cart = new ShoppingCart();
 
+    private 
+
     public Guest(int id2) {
         id = id2;
         logger.debug("Guest created with ID={}", id2);
 
     }
 
-    public Guest(){}
+    public Guest(){
+
+    }
 
     public int getId() {
         return id;

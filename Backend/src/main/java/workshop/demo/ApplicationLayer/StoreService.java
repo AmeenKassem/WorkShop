@@ -260,12 +260,15 @@ public class StoreService {
         }
         return storeId;
     }
+    private void checkAdmin_ThrowException(int userId){
+        if(userRepo.chec)
+    }
 
     public int closeStore(int storeId, String token) throws Exception {
         logger.info("Admin attempting to close store {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int adminId = authRepo.getUserId(token);
-        userRepo.checkAdmin_ThrowException(adminId);
+        checkAdmin_ThrowException(adminId);
         logger.info("trying to close store: {} by: {}", storeId, adminId);
         this.storeRepo.checkStoreExistance(storeId);
         String storeName = storeRepo.getStoreNameById(storeId);

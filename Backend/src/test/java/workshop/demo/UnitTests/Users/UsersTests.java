@@ -25,7 +25,7 @@ public class UsersTests {
     @Autowired
     private AdminInitilizer a;
 
-    private IUserRepo userRepo = new UserRepository(enc, a);
+    private IUserRepo userRepo = new UserRepository(enc, a,null);//TODO do not forget this
 
     private int goodLogin(String username, String password) throws UIException {
         int userIdFromRegister = userRepo.registerUser(username, password,22);

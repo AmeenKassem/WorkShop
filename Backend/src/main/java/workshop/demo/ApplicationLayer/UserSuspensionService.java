@@ -35,7 +35,8 @@ public class UserSuspensionService {
     }
 
     public void suspendRegisteredUser(int userId, int seconds, String adminToken) throws UIException {
-        System.out.println("Calling suspendRegisteredUser: userId=" + userId + ", seconds=" + seconds + ", token=" + adminToken);
+        System.out.println(
+                "Calling suspendRegisteredUser: userId=" + userId + ", seconds=" + seconds + ", token=" + adminToken);
         validateAdmin(adminToken);
         synchronized (getUserLock(userId)) {
             if (repo.isSuspended(userId)) {
@@ -46,8 +47,10 @@ public class UserSuspensionService {
         }
     }
 
+    
     public void suspendGuestUser(int userId, int seconds, String adminToken) throws UIException {
-        System.out.println("Calling suspendGuestUser: userId=" + userId + ", seconds=" + seconds + ", token=" + adminToken);
+        System.out.println(
+                "Calling suspendGuestUser: userId=" + userId + ", seconds=" + seconds + ", token=" + adminToken);
         validateAdmin(adminToken);
         synchronized (getUserLock(userId)) {
             if (repo.isSuspended(userId)) {

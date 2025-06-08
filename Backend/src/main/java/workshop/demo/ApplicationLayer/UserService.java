@@ -22,6 +22,7 @@ import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.CartItem;
+import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
 @Service
@@ -50,7 +51,8 @@ public class UserService {
 
     public String generateGuest() throws UIException, Exception {
         logger.info("generateGuest called");
-        int id = userRepo.generateGuest();
+        // int id = userRepo.generateGuest();
+        Guest newGuest = new Guest();
         logger.info("Generated guest with ID={}", id);
         return authRepo.generateGuestToken(id);
     }
