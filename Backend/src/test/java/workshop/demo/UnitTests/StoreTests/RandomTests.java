@@ -18,6 +18,7 @@ import java.util.function.Predicate;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RandomTests {
+
     private Auction auction;
     private Random random;
     private Store store;
@@ -37,8 +38,8 @@ class RandomTests {
         owner = new Node(1, false, -1); // root owner
         manager = new Node(2, true, 1); // manager added by owner
         items = new ArrayList<>();
-        items.add(new ItemStoreDTO(1, 1, 1000, Category.ELECTRONICS,0,1,"Laptop","test"));
-        items.add(new ItemStoreDTO(1, 1, 50, Category.ELECTRONICS,0,1,"Laptop1","test"));
+        items.add(new ItemStoreDTO(1, 1, 1000, Category.Electronics, 0, 1, "Laptop", "test"));
+        items.add(new ItemStoreDTO(1, 1, 50, Category.Electronics, 0, 1, "Laptop1", "test"));
         scope = new DiscountScope(items);
     }
 
@@ -217,6 +218,7 @@ class RandomTests {
         assertEquals(b1, auction.getBid(b1.getId()));
         assertNull(auction.getBid(999)); // not exist
     }
+
     @Test
     void testParticipateSuccess() throws Exception {
         ParticipationInRandomDTO card = random.participateInRandom(1001, 40.0);
@@ -299,6 +301,7 @@ class RandomTests {
         ParticipationInRandomDTO win = random.endRandom();
         assertFalse(random.userIsWinner(win.getUserId() == 1 ? 2 : 1));
     }
+
     @Test
     void testConstructorAndGetters() {
         assertEquals(1, store.getStoreID());
@@ -409,6 +412,7 @@ class RandomTests {
         store.setDiscount(d);
         assertFalse(store.removeDiscountByName("NoMatch"));
     }
+
     @Test
     void testAddNewStore_And_CheckExistence() {
         superDS.addNewStore(1, 10);
@@ -460,7 +464,7 @@ class RandomTests {
     @Test
     void testOffers_CreateDeleteGet() throws Exception {
         superDS.addNewStore(1, 10);
-        Offer offer = new Offer(10, 20, true,List.of(Permission.AddToStock),"description");
+        Offer offer = new Offer(10, 20, true, List.of(Permission.AddToStock), "description");
         superDS.makeOffer(offer, 1);
 
         Offer got = superDS.getOffer(1, 10, 20);
@@ -618,6 +622,7 @@ class RandomTests {
         List<Node> children = owner.getChildren();
         assertEquals(1, children.size());
     }
+
     @Test
     void testCheckToAddOwner_AllBranches() throws Exception {
         int storeId = 101;
@@ -627,15 +632,15 @@ class RandomTests {
         superDS.addNewStore(storeId, ownerId); // Creates a Tree with root ownerId (not manager)
 
         // Case 1: ownerId is not in store
-        UIException ex1 = assertThrows(UIException.class, () ->
-                superDS.checkToAddOwner(storeId, 999, newOwnerId)
+        UIException ex1 = assertThrows(UIException.class, ()
+                -> superDS.checkToAddOwner(storeId, 999, newOwnerId)
         );
         assertEquals(ErrorCodes.NO_PERMISSION, ex1.getErrorCode());
 
         // Case 2: ownerId is a manager
         superDS.getEmployees().put(storeId, new Tree(ownerId, true, -1)); // Set owner as manager
-        UIException ex2 = assertThrows(UIException.class, () ->
-                superDS.checkToAddOwner(storeId, ownerId, newOwnerId)
+        UIException ex2 = assertThrows(UIException.class, ()
+                -> superDS.checkToAddOwner(storeId, ownerId, newOwnerId)
         );
         assertEquals(ErrorCodes.NO_PERMISSION, ex2.getErrorCode());
 
@@ -644,8 +649,8 @@ class RandomTests {
 
         // Case 3: newOwnerId already exists and isOwner
         superDS.getEmployees().get(storeId).getRoot().addChild(new Node(newOwnerId, false, ownerId));
-        UIException ex3 = assertThrows(UIException.class, () ->
-                superDS.checkToAddOwner(storeId, ownerId, newOwnerId)
+        UIException ex3 = assertThrows(UIException.class, ()
+                -> superDS.checkToAddOwner(storeId, ownerId, newOwnerId)
         );
         assertEquals(ErrorCodes.NO_PERMISSION, ex3.getErrorCode());
 
@@ -653,7 +658,6 @@ class RandomTests {
         int freshId = 99;
         assertTrue(superDS.checkToAddOwner(storeId, ownerId, freshId));
     }
-
 
     @Test
     void testCheckToAddManager_AllBranches() throws Exception {
@@ -665,28 +669,28 @@ class RandomTests {
         superDS.addNewStore(storeId, ownerId);
 
         // === Case 1: store doesn't exist ===
-        DevException ex1 = assertThrows(DevException.class, () ->
-                superDS.checkToAddManager(9999, ownerId, newManagerId)
+        DevException ex1 = assertThrows(DevException.class, ()
+                -> superDS.checkToAddManager(9999, ownerId, newManagerId)
         );
         assertEquals("store does not exist in superDS", ex1.getMessage());
 
         // === Case 2: owner not found ===
-        UIException ex2 = assertThrows(UIException.class, () ->
-                superDS.checkToAddManager(storeId, 999, newManagerId)
+        UIException ex2 = assertThrows(UIException.class, ()
+                -> superDS.checkToAddManager(storeId, 999, newManagerId)
         );
         assertEquals(ErrorCodes.NO_PERMISSION, ex2.getErrorCode());
 
         superDS.getEmployees().put(storeId, new Tree(ownerId, true, -1));
-        UIException ex3 = assertThrows(UIException.class, () ->
-                superDS.checkToAddManager(storeId, ownerId, newManagerId)
+        UIException ex3 = assertThrows(UIException.class, ()
+                -> superDS.checkToAddManager(storeId, ownerId, newManagerId)
         );
         assertEquals(ErrorCodes.NO_PERMISSION, ex3.getErrorCode());
 
 // === Case 4: newManager already exists and is a manager ===
         superDS.getEmployees().put(storeId, new Tree(ownerId, false, -1)); // reset to owner
         superDS.getEmployees().get(storeId).getRoot().addChild(new Node(newManagerId, true, ownerId));
-        UIException ex4 = assertThrows(UIException.class, () ->
-                superDS.checkToAddManager(storeId, ownerId, newManagerId)
+        UIException ex4 = assertThrows(UIException.class, ()
+                -> superDS.checkToAddManager(storeId, ownerId, newManagerId)
         );
         // === Case 5: Success ===
         int freshId = 999;
@@ -726,6 +730,7 @@ class RandomTests {
 
         assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
     }
+
     @Test
     void testDeleteOwnership_StoreDoesNotExist() {
         DevException ex = assertThrows(DevException.class, () -> {
@@ -776,6 +781,7 @@ class RandomTests {
 
         assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
     }
+
     @Test
     void testAddNewManager_StoreDoesNotExist_ThrowsException() {
         Exception ex = assertThrows(Exception.class, () -> {
@@ -808,6 +814,7 @@ class RandomTests {
         });
         assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
     }
+
     @Test
     void testChangeAutho_StoreNotExist_ThrowsDevException() {
         DevException ex = assertThrows(DevException.class, () -> {
@@ -858,5 +865,3 @@ class RandomTests {
     }
 
 }
-
-

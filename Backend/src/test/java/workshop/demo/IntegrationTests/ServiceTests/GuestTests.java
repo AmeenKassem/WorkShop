@@ -115,10 +115,10 @@ public class GuestTests {
 
         // ======================= PRODUCT & ITEM ADDITION =======================
         String[] keywords = {"Laptop", "Lap", "top"};
-        stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
+        stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
 
-        assertEquals(1, stockService.addItem(createdStoreId, NOToken, 1, 10, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, createdStoreId, "Laptop","TestStore");
+        assertEquals(1, stockService.addItem(createdStoreId, NOToken, 1, 10, 2000, Category.Electronics));
+        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.Electronics, 0, createdStoreId, "Laptop", "TestStore");
 
     }
 
@@ -224,7 +224,7 @@ public class GuestTests {
         System.out.println(info.getName());
         assertTrue(info.getName().equals("Laptop"));
         assertTrue(info.getProductId() == 1);
-        assertTrue(info.getCategory().equals(Category.ELECTRONICS));
+        assertTrue(info.getCategory().equals(Category.Electronics));
         assertTrue(info.getDescription().equals("Gaming Laptop"));
 
     }
@@ -246,7 +246,7 @@ public class GuestTests {
         assertDoesNotThrow(() -> {
             userService.addToUserCart(GToken, itemStoreDTO, 1);
         });
-        assertTrue(userService.getRegularCart(GToken).length==1);
+        assertTrue(userService.getRegularCart(GToken).length == 1);
     }
 
     @Test
@@ -258,8 +258,7 @@ public class GuestTests {
 
         assertEquals("Invalid token!", exception.getMessage());
         assertEquals(ErrorCodes.INVALID_TOKEN, exception.getNumber());
-                assertTrue(userService.getRegularCart(GToken).length==0);
-
+        assertTrue(userService.getRegularCart(GToken).length == 0);
 
         // Assert
     }
@@ -279,11 +278,10 @@ public class GuestTests {
         assertEquals(2000.0,
                 receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
 
-                            int guestId = authRepo.getUserId(GToken);
-    assertTrue(userRepo.getUserCart(guestId).getAllCart().size()==0);
+        int guestId = authRepo.getUserId(GToken);
+        assertTrue(userRepo.getUserCart(guestId).getAllCart().size() == 0);
 
-
-assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==9);
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 9);
 
     }
 
@@ -298,14 +296,14 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==9);
                 () -> purchaseService.buyGuestCart(guestToken, paymentDetails, supplyDetails));
 
         assertEquals("Invalid token!", ex.getMessage());
-        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 10);
 
     }
 
     @Test
     void testGuestBuyCart_ProductNotAvailable() throws Exception {
 
-        userService.addToUserCart(GToken, new ItemStoreDTO(0, 0, 0, null, 0, 1, "","TestStore"), 1);
+        userService.addToUserCart(GToken, new ItemStoreDTO(0, 0, 0, null, 0, 1, "", "TestStore"), 1);
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
@@ -326,7 +324,7 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==9);
                 () -> purchaseService.buyGuestCart(GToken, PaymentDetails.test_fail_Payment(), supplyDetails));
 
         assertEquals("Invalid payment details.", ex.getMessage());
-assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 10);
     }
 
     @Test
@@ -334,15 +332,13 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
         userService.addToUserCart(GToken, itemStoreDTO, 1);
 
-
         Exception ex = assertThrows(Exception.class, () -> purchaseService.buyGuestCart(GToken,
                 PaymentDetails.testPayment(), SupplyDetails.test_fail_supply()));
 
         assertEquals("Invalid supply details.", ex.getMessage());
-        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 10);
 
     }
-
 
     @Test
     void testGuestSearchProductInStore_Success() throws Exception {
@@ -362,7 +358,7 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
         assertEquals(1, result.length);
         assertEquals(2000, result[0].getPrice());
         assertEquals(1, result[0].getStoreId());
-        assertEquals(Category.ELECTRONICS, result[0].getCategory());
+        assertEquals(Category.Electronics, result[0].getCategory());
     }
 
     @Test
@@ -372,7 +368,7 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
         String[] keywords = {"Laptop", "Lap", "top"};
         System.out.println(storeService.getFinalRateInStore(1));
 
-        ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.ELECTRONICS, null, 1, 0, 3000, 0,
+        ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.Electronics, null, 1, 0, 3000, 0,
                 5);
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
 
@@ -389,7 +385,7 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
     void testSearchProducts_InvalidToken() throws Exception {
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                "Laptop", Category.ELECTRONICS, "Laptop", 100,
+                "Laptop", Category.Electronics, "Laptop", 100,
                 0, 5000,
                 0, 5);
 
@@ -408,7 +404,7 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
     void testSearchProducts_NoMatches() throws Exception {
 
         String[] keywords = {"Laptop", "Lap", "top"};
-        ProductSearchCriteria criteria = new ProductSearchCriteria("aa", Category.ELECTRONICS, keywords[0], 1, 0, 5000,
+        ProductSearchCriteria criteria = new ProductSearchCriteria("aa", Category.Electronics, keywords[0], 1, 0, 5000,
                 0, 5);
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
         assertNotNull(result);
@@ -419,7 +415,7 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
     void testSearchProducts_ProductExists_NotInStore() throws Exception {
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                "toy", Category.ELECTRONICS, null, 1,
+                "toy", Category.Electronics, null, 1,
                 0, 0, 0, 0);
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
 
@@ -431,7 +427,7 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
     void testSearchProducts_PriceOutOfRange() throws Exception {
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                "Laptop", Category.ELECTRONICS, null, 1,
+                "Laptop", Category.Electronics, null, 1,
                 5000, 10000, 0, 5 // Price filter too high
         );
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
@@ -449,10 +445,10 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
         userService.ModifyCartAddQToBuy(GToken, 1, 3);
         ReceiptDTO[] re = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
         assertTrue(re[0].getFinalPrice() == 6000);
-                assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==7);
-
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 7);
 
     }
+
     @Test
     void testRemoveItemFromCart_InvalidToken() {
         UIException ex = assertThrows(UIException.class, () -> {
@@ -460,13 +456,15 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
         });
 
     }
+
     @Test
     void testRemoveItemFromCart_Success() throws Exception {
         userService.addToUserCart(GToken, itemStoreDTO, 1); // Add item first
         boolean result = userService.removeItemFromCart(GToken, itemStoreDTO.getProductId());
         assertTrue(result);
-        assertTrue(userService.getRegularCart(GToken).length==0);
+        assertTrue(userService.getRegularCart(GToken).length == 0);
     }
+
     @Test
     void test_getAllUsernames_returnsAllKeys() throws UIException {
         // Arrange
@@ -485,6 +483,7 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
         assertTrue(usernames.contains("bob"));
         assertTrue(usernames.contains("charlie"));
     }
+
     @Test
     void test_logoutUser_success() throws Exception {
 
@@ -509,6 +508,7 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
         assertEquals("User not found: nonexistent_user", ex.getMessage());
         assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getErrorCode());
     }
+
     @Test
     void test_addItemToGuestCart_guestNotFound_throwsException() {
         int invalidGuestId = 9999; // not a valid guest or user ID
@@ -524,6 +524,7 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
         assertEquals("Guest not found: 9999", ex.getMessage());
         assertEquals(ErrorCodes.GUEST_NOT_FOUND, ex.getErrorCode());
     }
+
     @Test
     void test_modifyCartAddToBuy_guestNotFound_throwsException() {
         int invalidGuestId = 9999;
@@ -535,6 +536,7 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
         assertEquals("Guest not found: 9999", ex.getMessage());
         assertEquals(ErrorCodes.GUEST_NOT_FOUND, ex.getErrorCode());
     }
+
     @Test
     void test_removeItemFromGuestCart_guestNotFound_throwsException() {
         int invalidId = 9999; // not a guest, not a user
@@ -546,15 +548,17 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
         assertEquals("Guest not found: " + invalidId, ex.getMessage());
         assertEquals(ErrorCodes.GUEST_NOT_FOUND, ex.getErrorCode());
     }
+
     @Test
     void test_getUserCart_guestUser_returnsCart() throws Exception {
-        String t= userService.generateGuest(); // generates guest and stores in `guests`
+        String t = userService.generateGuest(); // generates guest and stores in `guests`
 
         ShoppingCart cart = userRepo.getUserCart(authRepo.getUserId(t));
 
         assertNotNull(cart);
         assertTrue(cart.getAllCart().isEmpty()); // assuming empty cart initially
     }
+
     @Test
     void test_getUserCart_userNotFound_throwsException() {
         int invalidId = 9999; // not in guests, not in users
@@ -566,6 +570,7 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
         assertEquals("User with ID " + invalidId + " not found", ex.getMessage());
         assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getErrorCode());
     }
+
     @Test
     void test_getUserDTO_guestUser_success() throws Exception {
         String guestToken = userService.generateGuest();
@@ -574,9 +579,7 @@ assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==10);
         UserDTO dto = userRepo.getUserDTO(guestId);
 
         assertNotNull(dto);
-        assertTrue(dto.id==guestId); // assuming guest naming convention
+        assertTrue(dto.id == guestId); // assuming guest naming convention
     }
-
-
 
 }

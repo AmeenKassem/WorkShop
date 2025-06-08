@@ -12,6 +12,7 @@ import workshop.demo.DTOs.Category;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
+
 @SpringBootTest
 public class StockTest {
 
@@ -25,7 +26,7 @@ public class StockTest {
 
     @Test
     public void testRemoveItem() throws Exception {
-        item newItem = new item(1, 10, 100, Category.ELECTRONICS);
+        item newItem = new item(1, 10, 100, Category.Electronics);
         store.addItem(newItem);
         System.out.println("addedddd");
         System.out.println(store.getStock().size());
@@ -49,7 +50,7 @@ public class StockTest {
     //Test "functionname" when "something " then "Succes/faliure"
     @Test
     public void testRankProductWithoutConcurrency() throws UIException {
-        item testItem = new item(1, 10, 100, Category.ELECTRONICS);
+        item testItem = new item(1, 10, 100, Category.Electronics);
         testItem.setRank(new AtomicInteger[5]);
         for (int i = 0; i < 5; i++) {
             testItem.getRank()[i] = new AtomicInteger(0);

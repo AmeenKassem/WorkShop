@@ -18,6 +18,7 @@ public class CreateDiscountDTO {
     private String condition; // e.g. "CATEGORY:DAIRY", "TOTAL>100", or null
     private Logic logic;// default to simple discount
     private List<CreateDiscountDTO> subDiscounts;
+    private String coupon;
 
     public CreateDiscountDTO(String name, double percent, Type type, String condition, Logic logic, List<CreateDiscountDTO> subDiscounts) {
         this.name = name;
@@ -53,5 +54,9 @@ public class CreateDiscountDTO {
 
     public List<CreateDiscountDTO> getSubDiscounts() {
         return subDiscounts;
+    }
+
+    public void setCoupon(String coupon) {
+        this.coupon = coupon;
     }
 }

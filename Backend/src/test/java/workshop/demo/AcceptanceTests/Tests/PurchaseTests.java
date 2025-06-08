@@ -17,7 +17,6 @@ import static org.mockito.Mockito.when;
 import org.slf4j.Logger;
 import org.springframework.boot.test.context.SpringBootTest;
 
-
 import org.slf4j.LoggerFactory;
 import workshop.demo.AcceptanceTests.Utill.Real;
 import workshop.demo.DTOs.*;
@@ -38,6 +37,7 @@ import static org.mockito.Mockito.doThrow;
 
 @SpringBootTest
 public class PurchaseTests extends AcceptanceTests {
+
     private static final Logger logger = LoggerFactory.getLogger(PurchaseTests.class);
 
     Real real = new Real();
@@ -95,15 +95,15 @@ public class PurchaseTests extends AcceptanceTests {
 
         int productId = 200;
         String[] keywords = {"Phone", "Smartphone"};
-        when(real.mockStockRepo.addProduct("Phone", Category.ELECTRONICS, "Smartphone", keywords)).thenReturn(productId);
-        int returnedProductId = real.stockService.addProduct(ownerToken, "Phone", Category.ELECTRONICS, "Smartphone", keywords);
+        when(real.mockStockRepo.addProduct("Phone", Category.Electronics, "Smartphone", keywords)).thenReturn(productId);
+        int returnedProductId = real.stockService.addProduct(ownerToken, "Phone", Category.Electronics, "Smartphone", keywords);
         assertEquals(productId, returnedProductId);
 
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.AddToStock)).thenReturn(true);
-        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", keywords));
-        when(real.mockStockRepo.addItem(storeId, productId, 10, 100, Category.ELECTRONICS))
-                .thenReturn(new item(productId, 10, 100, Category.ELECTRONICS));
-        int itemAdded = real.stockService.addItem(storeId, ownerToken, productId, 10, 100, Category.ELECTRONICS);
+        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(new Product("Phone", productId, Category.Electronics, "Smartphone", keywords));
+        when(real.mockStockRepo.addItem(storeId, productId, 10, 100, Category.Electronics))
+                .thenReturn(new item(productId, 10, 100, Category.Electronics));
+        int itemAdded = real.stockService.addItem(storeId, ownerToken, productId, 10, 100, Category.Electronics);
         assertEquals(itemAdded, productId);
 
         int userId = 20;
@@ -195,10 +195,8 @@ public class PurchaseTests extends AcceptanceTests {
 
         // ===== MOCK: Cart Preparation Phase =====
         List<UserSpecialItemCart> specialItems = List.of(new UserSpecialItemCart(storeId, specialId, bidId, SpecialType.BID));
-        UserSpecialItemCart a=new UserSpecialItemCart(8,9,9,SpecialType.Auction);
+        UserSpecialItemCart a = new UserSpecialItemCart(8, 9, 9, SpecialType.Auction);
         a.equals(specialItems.get(0));
-
-
 
         when(real.mockUserRepo.getAllSpecialItems(userId)).thenReturn(specialItems);
 
@@ -209,7 +207,7 @@ public class PurchaseTests extends AcceptanceTests {
         when(real.mockStockRepo.getBidIfWinner(storeId, specialId, bidId, SpecialType.BID)).thenReturn(wonBid);
 
         // ===== MOCK: Product & Store Info =====
-        Product product = new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", null);
+        Product product = new Product("Phone", productId, Category.Electronics, "Smartphone", null);
         when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(product);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
@@ -224,7 +222,7 @@ public class PurchaseTests extends AcceptanceTests {
         doNothing().when(real.mockUserRepo).removeSpecialItem(eq(userId), any());
 
         ReceiptDTO expectedReceipt = new ReceiptDTO("TestStore", "2025-06-01", List.of(
-                new ReceiptProduct("Phone", "TestStore", 1, (int) price, productId, Category.ELECTRONICS)
+                new ReceiptProduct("Phone", "TestStore", 1, (int) price, productId, Category.Electronics)
         ), price);
 
         doNothing().when(real.mockOrderRepo).setOrderToStore(eq(storeId), eq(userId), any(), eq("TestStore"));
@@ -249,7 +247,7 @@ public class PurchaseTests extends AcceptanceTests {
         assertEquals((int) price, productResult.getPrice());
         assertEquals(productId, productResult.getProductId());
         assertEquals("TestStore", productResult.getStorename());
-        assertEquals(Category.ELECTRONICS, productResult.getCategory());
+        assertEquals(Category.Electronics, productResult.getCategory());
     }
 
     @Test
@@ -380,7 +378,7 @@ public class PurchaseTests extends AcceptanceTests {
         when(real.mockStockRepo.getBidIfWinner(storeId, specialId, auctionId, SpecialType.Auction)).thenReturn(wonAuction);
 
         // ===== MOCK: Product Info & Store Name =====
-        Product product = new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", null);
+        Product product = new Product("Phone", productId, Category.Electronics, "Smartphone", null);
         when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(product);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
@@ -416,7 +414,7 @@ public class PurchaseTests extends AcceptanceTests {
         assertEquals((int) price, productResult.getPrice());
         assertEquals(productId, productResult.getProductId());
         assertEquals("TestStore", productResult.getStorename());
-        assertEquals(Category.ELECTRONICS, productResult.getCategory());
+        assertEquals(Category.Electronics, productResult.getCategory());
     }
 
     @Test
@@ -544,7 +542,7 @@ public class PurchaseTests extends AcceptanceTests {
         when(real.mockStockRepo.getRandomCardIfWinner(storeId, randomId, userId)).thenReturn(card);
 
         // ===== MOCK: Product Info & Store Name =====
-        Product product = new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", null);
+        Product product = new Product("Phone", productId, Category.Electronics, "Smartphone", null);
         when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(product);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
         doNothing().when(real.mockStockRepo).validateAndDecreaseStock(storeId, productId, 1);
@@ -579,9 +577,8 @@ public class PurchaseTests extends AcceptanceTests {
         assertEquals(1, productResult.getQuantity());
         assertEquals(productId, productResult.getProductId());
         assertEquals("TestStore", productResult.getStorename());
-        assertEquals(Category.ELECTRONICS, productResult.getCategory());
+        assertEquals(Category.Electronics, productResult.getCategory());
     }
-
 
     @Test
     void Set_ProductToRandom_Failure_InvalidToken() throws UIException {
@@ -622,12 +619,12 @@ public class PurchaseTests extends AcceptanceTests {
 
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.Electronics);
         CartItem item1 = new CartItem(item);
         cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 2, 200, productId, Category.ELECTRONICS);
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 2, 200, productId, Category.Electronics);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
@@ -646,6 +643,5 @@ public class PurchaseTests extends AcceptanceTests {
         assertEquals("TestStore", receipts[0].getStoreName());
         assertEquals(200.0, receipts[0].getFinalPrice());
     }
-
 
 }
