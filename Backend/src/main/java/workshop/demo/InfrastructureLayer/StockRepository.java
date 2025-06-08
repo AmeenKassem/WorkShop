@@ -503,9 +503,9 @@ public class StockRepository implements IStockRepo {
         List<StoreStock> stores = new ArrayList<>();
         if (criteria.specificStore()) {
             stores.add(storeStocks.get(criteria.getStoreId()));
-        }/* else {
-//            stores.addAll(storeStocks.values());
-//        }*/
+        } else {
+            stores.addAll(storeStocks.values());
+        }
         return stores;
     }
 
