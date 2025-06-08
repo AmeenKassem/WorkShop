@@ -82,28 +82,31 @@ public class PurchasePresenter {
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             headers.setAccept(List.of(MediaType.APPLICATION_JSON));
             HttpEntity<?> entity = new HttpEntity<>(headers);
-            System.out.println("Sending request to: " + url);
-            ResponseEntity<String> response = restTemplate.exchange(
+
+            ResponseEntity<ApiResponse<List<ReceiptDTO>>> response = restTemplate.exchange(
                     url,
                     HttpMethod.POST,
                     entity,
-                    String.class);
+                    new ParameterizedTypeReference<ApiResponse<List<ReceiptDTO>>>() {
+                    });
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            ApiResponse responseBody = objectMapper.readValue(response.getBody(), ApiResponse.class);
+            ApiResponse<List<ReceiptDTO>> responseBody = response.getBody();
+
             if (responseBody != null && responseBody.getErrNumber() == -1) {
-                NotificationView.showSuccess("Purchase successful!");
-                ReceiptDTO[] receipts = (ReceiptDTO[]) responseBody.getData();
-                NotificationView.showSuccess("Purchase successful!");
-                view.showReceiptDialog(receipts);
+                List<ReceiptDTO> receiptList = responseBody.getData();
+                ReceiptDTO[] receipts = receiptList.toArray(new ReceiptDTO[0]);
+
+                PurchaseView.showReceiptDialog(receipts);
                 UI.getCurrent().navigate("");
             } else {
+
                 NotificationView.showError(ExceptionHandlers.getErrorMessage(responseBody.getErrNumber()));
             }
 
         } catch (Exception e) {
+
             ExceptionHandlers.handleException(e);
-            //NotificationView.showError("Failed to complete purchase: " + e.getMessage());
+            // NotificationView.showError("Failed to complete purchase: " + e.getMessage());
         }
     }
 }

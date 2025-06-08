@@ -1,11 +1,14 @@
 package workshop.demo.Controllers;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -45,77 +48,61 @@ public class PurcheseContoller {
     // cant use the RequestBody for the PaymentDetails and the SupplyDetails
     // because they are not in the same class
     @PostMapping("/guest")
-    public ResponseEntity<?> buyGuestCart(@RequestParam String token,
+    public ResponseEntity<ApiResponse<ReceiptDTO[]>> buyGuestCart(@RequestParam String token,
             @RequestParam String paymentJson,
             @RequestParam String supplyJson, @RequestParam(required = false) String coupon) {
         ApiResponse<ReceiptDTO[]> res;
         try {
-            CouponContext.set(coupon);
+            // CouponContext.set(coupon);
             System.out.println("payment received for guest");
-            PaymentDetails paymentdetails = PaymentDetails.getPaymentDetailsFromJSON(paymentJson);
-            SupplyDetails supplydetails = SupplyDetails.getSupplyDetailsFromJSON(supplyJson);
+            String decodedPaymentJson = URLDecoder.decode(paymentJson, StandardCharsets.UTF_8);
+            String decodedSupplyJson = URLDecoder.decode(supplyJson, StandardCharsets.UTF_8);
+            PaymentDetails paymentdetails = PaymentDetails.getPaymentDetailsFromJSON(decodedPaymentJson);
+            SupplyDetails supplydetails = SupplyDetails.getSupplyDetailsFromJSON(decodedSupplyJson);
 
-            //ReceiptDTO[] receipts = purchaseService.buyGuestCart(token, paymentdetails, supplydetails);
-            // Receipt 1 products
-            List<ReceiptProduct> products1 = Arrays.asList(
-                    new ReceiptProduct("Bananas", "Fresh Market", 3, 10, 101, Category.Beauty),
-                    new ReceiptProduct("Milk", "Fresh Market", 2, 8, 102, Category.ELECTRONICS));
-
-            // Receipt 2 products
-            List<ReceiptProduct> products2 = Arrays.asList(
-                    new ReceiptProduct("Bluetooth Speaker", "Tech Hub", 1, 199, 201, Category.ELECTRONICS),
-                    new ReceiptProduct("Headphones", "Tech Hub", 1, 150, 202, Category.ELECTRONICS));
-
-            // Receipt 3 products
-            List<ReceiptProduct> products3 = Arrays.asList(
-                    new ReceiptProduct("Pillow", "Home Comforts", 2, 30, 301, Category.Home),
-                    new ReceiptProduct("Blanket", "Home Comforts", 1, 60, 302, Category.Home));
-
-             ReceiptDTO[] receipts = new ReceiptDTO[] {
-                    new ReceiptDTO("Fresh Market", "2025-06-01", products1, 90),
-                    new ReceiptDTO("Tech Hub", "2025-06-02", products2, 999),
-                    new ReceiptDTO("Home Comforts", "2025-06-03", products3, 77)
-            };
+            ReceiptDTO[] receipts = purchaseService.buyGuestCart(token, paymentdetails, supplydetails);
             res = new ApiResponse<>(receipts, null);
-            return ResponseEntity.ok(res.toJson());
+            return ResponseEntity.ok(res);
         } catch (UIException e) {
             res = new ApiResponse<>(null, e.getMessage(), e.getNumber());
-            return ResponseEntity.badRequest().body(res.toJson());
+            return ResponseEntity.badRequest().body(res);
         } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(res.toJson());
+                    .body(res);
         } finally {
-            CouponContext.clear();
+            // CouponContext.clear();
         }
     }
 
     @PostMapping("/registered")
-    public ResponseEntity<?> buyRegisteredCart(@RequestParam String token,
+    public ResponseEntity<ApiResponse<ReceiptDTO[]>> buyRegisteredCart(@RequestParam String token,
             @RequestParam String paymentJson,
             @RequestParam String supplyJson, @RequestParam(required = false) String coupon) {
         ApiResponse<ReceiptDTO[]> res;
         try {
-            CouponContext.set(coupon);
+            // CouponContext.set(coupon);
             System.out.println("payment received for registered");
-            PaymentDetails paymentdetails = PaymentDetails.getPaymentDetailsFromJSON(paymentJson);
-            SupplyDetails supplydetails = SupplyDetails.getSupplyDetailsFromJSON(supplyJson);
+            String decodedPaymentJson = URLDecoder.decode(paymentJson, StandardCharsets.UTF_8);
+            String decodedSupplyJson = URLDecoder.decode(supplyJson, StandardCharsets.UTF_8);
+            PaymentDetails paymentdetails = PaymentDetails.getPaymentDetailsFromJSON(decodedPaymentJson);
+            SupplyDetails supplydetails = SupplyDetails.getSupplyDetailsFromJSON(decodedSupplyJson);
 
             ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(token, paymentdetails, supplydetails);
             res = new ApiResponse<>(receipts, null);
             // Return 200 OK for successful operations
-            return ResponseEntity.ok(res.toJson());
+            return ResponseEntity.ok(res);
         } catch (UIException e) {
             res = new ApiResponse<>(null, e.getMessage(), e.getNumber());
             // Return 400 Bad Request for client errors
-            return ResponseEntity.badRequest().body(res.toJson());
+            return ResponseEntity.badRequest().body(res);
         } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
             // Return 500 Internal Server Error for server errors
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(res.toJson());
+                    .body(res);
         } finally {
-            CouponContext.clear();
+            // CouponContext.clear();
         }
     }
 
@@ -138,24 +125,29 @@ public class PurcheseContoller {
         }
     }
 
-    @PostMapping("/finalizeRandomWinnings")
-    public String finalizeRandomWinnings(@RequestParam String token,
+    @PostMapping("/finalizeSpecialCart")
+    public ResponseEntity<ApiResponse<ReceiptDTO[]>> finalizeSpecialCart(
+            @RequestParam String token,
             @RequestParam String address,
             @RequestParam String city,
             @RequestParam String state,
             @RequestParam String zipCode) {
-        ApiResponse<String> res;
+
+        ApiResponse<ReceiptDTO[]> res;
         try {
             SupplyDetails supply = new SupplyDetails(address, city, state, zipCode);
-            // TODO change the test payment and the supply
-            purchaseService.finalizeSpecialCart(token, PaymentDetails.testPayment(), supply);
-            res = new ApiResponse<>("Done", null);
+
+            ReceiptDTO[] receipts = purchaseService.finalizeSpecialCart(token, PaymentDetails.testPayment(), supply);
+
+            res = new ApiResponse<>(receipts, null);
+            return ResponseEntity.ok(res);
         } catch (UIException e) {
             res = new ApiResponse<>(null, e.getMessage(), e.getNumber());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
         } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
         }
-        return res.toJson();
     }
 
     // @PostMapping("/finalizeAcceptedBids")

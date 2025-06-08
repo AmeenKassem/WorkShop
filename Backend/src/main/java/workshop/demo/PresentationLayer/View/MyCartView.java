@@ -3,10 +3,12 @@ package workshop.demo.PresentationLayer.View;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.*;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -28,6 +30,7 @@ public class MyCartView extends VerticalLayout {
     private final Button updateCartBtn = new Button("🔁 Update Cart", new Icon(VaadinIcon.REFRESH));
     private final Button continueShoppingBtn = new Button("⬅ Continue Shopping", new Icon(VaadinIcon.ARROW_LEFT));
     private final Button checkoutBtn = new Button("💳 Proceed to Checkout", new Icon(VaadinIcon.CREDIT_CARD));
+    private final Button finalizeSpecialCarButton = new Button("Finalize Special Cart", new Icon(VaadinIcon.CHECK));
 
     public MyCartView() {
         setSizeFull();
@@ -44,33 +47,35 @@ public class MyCartView extends VerticalLayout {
         String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
         if (userType != null && userType.equals("user")) {
             presenter.loadSpecialCartItems();
+            finalizeSpecialCarButton.setVisible(true);
+            finalizeSpecialCarButton.addClickListener(e -> presenter.finalizeSpecialCart());
         }
     }
 
     private void loadTestData() {
-    // Sample Regular Items
-    ItemCartDTO item1 = new ItemCartDTO(1, 2, 101, 10, "Bananas", "Fresh bananas",Category.Beauty);
-    ItemCartDTO item2 = new ItemCartDTO(2, 1, 102, 199, "Bluetooth Speaker", "Loud and portable",Category.Clothing);
-    ItemCartDTO item3 = new ItemCartDTO(3, 3, 103, 15, "Pillow", "Soft pillow",Category.Home);
+        // Sample Regular Items
+        ItemCartDTO item1 = new ItemCartDTO(1, 2, 101, 10, "Bananas", "Fresh bananas", Category.Beauty);
+        ItemCartDTO item2 = new ItemCartDTO(2, 1, 102, 199, "Bluetooth Speaker", "Loud and portable",
+                Category.Clothing);
+        ItemCartDTO item3 = new ItemCartDTO(3, 3, 103, 15, "Pillow", "Soft pillow", Category.Home);
 
-    displayRegularItems(new ItemCartDTO[] { item1, item2, item3 });
+        displayRegularItems(new ItemCartDTO[] { item1, item2, item3 });
 
-    // Sample Special Items
-    SpecialCartItemDTO special1 = new SpecialCartItemDTO();
-    special1.setIds(201, 1001, 0, SpecialType.Random);
-    special1.setValues("Mystery Box", false, false);
+        // Sample Special Items
+        SpecialCartItemDTO special1 = new SpecialCartItemDTO();
+        special1.setIds(201, 1001, 0, SpecialType.Random);
+        special1.setValues("Mystery Box", false, false);
 
-    SpecialCartItemDTO special2 = new SpecialCartItemDTO();
-    special2.setIds(202, 1002, 0, SpecialType.Auction);
-    special2.setValues("Rare Coin", true, true);
+        SpecialCartItemDTO special2 = new SpecialCartItemDTO();
+        special2.setIds(202, 1002, 0, SpecialType.Auction);
+        special2.setValues("Rare Coin", true, true);
 
-    SpecialCartItemDTO special3 = new SpecialCartItemDTO();
-    special3.setIds(203, 1003, 10001, SpecialType.BID);
-    special3.setValues("Gaming Chair", false, true);
+        SpecialCartItemDTO special3 = new SpecialCartItemDTO();
+        special3.setIds(203, 1003, 10001, SpecialType.BID);
+        special3.setValues("Gaming Chair", false, true);
 
-    displaySpecialItems(new SpecialCartItemDTO[] { special1, special2, special3 });
-}
-
+        displaySpecialItems(new SpecialCartItemDTO[] { special1, special2, special3 });
+    }
 
     private void setupHeader() {
         H1 header = new H1("🛍️ My Cart");
@@ -104,7 +109,9 @@ public class MyCartView extends VerticalLayout {
     }
 
     private void setupActionButtons() {
-        HorizontalLayout buttons = new HorizontalLayout(continueShoppingBtn, updateCartBtn, checkoutBtn);
+        HorizontalLayout buttons = new HorizontalLayout(continueShoppingBtn, updateCartBtn, checkoutBtn,
+                finalizeSpecialCarButton);
+        finalizeSpecialCarButton.setVisible(false); // Initially hidden
         buttons.setJustifyContentMode(JustifyContentMode.CENTER);
         buttons.setWidthFull();
         buttons.addClassName("cart-buttons");
@@ -139,10 +146,37 @@ public class MyCartView extends VerticalLayout {
         card.add(new Paragraph("📦 Quantity: " + item.quantity));
         card.add(new Paragraph("🧮 Subtotal: ₪" + (item.price * item.quantity)));
 
-        Button viewBtn = new Button("View / Edit", new Icon(VaadinIcon.EDIT));
-        viewBtn.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("ProductDetails/" + item.productId)));
+        // Change Quantity button
+        Button changeQtyBtn = new Button("Change Quantity", new Icon(VaadinIcon.PLUS));
+        changeQtyBtn.addClickListener(e -> {
+            // You can use a dialog or input prompt for actual input
+            TextField quantityField = new TextField("New Quantity");
+            Button confirmBtn = new Button("Confirm");
+            Dialog dialog = new Dialog(quantityField, confirmBtn);
 
-        card.add(viewBtn);
+            confirmBtn.addClickListener(ev -> {
+                try {
+                    int newQuantity = Integer.parseInt(quantityField.getValue());
+                    presenter.updateQuantity(item.productId, newQuantity); // <-- Presenter method
+                    dialog.close();
+                } catch (NumberFormatException ex) {
+                    NotificationView.showError("Please enter a valid number");
+                }
+            });
+
+            dialog.open();
+        });
+
+        // Remove button
+        Button removeBtn = new Button("Remove", new Icon(VaadinIcon.TRASH));
+        removeBtn.getStyle().set("color", "red");
+        removeBtn.addClickListener(e -> {
+            presenter.removeFromCart(item.productId); // <-- Presenter method
+        });
+
+        HorizontalLayout buttonLayout = new HorizontalLayout(changeQtyBtn, removeBtn);
+        card.add(buttonLayout);
+
         return card;
     }
 
@@ -165,7 +199,8 @@ public class MyCartView extends VerticalLayout {
         card.add(new Paragraph("🏆 You Won: " + (item.isWinner() ? "Yes" : "No")));
 
         // Button viewBtn = new Button("View / Edit", new Icon(VaadinIcon.SEARCH));
-        // viewBtn.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("SpecialProductDetails/" + item.getProductId())));
+        // viewBtn.addClickListener(e -> getUI().ifPresent(ui ->
+        // ui.navigate("SpecialProductDetails/" + item.getProductId())));
 
         // card.add(viewBtn);
         return card;

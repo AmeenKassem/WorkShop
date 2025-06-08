@@ -176,7 +176,7 @@ public class UserController {
     }
 
     @PostMapping("/ModifyCart")
-    public String ModifyCart(
+    public ResponseEntity<ApiResponse<Boolean>> modifyCart(
             @RequestParam String token,
             @RequestParam int productId,
             @RequestParam int quantity) {
@@ -184,28 +184,33 @@ public class UserController {
         try {
             boolean result = userService.ModifyCartAddQToBuy(token, productId, quantity);
             res = new ApiResponse<>(result, null);
+            //System.out.println("ModifyCart result: " + result);
+            return ResponseEntity.ok(res);
         } catch (UIException ex) {
             res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest().body(res);
         } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
         }
-        return res.toJson();
     }
 
     @PostMapping("/removeFromCart")
-    public String removeFromCart(
+    public ResponseEntity<ApiResponse<Boolean>> removeFromCart(
             @RequestParam String token,
             @RequestParam int productId) {
         ApiResponse<Boolean> res;
         try {
             boolean result = userService.removeItemFromCart(token, productId);
             res = new ApiResponse<>(result, null);
+            return ResponseEntity.ok(res);
         } catch (UIException ex) {
             res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.badRequest().body(res);
         } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
         }
-        return res.toJson();
     }
 
     // @PutMapping("/updateProfile")
@@ -241,48 +246,57 @@ public class UserController {
     public ResponseEntity<?> getSpecialCart(@RequestParam String token) {
         ApiResponse<SpecialCartItemDTO[]> res;
         try {
-            //SpecialCartItemDTO[] cartItems = userService.getSpecialCart(token);
+            SpecialCartItemDTO[] cartItems = userService.getSpecialCart(token);
 
-            SpecialCartItemDTO special1 = new SpecialCartItemDTO();
-            special1.setIds(201, 1001, 0, SpecialType.Random);
-            special1.setValues("Mystery Box", false, false);
+            // SpecialCartItemDTO special1 = new SpecialCartItemDTO();
+            // special1.setIds(201, 1001, 0, SpecialType.Random);
+            // special1.setValues("Mystery Box", false, false);
 
-            SpecialCartItemDTO special2 = new SpecialCartItemDTO();
-            special2.setIds(202, 1002, 0, SpecialType.Auction);
-            special2.setValues("Rare Coin", true, true);
+            // SpecialCartItemDTO special2 = new SpecialCartItemDTO();
+            // special2.setIds(202, 1002, 0, SpecialType.Auction);
+            // special2.setValues("Rare Coin", true, true);
 
-            SpecialCartItemDTO special3 = new SpecialCartItemDTO();
-            special3.setIds(203, 1003, 10001, SpecialType.BID);
-            special3.setValues("Gaming Chair", false, true);
-            SpecialCartItemDTO[] cartItems = new SpecialCartItemDTO[] { special1, special2, special3 };
+            // SpecialCartItemDTO special3 = new SpecialCartItemDTO();
+            // special3.setIds(203, 1003, 10001, SpecialType.BID);
+            // special3.setValues("Gaming Chair", false, true);
+            // SpecialCartItemDTO[] cartItems = new SpecialCartItemDTO[] { special1,
+            // special2, special3 };
             res = new ApiResponse<>(cartItems, null);
-        // } catch (UIException ex) {
-        //     res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.ok(res);
+
+        } catch (UIException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(res);
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(res.toJson());
     }
 
     @GetMapping("/getregularcart")
     public ResponseEntity<?> getRegularCart(@RequestParam String token) {
-        ApiResponse<ItemCartDTO[]> res;
         try {
-            // ItemCartDTO[] cartItems = userService.getRegularCart(token);
-            ItemCartDTO item1 = new ItemCartDTO(1, 2, 101, 10, "Bananas", "Fresh bananas", Category.Beauty);
-            ItemCartDTO item2 = new ItemCartDTO(2, 1, 102, 199, "Bluetooth Speaker", "Loud and portable",
-                    Category.Clothing);
-            ItemCartDTO item3 = new ItemCartDTO(3, 3, 103, 15, "Pillow", "Soft pillow", Category.Home);
-            ItemCartDTO[] cartItems = new ItemCartDTO[] { item1, item2, item3 };
-            res = new ApiResponse<>(cartItems, null);
-            // } catch (UIException ex) {
-            // res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            // ItemCartDTO item1 = new ItemCartDTO(1, 2, 101, 10, "Bananas", "Fresh
+            // bananas", Category.Beauty);
+            // ItemCartDTO item2 = new ItemCartDTO(2, 1, 102, 199, "Bluetooth Speaker",
+            // "Loud and portable",
+            // Category.Clothing);
+            // ItemCartDTO item3 = new ItemCartDTO(3, 3, 103, 15, "Pillow", "Soft pillow",
+            // Category.Home);
+            ItemCartDTO[] cartItems = userService.getRegularCart(token);
+            // ItemCartDTO[] cartItems = new ItemCartDTO[] { item1, item2, item3 };
+            ApiResponse<ItemCartDTO[]> res = new ApiResponse<>(cartItems, null);
+            return ResponseEntity.ok(res); // ✅ Return 200 OK
+        } catch (UIException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new ApiResponse<>(null, e.getMessage(), -1);
+            ApiResponse<ItemCartDTO[]> res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(res.toJson());
     }
 
     // ------------admin activites:
