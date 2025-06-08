@@ -13,7 +13,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public interface IStoreRepo {
 
-    List<StoreDTO> viewAllStores();
+   // List<StoreDTO> viewAllStores();
 
     public int addStoreToSystem(int bossID, String storeName, String Category) throws UIException;
 
@@ -35,7 +35,7 @@ public interface IStoreRepo {
     String getStoreNameById(int storeId) throws UIException;
 
     //another: getting info about the owners and manager->4.11
-    public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws UIException, DevException;
+    //public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws UIException, DevException;
 
     //another: messages to response->4.12
     //another: getting info about the history of purcheses in a specific store -> dpne in order
