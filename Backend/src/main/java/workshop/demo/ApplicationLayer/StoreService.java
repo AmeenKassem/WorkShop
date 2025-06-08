@@ -338,7 +338,7 @@ public class StoreService {
 
     public void addDiscountToStore(int storeId, String token, CreateDiscountDTO dto) throws UIException, DevException {
         logger.info("User attempting to add a discount to store {}", storeId);
-
+        //
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
@@ -352,7 +352,7 @@ public class StoreService {
         }
 
         Store store = storeRepo.findStoreByID(storeId);
-        Discount discount = DiscountFactory.fromDTO(dto);
+        Discount discount = DiscountFactory.fromDTO(dto);//new Disc...
         store.addDiscount(discount);
         logger.info("Discount '{}' added successfully to store {}", discount.getName(), storeId);
     }

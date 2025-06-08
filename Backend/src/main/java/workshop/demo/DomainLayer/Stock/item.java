@@ -16,6 +16,8 @@ public class item {
     private Category category;
     private AtomicInteger[] rank;// rank[x] is the number of people who ranked i+1
 
+    // discounts ... 
+
     public item(int produtId, int quantity, int price, Category category) {
         this.productId = produtId;
         this.price = price;

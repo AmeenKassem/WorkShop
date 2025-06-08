@@ -15,7 +15,7 @@ public class CreateDiscountDTO {
     private String name;
     private double percent;
     private Type type;
-    private String condition; // e.g. "CATEGORY:DAIRY", "TOTAL>100", or null
+    private String condition; // e.g. "CATEGORY:DAIRY", "TOTAL>100", or null : "CATEGORY:DIARY ^ TOTAL>100 OR ..."
     private Logic logic ;// default to simple discount
     private List<CreateDiscountDTO> subDiscounts;
 
