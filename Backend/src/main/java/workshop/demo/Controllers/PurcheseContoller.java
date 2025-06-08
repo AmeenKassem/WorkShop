@@ -87,8 +87,19 @@ public class PurcheseContoller {
             String decodedSupplyJson = URLDecoder.decode(supplyJson, StandardCharsets.UTF_8);
             PaymentDetails paymentdetails = PaymentDetails.getPaymentDetailsFromJSON(decodedPaymentJson);
             SupplyDetails supplydetails = SupplyDetails.getSupplyDetailsFromJSON(decodedSupplyJson);
+            // Create products
+            ReceiptProduct p1 = new ReceiptProduct("Laptop", "TechStore", 1, 1200, 1, Category.Electronics);
+            ReceiptProduct p2 = new ReceiptProduct("Chair", "HomeMart", 2, 150, 2, Category.Furniture);
+            ReceiptProduct p3 = new ReceiptProduct("T-Shirt", "FashionHub", 3, 25, 3, Category.Clothing);
 
-            ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(token, paymentdetails, supplydetails);
+            // Create ReceiptDTO instances
+            ReceiptDTO r1 = new ReceiptDTO("TechStore", "2025-06-01", List.of(p1), 1200);
+            ReceiptDTO r2 = new ReceiptDTO("HomeMart", "2025-06-02", List.of(p2), 300);
+            ReceiptDTO r3 = new ReceiptDTO("FashionHub", "2025-06-03", List.of(p3), 75);
+
+            // Create array of ReceiptDTO
+            ReceiptDTO[] receipts = new ReceiptDTO[] { r1, r2, r3 };
+            //ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(token, paymentdetails, supplydetails);
             res = new ApiResponse<>(receipts, null);
             // Return 200 OK for successful operations
             return ResponseEntity.ok(res);
@@ -126,28 +137,45 @@ public class PurcheseContoller {
     }
 
     @PostMapping("/finalizeSpecialCart")
-    public ResponseEntity<ApiResponse<ReceiptDTO[]>> finalizeSpecialCart(
-            @RequestParam String token,
-            @RequestParam String address,
-            @RequestParam String city,
-            @RequestParam String state,
-            @RequestParam String zipCode) {
-
+    public String finalizeSpecialCart(@RequestParam String token,
+            @RequestParam String paymentJson,
+            @RequestParam String supplyJson) {
         ApiResponse<ReceiptDTO[]> res;
+
         try {
-            SupplyDetails supply = new SupplyDetails(address, city, state, zipCode);
+            System.out.println("Finalizing special cart purchase");
+            // Decode the JSON strings
+            String decodedPaymentJson = URLDecoder.decode(paymentJson, StandardCharsets.UTF_8);
+            String decodedSupplyJson = URLDecoder.decode(supplyJson, StandardCharsets.UTF_8);
 
-            ReceiptDTO[] receipts = purchaseService.finalizeSpecialCart(token, PaymentDetails.testPayment(), supply);
+            // Use static methods to parse the JSON
+            PaymentDetails paymentDetails = PaymentDetails.getPaymentDetailsFromJSON(decodedPaymentJson);
+            SupplyDetails supplyDetails = SupplyDetails.getSupplyDetailsFromJSON(decodedSupplyJson);
 
+            // Finalize special cart purchase
+            // ReceiptDTO[] receipts = purchaseService.finalizeSpecialCart(token,
+            // paymentDetails, supplyDetails);
+
+            // Create products
+            ReceiptProduct p1 = new ReceiptProduct("Laptop", "TechStore", 1, 1200, 1, Category.Electronics);
+            ReceiptProduct p2 = new ReceiptProduct("Chair", "HomeMart", 2, 150, 2, Category.Furniture);
+            ReceiptProduct p3 = new ReceiptProduct("T-Shirt", "FashionHub", 3, 25, 3, Category.Clothing);
+
+            // Create ReceiptDTO instances
+            ReceiptDTO r1 = new ReceiptDTO("TechStore", "2025-06-01", List.of(p1), 1200);
+            ReceiptDTO r2 = new ReceiptDTO("HomeMart", "2025-06-02", List.of(p2), 300);
+            ReceiptDTO r3 = new ReceiptDTO("FashionHub", "2025-06-03", List.of(p3), 75);
+
+            // Create array of ReceiptDTO
+            ReceiptDTO[] receipts = new ReceiptDTO[] { r1, r2, r3 };
             res = new ApiResponse<>(receipts, null);
-            return ResponseEntity.ok(res);
         } catch (UIException e) {
             res = new ApiResponse<>(null, e.getMessage(), e.getNumber());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
         } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
         }
+
+        return res.toJson();
     }
 
     // @PostMapping("/finalizeAcceptedBids")

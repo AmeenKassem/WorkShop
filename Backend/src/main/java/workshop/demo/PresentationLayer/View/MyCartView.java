@@ -48,7 +48,7 @@ public class MyCartView extends VerticalLayout {
         if (userType != null && userType.equals("user")) {
             presenter.loadSpecialCartItems();
             finalizeSpecialCarButton.setVisible(true);
-            finalizeSpecialCarButton.addClickListener(e -> presenter.finalizeSpecialCart());
+            finalizeSpecialCarButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("purchase/special")));
         }
     }
 
@@ -117,7 +117,7 @@ public class MyCartView extends VerticalLayout {
         buttons.addClassName("cart-buttons");
 
         continueShoppingBtn.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("")));
-        checkoutBtn.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("purchase")));
+        checkoutBtn.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("purchase/regular")));
 
         add(buttons);
     }

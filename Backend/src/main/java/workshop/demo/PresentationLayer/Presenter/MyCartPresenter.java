@@ -203,10 +203,4 @@ public class MyCartPresenter {
             ExceptionHandlers.handleException(e);
         }
     }
-
-    public Object finalizeSpecialCart() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'finalizeSpecialCart'");
-    }
-
 }
