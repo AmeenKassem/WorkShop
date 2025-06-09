@@ -149,5 +149,21 @@ public class Store {
                 throw new Exception(p.violationMessage());
         }
     }
+    public Discount findDiscountByName(String targetName) {
+        if (discount == null || targetName == null) return null;
+        return dfsFind(discount, targetName);
+    }
+
+    // ---------------- private helper ----------------
+    private Discount dfsFind(Discount node, String targetName) {
+        if (node.getName().equals(targetName)) return node;
+        if (node instanceof CompositeDiscount comp) {
+            for (Discount child : comp.getDiscounts()) {
+                Discount found = dfsFind(child, targetName);
+                if (found != null) return found;
+            }
+        }
+        return null; // not found in this branch
+    }
 
 }

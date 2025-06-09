@@ -14,6 +14,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -158,10 +159,19 @@ public class DiscountTests {
                 CreateDiscountDTO.Logic.SINGLE,       // logic
                 List.of()                              // subDiscounts - רשימה ריקה כי זו הנחה בודדת
         );
+        //Hmode
+        String discount_name = "50% Electronics";
+        double discount_percent = 0.5;
+        CreateDiscountDTO.Type discount_type = CreateDiscountDTO.Type.VISIBLE;
+        String discount_condition = "CATEGORY:ELECTRONICS";
+        CreateDiscountDTO.Logic discount_logic = CreateDiscountDTO.Logic.SINGLE;
+        String[] discount_subDiscountNames = null;
+        //HmodeEND
         when(real.mockIOSrepo.hasPermission(ownerId,storeId,Permission.MANAGE_STORE_POLICY)).thenReturn(true);
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
-        real.storeService.addDiscountToStore(storeId,ownerUserToken,discount);
+        real.storeService.addDiscountToStore(storeId,ownerUserToken,discount_name,discount_percent,discount_type,
+                discount_condition,discount_logic,discount_subDiscountNames);
 
 
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 100,productId,Category.ELECTRONICS);
@@ -208,8 +218,11 @@ public class DiscountTests {
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
-
-        real.storeService.addDiscountToStore(storeId, ownerToken, orDiscountDTO);
+        String[] subDiscountNames = new String[2];
+        subDiscountNames[0] = d1.getName();
+        subDiscountNames [1] = d2.getName();
+        real.storeService.addDiscountToStore(storeId, ownerToken, orDiscountDTO.getName(),
+                orDiscountDTO.getPercent(),orDiscountDTO.getType(), orDiscountDTO.getCondition(), orDiscountDTO.getLogic(),subDiscountNames);
 
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
@@ -250,12 +263,15 @@ public class DiscountTests {
         CreateDiscountDTO d1 = new CreateDiscountDTO("d1", 0.3, CreateDiscountDTO.Type.VISIBLE, "ITEM:"+productId+1, CreateDiscountDTO.Logic.SINGLE, List.of());
         CreateDiscountDTO d2 = new CreateDiscountDTO("d2", 0.5, CreateDiscountDTO.Type.VISIBLE, "CATEGORY:HOME", CreateDiscountDTO.Logic.SINGLE, List.of());
         CreateDiscountDTO orDiscountDTO = new CreateDiscountDTO("OrDiscount", 0.0, CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.OR, List.of(d1, d2));
-
+        String[] subDiscountNames = new String[2];
+        subDiscountNames[0] = d1.getName();
+        subDiscountNames [1] = d2.getName();
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        real.storeService.addDiscountToStore(storeId, ownerToken, orDiscountDTO);
+        real.storeService.addDiscountToStore(storeId, ownerToken, orDiscountDTO.getName(),orDiscountDTO.getPercent(),
+                orDiscountDTO.getType(), orDiscountDTO.getCondition(), orDiscountDTO.getLogic(),subDiscountNames);
 
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
@@ -297,12 +313,15 @@ public class DiscountTests {
         CreateDiscountDTO d1 = new CreateDiscountDTO("d1", 0.3, CreateDiscountDTO.Type.VISIBLE, "ITEM:"+3, CreateDiscountDTO.Logic.SINGLE, List.of());
         CreateDiscountDTO d2 = new CreateDiscountDTO("d2", 0.5, CreateDiscountDTO.Type.VISIBLE, "CATEGORY:ELECTRONICS", CreateDiscountDTO.Logic.SINGLE, List.of());
         CreateDiscountDTO xorDiscountDTO = new CreateDiscountDTO("XorDiscount", 0.0, CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.XOR, List.of(d1, d2));
-
+        String[] subDiscountNames = new String[2];
+        subDiscountNames[0] = d1.getName();
+        subDiscountNames [1] = d2.getName();
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        real.storeService.addDiscountToStore(storeId, ownerToken, xorDiscountDTO);
+        real.storeService.addDiscountToStore(storeId, ownerToken, xorDiscountDTO.getName(),xorDiscountDTO.getPercent(),
+                xorDiscountDTO.getType(), xorDiscountDTO.getCondition(), xorDiscountDTO.getLogic(),subDiscountNames);
 
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
@@ -347,8 +366,11 @@ public class DiscountTests {
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
-
-        real.storeService.addDiscountToStore(storeId, ownerToken, xorDiscountDTO);
+        String[] subDiscountNames = new String[2];
+        subDiscountNames[0] = d1.getName();
+        subDiscountNames [1] = d2.getName();
+        real.storeService.addDiscountToStore(storeId, ownerToken, xorDiscountDTO.getName(),xorDiscountDTO.getPercent(),
+                xorDiscountDTO.getType(),xorDiscountDTO.getCondition(),xorDiscountDTO.getLogic(),subDiscountNames);
 
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
@@ -397,12 +419,15 @@ public class DiscountTests {
         CreateDiscountDTO d1 = new CreateDiscountDTO("d1", 0.3, CreateDiscountDTO.Type.VISIBLE, "TOTAL>150", CreateDiscountDTO.Logic.SINGLE, List.of());
         CreateDiscountDTO d2 = new CreateDiscountDTO("d2", 0.03, CreateDiscountDTO.Type.VISIBLE, "ITEM:"+productId, CreateDiscountDTO.Logic.SINGLE, List.of());
         CreateDiscountDTO andDiscountDTO = new CreateDiscountDTO("AndDiscount", 0.0, CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.AND, List.of(d1, d2));
-
+        String[] subDiscountNames = new String[2];
+        subDiscountNames[0] = d1.getName();
+        subDiscountNames [1] = d2.getName();
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        real.storeService.addDiscountToStore(storeId, ownerToken, andDiscountDTO);
+        real.storeService.addDiscountToStore(storeId, ownerToken, andDiscountDTO.getName(),andDiscountDTO.getPercent(),
+                andDiscountDTO.getType(),andDiscountDTO.getCondition(),andDiscountDTO.getLogic(),subDiscountNames);
 
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
@@ -442,12 +467,15 @@ public class DiscountTests {
         CreateDiscountDTO d1 = new CreateDiscountDTO("d1", 0.3, CreateDiscountDTO.Type.VISIBLE, "TOTAL>150", CreateDiscountDTO.Logic.SINGLE, List.of());
         CreateDiscountDTO d2 = new CreateDiscountDTO("d2", 0.03, CreateDiscountDTO.Type.VISIBLE, "ITEM:"+productId+1, CreateDiscountDTO.Logic.SINGLE, List.of());
         CreateDiscountDTO andDiscountDTO = new CreateDiscountDTO("AndDiscount", 0.0, CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.AND, List.of(d1, d2));
-
+        String[] subDiscountNames = new String[2];
+        subDiscountNames[0] = d1.getName();
+        subDiscountNames [1] = d2.getName();
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        real.storeService.addDiscountToStore(storeId, ownerToken, andDiscountDTO);
+        real.storeService.addDiscountToStore(storeId, ownerToken, andDiscountDTO.getName(),andDiscountDTO.getPercent(),
+                andDiscountDTO.getType(),andDiscountDTO.getCondition(),andDiscountDTO.getLogic(),subDiscountNames);
 
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
@@ -499,9 +527,16 @@ public class DiscountTests {
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
-
+        String[] subDiscountNames = new String[2];
+        subDiscountNames[0] = d1.getName();
+        subDiscountNames [1] = d2.getName();
         // Apply discount to store
-        real.storeService.addDiscountToStore(storeId, ownerToken, maxDiscount);
+        real.storeService.addDiscountToStore(storeId, ownerToken, d1.getName(),d1.getPercent(),
+                d1.getType(),d1.getCondition(),d1.getLogic(),new String[0]);
+        real.storeService.addDiscountToStore(storeId, ownerToken, d2.getName(),d2.getPercent(),
+                d2.getType(),d2.getCondition(),d2.getLogic(),new String[0]);
+        real.storeService.addDiscountToStore(storeId, ownerToken, maxDiscount.getName(),maxDiscount.getPercent(),
+                maxDiscount.getType(),maxDiscount.getCondition(),maxDiscount.getLogic(),subDiscountNames);
 
         // Cart processing
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
@@ -556,9 +591,12 @@ public class DiscountTests {
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
-
+        String[] subDiscountNames = new String[2];
+        subDiscountNames[0] = d1.getName();
+        subDiscountNames [1] = d2.getName();
         // Apply discount to store
-        real.storeService.addDiscountToStore(storeId, ownerToken, maxDiscount);
+        real.storeService.addDiscountToStore(storeId, ownerToken, maxDiscount.getName(),maxDiscount.getPercent(),
+                maxDiscount.getType(),maxDiscount.getCondition(),maxDiscount.getLogic(),subDiscountNames);
 
         // Cart processing
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
