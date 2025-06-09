@@ -33,7 +33,7 @@ public class StockController {
     @Autowired
     public StockController(Repos repos) {
         this.stockService = new StockService(repos.stockrepo, repos.storeRepo, repos.auth, repos.userRepo,
-                repos.sUConnectionRepo, repos.UserSuspensionRepo);
+                repos.sUConnectionRepo, repos.UserSuspensionRepo,repos.notificationRepo);
     }
 
     @GetMapping("/getProductInfo")
@@ -275,7 +275,7 @@ public class StockController {
             @RequestParam int storeId, @RequestParam int bidId, @RequestParam int bidToAcceptId) {
         try {
             stockService.acceptBid(token, storeId, bidId, bidToAcceptId);
-            return ResponseEntity.ok(new ApiResponse<>("Store closed successfully", null));
+            return ResponseEntity.ok(new ApiResponse<>("Bid accepted", null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
                     .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));

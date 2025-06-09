@@ -171,7 +171,13 @@ public class PurchaseService {
         ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
         UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random);
         userRepo.addSpecialItemToCart(item, userId);
-        paymentService.processPayment(paymentDetails, amountPaid);
+        int transactionId = paymentService.externalPayment(paymentDetails, amountPaid);
+        if(transactionId == -1) {
+            logger.error("Payment failed for userId={}, amountPaid={}", userId, amountPaid);
+            throw new UIException("Payment failed", ErrorCodes.PAYMENT_ERROR);
+        } else {
+            card.transactionIdForPayment = transactionId;
+        }
         logger.info("User {} participated in random draw {}", userId, randomId);
         return card;
     }
@@ -195,11 +201,16 @@ public class PurchaseService {
                 ParticipationInRandomDTO card = stockRepo.getRandomCardIfWinner(
                         specialItem.storeId, specialItem.specialId, userId);
 
-                if (card != null && card.isWinner && card.ended) {
-                    winningRandoms.add(card); // Won
-                } else if ((card != null && !card.isWinner && card.ended) || card == null) {
-                    userRepo.removeSpecialItem(userId, specialItem); // Lost or not found → remove
-                }
+            if (card != null && card.isWinner && card.ended) {
+                winningRandoms.add(card); // Won
+            } else if ((card != null && !card.isWinner && card.ended) || card == null) {
+                userRepo.removeSpecialItem(userId, specialItem); // Lost or not found → remove
+            } else if( card.mustRefund()){
+                // If the card must be refunded, we remove it from the user's cart
+                userRepo.removeSpecialItem(userId, specialItem);
+                // And we refund the payment
+                paymentService.externalRefund(card.transactionIdForPayment);
+            }
 
             } else { // BID or AUCTION
                 SingleBid bid = stockRepo.getBidIfWinner(

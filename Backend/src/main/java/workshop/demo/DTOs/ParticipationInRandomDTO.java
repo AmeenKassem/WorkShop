@@ -10,6 +10,8 @@ public class ParticipationInRandomDTO {
     public boolean isWinner;
     public boolean ended;
     public int randomId;
+    public boolean mustRefund;
+    public int transactionIdForPayment = 0;
 
     public ParticipationInRandomDTO(int productId, int storeId, int userId, int randomId, double amountPaid) {
         this.amountPaid = amountPaid;
@@ -17,12 +19,11 @@ public class ParticipationInRandomDTO {
         this.storeId = storeId;
         this.productId = productId;
         this.randomId = randomId;
-
+        this.isWinner = false;
     }
 
     public ParticipationInRandomDTO() {
     }
-
     public void markAsWinner() {
         isWinner = true;
         ended = true;
@@ -51,6 +52,10 @@ public class ParticipationInRandomDTO {
 
     public int getUserId() {
         return userId;
+    }
+
+    public boolean mustRefund() {
+        return mustRefund;
     }
 
 }
