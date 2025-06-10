@@ -125,12 +125,12 @@ public class DiscountTests {
 
                 // ======================= PRODUCT & ITEM ADDITION =======================
                 String[] keywords = { "Laptop", "Lap", "top" };
-                int productId = stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop",
+                int productId = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop",
                                 keywords);
 
                 assertEquals(1, stockService.addItem(createdStoreId, NOToken, productId, 10, 2000,
-                                Category.ELECTRONICS));
-                itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, createdStoreId, "Laptop",
+                                Category.Electronics));
+                itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.Electronics, 0, createdStoreId, "Laptop",
                                 "TestStore");
                 System.out.println(itemStoreDTO.getCategory());
                 stockService.setProductToRandom(NOToken, productId, 1, 2000, createdStoreId, 5000);

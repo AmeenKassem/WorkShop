@@ -130,10 +130,10 @@ public class StoreSTests {
 
             // ======================= PRODUCT & ITEM ADDITION =======================
             String[] keywords = {"Laptop", "Lap", "top"};
-            stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
-        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, 1, "Laptop","TestStore");
+            stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
+        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.Electronics, 0, 1, "Laptop","TestStore");
 
-            assertEquals(1, stockService.addItem(1, NOToken, 1, 10, 2000, Category.ELECTRONICS));
+            assertEquals(1, stockService.addItem(1, NOToken, 1, 10, 2000, Category.Electronics));
 
         // ======================= SECOND GUEST SETUP =======================
     }

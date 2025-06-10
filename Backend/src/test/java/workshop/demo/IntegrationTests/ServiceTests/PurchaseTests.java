@@ -128,11 +128,11 @@ public class PurchaseTests {
 
         // ======================= PRODUCT & ITEM ADDITION =======================
         String[] keywords = { "Laptop", "Lap", "top" };
-        productId_laptop = stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
+        productId_laptop = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
 
         assertEquals(1,
-                stockService.addItem(createdStoreId, NOToken, productId_laptop, 10, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, createdStoreId, "Laptop", "TestStore");
+                stockService.addItem(createdStoreId, NOToken, productId_laptop, 10, 2000, Category.Electronics));
+        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.Electronics, 0, createdStoreId, "Laptop", "TestStore");
         stockService.setProductToRandom(NOToken, productId_laptop, 1, 2000, createdStoreId, 5000);
         stockService.setProductToAuction(NOToken, createdStoreId, productId_laptop, 1, 1000, 2);
         assertTrue(stockService.getAllAuctions(NOToken, createdStoreId).length == 1);

@@ -19,7 +19,7 @@ public class StockStoreTests {
 
     @Test
     void test_item_changeQuantity_shouldUpdateValue() {
-        item i = new item(1, 10, 150, Category.ELECTRONICS);
+        item i = new item(1, 10, 150, Category.Electronics);
         i.changeQuantity(5);
         assertEquals(5, i.getQuantity());
     }
@@ -33,7 +33,7 @@ public class StockStoreTests {
 
     @Test
     void test_item_rankProduct_shouldUpdateFinalRank() {
-        item i = new item(1, 10, 150, Category.ELECTRONICS);
+        item i = new item(1, 10, 150, Category.Electronics);
         i.rankItem(4);
         i.rankItem(5);
         assertEquals(5, i.getFinalRank(), 0.01);
