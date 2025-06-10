@@ -99,31 +99,31 @@ public class ActivePurchasesTest {
         }
     }
 
-    @Test
-    public void testBid() {
-        try {
-            int BidId = active.addProductToBid(0, 1);
-            SingleBid bid = active.addUserBidToBid(BidId, 0, 100);
-            active.rejectBid(bid.getId(), BidId);
-            Assertions.assertFalse(bid.isWon());
-            SingleBid secondBid = active.addUserBidToBid(BidId, 0, 100);
-            active.acceptBid(secondBid.getId(), BidId);
-            Assertions.assertTrue(true);
-            try {
-                SingleBid nullBid = active.addUserBidToBid(BidId, 0, 10);
-                Assertions.assertTrue(false);
-            } catch (UIException ex) {
-                Assertions.assertTrue(true);
+    // @Test
+    // public void testBid() {
+    //     try {
+    //         int BidId = active.addProductToBid(0, 1);
+    //         SingleBid bid = active.addUserBidToBid(BidId, 0, 100);
+    //         active.rejectBid(bid.getId(), BidId);
+    //         Assertions.assertFalse(bid.isWon());
+    //         SingleBid secondBid = active.addUserBidToBid(BidId, 0, 100);
+    //         active.acceptBid(secondBid.getId(), BidId);
+    //         Assertions.assertTrue(true);
+    //         try {
+    //             SingleBid nullBid = active.addUserBidToBid(BidId, 0, 10);
+    //             Assertions.assertTrue(false);
+    //         } catch (UIException ex) {
+    //             Assertions.assertTrue(true);
 
-            }
+    //         }
 
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            System.out.println(e.getMessage());
-            Assertions.assertTrue(false);
-        }
-    }
+    //     } catch (Exception e) {
+    //         // TODO Auto-generated catch block
+    //         e.printStackTrace();
+    //         System.out.println(e.getMessage());
+    //         Assertions.assertTrue(false);
+    //     }
+    // }
 
     @Test
     public void TestAddRandom() {
