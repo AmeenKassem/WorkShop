@@ -15,19 +15,23 @@ public class CreateDiscountDTO {
     private String name;
     private double percent;
     private Type type;
-    private String condition; // e.g. "CATEGORY:DAIRY", "TOTAL>100", or null : "CATEGORY:DIARY ^ TOTAL>100 OR ..."
-    private Logic logic ;// default to simple discount
+    private String condition; // e.g. "CATEGORY:DAIRY", "TOTAL>100", or null
+    private Logic logic;// default to simple discount
     private List<CreateDiscountDTO> subDiscounts;
+    private String coupon;
 
-   
     public CreateDiscountDTO(String name, double percent, Type type, String condition, Logic logic, List<CreateDiscountDTO> subDiscounts) {
-    this.name = name;
-    this.percent = percent;
-    this.type = type;
-    this.condition = condition;
-    this.logic = logic ;
-    this.subDiscounts = subDiscounts;
-}
+        this.name = name;
+        this.percent = percent;
+        this.type = type;
+        this.condition = condition;
+        this.logic = logic;
+        this.subDiscounts = subDiscounts;
+    }
+
+    public CreateDiscountDTO() {
+    }
+
     public String getName() {
         return name;
     }
@@ -50,5 +54,9 @@ public class CreateDiscountDTO {
 
     public List<CreateDiscountDTO> getSubDiscounts() {
         return subDiscounts;
+    }
+
+    public void setCoupon(String coupon) {
+        this.coupon = coupon;
     }
 }

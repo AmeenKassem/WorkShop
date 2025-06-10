@@ -1,11 +1,15 @@
 package workshop.demo.InfrastructureLayer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.vaadin.flow.component.UI;
+
 import workshop.demo.DomainLayer.Exceptions.DevException;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Offer;
@@ -220,6 +224,18 @@ public class SUConnectionRepository implements ISUConnectionRepo {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    @Override
+    public List<Node> getOwnersInStore(int storeId) throws UIException, DevException {
+        List<Node> owners = this.data.getAllWorkers(storeId);
+        List<Node> ownersInStore = new ArrayList<>();
+        for (Node worker : owners) {
+            if (!worker.getIsManager()) { // If the worker is an owner
+                ownersInStore.add(worker);
+            }
+        }
+        return ownersInStore;
     }
 
 }

@@ -35,7 +35,7 @@ public class ActivePurcheses {
 
     private HashMap<Integer, List<BID>> productIdToBids = new HashMap<>(); 
     private HashMap<Integer, List<Auction>> productIdToAuctions = new HashMap<>();
-  // private HashMap<Integer, List<Random>> productIdToRandoms = new HashMap<>();
+   private HashMap<Integer, List<Random>> productIdToRandoms = new HashMap<>();
 
 
 
@@ -172,7 +172,7 @@ public class ActivePurcheses {
         int id = randomIdGen.incrementAndGet();
         Random random = new Random(productId, quantity, productPrice, id, storeId, randomTime);
         activeRandom.put(id, random);
-        
+        productIdToRandoms.computeIfAbsent(productId, k -> new ArrayList<>()).add(random);
         logger.debug("Random created with id={}", id);
 
         return id;
@@ -315,20 +315,15 @@ public class ActivePurcheses {
     }
 
     public List<RandomDTO> getRandomsForProduct(int productId) {
-//
-//        List<RandomDTO> result = new ArrayList<>();
-//        List<Random> randoms = productIdToRandoms.getOrDefault(productId, new ArrayList<>());
-//        for (Random random : randoms) {
-//            result.add(random.getDTO());
-//        }
-//        return result;
-//    }
-        List<RandomDTO> result = new ArrayList<>();
-        Random randoms = activeRandom.get(productId);
-            result.add(randoms.getDTO());
 
+        List<RandomDTO> result = new ArrayList<>();
+        List<Random> randoms = productIdToRandoms.getOrDefault(productId, new ArrayList<>());
+        for (Random random : randoms) {
+            result.add(random.getDTO());
+        }
         return result;
     }
+
 
     public List<BidDTO> getBidsForProduct(int productId) {
         List<BidDTO> result = new ArrayList<>();

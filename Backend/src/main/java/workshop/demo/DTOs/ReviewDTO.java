@@ -12,6 +12,9 @@ public class ReviewDTO {
         this.reviewMsg = reviewMsg;
     }
 
+    public ReviewDTO() {
+    }
+
     public int getReviewerId() {
         return reviewerId;
     }

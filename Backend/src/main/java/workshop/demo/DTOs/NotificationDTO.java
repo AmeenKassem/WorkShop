@@ -24,6 +24,9 @@ public class NotificationDTO {
         this.storeId = storeId;
     }
 
+    public NotificationDTO() {
+    }
+
     // Getters
     public String getMessage() {
         return message;

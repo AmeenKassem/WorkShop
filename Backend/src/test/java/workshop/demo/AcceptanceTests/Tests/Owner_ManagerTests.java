@@ -97,16 +97,16 @@ public class Owner_ManagerTests extends AcceptanceTests {
         // ====== ADD PRODUCT TO SYSTEM ======
         int productId = 200;
         String[] keywords = {"Phone", "Smartphone"};
-        when(real.mockStockRepo.addProduct("Phone", Category.ELECTRONICS, "Smartphone", keywords)).thenReturn(productId);
-        int returnedProductId = real.stockService.addProduct(ownerToken, "Phone", Category.ELECTRONICS, "Smartphone", keywords);
+        when(real.mockStockRepo.addProduct("Phone", Category.Electronics, "Smartphone", keywords)).thenReturn(productId);
+        int returnedProductId = real.stockService.addProduct(ownerToken, "Phone", Category.Electronics, "Smartphone", keywords);
         assertEquals(productId, returnedProductId);
 
         // ====== ADD ITEM TO STORE ======
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.AddToStock)).thenReturn(true);
-        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", keywords));
-        when(real.mockStockRepo.addItem(storeId, productId, 10, 100, Category.ELECTRONICS))
-                .thenReturn(new item(productId, 10, 100, Category.ELECTRONICS));
-        int itemAdded = real.stockService.addItem(storeId, ownerToken, productId, 10, 100, Category.ELECTRONICS);
+        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(new Product("Phone", productId, Category.Electronics, "Smartphone", keywords));
+        when(real.mockStockRepo.addItem(storeId, productId, 10, 100, Category.Electronics))
+                .thenReturn(new item(productId, 10, 100, Category.Electronics));
+        int itemAdded = real.stockService.addItem(storeId, ownerToken, productId, 10, 100, Category.Electronics);
         assertEquals(itemAdded, productId);
 
         // ====== REGISTERED USER SETUP ======
@@ -140,18 +140,18 @@ public class Owner_ManagerTests extends AcceptanceTests {
 
         int productId = 300;
         String[] keywords = {"Tablet", "Touchscreen"};
-        when(real.mockStockRepo.addProduct("Tablet", Category.ELECTRONICS, "10-inch Tablet", keywords))
+        when(real.mockStockRepo.addProduct("Tablet", Category.Electronics, "10-inch Tablet", keywords))
                 .thenReturn(productId);
-        int returnedProductId = real.stockService.addProduct(ownerToken, "Tablet", Category.ELECTRONICS, "10-inch Tablet", keywords);
+        int returnedProductId = real.stockService.addProduct(ownerToken, "Tablet", Category.Electronics, "10-inch Tablet", keywords);
         assertEquals(productId, returnedProductId);
 
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.AddToStock)).thenReturn(true);
         when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(
-                new Product("Tablet", productId, Category.ELECTRONICS, "10-inch Tablet", keywords));
-        when(real.mockStockRepo.addItem(storeId, productId, 10, 100, Category.ELECTRONICS))
-                .thenReturn(new item(productId, 10, 100, Category.ELECTRONICS));
+                new Product("Tablet", productId, Category.Electronics, "10-inch Tablet", keywords));
+        when(real.mockStockRepo.addItem(storeId, productId, 10, 100, Category.Electronics))
+                .thenReturn(new item(productId, 10, 100, Category.Electronics));
 
-        int itemAdded = real.stockService.addItem(storeId, ownerToken, productId, 10, 100, Category.ELECTRONICS);
+        int itemAdded = real.stockService.addItem(storeId, ownerToken, productId, 10, 100, Category.Electronics);
         assertEquals(productId, itemAdded);
     }
 
@@ -168,11 +168,11 @@ public class Owner_ManagerTests extends AcceptanceTests {
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.AddToStock)).thenReturn(true);
 
         when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(
-                new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", new String[]{"Phone"})
+                new Product("Phone", productId, Category.Electronics, "Smartphone", new String[]{"Phone"})
         );
 
         Exception ex = assertThrows(Exception.class, ()
-                -> real.stockService.addItem(storeId, ownerToken, productId, -5, -999, Category.ELECTRONICS)
+                -> real.stockService.addItem(storeId, ownerToken, productId, -5, -999, Category.Electronics)
         );
 
     }
@@ -189,13 +189,13 @@ public class Owner_ManagerTests extends AcceptanceTests {
         when(real.mockUserRepo.isRegistered(ownerId)).thenReturn(true);
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.AddToStock)).thenReturn(true);
         when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(
-                new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", new String[]{"Phone"})
+                new Product("Phone", productId, Category.Electronics, "Smartphone", new String[]{"Phone"})
         );
         when(real.mockStoreRepo.checkStoreExistance(storeId))
                 .thenThrow(new UIException(" store does not exist.", ErrorCodes.STORE_NOT_FOUND));
 
         UIException ex = assertThrows(UIException.class, ()
-                -> real.stockService.addItem(storeId, ownerToken, productId, 10, 100, Category.ELECTRONICS)
+                -> real.stockService.addItem(storeId, ownerToken, productId, 10, 100, Category.Electronics)
         );
 
         assertEquals(" store does not exist.", ex.getMessage());
@@ -212,7 +212,7 @@ public class Owner_ManagerTests extends AcceptanceTests {
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.DeleteFromStock)).thenReturn(true);
 
         when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(
-                new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", new String[]{"Phone"})
+                new Product("Phone", productId, Category.Electronics, "Smartphone", new String[]{"Phone"})
         );
 
         when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true); // optional safety
@@ -236,7 +236,7 @@ public class Owner_ManagerTests extends AcceptanceTests {
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.DeleteFromStock)).thenReturn(false);
 
         when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(
-                new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", new String[]{"Phone"})
+                new Product("Phone", productId, Category.Electronics, "Smartphone", new String[]{"Phone"})
         );
 
         UIException ex = assertThrows(UIException.class, ()

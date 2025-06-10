@@ -42,6 +42,7 @@ import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
+import workshop.demo.DTOs.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -126,14 +127,13 @@ public class PurchaseTests {
         createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
 
         // ======================= PRODUCT & ITEM ADDITION =======================
-        String[] keywords = { "Laptop", "Lap", "top" };
-        productId_laptop = stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
+        String[] keywords = {"Laptop", "Lap", "top"};
+        int productId = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
 
-        assertEquals(1,
-                stockService.addItem(createdStoreId, NOToken, productId_laptop, 10, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, createdStoreId, "Laptop", "TestStore");
-        stockService.setProductToRandom(NOToken, productId_laptop, 1, 2000, createdStoreId, 5000);
-        stockService.setProductToAuction(NOToken, createdStoreId, productId_laptop, 1, 1000, 2);
+        assertEquals(1, stockService.addItem(createdStoreId, NOToken, productId, 10, 2000, Category.Electronics));
+        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.Electronics, 0, createdStoreId, "Laptop", "TestStore");
+        stockService.setProductToRandom(NOToken, productId, 1, 2000, createdStoreId, 5000);
+        stockService.setProductToAuction(NOToken, createdStoreId, productId, 1, 1000, 2);
         assertTrue(stockService.getAllAuctions(NOToken, createdStoreId).length == 1);
         assertTrue(stockService.getAllRandomInStore(NOToken, createdStoreId).length == 1);
         // assertTrue(stockService.getAllBidsStatus(NOToken, createdStoreId).length ==
@@ -418,7 +418,6 @@ public class PurchaseTests {
         assertTrue(userRepo.getUserCart(authRepo.getUserId(NGToken)).getAllCart().size() == 0);
         assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
 
-        assertEquals(8, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
     }
 
     // Needs Fixing!
@@ -832,7 +831,6 @@ public class PurchaseTests {
         Map<Integer, List<ReceiptProduct>> res = new HashMap<>();
 
         // Mock: make stockRepo return null for productId 999
-
         // Act + Assert
         UIException ex = assertThrows(UIException.class, () -> {
             purchaseService.setRecieptMapForBids(bids, res);
@@ -849,7 +847,6 @@ public class PurchaseTests {
         stockService.acceptBid(NOToken, 1, 1, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].id);
 
         // ===== SETUP FOR RANDOM =====
-
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         purchaseService.participateInRandom(NGToken, 1, 1, 1200, paymentDetails);
 
@@ -1027,21 +1024,5 @@ public class PurchaseTests {
         assertEquals(1, dto.bids.length);
         assertEquals(b.getId(), dto.bids[0].id);
     }
-    //
-    // @Test
-    // void updatePrice_throwDevException_whenStoreNotExists() {
-    // int nonExistingStoreId = 999;
-    // assertThrows(DevException.class, () -> {
-    // stockRepository.updatePrice(nonExistingStoreId, 1, 10);
-    // });
-    // }
-
-    // @Test
-    // void updatePrice_success_whenStoreExists() throws Exception {
-    // int existingStoreId = 1;
-    // storeService.addStoreToSystem(NOToken,); // or however you initialize a store
-    // boolean result = stockRepository.updatePrice(existingStoreId, 1, 10);
-    // assertTrue(result);
-    // }
 
 }

@@ -10,13 +10,16 @@ public class ReceiptProduct {
     private int price;
     private int productId;
 
-    public ReceiptProduct(String productName, String storename, int quantity, int price, int productId,Category category) {
+    public ReceiptProduct(String productName, String storename, int quantity, int price, int productId, Category category) {
         this.productName = productName;
         this.storename = storename;
         this.quantity = quantity;
         this.price = price;
         this.productId = productId;
-        this.category=category;
+        this.category = category;
+    }
+
+    public ReceiptProduct() {
     }
 
     public String getProductName() {

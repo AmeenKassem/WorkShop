@@ -22,15 +22,12 @@ import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
-import workshop.demo.DomainLayer.Stock.Auction;
-import workshop.demo.DomainLayer.Stock.BID;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
-import workshop.demo.DomainLayer.Store.Random;
 import workshop.demo.DomainLayer.User.CartItem;
 
 @Repository
@@ -40,12 +37,14 @@ public class StockRepository implements IStockRepo {
     private ConcurrentHashMap<Integer, ActivePurcheses> storeId2ActivePurchases;// must be thread safe
     private ConcurrentHashMap<Category, List<Product>> allProducts;
     private ConcurrentHashMap<Integer, StoreStock> storeStocks;// storeId, stock of store
+    private ConcurrentHashMap<Integer, Boolean> randomRefunded; //specialId, isRefunded
 
     @Autowired
     public StockRepository() {
         this.storeId2ActivePurchases = new ConcurrentHashMap<>();// must be thread safe
         this.allProducts = new ConcurrentHashMap<>();
         this.storeStocks = new ConcurrentHashMap<>();// storeId, stock of store
+        this.randomRefunded = new ConcurrentHashMap<>(); 
 
     }
 
@@ -172,12 +171,24 @@ public class StockRepository implements IStockRepo {
         this.decreaseQuantitytoBuy(storeId, productId, quantity);
         return res;
     }
-//    //no one use
-//    @Override
-//    public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
-//            throws UIException, DevException {
-//        return getActivePurchases(storeId).participateInRandom(userId, randomId, amountPaid);
-//    }
+
+    public void returnProductToStock(int storeId, int productId, int quantity,int specialId) throws UIException {
+        StoreStock storeStock = storeStocks.get(storeId);
+        if (storeStock == null) {
+            throw new UIException("Store not found with ID: " + storeId, ErrorCodes.STORE_NOT_FOUND);
+        }
+        if (randomRefunded.containsKey(specialId) && randomRefunded.get(specialId)) { //the productalready refunded
+            throw new UIException("Product already refunded for this random.", specialId);
+        }
+        storeStock.returnProductToStock(productId, quantity);
+    }
+
+
+    @Override
+    public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
+            throws UIException, DevException {
+        return getActivePurchases(storeId).participateInRandom(userId, randomId, amountPaid);
+    }
 
     @Override
     public ParticipationInRandomDTO endRandom(int storeId, int randomId) throws Exception {
@@ -535,6 +546,14 @@ public class StockRepository implements IStockRepo {
             }
         }
         return allProductDTOs.toArray(new ProductDTO[0]);
+    }
+
+    public boolean isProductRefunded(int specialId) {
+        return randomRefunded.getOrDefault(specialId, false);
+    }
+
+    public void markRefunded(int specialId) {
+        randomRefunded.put(specialId, true);
     }
 
 }
