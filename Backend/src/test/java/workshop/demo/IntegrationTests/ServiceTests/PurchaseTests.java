@@ -431,15 +431,24 @@ public class PurchaseTests {
         purchaseService.participateInRandom(NOToken, 1, 1, 1999, paymentDetails);
 
         assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].participations.length == 2);
-        assertFalse(stockService.getAllRandomInStore(NOToken, 1)[0].participations[0].won());
+        ParticipationInRandomDTO player1 = stockService.getAllRandomInStore(NOToken,
+                createdStoreId)[0].participations[0];
+        ParticipationInRandomDTO player2 = stockService.getAllRandomInStore(NOToken,
+                createdStoreId)[0].participations[1];
+        xorAssert(player1.won(), player2.won());
         // assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].winner.userId==4);
 
-        ReceiptDTO[] receipts = purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
+        ReceiptDTO[] receipts1 = purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
+        ReceiptDTO[] receipts2 = purchaseService.finalizeSpecialCart(NOToken, paymentDetails, supplyDetails);
 
-        assertNotNull(receipts);
-        assertEquals(0, receipts.length);
+        xorAssert(receipts1.length == 1, receipts2.length == 1);
         assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
+        assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NOToken)).getSpecialCart().isEmpty());
+    }
 
+    private void xorAssert(boolean a, boolean b) {
+        assertTrue(a || b);
+        assertFalse(a && b);
     }
 
     @Test
