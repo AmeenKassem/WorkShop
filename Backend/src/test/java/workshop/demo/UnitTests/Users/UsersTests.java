@@ -9,9 +9,9 @@ import org.springframework.stereotype.Service;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
+import workshop.demo.DomainLayer.User.Encoder;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
-import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.UserRepository;
 
 @Service

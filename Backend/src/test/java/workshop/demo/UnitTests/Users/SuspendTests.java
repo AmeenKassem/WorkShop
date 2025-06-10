@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import workshop.demo.ApplicationLayer.*;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.User.Encoder;
 import workshop.demo.InfrastructureLayer.*;
 
 @Service

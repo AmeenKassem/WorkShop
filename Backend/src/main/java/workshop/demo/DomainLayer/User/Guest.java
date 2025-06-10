@@ -9,33 +9,39 @@ import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import workshop.demo.DTOs.UserDTO;
 
 @Entity
+@Table(name = "guest")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Guest {
 
     private static final Logger logger = LoggerFactory.getLogger(Guest.class);
 
     @Id 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Transient
     private ShoppingCart cart = new ShoppingCart();
 
-    private 
+    // private 
 
-    public Guest(int id2) {
-        id = id2;
-        logger.debug("Guest created with ID={}", id2);
-
-    }
-
-    public Guest(){
+    public Guest() {
+        // id = id2;
+        logger.debug("Guest created with ID={}", id);
 
     }
+
+    // public Guest(){
+
+    // }
 
     public int getId() {
         return id;

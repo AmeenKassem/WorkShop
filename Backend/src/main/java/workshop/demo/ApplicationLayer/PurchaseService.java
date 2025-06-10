@@ -63,252 +63,252 @@ public class PurchaseService {
         this.susRepo = susRepo;
     }
 
-    public ReceiptDTO[] buyGuestCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
-            throws Exception {
-        logger.info("buyGuestCart called with token");
+//     public ReceiptDTO[] buyGuestCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
+//             throws Exception {
+//         logger.info("buyGuestCart called with token");
 
-        if (!authRepo.validToken(token)) {
-            logger.error("Invalid token in buyGuestCart");
+//         if (!authRepo.validToken(token)) {
+//             logger.error("Invalid token in buyGuestCart");
 
-            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-        }
-        int userId = authRepo.getUserId(token);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
-        return processCart(userId, true, paymentdetails, supplydetails);
-    }
+//             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
+//         }
+//         int userId = authRepo.getUserId(token);
+//         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+//         return processCart(userId, true, paymentdetails, supplydetails);
+//     }
 
-    public ReceiptDTO[] buyRegisteredCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
-            throws Exception {
-        logger.info("buyRegisteredCart called with token");
+//     public ReceiptDTO[] buyRegisteredCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
+//             throws Exception {
+//         logger.info("buyRegisteredCart called with token");
 
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
-        return processCart(userId, false, paymentdetails, supplydetails);
-    }
+//         authRepo.checkAuth_ThrowTimeOutException(token, logger);
+//         int userId = authRepo.getUserId(token);
+//         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+//         return processCart(userId, false, paymentdetails, supplydetails);
+//     }
 
-   private ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails payment, SupplyDetails supply)
-        throws Exception {
-    logger.info("processCart called for userId={}, isGuest={}", userId, isGuest);
+//    private ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails payment, SupplyDetails supply)
+//         throws Exception {
+//     logger.info("processCart called for userId={}, isGuest={}", userId, isGuest);
 
-    ShoppingCart cart = userRepo.getUserCart(userId);
-    if (cart == null || cart.getAllCart().isEmpty()) {
-        logger.warn("Cart is empty for userId={}", userId);
-        throw new UIException("Shopping cart is empty or not found", ErrorCodes.CART_NOT_FOUND);
-    }
+//     ShoppingCart cart = userRepo.getUserCart(userId);
+//     if (cart == null || cart.getAllCart().isEmpty()) {
+//         logger.warn("Cart is empty for userId={}", userId);
+//         throw new UIException("Shopping cart is empty or not found", ErrorCodes.CART_NOT_FOUND);
+//     }
 
-    if (isGuest && !stockRepo.checkAvailability(cart.getAllCart())) {
-        logger.warn("Product availability check failed for guest userId={}", userId);
-        throw new UIException("Not all items are available for guest purchase", ErrorCodes.PRODUCT_NOT_FOUND);
-    }
+//     if (isGuest && !stockRepo.checkAvailability(cart.getAllCart())) {
+//         logger.warn("Product availability check failed for guest userId={}", userId);
+//         throw new UIException("Not all items are available for guest purchase", ErrorCodes.PRODUCT_NOT_FOUND);
+//     }
 
-    Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts = new HashMap<>();
+//     Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts = new HashMap<>();
 
-    for (ShoppingBasket basket : cart.getBaskets().values()) {
-        int storeId = basket.getStoreId();
-        Store store = storeRepo.findStoreByID(storeId);
+//     for (ShoppingBasket basket : cart.getBaskets().values()) {
+//         int storeId = basket.getStoreId();
+//         Store store = storeRepo.findStoreByID(storeId);
 
-        if (store == null || !store.isActive()) {
-            logger.info("Skipping inactive or missing storeId={}", storeId);
-            continue; // Skip this store
-        }
+//         if (store == null || !store.isActive()) {
+//             logger.info("Skipping inactive or missing storeId={}", storeId);
+//             continue; // Skip this store
+//         }
 
-        String storeName = store.getStoreName();
-        logger.info("Processing basket for active storeId={} ({})", storeId, storeName);
+//         String storeName = store.getStoreName();
+//         logger.info("Processing basket for active storeId={} ({})", storeId, storeName);
 
-        List<ReceiptProduct> boughtItems = stockRepo.processCartItemsForStore(
-            storeId, basket.getItems(), isGuest, storeName);
+//         List<ReceiptProduct> boughtItems = stockRepo.processCartItemsForStore(
+//             storeId, basket.getItems(), isGuest, storeName);
 
-        for (ReceiptProduct product : boughtItems) {
-            product.setstoreName(storeName);
-        }
+//         for (ReceiptProduct product : boughtItems) {
+//             product.setstoreName(storeName);
+//         }
 
-        List<ItemStoreDTO> itemStoreDTOS = new ArrayList<>();
-        for (ReceiptProduct p : boughtItems) {
-            itemStoreDTOS.add(new ItemStoreDTO(
-                p.getProductId(), p.getQuantity(), p.getPrice(), p.getCategory(),
-                0, storeId, p.getProductName(), storeName
-            ));
-        }
+//         List<ItemStoreDTO> itemStoreDTOS = new ArrayList<>();
+//         for (ReceiptProduct p : boughtItems) {
+//             itemStoreDTOS.add(new ItemStoreDTO(
+//                 p.getProductId(), p.getQuantity(), p.getPrice(), p.getCategory(),
+//                 0, storeId, p.getProductName(), storeName
+//             ));
+//         }
 
-        DiscountScope scope = new DiscountScope(itemStoreDTOS);
-        //Hmode
-            UserDTO buyer = userRepo.getUserDTO(userId);
-            store.assertPurchasePolicies(buyer,itemStoreDTOS);
-            //Hmode
-        Discount discount = store.getDiscount();
-        double discountAmount = (discount != null) ? discount.apply(scope) : 0.0;
-        double total = stockRepo.calculateTotalPrice(boughtItems);
-        double finalTotal = total - discountAmount;
+//         DiscountScope scope = new DiscountScope(itemStoreDTOS);
+//         //Hmode
+//             UserDTO buyer = userRepo.getUserDTO(userId);
+//             store.assertPurchasePolicies(buyer,itemStoreDTOS);
+//             //Hmode
+//         Discount discount = store.getDiscount();
+//         double discountAmount = (discount != null) ? discount.apply(scope) : 0.0;
+//         double total = stockRepo.calculateTotalPrice(boughtItems);
+//         double finalTotal = total - discountAmount;
 
-        logger.info("Store={}, Original={}, Discount={}, Final={}", storeName, total, discountAmount, finalTotal);
+//         logger.info("Store={}, Original={}, Discount={}, Final={}", storeName, total, discountAmount, finalTotal);
 
-        paymentService.processPayment(payment, finalTotal);
-        supplyService.processSupply(supply);
-        stockRepo.changequantity(storeId, basket.getItems(), isGuest, storeName);
+//         paymentService.processPayment(payment, finalTotal);
+//         supplyService.processSupply(supply);
+//         stockRepo.changequantity(storeId, basket.getItems(), isGuest, storeName);
 
-        storeToProducts.put(storeId, Pair.of(boughtItems, finalTotal));
-    }
+//         storeToProducts.put(storeId, Pair.of(boughtItems, finalTotal));
+//     }
 
-    userRepo.getUserCart(userId).clear();
-    return saveReceiptsWithDiscount(userId, storeToProducts);
-}
+//     userRepo.getUserCart(userId).clear();
+//     return saveReceiptsWithDiscount(userId, storeToProducts);
+// }
 
-    public ParticipationInRandomDTO participateInRandom(String token, int randomId, int storeId, double amountPaid,
-            PaymentDetails paymentDetails) throws Exception {
-        logger.info("participateInRandom called with randomId={}, storeId={}", randomId, storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
-        ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
-        UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random);
-        userRepo.addSpecialItemToCart(item, userId);
-        paymentService.processPayment(paymentDetails, amountPaid);
-        logger.info("User {} participated in random draw {}", userId, randomId);
-        return card;
-    }
+//     public ParticipationInRandomDTO participateInRandom(String token, int randomId, int storeId, double amountPaid,
+//             PaymentDetails paymentDetails) throws Exception {
+//         logger.info("participateInRandom called with randomId={}, storeId={}", randomId, storeId);
+//         authRepo.checkAuth_ThrowTimeOutException(token, logger);
+//         int userId = authRepo.getUserId(token);
+//         userRepo.checkUserRegisterOnline_ThrowException(userId);
+//         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+//         ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
+//         UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random);
+//         userRepo.addSpecialItemToCart(item, userId);
+//         paymentService.processPayment(paymentDetails, amountPaid);
+//         logger.info("User {} participated in random draw {}", userId, randomId);
+//         return card;
+//     }
 
- public ReceiptDTO[] finalizeSpecialCart(String token, PaymentDetails payment, SupplyDetails supply)
-        throws Exception {
-    authRepo.checkAuth_ThrowTimeOutException(token, logger);
-    int userId = authRepo.getUserId(token);
-    susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
-    logger.info("The user " + userId + " finalizing the special cart.");
+//  public ReceiptDTO[] finalizeSpecialCart(String token, PaymentDetails payment, SupplyDetails supply)
+//         throws Exception {
+//     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+//     int userId = authRepo.getUserId(token);
+//     susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+//     logger.info("The user " + userId + " finalizing the special cart.");
 
-    List<SingleBid> winningBids = new ArrayList<>();
-    List<ParticipationInRandomDTO> winningRandoms = new ArrayList<>();
-    Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
+//     List<SingleBid> winningBids = new ArrayList<>();
+//     List<ParticipationInRandomDTO> winningRandoms = new ArrayList<>();
+//     Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
 
-    List<UserSpecialItemCart> allSpecialItems = new ArrayList<>(userRepo.getAllSpecialItems(userId));
+//     List<UserSpecialItemCart> allSpecialItems = new ArrayList<>(userRepo.getAllSpecialItems(userId));
 
-    for (UserSpecialItemCart specialItem : allSpecialItems) {
+//     for (UserSpecialItemCart specialItem : allSpecialItems) {
 
-        if (specialItem.type == SpecialType.Random) {
-            ParticipationInRandomDTO card = stockRepo.getRandomCardIfWinner(
-                    specialItem.storeId, specialItem.specialId, userId);
+//         if (specialItem.type == SpecialType.Random) {
+//             ParticipationInRandomDTO card = stockRepo.getRandomCardIfWinner(
+//                     specialItem.storeId, specialItem.specialId, userId);
 
-            if (card != null && card.isWinner && card.ended) {
-                winningRandoms.add(card); // Won
-            } else if ((card != null && !card.isWinner && card.ended) || card == null) {
-                userRepo.removeSpecialItem(userId, specialItem); // Lost or not found → remove
-            }
+//             if (card != null && card.isWinner && card.ended) {
+//                 winningRandoms.add(card); // Won
+//             } else if ((card != null && !card.isWinner && card.ended) || card == null) {
+//                 userRepo.removeSpecialItem(userId, specialItem); // Lost or not found → remove
+//             }
 
-        } else { // BID or AUCTION
-            SingleBid bid = stockRepo.getBidIfWinner(
-                    specialItem.storeId, specialItem.specialId, specialItem.bidId, specialItem.type);
+//         } else { // BID or AUCTION
+//             SingleBid bid = stockRepo.getBidIfWinner(
+//                     specialItem.storeId, specialItem.specialId, specialItem.bidId, specialItem.type);
 
-            if (bid != null && bid.isWinner() && bid.isEnded()) {
-                winningBids.add(bid); // Won
-            } else if ((bid != null && !bid.isWinner() && bid.isEnded()) || bid == null) {
-                userRepo.removeSpecialItem(userId, specialItem); // Lost or not found → remove
-            }
-        }
-    }
+//             if (bid != null && bid.isWinner() && bid.isEnded()) {
+//                 winningBids.add(bid); // Won
+//             } else if ((bid != null && !bid.isWinner() && bid.isEnded()) || bid == null) {
+//                 userRepo.removeSpecialItem(userId, specialItem); // Lost or not found → remove
+//             }
+//         }
+//     }
 
-    double sumToPay = setRecieptMapForBids(winningBids, storeToProducts);
-    setRecieptMapForRandoms(storeToProducts, winningRandoms);
+//     double sumToPay = setRecieptMapForBids(winningBids, storeToProducts);
+//     setRecieptMapForRandoms(storeToProducts, winningRandoms);
 
-    if (supplyService.processSupply(supply) && paymentService.processPayment(payment, sumToPay)) {
-        userRepo.removeBoughtSpecialItems(userId, winningBids, winningRandoms); // Only remove bought
-        return saveReceipts(userId, storeToProducts);
-    }
+//     if (supplyService.processSupply(supply) && paymentService.processPayment(payment, sumToPay)) {
+//         userRepo.removeBoughtSpecialItems(userId, winningBids, winningRandoms); // Only remove bought
+//         return saveReceipts(userId, storeToProducts);
+//     }
 
-    throw new DevException("Something went wrong with supply or payment");
-}
+//     throw new DevException("Something went wrong with supply or payment");
+// }
 
-    public double setRecieptMapForBids(List<SingleBid> winningBids, Map<Integer, List<ReceiptProduct>> res)
-            throws Exception {
-        double price = 0;
+//     public double setRecieptMapForBids(List<SingleBid> winningBids, Map<Integer, List<ReceiptProduct>> res)
+//             throws Exception {
+//         double price = 0;
 
-        // Handle Auction & Accepted Bids
-        for (SingleBid bid : winningBids) {
-            Product product = stockRepo.findByIdInSystem_throwException(bid.productId());
-            if (product == null) {
-                logger.warn("Product not found in finalizeSpecialCart for productId={}", bid.getId());
-                throw new UIException("Product not available", ErrorCodes.PRODUCT_NOT_FOUND);
-            }
+//         // Handle Auction & Accepted Bids
+//         for (SingleBid bid : winningBids) {
+//             Product product = stockRepo.findByIdInSystem_throwException(bid.productId());
+//             if (product == null) {
+//                 logger.warn("Product not found in finalizeSpecialCart for productId={}", bid.getId());
+//                 throw new UIException("Product not available", ErrorCodes.PRODUCT_NOT_FOUND);
+//             }
 
-            String storeName = storeRepo.getStoreNameById(bid.getStoreId());
-            price += bid.getBidPrice();
+//             String storeName = storeRepo.getStoreNameById(bid.getStoreId());
+//             price += bid.getBidPrice();
 
-            ReceiptProduct receiptProduct = new ReceiptProduct(
-                    product.getName(),
-                    storeName,
-                    bid.getAmount(),
-                    (int) bid.getBidPrice(),
-                    bid.productId(),
-                    product.getCategory());
+//             ReceiptProduct receiptProduct = new ReceiptProduct(
+//                     product.getName(),
+//                     storeName,
+//                     bid.getAmount(),
+//                     (int) bid.getBidPrice(),
+//                     bid.productId(),
+//                     product.getCategory());
 
-            res.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
-            // paymentService.processPayment(payment, (int) bid.getBidPrice());
-        }
-        // return res;
-        return price;
-    }
+//             res.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
+//             // paymentService.processPayment(payment, (int) bid.getBidPrice());
+//         }
+//         // return res;
+//         return price;
+//     }
 
-    private void setRecieptMapForRandoms(Map<Integer, List<ReceiptProduct>> storeToProducts,
-            List<ParticipationInRandomDTO> pars) throws Exception {
-        for (ParticipationInRandomDTO card : pars) {
-            stockRepo.validateAndDecreaseStock(card.storeId, card.productId, 1);
-            Product product = stockRepo.findByIdInSystem_throwException(card.productId);
-            String storeName = storeRepo.getStoreNameById(card.storeId);
+//     private void setRecieptMapForRandoms(Map<Integer, List<ReceiptProduct>> storeToProducts,
+//             List<ParticipationInRandomDTO> pars) throws Exception {
+//         for (ParticipationInRandomDTO card : pars) {
+//             stockRepo.validateAndDecreaseStock(card.storeId, card.productId, 1);
+//             Product product = stockRepo.findByIdInSystem_throwException(card.productId);
+//             String storeName = storeRepo.getStoreNameById(card.storeId);
 
-            ReceiptProduct receiptProduct = new ReceiptProduct(
-                    product.getName(),
-                    storeName,
-                    1,
-                    0,
-                    product.getProductId(),
-                    product.getCategory());
+//             ReceiptProduct receiptProduct = new ReceiptProduct(
+//                     product.getName(),
+//                     storeName,
+//                     1,
+//                     0,
+//                     product.getProductId(),
+//                     product.getCategory());
 
-            storeToProducts.computeIfAbsent(card.storeId, k -> new ArrayList<>()).add(receiptProduct);
-            // supplyService.processSupply(supply);
-        }
-    }
+//             storeToProducts.computeIfAbsent(card.storeId, k -> new ArrayList<>()).add(receiptProduct);
+//             // supplyService.processSupply(supply);
+//         }
+//     }
 
-    private ReceiptDTO[] saveReceipts(int userId, Map<Integer, List<ReceiptProduct>> storeToProducts)
-            throws UIException {
-        logger.info("saveReceipts called for userId={}", userId);
+//     private ReceiptDTO[] saveReceipts(int userId, Map<Integer, List<ReceiptProduct>> storeToProducts)
+//             throws UIException {
+//         logger.info("saveReceipts called for userId={}", userId);
 
-        List<ReceiptDTO> receipts = new ArrayList<>();
-        for (Map.Entry<Integer, List<ReceiptProduct>> entry : storeToProducts.entrySet()) {
-            int storeId = entry.getKey();
-            String storeName = storeRepo.getStoreNameById(storeId);
-            List<ReceiptProduct> items = entry.getValue();
-            double total = items.stream()
-                    .mapToDouble(item -> item.getPrice() * item.getQuantity())
-                    .sum();
-            // changed this to do price*qunatity instead of just price itself
-            ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, total);
-            receipts.add(receipt);
-            orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
-            logger.info("Saved receipt for storeId={}, total={}", storeId, total);
+//         List<ReceiptDTO> receipts = new ArrayList<>();
+//         for (Map.Entry<Integer, List<ReceiptProduct>> entry : storeToProducts.entrySet()) {
+//             int storeId = entry.getKey();
+//             String storeName = storeRepo.getStoreNameById(storeId);
+//             List<ReceiptProduct> items = entry.getValue();
+//             double total = items.stream()
+//                     .mapToDouble(item -> item.getPrice() * item.getQuantity())
+//                     .sum();
+//             // changed this to do price*qunatity instead of just price itself
+//             ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, total);
+//             receipts.add(receipt);
+//             orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
+//             logger.info("Saved receipt for storeId={}, total={}", storeId, total);
 
-        }
-        return receipts.toArray(new ReceiptDTO[0]);
-    }
+//         }
+//         return receipts.toArray(new ReceiptDTO[0]);
+//     }
 
-    private ReceiptDTO[] saveReceiptsWithDiscount(int userId, Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts)
-            throws UIException {
-        logger.info("saveReceipts called for userId={}", userId);
+//     private ReceiptDTO[] saveReceiptsWithDiscount(int userId, Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts)
+//             throws UIException {
+//         logger.info("saveReceipts called for userId={}", userId);
 
-        List<ReceiptDTO> receipts = new ArrayList<>();
-        for (Map.Entry<Integer, Pair<List<ReceiptProduct>, Double>> entry : storeToProducts.entrySet()) {
-            int storeId = entry.getKey();
-            String storeName = storeRepo.getStoreNameById(storeId);
-            List<ReceiptProduct> items = entry.getValue().getLeft();
-            double discountedTotal = entry.getValue().getRight();
-            double total = items.stream()
-                    .mapToDouble(item -> item.getPrice() * item.getQuantity())
-                    .sum();
-            // changed this to do price*qunatity instead of just price itself
-            ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, discountedTotal);
-            receipts.add(receipt);
-            orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
-            logger.info("Saved receipt for storeId={}, total={}", storeId, total);
+//         List<ReceiptDTO> receipts = new ArrayList<>();
+//         for (Map.Entry<Integer, Pair<List<ReceiptProduct>, Double>> entry : storeToProducts.entrySet()) {
+//             int storeId = entry.getKey();
+//             String storeName = storeRepo.getStoreNameById(storeId);
+//             List<ReceiptProduct> items = entry.getValue().getLeft();
+//             double discountedTotal = entry.getValue().getRight();
+//             double total = items.stream()
+//                     .mapToDouble(item -> item.getPrice() * item.getQuantity())
+//                     .sum();
+//             // changed this to do price*qunatity instead of just price itself
+//             ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, discountedTotal);
+//             receipts.add(receipt);
+//             orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
+//             logger.info("Saved receipt for storeId={}, total={}", storeId, total);
 
-        }
-        return receipts.toArray(new ReceiptDTO[0]);
-    }
+//         }
+//         return receipts.toArray(new ReceiptDTO[0]);
+//     }
 }

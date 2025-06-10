@@ -12,4 +12,5 @@ public interface IUserRepoDB extends JpaRepository<Guest, Integer> {
     
     @Query(value = "SELECT CASE WHEN is_admin = true THEN true ELSE false END FROM guest WHERE id = :userId", nativeQuery = true)
     boolean checkAdmin(@Param("userId") int userId);
+    
 }

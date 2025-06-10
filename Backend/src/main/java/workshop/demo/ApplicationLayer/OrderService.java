@@ -38,26 +38,26 @@ public class OrderService {
 
 
 
-    public List<OrderDTO> getAllOrderByStore(int storeId) throws Exception {
-        logger.info("about to get all the orders that have been made in this history!");
-        Store store = this.storeRepo.findStoreByID(storeId);
-        if (store == null) {
-            logger.error("store not found!");
-            throw new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND);
-        }
-        logger.info("about to get all the orders succsesfully!");
-        return this.orderRepo.getAllOrderByStore(storeId);
-    }
+    // public List<OrderDTO> getAllOrderByStore(int storeId) throws Exception {
+    //     logger.info("about to get all the orders that have been made in this history!");
+    //     Store store = this.storeRepo.findStoreByID(storeId);
+    //     if (store == null) {
+    //         logger.error("store not found!");
+    //         throw new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND);
+    //     }
+    //     logger.info("about to get all the orders succsesfully!");
+    //     return this.orderRepo.getAllOrderByStore(storeId);
+    // }
 
-    public List<ReceiptDTO> getReceiptDTOsByUser(String token) throws Exception {
-        logger.info("about to get all the recipts for the user!");
-        if (!authRepo.validToken(token)) {
-            throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
-        }
-        int userId = authRepo.getUserId(token);
-        if (!userRepo.isRegistered(userId)) {
-            throw new UIException(String.format("The user:%d is not registered to the system!", userId), ErrorCodes.USER_NOT_FOUND);
-        }
-        return this.orderRepo.getReceiptDTOsByUser(userId);
-    }
+    // public List<ReceiptDTO> getReceiptDTOsByUser(String token) throws Exception {
+    //     logger.info("about to get all the recipts for the user!");
+    //     if (!authRepo.validToken(token)) {
+    //         throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
+    //     }
+    //     int userId = authRepo.getUserId(token);
+    //     if (!userRepo.isRegistered(userId)) {
+    //         throw new UIException(String.format("The user:%d is not registered to the system!", userId), ErrorCodes.USER_NOT_FOUND);
+    //     }
+    //     return this.orderRepo.getReceiptDTOsByUser(userId);
+    // }
 }

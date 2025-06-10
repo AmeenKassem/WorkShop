@@ -36,22 +36,22 @@ public class AdminHandler {
     private final List<LocalDateTime> logoutEvents = new ArrayList<>();
     private final List<LocalDateTime> registerEvents = new ArrayList<>();
 
-    @Autowired
-    public AdminHandler(IOrderRepo orderRepo, IStoreRepo storeRepo, IUserRepo userRepo, IAuthRepo authRepo) throws UIException {
+    // @Autowired
+    public AdminHandler(IOrderRepo orderRepo, IStoreRepo storeRepo, IUserRepo userRepo, IAuthRepo authRepo){
         this.orderRepo = orderRepo;
         this.storeRepo = storeRepo;
         this.userRepo = userRepo;
         this.authRepo = authRepo;
         //inialize the admin here:
-            initAdmin();
+            // initAdmin();
 
 
     }
 
     private void initAdmin() throws UIException {
 
-        this.userRepo.registerUser("admin", "Admin123", 23);
-        this.userRepo.getRegisteredUserByName("admin").setAdmin();
+        // this.userRepo.registerUser("admin", "Admin123", 23);
+        // this.userRepo.getRegisteredUserByName("admin").setAdmin();
     }
 
     public List<PurchaseHistoryDTO> viewPurchaseHistory(String adminToken) throws Exception {
@@ -59,21 +59,21 @@ public class AdminHandler {
             throw new UIException("Invalid Token!", ErrorCodes.INVALID_TOKEN);
         }
         int adminUserId = authRepo.getUserId(adminToken);
-        userRepo.checkAdmin_ThrowException(adminUserId);
+        // userRepo.checkAdmin_ThrowException(adminUserId);
         List<OrderDTO> allOrders = orderRepo.getAllOrdersInSystem();
         List<PurchaseHistoryDTO> historyEntries = new ArrayList<>();
         for (OrderDTO order : allOrders) {
             int buyerId = order.getUserId();
             int storeId = order.getStoreId();
-            UserDTO buyerData = userRepo.getUserDTO(buyerId);
+            // UserDTO buyerData = userRepo.getUserDTO(buyerId);
             StoreDTO storeData = storeRepo.getStoreDTO(storeId);
-            String buyerName = (buyerData != null ? buyerData.username : "Unknown buyer");
+            // String buyerName = (buyerData != null ? buyerData.username : "Unknown buyer");
             String storeName = (storeData != null ? storeData.storeName : "Unknown store");
             List<ReceiptProduct> items = order.getProductsList();
             String timeStamp = order.getDate();
             double totalPrice = order.getFinalPrice();
-            PurchaseHistoryDTO record = new PurchaseHistoryDTO(buyerName, storeName, items, timeStamp, totalPrice);
-            historyEntries.add(record);
+            // PurchaseHistoryDTO record = new PurchaseHistoryDTO(buyerName, storeName, items, timeStamp, totalPrice);
+            // historyEntries.add(record);
         }
         return historyEntries;
     }
@@ -95,7 +95,7 @@ public class AdminHandler {
             throw new UIException("Invalid Token!", ErrorCodes.INVALID_TOKEN);
         }
         int adminUserId = authRepo.getUserId(adminToken);
-        userRepo.checkAdmin_ThrowException(adminUserId);
+        // userRepo.checkAdmin_ThrowException(adminUserId);
         //WTF is this
         Function<List<LocalDateTime>, Map<LocalDate, Integer>> countPerDay = (events) -> {
             return events.stream().collect(Collectors.groupingBy(

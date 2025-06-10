@@ -9,7 +9,8 @@
 
  import workshop.demo.ApplicationLayer.*;
  import workshop.demo.DomainLayer.Exceptions.UIException;
- import workshop.demo.InfrastructureLayer.*;
+import workshop.demo.DomainLayer.User.Encoder;
+import workshop.demo.InfrastructureLayer.*;
 
  @SpringBootTest
  public class SuspendconTests

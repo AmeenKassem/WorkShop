@@ -8,32 +8,38 @@ import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Stock.SingleBid;
-import workshop.demo.InfrastructureLayer.Encoder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
-
+@Entity
+@Table(name = "registered")
 public class Registered extends Guest {
     private static final Logger logger = LoggerFactory.getLogger(Registered.class);
 
-    @Id
     private String username;
     private String encrybtedPassword;
     private boolean isOnline;
     private int age;
     private RoleOnSystem systemRole = RoleOnSystem.Regular;
-    
-    
+
+    @Transient
     private List<UserSpecialItemCart> specialCart;
 
-    public Registered(int id2, String username, String encrybtedPassword, int age) {
+    @Transient
+    private Encoder encoder;
 
-        super(id2);
+    public Registered(String username, String password, int age) {
+
+        super();
         this.username = username;
-        this.encrybtedPassword = encrybtedPassword;
+        encoder = new Encoder();
+        this.encrybtedPassword = encoder.encodePassword(password);
         // regularBids = new ArrayList<SingleBid>();
         // auctionBids = new ArrayList<SingleBid>();
         // participationsOnRandoms = new ArrayList<ParticipationInRandomDTO>();
@@ -41,8 +47,14 @@ public class Registered extends Guest {
         this.age = age;
     }
 
-    
-    public boolean check(Encoder encoder, String username, String password) {
+    public Registered() {
+        super();
+        specialCart = new ArrayList<>();
+        encoder = new Encoder();
+
+    }
+
+    public boolean login(String username, String password) {
         logger.debug("Registered user created:username={}", username);
         boolean res = encoder.matches(password, encrybtedPassword) && username.equals(this.username);
         logger.debug("Password match result: {}", res);
@@ -83,25 +95,20 @@ public class Registered extends Guest {
         return username;
     }
 
-    public void addSpecialItemToCart(UserSpecialItemCart item) throws DevException{
-        logger.debug("adding special item {}:{}:{}:{}",item.storeId,item.specialId,item.bidId,item.type.toString());
-        if(item==null) throw new DevException("item is null ");
+    public void addSpecialItemToCart(UserSpecialItemCart item) throws DevException {
+        logger.debug("adding special item {}:{}:{}:{}", item.storeId, item.specialId, item.bidId, item.type.toString());
+        if (item == null)
+            throw new DevException("item is null ");
         specialCart.add(item);
     }
 
-
-
     public List<UserSpecialItemCart> getSpecialCart() {
         return specialCart;
-    } 
-
-
+    }
 
     @Override
     public UserDTO getUserDTO() {
         return new UserDTO(this.getId(), this.username, this.age, this.isOnline, this.isAdmin());
     }
-
-    
 
 }
