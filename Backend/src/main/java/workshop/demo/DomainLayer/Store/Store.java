@@ -110,6 +110,7 @@ public class Store {
     }
 
     public void addDiscount(Discount d) {
+        
         if (discount instanceof CompositeDiscount) {
             ((CompositeDiscount) discount).addDiscount(d);
         } else if (discount == null) {
@@ -120,6 +121,7 @@ public class Store {
             combo.addDiscount(discount);
             combo.addDiscount(d);
             this.discount = combo;
+            
         }
     }
 
@@ -148,6 +150,22 @@ public class Store {
             if(!p.isSatisfied(buyer,cart))
                 throw new Exception(p.violationMessage());
         }
+    }
+    public Discount findDiscountByName(String targetName) {
+        if (discount == null || targetName == null) return null;
+        return dfsFind(discount, targetName);
+    }
+
+    // ---------------- private helper ----------------
+    private Discount dfsFind(Discount node, String targetName) {
+        if (node.getName().equals(targetName)) return node;
+        if (node instanceof CompositeDiscount comp) {
+            for (Discount child : comp.getDiscounts()) {
+                Discount found = dfsFind(child, targetName);
+                if (found != null) return found;
+            }
+        }
+        return null; // not found in this branch
     }
 
 }
