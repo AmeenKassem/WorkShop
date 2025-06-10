@@ -365,6 +365,9 @@ public class StoreService {
             Discount d = store.findDiscountByName(target);
             if(d==null)
                 throw new Exception("Discount "+target+" not found in store");
+            boolean removed = store.removeDiscountByName(target);
+            if(!removed)
+                throw new Exception("Failed to remove discount "+target+"!");
             subDiscounts.add(d);
         }
         CreateDiscountDTO dto = new CreateDiscountDTO(name,percent,type,condition,logic,List.of());
