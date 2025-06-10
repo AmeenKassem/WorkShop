@@ -3198,8 +3198,115 @@ String[] sub = new String[2];
        // Step 4: Assert
        assertEquals("You do not have permission to add discounts to this store", ex.getMessage());
    }
+    @Test
+    void INVISIBLE_testRemoveANDDiscountFromStore_Success() throws Exception {
+        // Step 1: Add discount
+        CreateDiscountDTO d1 = new CreateDiscountDTO("5% off ITEM:1", 0.05,
+                CreateDiscountDTO.Type.VISIBLE, "ITEM:1", CreateDiscountDTO.Logic.SINGLE, null);
+        CreateDiscountDTO d2 = new CreateDiscountDTO("15% off ITEM:1", 0.15,
+                CreateDiscountDTO.Type.VISIBLE, "ITEM:1", CreateDiscountDTO.Logic.SINGLE, null);
 
 
+String[] a=new String[2];
+a[0]=d1.getName();
+a[1]=d2.getName();
+
+        storeService.addDiscountToStore(storeId, NOToken, d1.getName(),d1.getPercent(),d1.getType(),
+                d1.getCondition(),d1.getLogic(),new String[0]);
+        storeService.addDiscountToStore(storeId, NOToken, d2.getName(),d2.getPercent(),d2.getType(),
+                d2.getCondition(),d2.getLogic(),new String[0]);
+
+        storeService.addDiscountToStore(1, NOToken, "AND Discount", 0.0,
+                CreateDiscountDTO.Type.VISIBLE, null, Logic.AND, a);
+        storeService.removeDiscountFromStore(NOToken, 1, "AND Discount");
+
+        userService.addToUserCart(NGToken, itemStoreDTO, 2);
+        ReceiptDTO[] receipts1 = purchaseService.buyGuestCart(NGToken, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
+        assertEquals(4000, receipts1[0].getFinalPrice());
+
+
+    }
+    @Test
+    void INVISIBLE_testRemoveORDiscountFromStore_Success() throws Exception {
+        // Step 1: Add discount
+        CreateDiscountDTO d1 = new CreateDiscountDTO("5% off ITEM:1", 0.05,
+                CreateDiscountDTO.Type.VISIBLE, "ITEM:1", CreateDiscountDTO.Logic.SINGLE, null);
+        CreateDiscountDTO d2 = new CreateDiscountDTO("15% off ITEM:1", 0.15,
+                CreateDiscountDTO.Type.VISIBLE, "ITEM:1", CreateDiscountDTO.Logic.SINGLE, null);
+
+
+        String[] a=new String[2];
+        a[0]=d1.getName();
+        a[1]=d2.getName();
+
+        storeService.addDiscountToStore(storeId, NOToken, d1.getName(),d1.getPercent(),d1.getType(),
+                d1.getCondition(),d1.getLogic(),new String[0]);
+        storeService.addDiscountToStore(storeId, NOToken, d2.getName(),d2.getPercent(),d2.getType(),
+                d2.getCondition(),d2.getLogic(),new String[0]);
+
+        storeService.addDiscountToStore(1, NOToken, "AND Discount", 0.0,
+                CreateDiscountDTO.Type.VISIBLE, null, Logic.OR, a);
+        storeService.removeDiscountFromStore(NOToken, 1, "AND Discount");
+
+        userService.addToUserCart(NGToken, itemStoreDTO, 2);
+        ReceiptDTO[] receipts1 = purchaseService.buyGuestCart(NGToken, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
+        assertEquals(4000, receipts1[0].getFinalPrice());
+
+
+    }
+    @Test
+    void INVISIBLE_testRemoveMaxDiscountFromStore_Success() throws Exception {
+        CreateDiscountDTO d1 = new CreateDiscountDTO("5% off ITEM:1", 0.05,
+                CreateDiscountDTO.Type.VISIBLE, "ITEM:1", CreateDiscountDTO.Logic.SINGLE, null);
+        CreateDiscountDTO d2 = new CreateDiscountDTO("15% off ITEM:1", 0.15,
+                CreateDiscountDTO.Type.VISIBLE, "ITEM:1", CreateDiscountDTO.Logic.SINGLE, null);
+
+
+        String[] a=new String[2];
+        a[0]=d1.getName();
+        a[1]=d2.getName();
+
+        storeService.addDiscountToStore(storeId, NOToken, d1.getName(),d1.getPercent(),d1.getType(),
+                d1.getCondition(),d1.getLogic(),new String[0]);
+        storeService.addDiscountToStore(storeId, NOToken, d2.getName(),d2.getPercent(),d2.getType(),
+                d2.getCondition(),d2.getLogic(),new String[0]);
+
+        storeService.addDiscountToStore(1, NOToken, "AND Discount", 0.0,
+                CreateDiscountDTO.Type.VISIBLE, null, Logic.MAX, a);
+        storeService.removeDiscountFromStore(NOToken, 1, "AND Discount");
+
+        userService.addToUserCart(NGToken, itemStoreDTO, 2);
+        ReceiptDTO[] receipts1 = purchaseService.buyGuestCart(NGToken, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
+        assertEquals(4000, receipts1[0].getFinalPrice());
+
+
+    }
+    @Test
+    void testADDMultiplyDiscountFromStore_Success() throws Exception {
+        CreateDiscountDTO d1 = new CreateDiscountDTO("5% off ITEM:1", 0.20,
+                CreateDiscountDTO.Type.VISIBLE, "ITEM:1", CreateDiscountDTO.Logic.SINGLE, null);
+        CreateDiscountDTO d2 = new CreateDiscountDTO("15% off ITEM:1", 0.05,
+                CreateDiscountDTO.Type.VISIBLE, "ITEM:1", CreateDiscountDTO.Logic.SINGLE, null);
+
+
+        String[] a=new String[2];
+        a[0]=d1.getName();
+        a[1]=d2.getName();
+
+        storeService.addDiscountToStore(storeId, NOToken, d1.getName(),d1.getPercent(),d1.getType(),
+                d1.getCondition(),d1.getLogic(),new String[0]);
+        storeService.addDiscountToStore(storeId, NOToken, d2.getName(),d2.getPercent(),d2.getType(),
+                d2.getCondition(),d2.getLogic(),new String[0]);
+
+        storeService.addDiscountToStore(1, NOToken, "AND Discount", 0.0,
+                CreateDiscountDTO.Type.VISIBLE, null, Logic.MULTIPLY, a);
+
+        userService.addToUserCart(NGToken, itemStoreDTO, 2);
+        ReceiptDTO[] receipts1 = purchaseService.buyGuestCart(NGToken, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
+        assertEquals(3040, receipts1[0].getFinalPrice());
+
+
+    }
 
 
 
