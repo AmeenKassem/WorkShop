@@ -110,6 +110,7 @@ public class Store {
     }
 
     public void addDiscount(Discount d) {
+        
         if (discount instanceof CompositeDiscount) {
             ((CompositeDiscount) discount).addDiscount(d);
         } else if (discount == null) {
@@ -120,6 +121,7 @@ public class Store {
             combo.addDiscount(discount);
             combo.addDiscount(d);
             this.discount = combo;
+            
         }
     }
 
