@@ -250,7 +250,7 @@ public class PurchaseService {
     private void setRecieptMapForRandoms(Map<Integer, List<ReceiptProduct>> storeToProducts,
             List<ParticipationInRandomDTO> pars) throws Exception {
         for (ParticipationInRandomDTO card : pars) {
-            stockRepo.validateAndDecreaseStock(card.storeId, card.productId, 1);
+            // stockRepo.validateAndDecreaseStock(card.storeId, card.productId, 1);
             Product product = stockRepo.findByIdInSystem_throwException(card.productId);
             String storeName = storeRepo.getStoreNameById(card.storeId);
 

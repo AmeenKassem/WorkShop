@@ -37,6 +37,14 @@ import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import org.mockito.Mockito;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserTests {
@@ -789,6 +797,54 @@ purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);      
 
         assertArrayEquals(messages, result);
 
+    }
+
+    @Test
+    void test_searchActiveRandoms_shouldReturnProduct() throws Exception {
+        int productId = 1;
+
+        stockService.setProductToRandom(NOToken, productId, 10, 2000, 1, 2000);
+
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, 1, 0, 5000, 0, 5);
+
+        RandomDTO[] result = stockService.searchActiveRandoms(NGToken, criteria);
+        assertNotNull(result);
+        assertEquals(1, result.length);
+        assertEquals("Laptop", result[0].productName);
+    }
+
+    @Test
+    void test_searchActiveBids_shouldReturnProduct() throws Exception {
+        int productId = 1;
+
+        // Add product to bid
+        stockService.setProductToBid(NOToken, 1, productId, 10);
+
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, 1, null, null, null, null);
+
+        BidDTO[] result = stockService.searchActiveBids(NGToken, criteria);
+        assertNotNull(result);
+        assertEquals(1, result.length);
+        assertEquals("Laptop", result[0].productName);
+    }
+
+    @Test
+    void test_searchActiveAuctions_shouldReturnProduct() throws Exception {
+        long endTime = System.currentTimeMillis() + 60 * 60 * 1000; // 1 hour from now
+        int productId = 1;
+
+        // Add product to auction
+        stockService.setProductToAuction(NOToken, 1, productId, 10, endTime, 2000.0);
+
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, 1, null, null, null, null);
+
+        AuctionDTO[] result = stockService.searchActiveAuctions(NGToken, criteria);
+        assertNotNull(result);
+        assertEquals(1, result.length);
+        assertEquals("Laptop", result[0].productName);
     }
 
 

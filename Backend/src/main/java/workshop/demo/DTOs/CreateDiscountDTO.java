@@ -9,7 +9,7 @@ public class CreateDiscountDTO {
     }
 
     public enum Logic {
-        SINGLE, AND, OR, MAX, XOR
+        SINGLE, AND, OR, MAX, XOR,MULTIPLY
     }
 
     private String name;

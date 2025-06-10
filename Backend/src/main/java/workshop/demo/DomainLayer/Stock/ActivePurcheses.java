@@ -35,7 +35,7 @@ public class ActivePurcheses {
 
     private HashMap<Integer, List<BID>> productIdToBids = new HashMap<>(); 
     private HashMap<Integer, List<Auction>> productIdToAuctions = new HashMap<>();
-    private HashMap<Integer, List<Random>> productIdToRandoms = new HashMap<>();
+  // private HashMap<Integer, List<Random>> productIdToRandoms = new HashMap<>();
 
 
 
@@ -315,11 +315,18 @@ public class ActivePurcheses {
     }
 
     public List<RandomDTO> getRandomsForProduct(int productId) {
+//
+//        List<RandomDTO> result = new ArrayList<>();
+//        List<Random> randoms = productIdToRandoms.getOrDefault(productId, new ArrayList<>());
+//        for (Random random : randoms) {
+//            result.add(random.getDTO());
+//        }
+//        return result;
+//    }
         List<RandomDTO> result = new ArrayList<>();
-        List<Random> randoms = productIdToRandoms.getOrDefault(productId, new ArrayList<>());
-        for (Random random : randoms) {
-            result.add(random.getDTO());
-        }
+        Random randoms = activeRandom.get(productId);
+            result.add(randoms.getDTO());
+
         return result;
     }
 
