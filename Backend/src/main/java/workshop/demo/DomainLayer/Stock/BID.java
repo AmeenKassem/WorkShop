@@ -1,4 +1,4 @@
-package workshop.demo.DomainLayer.Store;
+package workshop.demo.DomainLayer.Stock;
 
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 // import org.hibernate.validator.internal.util.logging.Log_.logger;
 
 import workshop.demo.DTOs.BidDTO;
-import workshop.demo.DTOs.SingleBid;
+import workshop.demo.DTOs.SingleBidDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -40,11 +40,12 @@ public class BID {
         bidDTO.isAccepted = isAccepted;
         bidDTO.bidId = bidId;
         bidDTO.winner = winner;
+        bidDTO.storeId = storeId;
 
-        SingleBid[] arrayBids = new SingleBid[bids.size()];
+        SingleBidDTO[] arrayBids = new SingleBidDTO[bids.size()];
         int i = 0;
         for (SingleBid bid : bids.values()) {
-            arrayBids[i] = bid;
+            arrayBids[i] = bid.convertToDTO();
             i++;
         }
         bidDTO.bids = arrayBids;
@@ -63,29 +64,35 @@ public class BID {
         }
     }
 
-    public SingleBid acceptBid(int userBidId) throws DevException ,UIException {
+    public SingleBid acceptBid(int userBidId) throws DevException, UIException {
         synchronized (lock) {
+            SingleBid curr = null;
             if (isAccepted)
                 throw new UIException("This bid is already closed!", ErrorCodes.BID_FINISHED);
 
             for (Integer id : bids.keySet()) {
                 if (id == userBidId) {
                     bids.get(id).acceptBid();
-                    winner = bids.get(id);
+                    curr = bids.get(id);
+                    if (bids.get(id).isWinner()) {
+                        winner = bids.get(id);
+                        isAccepted = true;
+                        return winner;
+                    }
                 } else {
                     bids.get(id).rejectBid();
                 }
             }
             if (!bids.containsKey(userBidId) || winner == null) {
-                
+
                 throw new DevException("Trying to accept bid for non-existent ID.");
             }
-            isAccepted = true;
-            return winner;
+
+            return curr;
         }
     }
 
-    public boolean rejectBid(int userBidId) throws DevException ,UIException {
+    public boolean rejectBid(int userBidId) throws DevException, UIException {
         synchronized (lock) {
             if (isAccepted)
                 throw new UIException("The bid is already closed!", ErrorCodes.BID_FINISHED);
@@ -104,7 +111,7 @@ public class BID {
     }
 
     public boolean userIsWinner(int userId) {
-        return winner!=null && winner.getUserId()==userId;
+        return winner != null && winner.getUserId() == userId;
     }
 
     public SingleBid getWinner() {
@@ -112,14 +119,15 @@ public class BID {
     }
 
     public boolean bidIsWinner(int bidId2) {
-        
+
         return getBid(bidId2).isAccepted();
     }
 
-   // was infinite loop PLEASE CHANGE IT TO THIS
-   public SingleBid getBid(int bidId) {
-    return bids.get(bidId);
-}
+    // was infinite loop PLEASE CHANGE IT TO THIS
+    public SingleBid getBid(int bidId) {
+        return bids.get(bidId);
+    }
+
     public int getProductId() {
         return productId;
     }

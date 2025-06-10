@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.InfrastructureLayer.Encoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

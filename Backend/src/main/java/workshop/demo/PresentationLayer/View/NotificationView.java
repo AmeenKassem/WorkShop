@@ -355,4 +355,10 @@ public class NotificationView extends com.vaadin.flow.component.Component {
         Notification.show("❌ " + msg, 5000, Notification.Position.BOTTOM_CENTER);
     }
 
+    public static void showInfo(String string) {
+        Notification notification = new Notification(string, 3000, Notification.Position.BOTTOM_CENTER);
+        notification.addThemeVariants(NotificationVariant.LUMO_CONTRAST);
+        notification.open();
+    }
+
 }

@@ -1,4 +1,4 @@
-package workshop.demo.DomainLayer.Store;
+package workshop.demo.DomainLayer.Stock;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,11 +13,11 @@ import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.RandomDTO;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Store.Random;
 
 public class ActivePurcheses {
 
@@ -25,7 +25,7 @@ public class ActivePurcheses {
 
     private int storeId;
 
-    private HashMap<Integer, BID> activeBid = new HashMap<>();
+    private HashMap<Integer, BID> activeBid = new HashMap<>(); 
     private HashMap<Integer, Random> activeRandom = new HashMap<>();
     private HashMap<Integer, Auction> activeAuction = new HashMap<>();
 
@@ -33,9 +33,16 @@ public class ActivePurcheses {
     private static AtomicInteger auctionIdGen = new AtomicInteger();
     private static AtomicInteger randomIdGen = new AtomicInteger();
 
+    private HashMap<Integer, List<BID>> productIdToBids = new HashMap<>(); 
+    private HashMap<Integer, List<Auction>> productIdToAuctions = new HashMap<>();
+    private HashMap<Integer, List<Random>> productIdToRandoms = new HashMap<>();
+
+
+
     public ActivePurcheses(int storeId) {
         this.storeId = storeId;
     }
+
 
     // ========== Auction ==========
 
@@ -49,7 +56,9 @@ public class ActivePurcheses {
         int id = auctionIdGen.incrementAndGet();
         Auction auction = new Auction(productId, quantity, time, id, storeId);
         activeAuction.put(id, auction);
+        productIdToAuctions.computeIfAbsent(productId, k -> new ArrayList<>()).add(auction);
         logger.debug("Auction created with id={}", id);
+
 
         return id;
     }
@@ -87,6 +96,7 @@ public class ActivePurcheses {
         int id = bidIdGen.incrementAndGet();
         BID bid = new BID(productId, quantity, id, storeId);
         activeBid.put(id, bid);
+        productIdToBids.computeIfAbsent(productId, k -> new ArrayList<>()).add(bid);
         logger.debug("Bid created with id={}", id);
 
         return id;
@@ -162,6 +172,7 @@ public class ActivePurcheses {
         int id = randomIdGen.incrementAndGet();
         Random random = new Random(productId, quantity, productPrice, id, storeId, randomTime);
         activeRandom.put(id, random);
+        
         logger.debug("Random created with id={}", id);
 
         return id;
@@ -302,6 +313,35 @@ public class ActivePurcheses {
                 return -1;
         }
     }
+
+    public List<RandomDTO> getRandomsForProduct(int productId) {
+        List<RandomDTO> result = new ArrayList<>();
+        List<Random> randoms = productIdToRandoms.getOrDefault(productId, new ArrayList<>());
+        for (Random random : randoms) {
+            result.add(random.getDTO());
+        }
+        return result;
+    }
+
+    public List<BidDTO> getBidsForProduct(int productId) {
+        List<BidDTO> result = new ArrayList<>();
+        List<BID> bids = productIdToBids.getOrDefault(productId, new ArrayList<>());
+        for (BID bid : bids) {
+            result.add(bid.getDTO());
+        }
+        return result;
+    }
+
+    public List<AuctionDTO> getAuctionsForProduct(int productId) {
+        List<AuctionDTO> result = new ArrayList<>();
+        List<Auction> auctions = productIdToAuctions.getOrDefault(productId, new ArrayList<>());
+        for (Auction auction : auctions) {
+            result.add(auction.getDTO());
+        }
+        return result;
+    }
+
+ 
     public void clear() {
     activeBid.clear();
     activeRandom.clear();
@@ -312,5 +352,7 @@ public class ActivePurcheses {
     auctionIdGen.set(0);
     randomIdGen.set(0);
 }
+
+
 
 }

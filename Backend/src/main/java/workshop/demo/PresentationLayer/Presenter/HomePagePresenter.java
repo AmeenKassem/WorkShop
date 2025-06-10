@@ -2,7 +2,9 @@ package workshop.demo.PresentationLayer.Presenter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -12,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +25,12 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Controllers.ApiResponse;
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.HomePage;
@@ -29,8 +38,9 @@ import workshop.demo.PresentationLayer.View.NotificationView;
 
 public class HomePagePresenter {
 
-    private final RestTemplate restTemplate;
+    private RestTemplate restTemplate;
     private HomePage view;
+    private final String BASE_URL = "http://localhost:8080/stock";
 
     public HomePagePresenter(HomePage homePage) {
         this.view = homePage;
@@ -89,4 +99,93 @@ public class HomePagePresenter {
         return card;
     }
 
+    public List<ItemStoreDTO> searchNormal(String token, String name, String keyword, Category category,
+            Double minPrice, Double maxPrice, Integer productRate) {
+        try {
+            String url = buildUrl("/searchProducts", token, name, keyword, category, minPrice, maxPrice, productRate);
+            ResponseEntity<ApiResponse<ItemStoreDTO[]>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    new HttpEntity<>(buildHeaders()),
+                    new ParameterizedTypeReference<>() {
+            }
+            );
+            ApiResponse<ItemStoreDTO[]> body = response.getBody();
+            if (body != null && body.getErrNumber() == -1) {
+                return List.of(body.getData());
+            }
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+        return Collections.emptyList();
+    }
+
+    private String buildUrl(String path, String token, String name, String keyword, Category category,
+            Double minPrice, Double maxPrice, Integer productRate) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(BASE_URL + path)
+                .queryParam("token", token);
+
+        if (name != null && !name.isEmpty()) {
+            builder.queryParam("productNameFilter", name);
+        }
+        if (keyword != null && !keyword.isEmpty()) {
+            builder.queryParam("keywordFilter", keyword);
+        }
+        if (category != null) {
+            builder.queryParam("categoryFilter", category);
+        }
+        if (minPrice != null) {
+            builder.queryParam("minPrice", minPrice);
+        }
+        if (maxPrice != null) {
+            builder.queryParam("maxPrice", maxPrice);
+        }
+        if (productRate != null) {
+            builder.queryParam("minProductRating", productRate);
+        }
+
+        return builder.toUriString();
+    }
+
+    private HttpHeaders buildHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        return headers;
+    }
+
+    public void addToCart(String token, ItemStoreDTO item, int quantity) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("item", item);
+        body.put("quantity", quantity);
+        String url = String.format(
+                "http://localhost:8080/api/users/addToCart?token=%s",
+                UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+
+        HttpEntity<?> entity = new HttpEntity<>(body, headers);
+        try {
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    ApiResponse.class
+            );
+
+            ApiResponse bodyResponse = response.getBody();
+            if (bodyResponse != null && bodyResponse.getErrNumber() == -1) {
+                NotificationView.showSuccess("Added to cart successfully.");
+            } else if (bodyResponse != null) {
+                NotificationView.showError(ExceptionHandlers.getErrorMessage(bodyResponse.getErrNumber()));
+            } else {
+                NotificationView.showError("Unexpected empty response.");
+            }
+
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+    }
 }

@@ -22,10 +22,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Store.Discount;
-import workshop.demo.DomainLayer.Store.DiscountFactory;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.Store.*;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
@@ -381,5 +378,49 @@ public class StoreService {
 
         logger.info("Discount '{}' removed from store {}", discountName, storeId);
     }
+    public void addPurchasePolicy(String token,int storeId,String policyKey/*"NO_ALCOHOL""MIN_QTY"*/,
+                                  Integer param/*when MIN_QTY*/) throws Exception {
+        authRepo.checkAuth_ThrowTimeOutException(token,logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
 
+        storeRepo.checkStoreExistance(storeId);
+        storeRepo.checkStoreIsActive(storeId);
+        if (!suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_PURCHASE_POLICY)) {
+            throw new UIException("You do not have permission to remove discounts", ErrorCodes.NO_PERMISSION);
+        }
+        Store store = storeRepo.findStoreByID(storeId);
+        switch (policyKey){
+            case "NO_ALCOHOL" ->
+                store.addPurchasePolicy(PurchasePolicy.noAlcoholUnder18());
+            case "MIN_QTY" ->
+                store.addPurchasePolicy(PurchasePolicy.minQuantityPerProduct(param));
+            default -> throw new UIException("Unknown Policy!",ErrorCodes.NO_POLICY);
+        }
+    }
+    public void removePurchasePolicy(String token,int storeId,String policyKey/*"NO_ALCOHOL""MIN_QTY"*/,
+                                  Integer param/*when MIN_QTY*/) throws Exception {
+        authRepo.checkAuth_ThrowTimeOutException(token,logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+
+        storeRepo.checkStoreExistance(storeId);
+        storeRepo.checkStoreIsActive(storeId);
+        if (!suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_PURCHASE_POLICY)) {
+            throw new UIException("You do not have permission to remove discounts", ErrorCodes.NO_PERMISSION);
+        }
+        Store store = storeRepo.findStoreByID(storeId);
+        PurchasePolicy policy = switch (policyKey){
+            case "NO_ALCOHOL" -> PurchasePolicy.noAlcoholUnder18();
+            case "MIN_QTY" -> {
+                if(param==null)
+                    throw new Exception("Param is required!");
+                yield PurchasePolicy.minQuantityPerProduct(param);
+            }
+            default -> throw new UIException("Unknown Policy!",ErrorCodes.NO_POLICY);
+        };
+        store.removePurchasePolicy(policy);
+    }
 }
