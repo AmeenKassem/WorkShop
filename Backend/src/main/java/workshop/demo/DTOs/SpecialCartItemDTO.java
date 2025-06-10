@@ -1,17 +1,19 @@
 package workshop.demo.DTOs;
 
 public class SpecialCartItemDTO {
+
     //x1
     public int storeId;
     public int specialId;
     public int bidId;
     public SpecialType type;
     //x2
-    public String productName ;
+    public String productName;
     public boolean isWinner;
-    public boolean isEnded;    
+    public boolean isEnded;
 
-
+    public SpecialCartItemDTO() {
+    }
 
     // Setter for x1 fields
     public void setIds(int storeId, int specialId, int bidId, SpecialType type) {

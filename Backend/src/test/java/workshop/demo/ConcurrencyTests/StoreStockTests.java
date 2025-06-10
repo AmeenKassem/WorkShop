@@ -17,6 +17,7 @@ import workshop.demo.DTOs.Category;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
+
 @SpringBootTest
 public class StoreStockTests {
 
@@ -31,7 +32,7 @@ public class StoreStockTests {
     public void testAddItemConcurrency_addingSameItemOnceThenIncreaseQuantity_Sucess() throws InterruptedException, Exception {
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         // Create an item to add
-        item newItem = new item(1, 10, 100, Category.ELECTRONICS);  // Set category
+        item newItem = new item(1, 10, 100, Category.Electronics);  // Set category
         store.addItem(newItem);  // Add the item to the store initially
         int numberOfThreads = 100;
         for (int i = 0; i < numberOfThreads; i++) {
@@ -40,7 +41,7 @@ public class StoreStockTests {
         executorService.shutdown();
         executorService.awaitTermination(1, TimeUnit.MINUTES);
         // Verify that the quantity has been correctly updated
-        List<item> items = store.getItemsByCategoryObject(Category.ELECTRONICS);
+        List<item> items = store.getItemsByCategoryObject(Category.Electronics);
         assertNotNull(items, "Items list should not be null");
         assertEquals(1, items.size(), "There should be exactly one item with productId 1");
         item storedItem = items.get(0);
@@ -51,7 +52,7 @@ public class StoreStockTests {
     @Test
     public void testUpdateQuantityConcurrency_Success() throws Exception {
         ExecutorService executorService = Executors.newFixedThreadPool(10);
-        item newItem = new item(1, 10, 100, Category.ELECTRONICS);
+        item newItem = new item(1, 10, 100, Category.Electronics);
         store.addItem(newItem);  // Add initial item to the store
 
         int numberOfThreads = 100;
@@ -66,7 +67,7 @@ public class StoreStockTests {
         executorService.awaitTermination(1, TimeUnit.MINUTES);
 
         // Retrieve items and check the quantity
-        List<item> items = store.getItemsByCategoryObject(Category.ELECTRONICS);
+        List<item> items = store.getItemsByCategoryObject(Category.Electronics);
         assertNotNull(items, "Items list should not be null");
         assertEquals(1, items.size(), "There should be exactly one item with productId 1");
 
@@ -79,7 +80,7 @@ public class StoreStockTests {
     public void testRemoveItemSuccessfullyInStockInStoreX() throws Exception {
 
         ExecutorService executorService = Executors.newFixedThreadPool(10);
-        item newItem = new item(1, 10, 100, Category.ELECTRONICS);
+        item newItem = new item(1, 10, 100, Category.Electronics);
         store.addItem(newItem);
         int numberOfThreads = 2;
         for (int i = 0; i < numberOfThreads; i++) {
@@ -103,7 +104,7 @@ public class StoreStockTests {
     //I think this is a stuipd test:
     @Test
     public void testUpdatePriceForProductInStoreX_Concurrency() throws InterruptedException {
-        item newItem = new item(1, 10, 100, Category.ELECTRONICS);
+        item newItem = new item(1, 10, 100, Category.Electronics);
         store.addItem(newItem);
 
         ExecutorService executorService = Executors.newFixedThreadPool(10);
@@ -131,7 +132,7 @@ public class StoreStockTests {
     @Test
     public void testRankProductInStoreX_Concurrency() throws InterruptedException {
         // Create a sample item with rank array of length 5 (for ranks 1 to 5)
-        item testItem = new item(1, 10, 100, workshop.demo.DTOs.Category.ELECTRONICS);
+        item testItem = new item(1, 10, 100, workshop.demo.DTOs.Category.Electronics);
         testItem.setRank(new AtomicInteger[5]);  // Assuming ranks from 1 to 5
         for (int i = 0; i < 5; i++) {
             testItem.getRank()[i] = new AtomicInteger(0);
@@ -167,7 +168,7 @@ public class StoreStockTests {
 
     @Test
     public void testConcurrentPurchaseOfLastItem_onlyOneSucceeds() throws InterruptedException {
-        item newItem = new item(1, 1, 100, Category.ELECTRONICS); // Quantity = 1
+        item newItem = new item(1, 1, 100, Category.Electronics); // Quantity = 1
         store.addItem(newItem);
 
         ExecutorService executor = Executors.newFixedThreadPool(2);

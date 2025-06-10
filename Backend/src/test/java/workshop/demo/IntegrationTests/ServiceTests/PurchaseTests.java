@@ -42,6 +42,7 @@ import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
+import workshop.demo.DTOs.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -127,11 +128,11 @@ public class PurchaseTests {
 
         // ======================= PRODUCT & ITEM ADDITION =======================
         String[] keywords = { "Laptop", "Lap", "top" };
-        productId_laptop = stockService.addProduct(NOToken, "Laptop", Category.ELECTRONICS, "Gaming Laptop", keywords);
+        productId_laptop = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
 
         assertEquals(1,
-                stockService.addItem(createdStoreId, NOToken, productId_laptop, 10, 2000, Category.ELECTRONICS));
-        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.ELECTRONICS, 0, createdStoreId, "Laptop", "TestStore");
+                stockService.addItem(createdStoreId, NOToken, productId_laptop, 10, 2000, Category.Electronics));
+        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.Electronics, 0, createdStoreId, "Laptop", "TestStore");
         stockService.setProductToRandom(NOToken, productId_laptop, 1, 2000, createdStoreId, 5000);
         stockService.setProductToAuction(NOToken, createdStoreId, productId_laptop, 1, 1000, 2);
         assertTrue(stockService.getAllAuctions(NOToken, createdStoreId).length == 1);
@@ -431,15 +432,24 @@ public class PurchaseTests {
         purchaseService.participateInRandom(NOToken, 1, 1, 1999, paymentDetails);
 
         assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].participations.length == 2);
-        assertFalse(stockService.getAllRandomInStore(NOToken, 1)[0].participations[0].won());
+        ParticipationInRandomDTO player1 = stockService.getAllRandomInStore(NOToken,
+                createdStoreId)[0].participations[0];
+        ParticipationInRandomDTO player2 = stockService.getAllRandomInStore(NOToken,
+                createdStoreId)[0].participations[1];
+        xorAssert(player1.won(), player2.won());
         // assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].winner.userId==4);
 
-        ReceiptDTO[] receipts = purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
+        ReceiptDTO[] receipts1 = purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
+        ReceiptDTO[] receipts2 = purchaseService.finalizeSpecialCart(NOToken, paymentDetails, supplyDetails);
 
-        assertNotNull(receipts);
-        assertEquals(0, receipts.length);
+        xorAssert(receipts1.length == 1, receipts2.length == 1);
         assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
+        assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NOToken)).getSpecialCart().isEmpty());
+    }
 
+    private void xorAssert(boolean a, boolean b) {
+        assertTrue(a || b);
+        assertFalse(a && b);
     }
 
     @Test
@@ -832,7 +842,6 @@ public class PurchaseTests {
         Map<Integer, List<ReceiptProduct>> res = new HashMap<>();
 
         // Mock: make stockRepo return null for productId 999
-
         // Act + Assert
         UIException ex = assertThrows(UIException.class, () -> {
             purchaseService.setRecieptMapForBids(bids, res);
@@ -849,7 +858,6 @@ public class PurchaseTests {
         stockService.acceptBid(NOToken, 1, 1, stockService.getAllBidsStatus(NOToken, 1)[0].bids[0].id);
 
         // ===== SETUP FOR RANDOM =====
-
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         purchaseService.participateInRandom(NGToken, 1, 1, 1200, paymentDetails);
 

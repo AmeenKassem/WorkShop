@@ -1,5 +1,6 @@
 package workshop.demo.Controllers;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -10,8 +11,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import workshop.demo.ApplicationLayer.OrderService;
+import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
 @RestController
@@ -29,13 +32,13 @@ public class HistoryController {
         ApiResponse<ReceiptDTO[]> response;
 
         try {
-            //System.out.println("Fetching receipts for user with token: " + token);
+            System.out.println("Fetching receipts for user with token: " + token);
             ReceiptDTO[] receipts = orderService.getReceiptDTOsByUser(token).toArray(new ReceiptDTO[0]);
             response = new ApiResponse<>(receipts, null);
             return ResponseEntity.ok(response);
 
         } catch (UIException e) {
-            response = new ApiResponse<>(null, e.getMessage(), e.getNumber());
+           response = new ApiResponse<>(null, e.getMessage(), e.getNumber());
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             response = new ApiResponse<>(null, e.getMessage(), -1);

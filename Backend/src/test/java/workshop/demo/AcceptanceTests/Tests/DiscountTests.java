@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+
 @SpringBootTest
 public class DiscountTests {
 
@@ -84,15 +85,15 @@ public class DiscountTests {
 
         int productId = 200;
         String[] keywords = {"Phone", "Smartphone"};
-        when(real.mockStockRepo.addProduct("Phone", Category.ELECTRONICS, "Smartphone", keywords)).thenReturn(productId);
-        int returnedProductId = real.stockService.addProduct(ownerToken, "Phone", Category.ELECTRONICS, "Smartphone", keywords);
+        when(real.mockStockRepo.addProduct("Phone", Category.Electronics, "Smartphone", keywords)).thenReturn(productId);
+        int returnedProductId = real.stockService.addProduct(ownerToken, "Phone", Category.Electronics, "Smartphone", keywords);
         assertEquals(productId, returnedProductId);
 
         when(real.mockIOSrepo.manipulateItem(ownerId, storeId, Permission.AddToStock)).thenReturn(true);
-        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(new Product("Phone", productId, Category.ELECTRONICS, "Smartphone", keywords));
-        when(real.mockStockRepo.addItem(storeId, productId, 10, 100, Category.ELECTRONICS))
-                .thenReturn(new item(productId, 10, 100, Category.ELECTRONICS));
-        int itemAdded = real.stockService.addItem(storeId, ownerToken, productId, 10, 100, Category.ELECTRONICS);
+        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(new Product("Phone", productId, Category.Electronics, "Smartphone", keywords));
+        when(real.mockStockRepo.addItem(storeId, productId, 10, 100, Category.Electronics))
+                .thenReturn(new item(productId, 10, 100, Category.Electronics));
+        int itemAdded = real.stockService.addItem(storeId, ownerToken, productId, 10, 100, Category.Electronics);
         assertEquals(itemAdded, productId);
 
         int userId = 20;
@@ -134,7 +135,7 @@ public class DiscountTests {
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.Electronics);
         CartItem item1 = new CartItem(item);
         cart.addItem(storeId, item1);
         List<CartItem> a = new LinkedList<>();
@@ -151,7 +152,7 @@ public class DiscountTests {
         real.storeService.addDiscountToStore(storeId, ownerToken, "d1", 0.3,
                 CreateDiscountDTO.Type.VISIBLE, "ITEM:" + productId, CreateDiscountDTO.Logic.SINGLE, new String[0]);
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.Electronics);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
@@ -180,7 +181,7 @@ public class DiscountTests {
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.Electronics);
         CartItem item1 = new CartItem(item);
         cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
@@ -196,7 +197,7 @@ public class DiscountTests {
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.Electronics);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
@@ -225,7 +226,7 @@ public class DiscountTests {
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.Electronics);
         CartItem item1 = new CartItem(item);
         cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
@@ -240,7 +241,7 @@ public class DiscountTests {
 
 
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.Electronics);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
@@ -269,7 +270,7 @@ public class DiscountTests {
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.Electronics);
         CartItem item1 = new CartItem(item);
         cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
@@ -287,7 +288,7 @@ public class DiscountTests {
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.Electronics);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
@@ -317,7 +318,7 @@ public class DiscountTests {
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.Electronics);
         CartItem item1 = new CartItem(item);
         cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
@@ -333,7 +334,7 @@ public class DiscountTests {
         real.storeService.addDiscountToStore(storeId, ownerToken, "OrDiscount", 0.0, CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.XOR, subDiscountNames);
 
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.Electronics);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
@@ -369,7 +370,7 @@ public class DiscountTests {
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.Electronics);
         CartItem item1 = new CartItem(item);
         cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
@@ -386,7 +387,7 @@ public class DiscountTests {
         real.storeService.addDiscountToStore(storeId, ownerToken, "OrDiscount", 0.0, CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.AND, subDiscountNames);
 
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.Electronics);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
@@ -403,6 +404,7 @@ public class DiscountTests {
         assertEquals("TestStore", receipts[0].getStoreName());
         assertEquals(80.0, receipts[0].getFinalPrice()); // adjust this if your actual chain is multiplicative or additive
     }
+
     @Test
     void testBuyRegisteredCart_WithAndDiscount_success() throws Exception {
         String token = "user-token-2";
@@ -414,7 +416,7 @@ public class DiscountTests {
         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
 
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.Electronics);
         CartItem item1 = new CartItem(item);
         cart.addItem(storeId, item1);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
@@ -433,7 +435,7 @@ public class DiscountTests {
         real.storeService.addDiscountToStore(storeId, ownerToken, "OrDiscount", 0.0, CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.AND, subDiscountNames);
 
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.Electronics);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore"))).thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
 
@@ -450,7 +452,6 @@ public class DiscountTests {
         assertEquals(134.0, receipts[0].getFinalPrice());
     }
 
-
     @Test
     void testBuyRegisteredCart_WithMaxDiscount_TakesHighest() throws Exception {
         String token = "user-token-2";
@@ -463,7 +464,7 @@ public class DiscountTests {
 
         // Cart with one ELECTRONICS product
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.Electronics);
         CartItem cartItem = new CartItem(item);
         cart.addItem(storeId, cartItem);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
@@ -484,7 +485,7 @@ public class DiscountTests {
 
 
         // Cart processing
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.Electronics);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0); // base price
@@ -517,7 +518,7 @@ public class DiscountTests {
 
         // Cart with one ELECTRONICS product
         ShoppingCart cart = new ShoppingCart();
-        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.ELECTRONICS);
+        ItemCartDTO item = new ItemCartDTO(storeId, productId, 1, 200, "Phone", "TestStore", Category.Electronics);
         CartItem cartItem = new CartItem(item);
         cart.addItem(storeId, cartItem);
         when(real.mockUserRepo.getUserCart(userId)).thenReturn(cart);
@@ -536,7 +537,7 @@ public class DiscountTests {
         real.storeService.addDiscountToStore(storeId, ownerToken, "OrDiscount", 0.0, CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.MAX, subDiscountNames);
 
         // Cart processing
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.ELECTRONICS);
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.Electronics);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0); // base price
@@ -556,7 +557,5 @@ public class DiscountTests {
         assertEquals("TestStore", receipts[0].getStoreName());
         assertEquals(200.0, receipts[0].getFinalPrice());
     }
-
-
 
 }

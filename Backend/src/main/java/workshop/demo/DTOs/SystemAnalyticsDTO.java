@@ -4,16 +4,21 @@ import java.time.LocalDate;
 import java.util.Map;
 
 public class SystemAnalyticsDTO {
-    private Map<LocalDate,Integer> loginsPerDay;
-    private Map<LocalDate,Integer> logoutsPerDay;
-    private Map<LocalDate,Integer> registerPerDay;
-    private Map<LocalDate,Integer> purchasesPerDay;
-    public SystemAnalyticsDTO(Map<LocalDate,Integer> loginsPerDay,Map<LocalDate,Integer> logoutsPerDay,
-                              Map<LocalDate,Integer> registerPerDay,Map<LocalDate,Integer> purchasesPerDay){
+
+    private Map<LocalDate, Integer> loginsPerDay;
+    private Map<LocalDate, Integer> logoutsPerDay;
+    private Map<LocalDate, Integer> registerPerDay;
+    private Map<LocalDate, Integer> purchasesPerDay;
+
+    public SystemAnalyticsDTO(Map<LocalDate, Integer> loginsPerDay, Map<LocalDate, Integer> logoutsPerDay,
+            Map<LocalDate, Integer> registerPerDay, Map<LocalDate, Integer> purchasesPerDay) {
         this.loginsPerDay = loginsPerDay;
         this.logoutsPerDay = logoutsPerDay;
         this.registerPerDay = registerPerDay;
         this.purchasesPerDay = purchasesPerDay;
+    }
+
+    public SystemAnalyticsDTO() {
     }
 
     public Map<LocalDate, Integer> getLoginsPerDay() {

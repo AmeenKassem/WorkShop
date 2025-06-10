@@ -3,18 +3,22 @@ package workshop.demo.DTOs;
 import java.util.List;
 
 public class PurchaseHistoryDTO {
+
     private String buyerUserName;
     private String storeName;
     private List<ReceiptProduct> items;
     private String timeStamp;
     private double totalPrice;
 
-    public PurchaseHistoryDTO(String buyerUserName,String storeName,List<ReceiptProduct> items,String timeStamp, double totalPrice){
+    public PurchaseHistoryDTO(String buyerUserName, String storeName, List<ReceiptProduct> items, String timeStamp, double totalPrice) {
         this.buyerUserName = buyerUserName;
         this.storeName = storeName;
         this.items = items;
         this.timeStamp = timeStamp;
         this.totalPrice = totalPrice;
+    }
+
+    public PurchaseHistoryDTO() {
     }
 
     public String getBuyerUserName() {
