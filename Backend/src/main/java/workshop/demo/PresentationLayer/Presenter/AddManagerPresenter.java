@@ -50,7 +50,7 @@ public class AddManagerPresenter {
 
         try {
             // Build the URL with query parameters, URI-encoded
-            String url = String.format("http://localhost:8080/api/store/makeOfferManager?storeId=%d&token=%s&managerName=%s",
+            String url = String.format(Base.url+"/api/store/makeOfferManager?storeId=%d&token=%s&managerName=%s",
                     storeId,
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     UriUtils.encodeQueryParam(managerName, StandardCharsets.UTF_8));

@@ -31,7 +31,7 @@ public class ManageOwnersPresenter {
     public void loadOwners(int storeId) {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         String url = String.format(
-                "http://localhost:8080/api/store/viewRolesAndPermissions?storeId=%d&token=%s",
+                Base.url+"/api/store/viewRolesAndPermissions?storeId=%d&token=%s",
                 storeId,
                 token
         );
@@ -81,7 +81,7 @@ public class ManageOwnersPresenter {
     public void deleteOwner(int storeId, int workerId) {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         String url = String.format(
-                "http://localhost:8080/deleteOwner?storeId=%d&token=%s&ownerToDelete=%d",
+                Base.url+"/deleteOwner?storeId=%d&token=%s&ownerToDelete=%d",
                 storeId,
                 token,
                 workerId
@@ -115,7 +115,7 @@ public class ManageOwnersPresenter {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
 
         String url = String.format(
-                "http://localhost:8080/api/store/makeOfferOwner?storeId=%d&token=%s&newOwner=%s",
+                Base.url+"/api/store/makeOfferOwner?storeId=%d&token=%s&newOwner=%s",
                 storeId,
                 token,
                 newOwnerUsername

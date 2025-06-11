@@ -42,7 +42,7 @@ public class StoreDetailsPresenter {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper mapper;
-    private final String BASE_URL = "http://localhost:8080/stock";
+    private final String BASE_URL = Base.url+"/stock";
 
     public StoreDetailsPresenter() {
         this.restTemplate = new RestTemplate();
@@ -50,7 +50,7 @@ public class StoreDetailsPresenter {
     }
 
     public Map<ItemStoreDTO, ProductDTO> getProductsInStore(int storeId, String token) throws Exception {
-        String url = "http://localhost:8080/stock/getProductsInStore?storeId=" + storeId;
+        String url = Base.url+"/stock/getProductsInStore?storeId=" + storeId;
         ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);
         ApiResponse<?> body = response.getBody();
 
@@ -60,7 +60,7 @@ public class StoreDetailsPresenter {
 
         ItemStoreDTO[] items = mapper.convertValue(body.getData(), ItemStoreDTO[].class);
         //all product:
-        String productsUrl = "http://localhost:8080/stock/getAllProducts?token="
+        String productsUrl = Base.url+"/stock/getAllProducts?token="
                 + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8);
         ResponseEntity<ApiResponse> productsResponse = restTemplate.getForEntity(productsUrl, ApiResponse.class);
         ApiResponse<?> productsBody = productsResponse.getBody();
@@ -85,7 +85,7 @@ public class StoreDetailsPresenter {
 
     public void addReviewToItem(String token, int storeId, int productId, String review) {
         String url = String.format(
-                "http://localhost:8080/api/Review/addToProduct?token=%s&storeId=%d&productId=%d&review=%s",
+                Base.url+"/api/Review/addToProduct?token=%s&storeId=%d&productId=%d&review=%s",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                 storeId,
                 productId,
@@ -122,7 +122,7 @@ public class StoreDetailsPresenter {
 
     public void addReviewToStore(String token, int storeId, String review) {
         String url = String.format(
-                "http://localhost:8080/api/Review/addToStore?token=%s&storeId=%d&review=%s",
+                Base.url+"/api/Review/addToStore?token=%s&storeId=%d&review=%s",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                 storeId,
                 UriUtils.encodeQueryParam(review, StandardCharsets.UTF_8)
@@ -157,7 +157,7 @@ public class StoreDetailsPresenter {
     }
 
     public List<ReviewDTO> getStoreReviews(int storeId) {
-        String url = String.format("http://localhost:8080/api/Review/getStoreReviews?storeId=%d", storeId);
+        String url = String.format(Base.url+"/api/Review/getStoreReviews?storeId=%d", storeId);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -191,7 +191,7 @@ public class StoreDetailsPresenter {
 
     public void rankProduct(int storeId, String token, int productId, int newRank) {
         String url = String.format(
-                "http://localhost:8080/stock/rankProduct?storeId=%d&token=%s&productId=%d&newRank=%d",
+                Base.url+"/stock/rankProduct?storeId=%d&token=%s&productId=%d&newRank=%d",
                 storeId,
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                 productId,
@@ -229,7 +229,7 @@ public class StoreDetailsPresenter {
         body.put("item", item);
         body.put("quantity", quantity);
         String url = String.format(
-                "http://localhost:8080/api/users/addToCart?token=%s",
+                Base.url+"/api/users/addToCart?token=%s",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
         );
 
@@ -262,7 +262,7 @@ public class StoreDetailsPresenter {
 
     public List<ReviewDTO> getProductReviews(int storeId, int productId) {
         String url = String.format(
-                "http://localhost:8080/api/Review/getProductReviews?storeId=%d&productId=%d",
+                Base.url+"/api/Review/getProductReviews?storeId=%d&productId=%d",
                 storeId, productId
         );
 
@@ -296,7 +296,7 @@ public class StoreDetailsPresenter {
     public List<RandomDTO> getRandomProductIds(int storeId, String token) {
         try {
             String url = String.format(
-                    "http://localhost:8080/stock/getAllRandomInStore?token=%s&storeId=%d",
+                    Base.url+"/stock/getAllRandomInStore?token=%s&storeId=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     storeId
             );
@@ -319,7 +319,7 @@ public class StoreDetailsPresenter {
     public List<AuctionDTO> getAuctionProductIds(int storeId, String token) {
         try {
             String url = String.format(
-                    "http://localhost:8080/stock/getAllAuctions?token=%s&storeId=%d",
+                    Base.url+"/stock/getAllAuctions?token=%s&storeId=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     storeId
             );
@@ -340,7 +340,7 @@ public class StoreDetailsPresenter {
     public void placeBidOnAuction(String token, int auctionId, int storeId, int price) {
         try {
             String url = String.format(
-                    "http://localhost:8080/stock/addBidOnAuction?token=%s&auctionId=%d&storeId=%d&price=%d",
+                    Base.url+"/stock/addBidOnAuction?token=%s&auctionId=%d&storeId=%d&price=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     auctionId, storeId, price
             );
@@ -356,7 +356,7 @@ public class StoreDetailsPresenter {
     public void participateInRandomDraw(String token, int randomId, int storeId, double amountPaid, PaymentDetails payment) {
         try {
             String url = String.format(
-                    "http://localhost:8080/purchase/participateRandom?token=%s&randomId=%d&storeId=%d&amountPaid=%.2f",
+                    Base.url+"/purchase/participateRandom?token=%s&randomId=%d&storeId=%d&amountPaid=%.2f",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     randomId, storeId, amountPaid
             );
@@ -383,7 +383,7 @@ public class StoreDetailsPresenter {
     public List<BidDTO> getBidProduct(int storeId, String token) {
         try {
             String url = String.format(
-                    "http://localhost:8080/stock/getAllBidsInStore?token=%s&storeId=%d",
+                    Base.url+"/stock/getAllBidsInStore?token=%s&storeId=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     storeId
             );
@@ -404,7 +404,7 @@ public class StoreDetailsPresenter {
     public boolean addRegularBid(String token, int bidId, int storeId, double price) {
         try {
             String url = String.format(
-                    "http://localhost:8080/stock/addRegularBid?token=%s&bitId=%d&storeId=%d&price=%s",
+                    Base.url+"/stock/addRegularBid?token=%s&bitId=%d&storeId=%d&price=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     bidId,
                     storeId,
@@ -447,7 +447,7 @@ public class StoreDetailsPresenter {
     public List<ItemStoreDTO> searchNormal(String token, String name, String keyword, Category category,
             Double minPrice, Double maxPrice, Integer productRate, Integer storeId) {
         try {
-            StringBuilder url = new StringBuilder("http://localhost:8080/stock/searchProducts?token=")
+            StringBuilder url = new StringBuilder(Base.url+"/stock/searchProducts?token=")
                     .append(URLEncoder.encode(token, StandardCharsets.UTF_8));
 
             if (name != null) {

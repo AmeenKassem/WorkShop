@@ -46,7 +46,7 @@ public class InitPresenter {
 
     private void connectAsGuest() {
         try {
-            String url = "http://localhost:8080/api/users/generateGuest";
+            String url = Base.url+"/api/users/generateGuest";
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON); // Optional for GET/params
             HttpEntity<Void> entity = new HttpEntity<>(headers); // no body
@@ -93,7 +93,7 @@ public class InitPresenter {
             System.out.println("the token is: " + token);
             try {
                 ResponseEntity<ApiResponse> response = restTemplate.postForEntity(
-                        "http://localhost:8080/api/users/logout?token=" + token,
+                        Base.url+"/api/users/logout?token=" + token,
                         null,
                         ApiResponse.class);
 
@@ -127,7 +127,7 @@ public class InitPresenter {
 
         try {
             String url = String.format(
-                    "http://localhost:8080/api/history/getreceipts?token=%s",
+                    Base.url+"/api/history/getreceipts?token=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
             HttpHeaders headers = new HttpHeaders();

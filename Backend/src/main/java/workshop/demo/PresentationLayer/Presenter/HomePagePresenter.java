@@ -40,7 +40,7 @@ public class HomePagePresenter {
 
     private RestTemplate restTemplate;
     private HomePage view;
-    private final String BASE_URL = "http://localhost:8080/stock";
+    private final String BASE_URL = Base.url+"/stock";
 
     public HomePagePresenter(HomePage homePage) {
         this.view = homePage;
@@ -51,7 +51,7 @@ public class HomePagePresenter {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         try {
             String url = String.format(
-                    "http://localhost:8080/api/store/allStores?token=%s",
+                    Base.url+"/api/store/allStores?token=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
             HttpHeaders headers = new HttpHeaders();
@@ -158,7 +158,7 @@ public class HomePagePresenter {
         body.put("item", item);
         body.put("quantity", quantity);
         String url = String.format(
-                "http://localhost:8080/api/users/addToCart?token=%s",
+                Base.url+"/api/users/addToCart?token=%s",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
         );
 

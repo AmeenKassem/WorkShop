@@ -46,7 +46,7 @@ public class ManageStoreManagersPresenter {
     public void loadManagers() {
         try {
             String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-            URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/viewRolesAndPermissions")
+            URI uri = UriComponentsBuilder.fromHttpUrl(Base.url+"/api/store/viewRolesAndPermissions")
                     .queryParam("token", token)
                     .queryParam("storeId", storeId)
                     .build().toUri();
@@ -78,7 +78,7 @@ public class ManageStoreManagersPresenter {
                     .collect(Collectors.toSet());
 
             String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-            URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/makeOfferManager")
+            URI uri = UriComponentsBuilder.fromHttpUrl(Base.url+"/api/store/makeOfferManager")
                     .queryParam("storeId", storeId)
                     .queryParam("token", token)
                     .queryParam("managerName", username)
@@ -114,7 +114,7 @@ public class ManageStoreManagersPresenter {
 
             String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
 
-            URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/changePermissions")
+            URI uri = UriComponentsBuilder.fromHttpUrl(Base.url+"/api/store/changePermissions")
                     .queryParam("token", token)
                     .queryParam("managerId", managerId)
                     .queryParam("storeId", storeId)
@@ -144,7 +144,7 @@ public class ManageStoreManagersPresenter {
         try {
             String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
 
-            URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/deleteManager")
+            URI uri = UriComponentsBuilder.fromHttpUrl(Base.url+"/api/store/deleteManager")
                     .queryParam("token", token)
                     .queryParam("managerId", managerId)
                     .queryParam("storeId", storeId)

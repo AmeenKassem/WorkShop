@@ -34,7 +34,7 @@ public class AdminPurchaseHistoryPresenter {
 
         try {
             String url = String.format(
-                    "http://localhost:8080/api/users/purchaseHistory?token=%s",
+                    Base.url+"/api/users/purchaseHistory?token=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
             HttpHeaders headers = new HttpHeaders();

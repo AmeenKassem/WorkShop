@@ -65,14 +65,14 @@
 //             if ("user".equals(uesrtype)) {
 //                 // Build request URL
 //                 url = String.format(
-//                         "http://localhost:8080/purchase/registered?token=%s&paymentJson=%s&supplyJson=%s",
+//                         Base.url+"/purchase/registered?token=%s&paymentJson=%s&supplyJson=%s",
 //                         UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
 //                         encodedPaymentJson,
 //                         encodedSupplyJson);
 //             } else {
 //                 // Build request URL
 //                 url = String.format(
-//                         "http://localhost:8080/purchase/guest?token=%s&paymentJson=%s&supplyJson=%s",
+//                         Base.url+"/purchase/guest?token=%s&paymentJson=%s&supplyJson=%s",
 //                         UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
 //                         encodedPaymentJson,
 //                         encodedSupplyJson);
@@ -173,11 +173,11 @@ public class PurchasePresenter {
             String url;
             if ("user".equals(userType)) {
                 System.out.println("User type is registered, using registered purchase endpoint.");
-                url = String.format("http://localhost:8080/purchase/registered?token=%s&paymentJson=%s&supplyJson=%s",
+                url = String.format(Base.url+"/purchase/registered?token=%s&paymentJson=%s&supplyJson=%s",
                         UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8), encodedPaymentJson, encodedSupplyJson);
             } else {
                 System.out.println("User type is guest, using guest purchase endpoint.");
-                url = String.format("http://localhost:8080/purchase/guest?token=%s&paymentJson=%s&supplyJson=%s",
+                url = String.format(Base.url+"/purchase/guest?token=%s&paymentJson=%s&supplyJson=%s",
                         UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8), encodedPaymentJson, encodedSupplyJson);
             }
 
@@ -229,7 +229,7 @@ public class PurchasePresenter {
             String encodedSupplyJson = UriUtils.encodeQueryParam(supplyJson, StandardCharsets.UTF_8);
 
             String url = String.format(
-                    "http://localhost:8080/purchase/finalizeSpecialCart?token=%s&paymentJson=%s&supplyJson=%s",
+                    Base.url+"/purchase/finalizeSpecialCart?token=%s&paymentJson=%s&supplyJson=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8), encodedPaymentJson, encodedSupplyJson);
 
             HttpHeaders headers = new HttpHeaders();
