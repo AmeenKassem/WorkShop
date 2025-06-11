@@ -52,7 +52,7 @@ public class UsersTests {
 
     @Test
     void testAddToCart_WithExplicitStore() {
-        CartItem item = new CartItem(new ItemCartDTO(1,1,1,1,"phone","store", Category.ELECTRONICS));
+        CartItem item = new CartItem(new ItemCartDTO(1,1,1,1,"phone","store", Category.Electronics));
         guest.addToCart(1, item);
 
         List<CartItem> items = guest.getCart();
@@ -62,7 +62,7 @@ public class UsersTests {
 
     @Test
     void testAddToCart_ImplicitStore() {
-        CartItem item = new CartItem(new ItemCartDTO(1,1,1,1,"phone","store", Category.ELECTRONICS)); // storeId = 2 inside item
+        CartItem item = new CartItem(new ItemCartDTO(1,1,1,1,"phone","store", Category.Electronics)); // storeId = 2 inside item
         guest.addToCart(item);
 
         List<CartItem> items = guest.getCart();
@@ -72,7 +72,7 @@ public class UsersTests {
 
     @Test
     void testGetCartItemsList() {
-        guest.addToCart(new CartItem(new ItemCartDTO(1,1,1,1,"phone","store", Category.ELECTRONICS)));
+        guest.addToCart(new CartItem(new ItemCartDTO(1,1,1,1,"phone","store", Category.Electronics)));
         List<CartItem> items = guest.getCart();
         assertEquals(1, items.size());
     }
@@ -85,7 +85,7 @@ public class UsersTests {
 
     @Test
     void testClearCart() {
-        guest.addToCart(1, new CartItem(new ItemCartDTO(1,1,1,1,"phone","store", Category.ELECTRONICS)));
+        guest.addToCart(1, new CartItem(new ItemCartDTO(1,1,1,1,"phone","store", Category.Electronics)));
         assertFalse(guest.getCart().isEmpty());
 
         guest.clearCart();
@@ -94,7 +94,7 @@ public class UsersTests {
 
     @Test
     void testModifyCartAddToBuy() {
-        CartItem item = new CartItem(new ItemCartDTO(1,1,1,1,"phone","store", Category.ELECTRONICS));
+        CartItem item = new CartItem(new ItemCartDTO(1,1,1,1,"phone","store", Category.Electronics));
         guest.addToCart(item);
 
         guest.ModifyCartAddQToBuy(500, 10); // should call inner logic
@@ -104,7 +104,7 @@ public class UsersTests {
 
     @Test
     void testRemoveItem() {
-        CartItem item = new CartItem(new ItemCartDTO(1,600,1,1,"phone","store", Category.ELECTRONICS));
+        CartItem item = new CartItem(new ItemCartDTO(1,600,1,1,"phone","store", Category.Electronics));
         guest.addToCart(item);
 
         guest.removeItem(600);

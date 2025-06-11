@@ -29,6 +29,7 @@ import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.CartItem;
+import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -185,6 +186,8 @@ public class PurchaseTests extends AcceptanceTests {
         assertTrue(added);
 
         // ===== MOCK: Accept Bid Phase =====
+        Registered reg = new Registered(userId,"user2",  null,23);     // username, id, (address or null)
+        when(real.mockUserRepo.getRegisteredUser(userId)).thenReturn(reg);
         when(real.mockIOSrepo.manipulateItem(userId, storeId, Permission.SpecialType)).thenReturn(true);
         when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
         when(real.mockStockRepo.acceptBid(storeId, bidId, bidId)).thenReturn(bid);  // acceptBid returns SingleBid

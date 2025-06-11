@@ -164,7 +164,7 @@ public class DiscountTests {
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
         real.storeService.addDiscountToStore(storeId, ownerUserToken, discount);
 
-        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 100, productId, Category.Electronics);
+        ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.Electronics);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
@@ -208,8 +208,6 @@ public class DiscountTests {
         Store store = new Store(storeId, "TestStore", "ELECTRONICS");
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
-
-        real.storeService.addDiscountToStore(storeId, ownerToken, orDiscountDTO);
 
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.Electronics);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
@@ -307,8 +305,6 @@ public class DiscountTests {
         when(real.mockStoreRepo.findStoreByID(storeId)).thenReturn(store);
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
-        real.storeService.addDiscountToStore(storeId, ownerToken, xorDiscountDTO);
-
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.Electronics);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
                 .thenReturn(List.of(receiptProduct));
@@ -355,6 +351,7 @@ public class DiscountTests {
         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
 
         real.storeService.addDiscountToStore(storeId, ownerToken, xorDiscountDTO);
+
 
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.Electronics);
         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
@@ -456,8 +453,7 @@ public class DiscountTests {
 
 
         ReceiptProduct receiptProduct = new ReceiptProduct("Phone", "TestStore", 1, 200, productId, Category.Electronics);
-        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore")))
-                .thenReturn(List.of(receiptProduct));
+        when(real.mockStockRepo.processCartItemsForStore(eq(storeId), any(), eq(false), eq("TestStore"))).thenReturn(List.of(receiptProduct));
         when(real.mockStockRepo.calculateTotalPrice(any())).thenReturn(200.0);
 
         PaymentDetails payment = new PaymentDetails("1234123412341234", "Test User", "12/26", "123");

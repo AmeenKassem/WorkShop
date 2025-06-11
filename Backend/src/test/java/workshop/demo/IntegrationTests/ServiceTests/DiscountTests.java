@@ -123,18 +123,22 @@ public class DiscountTests {
 
                 int createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
 
-        // ======================= PRODUCT & ITEM ADDITION =======================
-        String[] keywords = {"Laptop", "Lap", "top"};
-        int productId = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
+                // ======================= PRODUCT & ITEM ADDITION =======================
+                String[] keywords = { "Laptop", "Lap", "top" };
+                int productId = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop",
+                                keywords);
 
-        assertEquals(1, stockService.addItem(createdStoreId, NOToken, productId, 10, 2000, Category.Electronics));
-        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.Electronics, 0, createdStoreId, "Laptop", "TestStore");
-        System.out.println(itemStoreDTO.getCategory());
-        stockService.setProductToRandom(NOToken, productId, 1, 2000, createdStoreId, 5000);
-        stockService.setProductToAuction(NOToken, createdStoreId, productId, 1, 1000, 2);
-        assertTrue(stockService.getAllAuctions(NOToken, createdStoreId).length == 1);
-        assertTrue(stockService.getAllRandomInStore(NOToken, createdStoreId).length == 1);
-        //  assertTrue(stockService.getAllBidsStatus(NOToken, createdStoreId).length == 1);
+                assertEquals(1, stockService.addItem(createdStoreId, NOToken, productId, 10, 2000,
+                                Category.Electronics));
+                itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.Electronics, 0, createdStoreId, "Laptop",
+                                "TestStore");
+                System.out.println(itemStoreDTO.getCategory());
+                stockService.setProductToRandom(NOToken, productId, 1, 2000, createdStoreId, 5000);
+                stockService.setProductToAuction(NOToken, createdStoreId, productId, 1, 1000, 2);
+                assertTrue(stockService.getAllAuctions(NOToken, createdStoreId).length == 1);
+                assertTrue(stockService.getAllRandomInStore(NOToken, createdStoreId).length == 1);
+                // assertTrue(stockService.getAllBidsStatus(NOToken, createdStoreId).length ==
+                // 1);
 
                 String token = userService.generateGuest();
                 userService.register(token, "adminUser2", "adminPass2", 22);

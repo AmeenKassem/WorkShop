@@ -254,7 +254,7 @@ public class GuestTests extends AcceptanceTests {
         assertNotNull(info);
         assertTrue(info.contains("Phone"), "Expected product name in info");
         assertTrue(info.contains("Smart device"), "Expected product description in info");
-        assertTrue(info.contains("ELECTRONICS"), "Expected product category in info");
+        assertTrue(info.contains("Electronics"), "Expected product category in info");
     }
 
     @Test

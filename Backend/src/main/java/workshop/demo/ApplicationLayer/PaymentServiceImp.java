@@ -49,7 +49,6 @@ public class PaymentServiceImp implements IPaymentService {
         return true;
     }
 
-
     public int externalPayment(PaymentDetails paymentDetails, double totalPrice) throws UIException {
         return 1;
     }

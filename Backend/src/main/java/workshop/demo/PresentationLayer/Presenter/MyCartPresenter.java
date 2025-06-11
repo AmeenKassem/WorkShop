@@ -51,7 +51,7 @@ public class MyCartPresenter {
             return;
         }
 
-        String url = String.format("http://localhost:8080/api/users/getregularcart?token=%s",
+        String url = String.format(Base.url+"/api/users/getregularcart?token=%s",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
         HttpHeaders headers = new HttpHeaders();
@@ -88,7 +88,7 @@ public class MyCartPresenter {
             return;
         }
 
-        String url = String.format("http://localhost:8080/api/users/getspecialcart?token=%s",
+        String url = String.format(Base.url+"/api/users/getspecialcart?token=%s",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
         HttpHeaders headers = new HttpHeaders();
@@ -135,7 +135,7 @@ public class MyCartPresenter {
         }
 
         try {
-            String url = String.format("http://localhost:8080/api/users/ModifyCart?token=%s&productId=%d&quantity=%d",
+            String url = String.format(Base.url+"/api/users/ModifyCart?token=%s&productId=%d&quantity=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     productId,
                     newQuantity);
@@ -174,7 +174,7 @@ public class MyCartPresenter {
         }
 
         try {
-            String url = String.format("http://localhost:8080/api/users/removeFromCart?token=%s&productId=%d",
+            String url = String.format(Base.url+"/api/users/removeFromCart?token=%s&productId=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     productId);
 

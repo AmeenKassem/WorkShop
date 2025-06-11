@@ -447,4 +447,20 @@ public class StoreService {
         };
         store.removePurchasePolicy(policy);
     }
+    public String[] getAllDiscountNames(int storeId, String token) throws UIException {
+        Store store = storeRepo.findStoreByID(storeId);                     // assumes auth already validated
+        List<String> out = new ArrayList<>();
+        collectNames(store.getDiscount(), out);                             // depth-first walk
+        return out.toArray(String[]::new);
+    }
+
+    /* private DFS used by the public method */
+    private void collectNames(Discount node, List<String> acc) {
+        if (node == null) return;
+        acc.add(node.getName());
+        if (node instanceof CompositeDiscount comp) {
+            comp.getDiscounts().forEach(d -> collectNames(d, acc));
+        }
+    }
+
 }

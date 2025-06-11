@@ -30,7 +30,7 @@ public class OpenStorePresenter {
         String category = view.getCategory();
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         String url = String.format(
-                "http://localhost:8080/api/store/addStore?token=%s&storeName=%s&category=%s",
+                Base.url+"/api/store/addStore?token=%s&storeName=%s&category=%s",
                 token,
                 storeName,
                 category
