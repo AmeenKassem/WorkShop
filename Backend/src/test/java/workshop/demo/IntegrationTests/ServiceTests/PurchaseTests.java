@@ -1,13 +1,22 @@
 package workshop.demo.IntegrationTests.ServiceTests;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
-
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
@@ -20,18 +29,26 @@ import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.AuctionStatus;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.SpecialCartItemDTO;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.Status;
+import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.BID;
-import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.SingleBid;
-import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-import workshop.demo.DomainLayer.User.AdminInitilizer;
-import workshop.demo.DomainLayer.User.ShoppingBasket;
-import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
@@ -42,16 +59,6 @@ import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
-import workshop.demo.DTOs.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -914,7 +921,7 @@ Thread.sleep(1000);
         purchaseService.participateInRandom(NGToken, 1, 1, 1200, paymentDetails);
 
         // ===== SETUP FOR AUCTION =====
-        int auctionId = stockService.setProductToAuction(NOToken, 1, 1, 1, 5000, 10);
+        int auctionId = stockService.setProductToAuction(NOToken, 1, 1, 1, 5000, 2);
         stockService.addBidOnAucction(NGToken, auctionId, 1, 10);
 
         // ===== EXECUTE =====
