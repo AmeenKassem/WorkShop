@@ -33,7 +33,7 @@ public class StockController {
     @Autowired
     public StockController(Repos repos) {
         this.stockService = new StockService(repos.stockrepo, repos.storeRepo, repos.auth, repos.userRepo,
-                repos.sUConnectionRepo, repos.UserSuspensionRepo,repos.notificationRepo);
+                repos.sUConnectionRepo, repos.UserSuspensionRepo, repos.notificationRepo);
     }
 
     @GetMapping("/getProductInfo")
@@ -288,7 +288,7 @@ public class StockController {
     @GetMapping("/getAllAuctions")
     public ResponseEntity<?> getAllAuctions(@RequestParam String token, @RequestParam int storeId) {
         try {
-            AuctionDTO[] auctions = stockService.getAllAuctions(token, storeId);
+            AuctionDTO[] auctions = stockService.getAllAuctions_user(token, storeId);
             return ResponseEntity.ok(new ApiResponse<>(auctions, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
