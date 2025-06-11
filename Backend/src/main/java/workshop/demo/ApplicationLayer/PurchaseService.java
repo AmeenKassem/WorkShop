@@ -210,7 +210,7 @@ public class PurchaseService {
                 // If the card must be refunded, we remove it from the user's cart
                 userRepo.removeSpecialItem(userId, specialItem);
                 // And we refund the payment
-                paymentService.externalRefund(card.transactionIdForPayment);
+                // paymentService.externalRefund(card.transactionIdForPayment);
                 stockRepo.returnProductToStock(specialItem.storeId, card.productId, 1,specialItem.specialId);
                 stockRepo.markRefunded(specialItem.specialId); 
             } else if( card.mustRefund()){
