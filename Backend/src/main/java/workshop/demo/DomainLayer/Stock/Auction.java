@@ -28,6 +28,7 @@ public class Auction {
     private int storeId;
     private AtomicInteger idGen = new AtomicInteger();
     private final Object lock = new Object();
+    private long endTimeMillis;
 
     public Auction(int productId, int quantity, long time, int id, int storeId) {
         this.productId = productId;
@@ -37,6 +38,7 @@ public class Auction {
         this.storeId = storeId;
         this.auctionId = id;
         this.status = AuctionStatus.IN_PROGRESS;
+        this.endTimeMillis = System.currentTimeMillis() + time;
 
         timer.schedule(new TimerTask() {
             @Override
@@ -99,6 +101,7 @@ public class Auction {
         res.quantity = quantity;
         res.winner = winner;
         res.storeId = storeId;
+        res.endTimeMillis = this.endTimeMillis;
 
         SingleBidDTO[] arrayBids = new SingleBidDTO[bids.size()];
         for (int i = 0; i < arrayBids.length; i++) {
