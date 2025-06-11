@@ -37,7 +37,6 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
     private int storeId;
     private final ManageStoreDiscountsPresenter discPresenter = new ManageStoreDiscountsPresenter();
 
-
     public ManageStoreProductsView() {
         this.presenter = new ManageStoreProductsPresenter(this);
         addClassName("manage-products-container");
@@ -58,7 +57,6 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         HorizontalLayout footer = new HorizontalLayout(addProductBtn, manageDiscBtn);
         footer.addClassName("footer-buttons");
         footer.setWidthFull();
-
 
         add(title, errorMessage, productSection, footer);
     }
@@ -97,8 +95,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                     selected,
                     priceField.getValue(),
                     quantityField.getValue(),
-                    dialog
-            );
+                    dialog);
         });
 
         Button newProductBtn = new Button("Add New Product", e -> {
@@ -110,8 +107,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                 productSelect,
                 priceField,
                 quantityField,
-                new HorizontalLayout(addBtn, newProductBtn)
-        );
+                new HorizontalLayout(addBtn, newProductBtn));
 
         dialog.add(layout);
         dialog.open();
@@ -137,16 +133,16 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                     new Span("📦 Quantity: " + item.getQuantity()),
                     new Span("💲 Price: " + item.getPrice()),
                     new Span("📄 Description: " + product.getDescription()),
-                    new Span("🏷️ Category: " + product.getCategory().name())
-            );
+                    new Span("🏷️ Category: " + product.getCategory().name()));
             card.addClassName("product-card");
 
             Button edit = new Button("✏️ Edit", e -> openEditDialog(item, product.getDescription()));
             Button delete = new Button("🗑️ Delete", e -> presenter.deleteProduct(storeId, token, item.getProductId()));
-            Button auctionButton = new Button("🎯 Start Auction", e
-                    -> showAuctionDialog(storeId, token, item.getProductId()));
+            Button auctionButton = new Button("🎯 Start Auction",
+                    e -> showAuctionDialog(storeId, token, item.getProductId()));
             Button bidButton = new Button("💸 Enable Bidding", e -> showBidDialog(storeId, token, item.getProductId()));
-            Button randomButton = new Button("🎲 Start Random Draw", e -> showRandomDialog(storeId, token, item.getProductId()));
+            Button randomButton = new Button("🎲 Start Random Draw",
+                    e -> showRandomDialog(storeId, token, item.getProductId()));
             VerticalLayout actions = new VerticalLayout(edit, auctionButton, bidButton, randomButton, delete);
             actions.addClassName("button-row");
 
@@ -205,8 +201,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                     category.getValue(),
                     price.getValue(),
                     quantity.getValue(),
-                    dialog
-            );
+                    dialog);
         });
 
         VerticalLayout layout = new VerticalLayout(name, description, category, price, quantity, add);
@@ -309,6 +304,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         dialog.getFooter().add(new HorizontalLayout(confirm, cancel));
         dialog.open();
     }
+
     private void openDiscountDialog() {
         Dialog dlg = new Dialog();
         dlg.setHeaderTitle("Add / Combine Discounts");
@@ -316,33 +312,33 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         // form fields
         TextField nameField = new TextField("Name");
         NumberField percent = new NumberField("Percent (0-100)");
-        percent.setMin(0); percent.setMax(100); percent.setValue(0.0);
-        //TextField condition = new TextField("Condition");
+        percent.setMin(0);
+        percent.setMax(100);
+        percent.setValue(0.0);
+        // TextField condition = new TextField("Condition");
         ComboBox<String> predBox = new ComboBox<>("Predicate");
         predBox.setItems("TOTAL", "QUANTITY", "CATEGORY", "PRODUCT");
         predBox.setValue("TOTAL");
 
-        ComboBox<String> opBox   = new ComboBox<>("Op");
+        ComboBox<String> opBox = new ComboBox<>("Op");
         opBox.setItems(">", "<", ">=", "==", ":");
         opBox.setValue(">");
 
-        TextField valueField     = new TextField("Value");
-        predBox.addValueChangeListener(e ->
-                valueField.setPlaceholder(
-                        switch (e.getValue()) {
-                            case "TOTAL"     -> "₪ (number)";
-                            case "QUANTITY"  -> "amount";
-                            case "CATEGORY"  -> "name";
-                            case "PRODUCT"   -> "id";
-                            default -> "";
-                        }));
+        TextField valueField = new TextField("Value");
+        predBox.addValueChangeListener(e -> valueField.setPlaceholder(
+                switch (e.getValue()) {
+                    case "TOTAL" -> "₪ (number)";
+                    case "QUANTITY" -> "amount";
+                    case "CATEGORY" -> "name";
+                    case "PRODUCT" -> "id";
+                    default -> "";
+                }));
 
-
-        ComboBox<String> typeBox  = new ComboBox<>("Type", "VISIBLE", "INVISIBLE");
+        ComboBox<String> typeBox = new ComboBox<>("Type", "VISIBLE", "INVISIBLE");
         typeBox.setValue("VISIBLE");
 
         ComboBox<String> logicBox = new ComboBox<>("Logic",
-                "SINGLE","AND","OR","XOR","MAX","MULTIPLY");
+                "SINGLE", "AND", "OR", "XOR", "MAX", "MULTIPLY");
         logicBox.setValue("SINGLE");
 
         CheckboxGroup<String> subs = new CheckboxGroup<>();
@@ -365,12 +361,10 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                         nameField.getValue(),
                         percent.getValue(),
                         typeBox.getValue(),
-                        (valueField.isEmpty() ? "" :
-                                predBox.getValue() + opBox.getValue() + valueField.getValue()),
+                        (valueField.isEmpty() ? "" : predBox.getValue() + opBox.getValue() + valueField.getValue()),
 
                         logicBox.getValue(),
-                        new ArrayList<>(subs.getSelectedItems())
-                );
+                        new ArrayList<>(subs.getSelectedItems()));
                 NotificationView.showSuccess("Discount added!");
                 dlg.close();
             } catch (Exception ex) {
@@ -385,10 +379,8 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
                 new HorizontalLayout(typeBox, logicBox),
                 subs,
-                new HorizontalLayout(save, cancel)
-        ));
+                new HorizontalLayout(save, cancel)));
         dlg.open();
     }
-
 
 }

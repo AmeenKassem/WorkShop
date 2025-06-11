@@ -1,7 +1,6 @@
 package workshop.demo.DomainLayer.Stock;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,7 +45,7 @@ public class ActivePurcheses {
 
     // ========== Auction ==========
 
-    public int addProductToAuction(int productId, int quantity, long time) throws UIException {
+    public int addProductToAuction(int productId, int quantity, long time, double startPrice) throws UIException {
         logger.debug("addProductToAuction called with productId={}, quantity={}, time={}", productId, quantity, time);
 
         if (quantity <= 0 || time <= 0) {
@@ -54,7 +53,8 @@ public class ActivePurcheses {
             throw new UIException("Quantity and time must be positive!", ErrorCodes.INVALID_AUCTION_PARAMETERS);
         }
         int id = auctionIdGen.incrementAndGet();
-        Auction auction = new Auction(productId, quantity, time, id, storeId);
+        Auction auction = new Auction(productId, quantity, time, id, storeId, startPrice);
+
         activeAuction.put(id, auction);
         productIdToAuctions.computeIfAbsent(productId, k -> new ArrayList<>()).add(auction);
         logger.debug("Auction created with id={}", id);

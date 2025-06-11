@@ -2,7 +2,6 @@ package workshop.demo.InfrastructureLayer;
 
 import java.util.ArrayList;
 import java.util.List;
-//import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -126,7 +125,7 @@ public class StockRepository implements IStockRepo {
     public int addAuctionToStore(int StoreId, int productId, int quantity, long tome, double startPrice)
             throws UIException, DevException {
         checkQuantity(productId, quantity, StoreId);
-        int res = getActivePurchases(StoreId).addProductToAuction(productId, quantity, tome);
+        int res = getActivePurchases(StoreId).addProductToAuction(productId, quantity, tome,startPrice);
         //
         decreaseQuantitytoBuy(StoreId, productId, quantity);
         return res;

@@ -1,21 +1,65 @@
 package workshop.demo.UnitTests.StoreTests;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import workshop.demo.DTOs.*;
-import workshop.demo.DomainLayer.Exceptions.DevException;
-import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
-import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Stock.*;
-import workshop.demo.DomainLayer.Store.*;
-import workshop.demo.DomainLayer.StoreUserConnection.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.AuctionStatus;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.CreateDiscountDTO;
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.SingleBidDTO;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.Status;
+import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.UserSpecialItemCart;
+import workshop.demo.DomainLayer.Exceptions.DevException;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
+import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.ActivePurcheses;
+import workshop.demo.DomainLayer.Stock.Auction;
+import workshop.demo.DomainLayer.Stock.BID;
+import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
+import workshop.demo.DomainLayer.Stock.SingleBid;
+import workshop.demo.DomainLayer.Stock.StoreStock;
+import workshop.demo.DomainLayer.Stock.item;
+import workshop.demo.DomainLayer.Store.AndDiscount;
+import workshop.demo.DomainLayer.Store.CompositeDiscount;
+import workshop.demo.DomainLayer.Store.Discount;
+import workshop.demo.DomainLayer.Store.DiscountConditions;
+import workshop.demo.DomainLayer.Store.DiscountFactory;
+import workshop.demo.DomainLayer.Store.DiscountScope;
+import workshop.demo.DomainLayer.Store.InvisibleDiscount;
+import workshop.demo.DomainLayer.Store.MaxDiscount;
+import workshop.demo.DomainLayer.Store.OrDiscount;
+import workshop.demo.DomainLayer.Store.Random;
+import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.Store.VisibleDiscount;
+import workshop.demo.DomainLayer.Store.XorDiscount;
+import workshop.demo.DomainLayer.StoreUserConnection.Node;
+import workshop.demo.DomainLayer.StoreUserConnection.Offer;
+import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
+import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 
 class RandomTests {
     private SingleBid auctionBid;
@@ -43,7 +87,7 @@ class RandomTests {
         storeStock = new StoreStock(1);
         testItem = new item(1, 10,1000, Category.Electronics);
         storeStock.addItem(testItem);
-        auction = new Auction(1, 5, 2000, 100, 10);
+        auction = new Auction(1, 5, 2000, 100, 10,10);
         random = new Random(1, 5, 100.0, 10, 200, 2000);
         store = new Store(1, "TechStore", "ELECTRONICS");
         superDS = new SuperDataStructure();
@@ -1453,7 +1497,7 @@ class RandomTests {
 
     @Test
     void testGetBidIfWinner_Auction_Winner() throws Exception {
-        int auctionId = active.addProductToAuction(1, 1, 99999);
+        int auctionId = active.addProductToAuction(1, 1, 99999,15);
         SingleBid bid = active.addUserBidToAuction(auctionId, 99, 300.0);
         active.getBidIfWinner(auctionId, bid.getId(), SpecialType.Auction); // triggers isWinner() check
 
@@ -1479,7 +1523,7 @@ class RandomTests {
 
     @Test
     void testGetBidWithId_Auction() throws Exception {
-        int auctionId = active.addProductToAuction(1, 1, 100000);
+        int auctionId = active.addProductToAuction(1, 1, 100000,10);
         SingleBid bid = active.addUserBidToAuction(auctionId, 66, 300);
         SingleBid result = active.getBidWithId(auctionId, bid.getId(), SpecialType.Auction);
         assertEquals(bid, result);
@@ -1508,7 +1552,7 @@ class RandomTests {
 
     @Test
     void testGetProductIdForSpecial_Auction() throws Exception {
-        int id = active.addProductToAuction(42, 1, 99999);
+        int id = active.addProductToAuction(42, 1, 99999,10);
         assertEquals(42, active.getProductIdForSpecial(id, SpecialType.Auction));
     }
 
@@ -1527,19 +1571,19 @@ class RandomTests {
 
     @Test
     void testGetWinner_WhenNoWinner_ReturnsNull() {
-        Auction auction = new Auction(1, 1, 5000, 1, 10);
+        Auction auction = new Auction(1, 1, 5000, 1, 10,10);
         assertNull(auction.getWinner()); // Timer hasn't ended, so no winner
     }
 
     @Test
     void testBidIsWinner_WhenNoWinner_ReturnsFalse() {
-        Auction auction = new Auction(1, 1, 5000, 1, 10);
+        Auction auction = new Auction(1, 1, 5000, 1, 10,10);
         assertFalse(auction.bidIsWinner(999));
     }
 
     @Test
     void testBidIsWinner_MatchingWinner_ReturnsTrue() throws UIException, InterruptedException {
-        Auction auction = new Auction(1, 1, 100, 1, 10);
+        Auction auction = new Auction(1, 1, 100, 1, 10,10);
         SingleBid bid = auction.bid(5, 300.0);
 
         Thread.sleep(150); // let auction finish
@@ -1550,7 +1594,7 @@ class RandomTests {
 
     @Test
     void testBidIsWinner_WrongId_ReturnsFalse() throws UIException, InterruptedException {
-        Auction auction = new Auction(1, 1, 100, 1, 10);
+        Auction auction = new Auction(1, 1, 100, 1, 10,10);
         auction.bid(5, 300.0);
 
         Thread.sleep(150); // let auction finish

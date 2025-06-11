@@ -22,12 +22,15 @@ public class Auction {
     private int auctionId;
     private List<SingleBid> bids;
     private double maxBid;
+
+    private double startPrice;
+
     private SingleBid winner;
     private int storeId;
     private AtomicInteger idGen = new AtomicInteger();
     private final Object lock = new Object();
 
-    public Auction(int productId, int quantity, long time, int id, int storeId) {
+    public Auction(int productId, int quantity, long time, int id, int storeId, double startPrice) {
         this.productId = productId;
         this.quantity = quantity;
         this.timer = new Timer();
@@ -35,6 +38,8 @@ public class Auction {
         this.storeId = storeId;
         this.auctionId = id;
         this.status = AuctionStatus.IN_PROGRESS;
+        this.startPrice = startPrice;
+        this.maxBid = startPrice;
 
         timer.schedule(new TimerTask() {
             @Override
@@ -88,7 +93,7 @@ public class Auction {
 
         // TODO set a time date for ending product.
         res.auctionId = this.auctionId;
-        res.bids = arrayBids; // this line wasnt here , so bids was always null 
+        res.bids = arrayBids; // this line wasnt here , so bids was always null
         return res;
     }
 

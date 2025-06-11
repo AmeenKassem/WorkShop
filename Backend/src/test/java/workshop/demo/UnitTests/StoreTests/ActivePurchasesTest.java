@@ -20,7 +20,7 @@ public class ActivePurchasesTest {
 
     public int setAuction() throws Exception {
         active = new ActivePurcheses(0);
-        return active.addProductToAuction(0, 1, 1000);
+        return active.addProductToAuction(0, 1, 1000,8);
     }
 
     public int setRandom() throws Exception {
@@ -144,14 +144,14 @@ public class ActivePurchasesTest {
     @Test
     public void TestAddRandomFail() {
         Assertions.assertThrows(UIException.class, () -> {
-            active.addProductToAuction(0, 0, 10000);
+            active.addProductToAuction(0, 0, 10000,10);
         }, "Expected participateInRandom to throw, but it didn't");
     }
 
     @Test
     public void TestAddRandomFail2() {
         Assertions.assertThrows(UIException.class, () -> {
-            active.addProductToAuction(0, 20, 0);
+            active.addProductToAuction(0, 20, 0,15);
         }, "Expected participateInRandom to throw, but it didn't");
     }
 
