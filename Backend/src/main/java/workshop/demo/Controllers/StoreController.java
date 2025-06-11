@@ -98,7 +98,7 @@ public class StoreController {
     public ResponseEntity<?> addManager(@RequestParam int storeId,
             @RequestParam String token,
             @RequestParam String managerName,
-            @RequestParam List<Permission> permissions) {
+            @RequestBody List<Permission> permissions) {
         try {
             //List<Permission> pers= new ArrayList<>();
             storeService.MakeOfferToAddManagerToStore(storeId, token, managerName, permissions);

@@ -59,7 +59,7 @@ public class RegisterView extends VerticalLayout {
 
     public int getAge() {
         Integer value = ageField.getValue();
-        return (value != null && value >= 18) ? value : -1;
+        return (value != null && value >= 0) ? value : -1;
     }
 
     public boolean isPasswordValid(String password) {
