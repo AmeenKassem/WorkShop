@@ -127,6 +127,7 @@ public class StockRepository implements IStockRepo {
             throws UIException, DevException {
         checkQuantity(productId, quantity, StoreId);
         int res = getActivePurchases(StoreId).addProductToAuction(productId, quantity, tome);
+        //
         decreaseQuantitytoBuy(StoreId, productId, quantity);
         return res;
     }
