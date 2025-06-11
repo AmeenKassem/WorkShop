@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import workshop.demo.DomainLayer.StoreUserConnection.Authorization;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
@@ -17,7 +18,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
-
+@SpringBootTest
 public class ManagerTests {
 
     private ISUConnectionRepo repository;

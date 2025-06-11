@@ -3,15 +3,16 @@ package workshop.demo.PresentationLayer.View;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.*;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 
+import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.SpecialType;
@@ -22,140 +23,186 @@ import workshop.demo.PresentationLayer.Presenter.MyCartPresenter;
 public class MyCartView extends VerticalLayout {
 
     private final MyCartPresenter presenter;
+    private final VerticalLayout regularItemsColumn = new VerticalLayout();
+    private final VerticalLayout specialItemsColumn = new VerticalLayout();
+    private final HorizontalLayout cartContainer = new HorizontalLayout();
 
-    private final VerticalLayout normalCartLayout = new VerticalLayout();
-    private final VerticalLayout specialCartLayout = new VerticalLayout();
-    private final Button updateCartBtn = new Button("Update Cart", new Icon(VaadinIcon.REFRESH));
-    private final Button continueShoppingBtn = new Button("Continue Shopping", new Icon(VaadinIcon.CART));
-    private final Button checkoutBtn = new Button("Proceed to Checkout 🧾", new Icon(VaadinIcon.CREDIT_CARD));
+    private final Button updateCartBtn = new Button("🔁 Update Cart", new Icon(VaadinIcon.REFRESH));
+    private final Button continueShoppingBtn = new Button("⬅ Continue Shopping", new Icon(VaadinIcon.ARROW_LEFT));
+    private final Button checkoutBtn = new Button("💳 Proceed to Checkout", new Icon(VaadinIcon.CREDIT_CARD));
+    private final Button finalizeSpecialCarButton = new Button("Finalize Special Cart", new Icon(VaadinIcon.CHECK));
 
     public MyCartView() {
-        addClassName("cart-view");
+        setSizeFull();
+        addClassName("my-cart-view");
         presenter = new MyCartPresenter(this);
 
         setupHeader();
-        setupNormalCartSection();
-        setupSpecialCartSection();
+        setupCartColumns();
         setupActionButtons();
 
-        // Use test data
-        // testLoadCartData();
-        // Use real data instead by enabling:
-        presenter.loadCartItems();
+        presenter.loadRegularCartItems();
+        // loadTestData(); // For testing purposes, remove in production
+
+        String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
+        if (userType != null && userType.equals("user")) {
+            presenter.loadSpecialCartItems();
+            finalizeSpecialCarButton.setVisible(true);
+            finalizeSpecialCarButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("purchase/special")));
+        }
+    }
+
+    private void loadTestData() {
+        // Sample Regular Items
+        ItemCartDTO item1 = new ItemCartDTO(1, 2, 101, 10, "Bananas", "Fresh bananas", Category.Beauty);
+        ItemCartDTO item2 = new ItemCartDTO(2, 1, 102, 199, "Bluetooth Speaker", "Loud and portable",
+                Category.Clothing);
+        ItemCartDTO item3 = new ItemCartDTO(3, 3, 103, 15, "Pillow", "Soft pillow", Category.Home);
+
+        displayRegularItems(new ItemCartDTO[] { item1, item2, item3 });
+
+        // Sample Special Items
+        SpecialCartItemDTO special1 = new SpecialCartItemDTO();
+        special1.setIds(201, 1001, 0, SpecialType.Random);
+        special1.setValues("Mystery Box", false, false);
+
+        SpecialCartItemDTO special2 = new SpecialCartItemDTO();
+        special2.setIds(202, 1002, 0, SpecialType.Auction);
+        special2.setValues("Rare Coin", true, true);
+
+        SpecialCartItemDTO special3 = new SpecialCartItemDTO();
+        special3.setIds(203, 1003, 10001, SpecialType.BID);
+        special3.setValues("Gaming Chair", false, true);
+
+        displaySpecialItems(new SpecialCartItemDTO[] { special1, special2, special3 });
     }
 
     private void setupHeader() {
-        H1 title = new H1("🛍️ My Cart");
-        title.addClassName("cart-title");
-        add(title);
+        H1 header = new H1("🛍️ My Cart");
+        header.addClassName("cart-header");
+        add(header);
     }
 
-    private void setupNormalCartSection() {
-        H2 sectionTitle = new H2("🛒 Your Shopping Cart");
-        normalCartLayout.setClassName("normal-cart");
-        add(sectionTitle, normalCartLayout);
-    }
+    private void setupCartColumns() {
+        // Style and scroll logic
+        regularItemsColumn.setClassName("cart-column");
+        regularItemsColumn.getStyle().set("overflow-y", "auto");
+        regularItemsColumn.setHeight("500px");
+        regularItemsColumn.setWidth("100%");
 
-    private void setupSpecialCartSection() {
-        H2 sectionTitle = new H2("🔐 Your Special Cart");
-        specialCartLayout.setClassName("special-cart");
-        add(sectionTitle, specialCartLayout);
+        specialItemsColumn.setClassName("cart-column");
+        specialItemsColumn.getStyle().set("overflow-y", "auto");
+        specialItemsColumn.setHeight("500px");
+        specialItemsColumn.setWidth("100%");
+
+        VerticalLayout regularWrapper = new VerticalLayout(new H3("🛒 Regular Cart"), regularItemsColumn);
+        VerticalLayout specialWrapper = new VerticalLayout(new H3("🔐 Special Cart"), specialItemsColumn);
+
+        regularWrapper.setWidth("50%");
+        specialWrapper.setWidth("50%");
+
+        cartContainer.setWidthFull();
+        cartContainer.setSpacing(true);
+        cartContainer.add(regularWrapper, specialWrapper);
+
+        add(cartContainer);
     }
 
     private void setupActionButtons() {
-        checkoutBtn.addClickListener(e -> goToPurchasePage());
+        HorizontalLayout buttons = new HorizontalLayout(continueShoppingBtn, updateCartBtn, checkoutBtn,
+                finalizeSpecialCarButton);
+        finalizeSpecialCarButton.setVisible(false); // Initially hidden
+        buttons.setJustifyContentMode(JustifyContentMode.CENTER);
+        buttons.setWidthFull();
+        buttons.addClassName("cart-buttons");
 
-        HorizontalLayout buttons = new HorizontalLayout(updateCartBtn, continueShoppingBtn, checkoutBtn);
-        buttons.setClassName("cart-buttons");
+        continueShoppingBtn.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("")));
+        checkoutBtn.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("purchase/regular")));
+
         add(buttons);
     }
 
     public void displayRegularItems(ItemCartDTO[] items) {
-        normalCartLayout.removeAll();
+        regularItemsColumn.removeAll();
         for (ItemCartDTO item : items) {
-            normalCartLayout.add(createNormalCartItem(item));
+            regularItemsColumn.add(createRegularItemCard(item));
         }
     }
 
     public void displaySpecialItems(SpecialCartItemDTO[] items) {
-        specialCartLayout.removeAll();
+        specialItemsColumn.removeAll();
         for (SpecialCartItemDTO item : items) {
-            specialCartLayout.add(createSpecialCartItem(item));
+            specialItemsColumn.add(createSpecialItemCard(item));
         }
     }
 
-    private Component createNormalCartItem(ItemCartDTO item) {
-        HorizontalLayout container = new HorizontalLayout();
-        container.setClassName("cart-item");
-        VerticalLayout details = new VerticalLayout();
-        details.setClassName("cart-details");
+    private Component createRegularItemCard(ItemCartDTO item) {
+        VerticalLayout card = new VerticalLayout();
+        card.addClassName("item-card");
 
-        details.add(new Paragraph("🏪 Store: " + item.storeId));
-        details.add(new Paragraph("📦 Product Name: " + item.name));
-        details.add(new Paragraph("📝 Description: " + item.description));
-        details.add(new Paragraph("💵 Price per unit: ₪" + item.price));
-        details.add(new Paragraph("❄️ Quantity: " + item.quantity));
-        details.add(new Paragraph("🔥 Subtotal: ₪" + (item.price * item.quantity)));
+        card.add(new Paragraph("🏪 Store: " + item.storeId));
+        card.add(new Paragraph("📦 Product: " + item.name));
+        card.add(new Paragraph("💰 Price: ₪" + item.price));
+        card.add(new Paragraph("📦 Quantity: " + item.quantity));
+        card.add(new Paragraph("🧮 Subtotal: ₪" + (item.price * item.quantity)));
 
-        container.add(details);
-        return container;
+        // Change Quantity button
+        Button changeQtyBtn = new Button("Change Quantity", new Icon(VaadinIcon.PLUS));
+        changeQtyBtn.addClickListener(e -> {
+            // You can use a dialog or input prompt for actual input
+            TextField quantityField = new TextField("New Quantity");
+            Button confirmBtn = new Button("Confirm");
+            Dialog dialog = new Dialog(quantityField, confirmBtn);
+
+            confirmBtn.addClickListener(ev -> {
+                try {
+                    int newQuantity = Integer.parseInt(quantityField.getValue());
+                    presenter.updateQuantity(item.productId, newQuantity); // <-- Presenter method
+                    dialog.close();
+                } catch (NumberFormatException ex) {
+                    NotificationView.showError("Please enter a valid number");
+                }
+            });
+
+            dialog.open();
+        });
+
+        // Remove button
+        Button removeBtn = new Button("Remove", new Icon(VaadinIcon.TRASH));
+        removeBtn.getStyle().set("color", "red");
+        removeBtn.addClickListener(e -> {
+            presenter.removeFromCart(item.productId); // <-- Presenter method
+        });
+
+        HorizontalLayout buttonLayout = new HorizontalLayout(changeQtyBtn, removeBtn);
+        card.add(buttonLayout);
+
+        return card;
     }
 
-    private Component createSpecialCartItem(SpecialCartItemDTO item) {
-        HorizontalLayout box = new HorizontalLayout();
-        box.setClassName("special-item");
+    private Component createSpecialItemCard(SpecialCartItemDTO item) {
+        VerticalLayout card = new VerticalLayout();
+        card.addClassName("item-card");
 
-        // Style based on type
-        if (item.getType() == SpecialType.Random) {
-            box.addClassName("random-bg");
-        } else if (item.getType() == SpecialType.Auction) {
-            box.addClassName("auction-bg");
+        if (item.getType() == SpecialType.Auction) {
+            card.addClassName("auction-bg");
+        } else if (item.getType() == SpecialType.Random) {
+            card.addClassName("random-bg");
         } else if (item.getType() == SpecialType.BID) {
-            box.addClassName("bid-bg");
+            card.addClassName("bid-bg");
         }
 
-        VerticalLayout details = new VerticalLayout();
-        details.setClassName("special-details");
+        card.add(new Paragraph("📦 Product: " + item.getProductName()));
+        card.add(new Paragraph("🏪 Store ID: " + item.getStoreId()));
+        card.add(new Paragraph("🎯 Type: " + item.getType()));
+        card.add(new Paragraph("🏁 Ended: " + (item.isEnded() ? "Yes" : "No")));
+        card.add(new Paragraph("🏆 You Won: " + (item.isWinner() ? "Yes" : "No")));
 
-        details.add(new Paragraph("📦 Product: " + item.getProductName()));
-        details.add(new Paragraph("🏪 Store ID: " + item.getStoreId()));
-        details.add(new Paragraph("🧾 Type: " + item.getType()));
-        details.add(new Paragraph("🏁 Ended: " + (item.isEnded() ? "Yes" : "No")));
-        details.add(new Paragraph("🏆 You Won: " + (item.isWinner() ? "Yes" : "No")));
+        // Button viewBtn = new Button("View / Edit", new Icon(VaadinIcon.SEARCH));
+        // viewBtn.addClickListener(e -> getUI().ifPresent(ui ->
+        // ui.navigate("SpecialProductDetails/" + item.getProductId())));
 
-        box.add(details);
-        return box;
+        // card.add(viewBtn);
+        return card;
     }
-
-    private void goToPurchasePage() {
-        getUI().ifPresent(ui -> ui.navigate("purchase"));
-    }
-
-    public void showError(String msg) {
-        NotificationView.showError(msg);
-    }
-
-    public void showSuccess(String msg) {
-        NotificationView.showError(msg);
-    }
-
-    // // 🔧 Test data method
-    // public void testLoadCartData() {
-    //     // Create 3 normal items from 3 stores
-    //     ItemCartDTO item1 = new ItemCartDTO(1, workshop.demo.DTOs.Category.HOME, 101, 2, 20, "Milk", "Fresh dairy milk", "Store A");
-    //     ItemCartDTO item2 = new ItemCartDTO(2, workshop.demo.DTOs.Category.ELECTRONICS, 102, 1, 150, "Headphones", "Bluetooth over-ear", "Store B");
-    //     ItemCartDTO item3 = new ItemCartDTO(3, workshop.demo.DTOs.Category.ELECTRONICS, 103, 3, 45, "Notebook", "A5 spiral notebook", "Store C");
-    //     displayRegularItems(new ItemCartDTO[]{item1, item2, item3});
-    //     // Create 3 special items
-    //     SpecialCartItemDTO randomItem = new SpecialCartItemDTO();
-    //     randomItem.setIds(10, 1001, 0, SpecialType.Random);
-    //     randomItem.setValues("Mystery Box", false, false);
-    //     SpecialCartItemDTO auctionItem = new SpecialCartItemDTO();
-    //     auctionItem.setIds(11, 1002, 0, SpecialType.Auction);
-    //     auctionItem.setValues("Antique Clock", true, true);
-    //     SpecialCartItemDTO bidItem = new SpecialCartItemDTO();
-    //     bidItem.setIds(12, 1003, 2001, SpecialType.BID);
-    //     bidItem.setValues("Gaming Mouse", false, true);
-    //     displaySpecialItems(new SpecialCartItemDTO[]{randomItem, auctionItem, bidItem});
-    // }
 }

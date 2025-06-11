@@ -7,12 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
-
+@SpringBootTest
 public class ExistenceTests {
 
     private ISUConnectionRepo repository;
@@ -21,7 +23,7 @@ public class ExistenceTests {
     private int owner1 = 1;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws UIException {
         try {
             resetIdGenerator();
         } catch (Exception e) {

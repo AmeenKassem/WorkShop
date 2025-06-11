@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.UserDTO;
@@ -19,7 +18,10 @@ import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Stock.SingleBid;
+import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
+import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
 @Service
@@ -30,14 +32,16 @@ public class UserService {
     private IUserRepo userRepo;
     private IAuthRepo authRepo;
     private IStockRepo stockRepo;
+    private IStoreRepo storeRepo;
     private final AdminInitilizer adminInitilizer;
     private final AdminHandler adminHandler;
 
     @Autowired
-    public UserService(IUserRepo userRepo, IAuthRepo authRepo, IStockRepo stockRepo, AdminInitilizer adminInitilizer, AdminHandler adminHandler) {
+    public UserService(IUserRepo userRepo, IAuthRepo authRepo, IStockRepo stockRepo, AdminInitilizer adminInitilizer, AdminHandler adminHandler, IStoreRepo storeRepo) {
         this.userRepo = userRepo;
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
+        this.storeRepo = storeRepo;
         this.adminInitilizer = adminInitilizer;
         this.adminHandler = adminHandler;
     }
@@ -102,7 +106,8 @@ public class UserService {
     public boolean addToUserCart(String token, ItemStoreDTO itemToAdd, int quantity) throws UIException {
         logger.info("addToUserCart called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        ItemCartDTO item = new ItemCartDTO(itemToAdd, quantity);
+        String storeName = this.storeRepo.getStoreNameById(itemToAdd.getStoreId());
+        ItemCartDTO item = new ItemCartDTO(itemToAdd.getStoreId(), itemToAdd.getProductId(), quantity, itemToAdd.getPrice(), itemToAdd.getProductName(), storeName, itemToAdd.getCategory());
         userRepo.addItemToGeustCart(authRepo.getUserId(token), item);
         logger.info("Item added to user cart");
         return true;
@@ -148,9 +153,22 @@ public class UserService {
     public ItemCartDTO[] getRegularCart(String token) throws UIException {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
-        List<ItemCartDTO> regularCartItems = userRepo.getUserCart(userId).getAllCart();
-        return regularCartItems.toArray(new ItemCartDTO[0]);
+        //userRepo.checkUserRegisterOnline_ThrowException(userId);
+        List<CartItem> regularCartItems = userRepo.getUserCart(userId).getAllCart();
+        ItemCartDTO[] dtos = new ItemCartDTO[regularCartItems.size()];
+        for (int i = 0; i < regularCartItems.size(); i++) {
+            CartItem item = regularCartItems.get(i);
+            ItemCartDTO dto = new ItemCartDTO();
+            dto.storeId = item.storeId;
+            dto.productId = item.productId;
+            dto.quantity = item.quantity;
+            dto.price = item.price;
+            dto.name = item.name;
+            dto.storeName = this.storeRepo.getStoreNameById(item.storeId);
+            dtos[i] = dto;
+        }
+
+        return dtos;
     }
 
     public UserDTO getUserDTO(String token) throws UIException {
@@ -160,4 +178,11 @@ public class UserService {
         return userRepo.getUserDTO(userId);
     }
 
+    public List<UserDTO> getAllUsers(String token) throws UIException {
+        logger.info("getAllUsers");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkAdmin_ThrowException(userId);
+        return userRepo.getAllUserDTOs();
+    }
 }

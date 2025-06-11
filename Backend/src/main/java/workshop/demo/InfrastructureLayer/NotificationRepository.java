@@ -3,8 +3,6 @@ package workshop.demo.InfrastructureLayer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import workshop.demo.DTOs.OfferDTO;
-import workshop.demo.DomainLayer.Notification.BaseNotifier;
 import workshop.demo.DomainLayer.Notification.DelayedNotificationDecorator;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Notification.RealTimeNotificationDecorator;
@@ -17,8 +15,8 @@ public class NotificationRepository implements INotificationRepo {
 
     @Autowired
     public NotificationRepository(
-        RealTimeNotificationDecorator realTimeNotificationDecorator,
-        DelayedNotificationDecorator delayedNotificationDecorator
+            RealTimeNotificationDecorator realTimeNotificationDecorator,
+            DelayedNotificationDecorator delayedNotificationDecorator
     ) {
         this.realTimeNotificationDecorator = realTimeNotificationDecorator;
         this.delayedNotificationDecorator = delayedNotificationDecorator;
@@ -39,4 +37,3 @@ public class NotificationRepository implements INotificationRepo {
         return delayedNotificationDecorator.getDelayedMessages(username);
     }
 }
-

@@ -19,7 +19,7 @@ import org.springframework.web.util.UriUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.server.VaadinSession;
 
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.StoreDTO;
@@ -41,7 +41,7 @@ public class ManageStorePresenter {
 
     public void fetchStore(String token, int storeId) {
         String url = String.format(
-                "http://localhost:8080/api/store/getstoreDTO?token=%s&storeId=%d",
+                Base.url+"/api/store/getstoreDTO?token=%s&storeId=%d",
                 token,
                 storeId
         );
@@ -93,7 +93,7 @@ public class ManageStorePresenter {
             NotificationView.showError("FAILED: store not loaded!");
         }
         String url = String.format(
-                "http://localhost:8080/api/Review/getStoreReviews?storeId=%d",
+                Base.url+"/api/Review/getStoreReviews?storeId=%d",
                 storeId
         );
 
@@ -145,7 +145,7 @@ public class ManageStorePresenter {
     }
 
     public void fetchOrdersByStore(int storeId) {
-        String url = String.format("http://localhost:8080/api/history/getOrdersByStore?storeId=%d", storeId);
+        String url = String.format(Base.url+"/api/history/getOrdersByStore?storeId=%d", storeId);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
@@ -210,7 +210,7 @@ public class ManageStorePresenter {
     public void deactivateStore(int storeId) {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         String url = String.format(
-                "http://localhost:8080/api/store/deactivate?storeId=%d&token=%s",
+                Base.url+"/api/store/deactivate?storeId=%d&token=%s",
                 storeId,
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
         );
@@ -261,7 +261,7 @@ public class ManageStorePresenter {
 
         try {
             String url = String.format(
-                    "http://localhost:8080/api/store/viewRolesAndPermissions?storeId=%d&token=%s",
+                    Base.url+"/api/store/viewRolesAndPermissions?storeId=%d&token=%s",
                     storeId,
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 

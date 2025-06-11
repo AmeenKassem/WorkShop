@@ -4,28 +4,35 @@ public class ReceiptProduct {
 
     private String productName;
     private Category category;
-    private String description;
+    // private String description;
     private String storename;
     private int quantity;
     private int price;
     private int productId;
-    public ReceiptProduct(String productName, Category category, String description, String storename, int quantity, int price) {
+
+    public ReceiptProduct(String productName, String storename, int quantity, int price, int productId,
+            Category category) {
         this.productName = productName;
-        this.category = category;
-        this.description = description;
-        this.storename = storename;
-        this.quantity = quantity;
-        this.price = price;
-    }
-    public ReceiptProduct(String productName, Category category, String description, String storename
-            , int quantity, int price,int productId) {
-        this.productName = productName;
-        this.category = category;
-        this.description = description;
         this.storename = storename;
         this.quantity = quantity;
         this.price = price;
         this.productId = productId;
+        this.category = category;
+    }
+
+    public ReceiptProduct() {
+    }
+
+    @Override
+    public String toString() {
+        return "ReceiptProduct{" +
+                "productName='" + productName + '\'' +
+                ", category=" + category +
+                ", storename='" + storename + '\'' +
+                ", quantity=" + quantity +
+                ", price=" + price +
+                ", productId=" + productId +
+                '}';
     }
 
     public String getProductName() {
@@ -34,10 +41,6 @@ public class ReceiptProduct {
 
     public Category getCategory() {
         return category;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public String getStorename() {
@@ -51,8 +54,12 @@ public class ReceiptProduct {
     public int getPrice() {
         return price;
     }
-    public void setPrice(int price){this.price=price;}
-    public void setstoreName(String storeName){
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public void setstoreName(String storeName) {
         this.storename = storeName;
     }
 

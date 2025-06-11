@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
 
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.MyStoresView;
@@ -40,7 +40,7 @@ public class MyStoresPresenter {
             UI.getCurrent().navigate(""); // navigate to home
             return;
         }
-        String url = String.format("http://localhost:8080/api/store/myStores?token=%s",
+        String url = String.format(Base.url+"/api/store/myStores?token=%s",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
         HttpHeaders headers = new HttpHeaders();
@@ -72,27 +72,9 @@ public class MyStoresPresenter {
                 NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
             }
 
-        } catch (HttpClientErrorException e) {
-            try {
-                String responseBody = e.getResponseBodyAsString();
-                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-                if (errorBody.getErrNumber() != -1) {
-                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-                } else {
-                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
-                }
-            } catch (Exception parsingEx) {
-                NotificationView.showError("HTTP error: " + e.getMessage());
-            }
-
         } catch (Exception e) {
-            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
 
     }
-
-    // //in the backend must change the function
-    // public void viewEmployeesBtn(int storeId) {
-    //     String url = String.format("http://localhost:8080//api/store/viewRoles?storeId=%d", storeId);
-    // }
 }

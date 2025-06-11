@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.server.VaadinSession;
 
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
@@ -46,7 +46,7 @@ public class ManageStoreManagersPresenter {
     public void loadManagers() {
         try {
             String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-            URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/viewRolesAndPermissions")
+            URI uri = UriComponentsBuilder.fromHttpUrl(Base.url+"/api/store/viewRolesAndPermissions")
                     .queryParam("token", token)
                     .queryParam("storeId", storeId)
                     .build().toUri();
@@ -64,11 +64,10 @@ public class ManageStoreManagersPresenter {
                 NotificationView.showError("Unexpected error: Empty response");
             }
 
-        } catch (HttpClientErrorException e) {
-            handleHttpClientException(e);
         } catch (Exception e) {
-            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
+
     }
 
     public void addManager(String username, Map<Permission, Checkbox> checkboxMap) {
@@ -79,7 +78,7 @@ public class ManageStoreManagersPresenter {
                     .collect(Collectors.toSet());
 
             String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-            URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/makeOfferManager")
+            URI uri = UriComponentsBuilder.fromHttpUrl(Base.url+"/api/store/makeOfferManager")
                     .queryParam("storeId", storeId)
                     .queryParam("token", token)
                     .queryParam("managerName", username)
@@ -101,10 +100,8 @@ public class ManageStoreManagersPresenter {
                 view.showError("Unexpected error: Empty response");
             }
 
-        } catch (HttpClientErrorException e) {
-            handleHttpClientException(e);
         } catch (Exception e) {
-            view.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -117,7 +114,7 @@ public class ManageStoreManagersPresenter {
 
             String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
 
-            URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/changePermissions")
+            URI uri = UriComponentsBuilder.fromHttpUrl(Base.url+"/api/store/changePermissions")
                     .queryParam("token", token)
                     .queryParam("managerId", managerId)
                     .queryParam("storeId", storeId)
@@ -138,10 +135,8 @@ public class ManageStoreManagersPresenter {
                 view.showError("Unexpected error: Empty response");
             }
 
-        } catch (HttpClientErrorException e) {
-            handleHttpClientException(e);
         } catch (Exception e) {
-            view.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -149,7 +144,7 @@ public class ManageStoreManagersPresenter {
         try {
             String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
 
-            URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/store/deleteManager")
+            URI uri = UriComponentsBuilder.fromHttpUrl(Base.url+"/api/store/deleteManager")
                     .queryParam("token", token)
                     .queryParam("managerId", managerId)
                     .queryParam("storeId", storeId)
@@ -170,20 +165,18 @@ public class ManageStoreManagersPresenter {
             } else {
                 view.showError("Unexpected error: Empty response");
             }
-        } catch (HttpClientErrorException e) {
-            handleHttpClientException(e);
         } catch (Exception e) {
-            view.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
-    private void handleHttpClientException(HttpClientErrorException e) {
-        try {
-            String responseBody = e.getResponseBodyAsString();
-            ApiResponse errorBody = objectMapper.readValue(responseBody, ApiResponse.class);
-            view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-        } catch (Exception parsingEx) {
-            view.showError("HTTP error: " + e.getMessage());
-        }
-    }
+    // private void handleHttpClientException(HttpClientErrorException e) {
+    //     try {
+    //         String responseBody = e.getResponseBodyAsString();
+    //         ApiResponse errorBody = objectMapper.readValue(responseBody, ApiResponse.class);
+    //         view.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+    //     } catch (Exception parsingEx) {
+    //         view.showError("HTTP error: " + e.getMessage());
+    //     }
+    // }
 }

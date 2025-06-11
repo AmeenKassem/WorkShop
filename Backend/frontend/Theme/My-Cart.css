@@ -1,114 +1,82 @@
-/* General Cart View Container */
-.cart-view {
-    padding: 20px;
+.my-cart-view {
+    padding: 2rem;
+    background-color: #f9fafb;
+    font-family: 'Segoe UI', sans-serif;
 }
 
-/* --- Normal Cart Styles --- */
-.normal-cart {
-    background-color: #f5f5f5;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 30px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+.cart-header {
+    text-align: center;
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
 }
 
-.normal-cart .store-header {
-    font-weight: bold;
-    margin-bottom: 10px;
+.cart-column {
+    padding: 1rem;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    overflow-y: auto;
 }
 
-.cart-item {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    background-color: #ccc;
-    padding: 10px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    gap: 20px;
+.item-card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: box-shadow 0.3s ease;
 }
 
-.cart-item img {
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
-    border-radius: 8px;
+.item-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-.cart-details {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+.cart-buttons {
+    margin-top: 2rem;
+    justify-content: center;
+    gap: 1rem;
 }
 
-.quantity-control {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.quantity-button {
-    background-color: black;
+.cart-buttons vaadin-button {
+    font-weight: 600;
+    background-color: #4f46e5;
     color: white;
-    border: none;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    font-size: 16px;
-    cursor: pointer;
+    border-radius: 8px;
 }
 
-/* --- Special Cart Styles --- */
-.special-cart {
-    margin-top: 30px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+.cart-buttons vaadin-button:hover {
+    background-color: #4338ca;
 }
 
-/* Shared styling for all special types */
-.special-item {
-    display: flex;
-    background-color: #ffedcc;
-    padding: 15px;
-    border-radius: 10px;
-    gap: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.special-details {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-/* Specific background for each type */
 .random-bg {
-    background-color: orange;
+    background: linear-gradient(135deg, #fdfbfb, #ebedee);
 }
 
 .auction-bg {
-    background-color: gold;
+    background: linear-gradient(135deg, #ffe6e6, #ffb3b3);
 }
 
 .bid-bg {
-    background-color: #ff4d4d;
-    color: white;
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
 }
 
-/* Footer buttons */
-.cart-buttons {
-    margin-top: 25px;
-    display: flex;
-    gap: 15px;
+/* Make the columns scrollable */
+.cart-column::-webkit-scrollbar {
+    width: 8px;
+}
+.cart-column::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
 }
 
-.cart-buttons button {
-    background-color: #0066ff;
-    color: white;
-    border-radius: 8px;
-    border: none;
-    padding: 10px 18px;
-    font-weight: bold;
-    cursor: pointer;
+/* Responsive layout */
+@media (max-width: 1024px) {
+    .v-horizontal-layout {
+        flex-direction: column;
+    }
+
+    .v-vertical-layout {
+        width: 100% !important;
+    }
 }

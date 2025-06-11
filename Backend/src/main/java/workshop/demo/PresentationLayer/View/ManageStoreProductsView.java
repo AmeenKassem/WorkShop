@@ -1,8 +1,10 @@
 package workshop.demo.PresentationLayer.View;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
@@ -10,6 +12,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -19,6 +22,8 @@ import com.vaadin.flow.server.VaadinSession;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
+import workshop.demo.PresentationLayer.Presenter.ManageStoreDiscountsPresenter;
 import workshop.demo.PresentationLayer.Presenter.ManageStoreProductsPresenter;
 
 @Route(value = "manage-store-products", layout = MainLayout.class)
@@ -30,6 +35,8 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
     private final Span errorMessage = new Span();
     private String token;
     private int storeId;
+    private final ManageStoreDiscountsPresenter discPresenter = new ManageStoreDiscountsPresenter();
+
 
     public ManageStoreProductsView() {
         this.presenter = new ManageStoreProductsPresenter(this);
@@ -46,14 +53,12 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         productSection.addClassName("products-section");
 
         Button addProductBtn = new Button("+ Add Item", e -> openAddItemDialog());
-        addProductBtn.addClassName("add-product-btn");
+        Button manageDiscBtn = new Button("⚙️ Manage Discounts", e -> openDiscountDialog());
 
-        Button backBtn = new Button("⬅ Back", e -> getUI().ifPresent(ui -> ui.navigate("my stores")));
-        backBtn.addClassName("back-btn");
-
-        HorizontalLayout footer = new HorizontalLayout(backBtn, addProductBtn);
+        HorizontalLayout footer = new HorizontalLayout(addProductBtn, manageDiscBtn);
         footer.addClassName("footer-buttons");
         footer.setWidthFull();
+
 
         add(title, errorMessage, productSection, footer);
     }
@@ -79,7 +84,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         TextField priceField = new TextField("Price");
         TextField quantityField = new TextField("Quantity");
 
-        Button addBtn = new Button("✅ Add", e -> {
+        Button addBtn = new Button(" Add", e -> {
             ProductDTO selected = productSelect.getValue();
             if (selected == null || priceField.isEmpty() || quantityField.isEmpty()) {
                 Notification.show("Please fill in all fields.");
@@ -96,7 +101,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             );
         });
 
-        Button newProductBtn = new Button("➕ Add New Product", e -> {
+        Button newProductBtn = new Button("Add New Product", e -> {
             dialog.close();
             openAddNewProductDialog();
         });
@@ -138,8 +143,11 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
             Button edit = new Button("✏️ Edit", e -> openEditDialog(item, product.getDescription()));
             Button delete = new Button("🗑️ Delete", e -> presenter.deleteProduct(storeId, token, item.getProductId()));
-
-            HorizontalLayout actions = new HorizontalLayout(edit, delete);
+            Button auctionButton = new Button("🎯 Start Auction", e
+                    -> showAuctionDialog(storeId, token, item.getProductId()));
+            Button bidButton = new Button("💸 Enable Bidding", e -> showBidDialog(storeId, token, item.getProductId()));
+            Button randomButton = new Button("🎲 Start Random Draw", e -> showRandomDialog(storeId, token, item.getProductId()));
+            VerticalLayout actions = new VerticalLayout(edit, auctionButton, bidButton, randomButton, delete);
             actions.addClassName("button-row");
 
             card.add(actions);
@@ -182,7 +190,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         TextField quantity = new TextField("Quantity");
 
         // Add button
-        Button add = new Button("✅ Add to Store", e -> {
+        Button add = new Button("Add to Store", e -> {
             if (name.isEmpty() || description.isEmpty() || category.isEmpty()
                     || price.isEmpty() || quantity.isEmpty()) {
                 Notification.show("Please fill in all fields");
@@ -211,4 +219,176 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         errorMessage.setText(msg);
         errorMessage.setVisible(true);
     }
+
+    private void showAuctionDialog(int storeId, String token, int productId) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("🎯 Set Product to Auction");
+
+        NumberField quantityField = new NumberField("Quantity");
+        NumberField startPriceField = new NumberField("Start Price");
+        NumberField timeField = new NumberField("Duration (minutes)");
+
+        quantityField.setValue(1.0);
+        startPriceField.setValue(10.0);
+        timeField.setValue(60.0);
+
+        quantityField.setMin(1);
+        startPriceField.setMin(0.1);
+        timeField.setMin(1);
+        VerticalLayout form = new VerticalLayout(quantityField, startPriceField, timeField);
+        dialog.add(form);
+
+        Button confirm = new Button("Set Auction", event -> {
+            int quantity = quantityField.getValue().intValue();
+            double startPrice = startPriceField.getValue();
+            long timeInMinutes = timeField.getValue().longValue();
+            long timeInMillis = timeInMinutes * 60 * 1000;
+
+            presenter.setProductToAuction(storeId, token, productId, quantity, timeInMillis, startPrice);
+            dialog.close();
+        });
+
+        Button cancel = new Button("Cancel", e -> dialog.close());
+
+        HorizontalLayout buttons = new HorizontalLayout(confirm, cancel);
+        dialog.getFooter().add(buttons);
+
+        dialog.open();
+    }
+
+    private void showBidDialog(int storeId, String token, int productId) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("💰 Set Product to Bid");
+
+        NumberField quantityField = new NumberField("Quantity");
+        quantityField.setValue(1.0);
+        quantityField.setMin(1.0);
+
+        VerticalLayout form = new VerticalLayout(quantityField);
+        dialog.add(form);
+
+        Button confirm = new Button("Set Bid", event -> {
+            int quantity = quantityField.getValue().intValue();
+            presenter.setProductToBid(storeId, token, productId, quantity);
+            dialog.close();
+        });
+
+        Button cancel = new Button("Cancel", e -> dialog.close());
+        dialog.getFooter().add(new HorizontalLayout(confirm, cancel));
+        dialog.open();
+    }
+
+    private void showRandomDialog(int storeId, String token, int productId) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("🎲 Set Product to Random Draw");
+
+        NumberField quantityField = new NumberField("Quantity");
+        NumberField priceField = new NumberField("Price per Ticket");
+        NumberField timeField = new NumberField("Duration (minutes)");
+
+        quantityField.setValue(1.0);
+        quantityField.setMin(1.0);
+        priceField.setValue(5.0);
+        priceField.setMin(0.1);
+        timeField.setValue(60.0);
+        timeField.setMin(1.0);
+
+        VerticalLayout form = new VerticalLayout(quantityField, priceField, timeField);
+        dialog.add(form);
+
+        Button confirm = new Button("Set Random Draw", event -> {
+            int quantity = quantityField.getValue().intValue();
+            double price = priceField.getValue();
+            long timeInMillis = timeField.getValue().longValue() * 60 * 1000;
+
+            presenter.setProductToRandom(storeId, token, productId, quantity, price, timeInMillis);
+            dialog.close();
+        });
+
+        Button cancel = new Button("Cancel", e -> dialog.close());
+        dialog.getFooter().add(new HorizontalLayout(confirm, cancel));
+        dialog.open();
+    }
+    private void openDiscountDialog() {
+        Dialog dlg = new Dialog();
+        dlg.setHeaderTitle("Add / Combine Discounts");
+
+        // form fields
+        TextField nameField = new TextField("Name");
+        NumberField percent = new NumberField("Percent (0-100)");
+        percent.setMin(0); percent.setMax(100); percent.setValue(0.0);
+        //TextField condition = new TextField("Condition");
+        ComboBox<String> predBox = new ComboBox<>("Predicate");
+        predBox.setItems("TOTAL", "QUANTITY", "CATEGORY", "PRODUCT");
+        predBox.setValue("TOTAL");
+
+        ComboBox<String> opBox   = new ComboBox<>("Op");
+        opBox.setItems(">", "<", ">=", "==", ":");
+        opBox.setValue(">");
+
+        TextField valueField     = new TextField("Value");
+        predBox.addValueChangeListener(e ->
+                valueField.setPlaceholder(
+                        switch (e.getValue()) {
+                            case "TOTAL"     -> "₪ (number)";
+                            case "QUANTITY"  -> "amount";
+                            case "CATEGORY"  -> "name";
+                            case "PRODUCT"   -> "id";
+                            default -> "";
+                        }));
+
+
+        ComboBox<String> typeBox  = new ComboBox<>("Type", "VISIBLE", "INVISIBLE");
+        typeBox.setValue("VISIBLE");
+
+        ComboBox<String> logicBox = new ComboBox<>("Logic",
+                "SINGLE","AND","OR","XOR","MAX","MULTIPLY");
+        logicBox.setValue("SINGLE");
+
+        CheckboxGroup<String> subs = new CheckboxGroup<>();
+        subs.setLabel("Sub-discounts");
+        try {
+            subs.setItems(discPresenter.fetchDiscountNames(storeId, token));
+        } catch (Exception ex) {
+            ExceptionHandlers.handleException(ex);
+        }
+
+        Button save = new Button("Save", e -> {
+            try {
+                if (!valueField.isEmpty() && valueField.getValue().contains(" ")) {
+                    Notification.show("Value must not contain spaces");
+                    return;
+                }
+
+                discPresenter.addDiscount(
+                        storeId, token,
+                        nameField.getValue(),
+                        percent.getValue(),
+                        typeBox.getValue(),
+                        (valueField.isEmpty() ? "" :
+                                predBox.getValue() + opBox.getValue() + valueField.getValue()),
+
+                        logicBox.getValue(),
+                        new ArrayList<>(subs.getSelectedItems())
+                );
+                NotificationView.showSuccess("Discount added!");
+                dlg.close();
+            } catch (Exception ex) {
+                ExceptionHandlers.handleException(ex);
+            }
+        });
+        Button cancel = new Button("Cancel", e -> dlg.close());
+
+        dlg.add(new VerticalLayout(
+                nameField, percent,
+                new HorizontalLayout(predBox, opBox, valueField),
+
+                new HorizontalLayout(typeBox, logicBox),
+                subs,
+                new HorizontalLayout(save, cancel)
+        ));
+        dlg.open();
+    }
+
+
 }

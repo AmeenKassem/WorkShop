@@ -6,11 +6,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.springframework.stereotype.Component;
-
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -20,6 +17,7 @@ public class StoreStock {
 
     private final Map<Integer, item> stock;//productId, item
     private int storeID;
+    //discounts for this store 
 
     public StoreStock(int storeID) {
         this.stock = new ConcurrentHashMap<>();
@@ -78,6 +76,15 @@ public class StoreStock {
         //foundItem.changeQuantity(foundItem.getQuantity() - quantity);
     }
 
+    public void returnProductToStock(int productId, int quantity) throws UIException {
+        item storeItem = stock.get(productId);
+        if (storeItem == null) {
+            throw new UIException("Item not found with ID " + productId, ErrorCodes.PRODUCT_NOT_FOUND);
+        }
+        storeItem.changeQuantity(storeItem.getQuantity() + quantity); 
+    }
+
+
     public void updatePrice(int itemId, int newPrice) throws UIException {
         item foundItem = getItemByProductId(itemId);
         if (foundItem == null) {
@@ -125,7 +132,7 @@ public class StoreStock {
     //     return itemStoreDTOList;
     // }
     //may be changed later:
-    public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems, boolean isGuest, int storeid) throws UIException {
+    public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems, boolean isGuest, String storeName) throws UIException {
         List<ReceiptProduct> boughtItems = new ArrayList<>();
         for (ItemCartDTO dto : cartItems) {
             CartItem item = new CartItem(dto);
@@ -138,19 +145,35 @@ public class StoreStock {
                     continue;
                 }
             }
-            decreaseQuantitytoBuy(item.getProductId(), item.getQuantity());
             boughtItems.add(new ReceiptProduct(
                     item.getName(),
-                    item.getCategory(),
-                    item.getDescription(),
-                    "storid",
+                    storeName,
                     item.getQuantity(),
-                    item.getPrice(), item.productId
+                    item.getPrice(),
+                    item.productId,
+                    item.category
             ));
         }
         return boughtItems;
     }
+public void changequantity(List<ItemCartDTO> cartItems, boolean isGuest, String storeName) throws UIException {
+  List<ReceiptProduct> boughtItems = new ArrayList<>();
+        for (ItemCartDTO dto : cartItems) {
+            CartItem item = new CartItem(dto);
+            item storeItem = getItemByProductId(item.getProductId());
 
+            if (storeItem == null || storeItem.getQuantity() < item.getQuantity()) {
+                if (isGuest) {
+                    throw new UIException("Insufficient stock during guest purchase.", ErrorCodes.INSUFFICIENT_STOCK);
+                } else {
+                    continue;
+                }
+            }
+            decreaseQuantitytoBuy(item.getProductId(), item.getQuantity());
+    }}
+
+
+    
     //just for testing
     public List<item> getItemsByCategoryObject(Category category) {
         List<item> result = new ArrayList<>();
@@ -170,4 +193,6 @@ public class StoreStock {
     public int getStoreStockId() {
         return this.storeID;
     }
+
+    
 }

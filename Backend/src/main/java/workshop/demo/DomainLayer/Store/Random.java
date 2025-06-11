@@ -22,6 +22,7 @@ public class Random {
     private final Object lock = new Object();
     private Timer timer;
     private boolean isActive = true;
+    private boolean canceled;
 
     public Random(int productId, int quantity, double productPrice, int id, int storeId, long randomTime) {
         this.productId = productId;
@@ -33,16 +34,20 @@ public class Random {
         this.id = id;
         this.isActive = true;
         this.timer = new Timer();
+        this.canceled =false;
 
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 synchronized (lock) {
-                    if (!isActive) return;
+                    if (!isActive)
+                        return;
                     isActive = false;
-                    for (ParticipationInRandomDTO participation : usersParticipations.values()) {
-                        if (participation != winner) {
-                            // Refund logic can be added here
+                    if (amountLeft > 0) {
+                        for (ParticipationInRandomDTO participation : usersParticipations.values()) {
+                            if (participation != winner) {
+                               participation.mustRefund = true;
+                            }
                         }
                     }
                 }
@@ -55,11 +60,13 @@ public class Random {
             if (!isActive)
                 throw new UIException("Random event is over.", ErrorCodes.RANDOM_FINISHED);
             if (amountPaid > amountLeft)
-                throw new UIException("Maximum amount you can pay is: " + amountLeft, ErrorCodes.INVALID_RANDOM_PARAMETERS);
+                throw new UIException("Maximum amount you can pay is: " + amountLeft,
+                        ErrorCodes.INVALID_RANDOM_PARAMETERS);
             if (amountPaid <= 0)
                 throw new UIException("Amount paid must be positive.", ErrorCodes.INVALID_RANDOM_PARAMETERS);
             if (usersParticipations.containsKey(userId))
-                throw new UIException("User has already participated in this random event.", ErrorCodes.DUPLICATE_RANDOM_ENTRY);
+                throw new UIException("User has already participated in this random event.",
+                        ErrorCodes.DUPLICATE_RANDOM_ENTRY);
 
             usersParticipations.put(userId, new ParticipationInRandomDTO(productId, storeId, userId, id, amountPaid));
             amountLeft -= amountPaid;
@@ -87,7 +94,8 @@ public class Random {
             if (winner != null) {
                 winner.markAsWinner();
                 for (ParticipationInRandomDTO card : usersParticipations.values()) {
-                    if (card.userId != winner.getUserId()) card.markAsLoser();
+                    if (card.userId != winner.getUserId())
+                        card.markAsLoser();
                 }
             }
             return winner;
@@ -127,7 +135,8 @@ public class Random {
     }
 
     public boolean userIsWinner(int userId) {
-       return winner.userId==userId;
+        if(winner == null) return false;
+        return winner.userId == userId;
     }
 
     public ParticipationInRandomDTO getWinner() {
@@ -140,5 +149,11 @@ public class Random {
 
     public int getProductId() {
         return productId;
+    }
+    public boolean isCanceled(){
+        return canceled;
+    }
+    public void setCancel(boolean canceled){
+        this.canceled=canceled;
     }
 }

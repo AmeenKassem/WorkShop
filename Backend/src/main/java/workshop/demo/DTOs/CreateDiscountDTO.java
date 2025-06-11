@@ -9,23 +9,29 @@ public class CreateDiscountDTO {
     }
 
     public enum Logic {
-        SINGLE, AND, OR, MAX, XOR
+        SINGLE, AND, OR, MAX, XOR,MULTIPLY
     }
 
     private String name;
     private double percent;
     private Type type;
     private String condition; // e.g. "CATEGORY:DAIRY", "TOTAL>100", or null
-    private Logic logic = Logic.SINGLE; // default to simple discount
+    private Logic logic;// default to simple discount
     private List<CreateDiscountDTO> subDiscounts;
+    private String coupon;
 
-    public CreateDiscountDTO(String name,double percent,Type type,String condition) {
+    public CreateDiscountDTO(String name, double percent, Type type, String condition, Logic logic, List<CreateDiscountDTO> subDiscounts) {
         this.name = name;
         this.percent = percent;
         this.type = type;
         this.condition = condition;
-
+        this.logic = logic;
+        this.subDiscounts = subDiscounts;
     }
+
+    public CreateDiscountDTO() {
+    }
+
     public String getName() {
         return name;
     }
@@ -48,5 +54,9 @@ public class CreateDiscountDTO {
 
     public List<CreateDiscountDTO> getSubDiscounts() {
         return subDiscounts;
+    }
+
+    public void setCoupon(String coupon) {
+        this.coupon = coupon;
     }
 }

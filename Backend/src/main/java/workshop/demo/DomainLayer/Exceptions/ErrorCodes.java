@@ -31,10 +31,12 @@ public class ErrorCodes {
     public static final int STOCK_NOT_FOUND = 1027;
     public static final int DEACTIVATED_STORE = 1028;
     public static final int INSUFFICIENT_ITEM_QUANTITY_TO_RANDOM = 1029;
-    public static final int  SUSPENSION_NOT_FOUND = 1030;
+    public static final int SUSPENSION_NOT_FOUND = 1030;
     public static final int USERNAME_USED = 1031;
     public static final int USER_SUSPENDED = 1032;
     public static final int DISCOUNT_NOT_FOUND = 1033;
-    public static final int INVALID_QUANTITY=1034;
-    
+    public static final int INVALID_QUANTITY = 1034;
+    public static final int STORE_EXIST = 1035;
+    public static final int NO_POLICY = 1036;
+
 }

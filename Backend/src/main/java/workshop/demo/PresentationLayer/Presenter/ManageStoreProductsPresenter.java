@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ProductDTO;
@@ -39,7 +39,7 @@ public class ManageStoreProductsPresenter {
         //loads the products in this store:
         try {
             System.out.println("Fetching products for storeId: " + storeId);
-            String url = "http://localhost:8080/stock/getProductsInStore?storeId=" + storeId;
+            String url = Base.url+"/stock/getProductsInStore?storeId=" + storeId;
             ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);
             ApiResponse body = response.getBody();
 
@@ -48,33 +48,29 @@ public class ManageStoreProductsPresenter {
 
                 Map<ItemStoreDTO, ProductDTO> mapped = new LinkedHashMap<>();
                 for (ItemStoreDTO item : items) {
-                    try {
-                        ProductDTO product = fetchProductDetails(token, item.getProductId());
-                        mapped.put(item, product);
-                    } catch (Exception ex) {
-                        System.out.println("⚠️ Failed to fetch product info for itemId " + item.getProductId());
-                    }
+                    //try {
+                    ProductDTO product = fetchProductDetails(token, item.getProductId());
+                    mapped.put(item, product);
+                    // } catch (Exception ex) {
+                    //     System.out.println("⚠️ Failed to fetch product info for itemId " + item.getProductId());
+                    // }
                 }
 
                 view.showProducts(mapped);
             } else {
                 view.showEmptyPage("📭 No products in this store yet.");
-                NotificationView.showError("Error" + ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+                //NotificationView.showError("Error" + ExceptionHandlers.getErrorMessage(body.getErrNumber()));
             }
 
-        } catch (HttpClientErrorException e) {
-            handleHttpClientError(e);
-            view.showEmptyPage("❌ Failed to load products due to server error.");
         } catch (Exception e) {
-            view.showEmptyPage("❌ Unexpected error occurred.");
-            NotificationView.showError("Unexpected error: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
     private ProductDTO fetchProductDetails(String token, int productId) {
 
         try {
-            String url = "http://localhost:8080/stock/getProductInfo?token="
+            String url = Base.url+"/stock/getProductInfo?token="
                     + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
                     + "&productId=" + productId;
 
@@ -85,8 +81,8 @@ public class ManageStoreProductsPresenter {
                 return mapper.convertValue(body.getData(), ProductDTO.class);
             }
         } catch (Exception ex) {
-            System.out.println("⚠️ Could not fetch product info: " + ex.getMessage());
-
+            //System.out.println("⚠️ Could not fetch product info: " + ex.getMessage());
+            ExceptionHandlers.handleException(ex);
         }
 
         return new ProductDTO(productId, "(unknown)", null, "(no description)");
@@ -100,7 +96,7 @@ public class ManageStoreProductsPresenter {
             String keywords = generateKeywordsFrom(name, desc);
             int productId = getOrCreateProductId(token, name, desc, category, keywords);
 
-            String addItemUrl = "http://localhost:8080/stock/addItem?storeId=" + storeId
+            String addItemUrl = Base.url+"/stock/addItem?storeId=" + storeId
                     + "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
                     + "&productId=" + productId
                     + "&quantity=" + UriUtils.encodeQueryParam(quantity, StandardCharsets.UTF_8)
@@ -112,15 +108,13 @@ public class ManageStoreProductsPresenter {
             dialog.close();
             loadProducts(storeId, token);
 
-        } catch (HttpClientErrorException e) {
-            handleHttpClientError(e);
         } catch (Exception e) {
-            NotificationView.showError("Unexpected error while adding product: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
     private int getOrCreateProductId(String token, String name, String desc, Category category, String keywords) throws Exception {
-        String getAllUrl = "http://localhost:8080/stock//getAllProducts?token="
+        String getAllUrl = Base.url+"/stock//getAllProducts?token="
                 + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8);
         ResponseEntity<ApiResponse> response = restTemplate.getForEntity(getAllUrl, ApiResponse.class);
         ProductDTO[] products = mapper.convertValue(response.getBody().getData(), ProductDTO[].class);
@@ -129,7 +123,7 @@ public class ManageStoreProductsPresenter {
                 return product.getProductId();
             }
         }
-        String addUrl = "http://localhost:8080/stock/addProduct?token="
+        String addUrl = Base.url+"/stock/addProduct?token="
                 + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
                 + "&name=" + UriUtils.encodeQueryParam(name, StandardCharsets.UTF_8)
                 + "&description=" + UriUtils.encodeQueryParam(desc, StandardCharsets.UTF_8)
@@ -141,7 +135,7 @@ public class ManageStoreProductsPresenter {
 
     public void deleteProduct(int storeId, String token, int productId) {
         try {
-            String url = "http://localhost:8080/stock/removeItem?storeId=" + storeId
+            String url = Base.url+"/stock/removeItem?storeId=" + storeId
                     + "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
                     + "&productId=" + productId;
 
@@ -149,7 +143,8 @@ public class ManageStoreProductsPresenter {
             NotificationView.showSuccess("Product removed.");
             loadProducts(storeId, token);
         } catch (Exception e) {
-            NotificationView.showError("Failed to remove product: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
+            //NotificationView.showError("Failed to remove product: " + e.getMessage());
         }
     }
 
@@ -157,7 +152,7 @@ public class ManageStoreProductsPresenter {
         try {
             if (!quantity.isEmpty()) {
 
-                String quantityUrl = "http://localhost:8080/stock/updateQuantity?storeId=" + storeId
+                String quantityUrl = Base.url+"/stock/updateQuantity?storeId=" + storeId
                         + "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
                         + "&productId=" + productId
                         + "&newQuantity=" + UriUtils.encodeQueryParam(quantity, StandardCharsets.UTF_8);
@@ -165,7 +160,7 @@ public class ManageStoreProductsPresenter {
             }
 
             if (!price.isEmpty()) {
-                String priceUrl = "http://localhost:8080/stock/updatePrice?storeId=" + storeId
+                String priceUrl = Base.url+"/stock/updatePrice?storeId=" + storeId
                         + "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
                         + "&productId=" + productId
                         + "&newPrice=" + UriUtils.encodeQueryParam(price, StandardCharsets.UTF_8);
@@ -175,23 +170,8 @@ public class ManageStoreProductsPresenter {
 
             NotificationView.showSuccess("Product updated.");
             loadProducts(storeId, token);
-        } catch (HttpClientErrorException e) {
-            handleHttpClientError(e);
         } catch (Exception e) {
-            NotificationView.showError("Update failed: " + e.getMessage());
-        }
-    }
-
-    private void handleHttpClientError(HttpClientErrorException e) {
-        try {
-            ApiResponse error = mapper.readValue(e.getResponseBodyAsString(), ApiResponse.class);
-            if (error.getErrNumber() != -1) {
-                NotificationView.showError(ExceptionHandlers.getErrorMessage(error.getErrNumber()));
-            } else {
-                NotificationView.showError("FAILED: " + error.getErrorMsg());
-            }
-        } catch (Exception parsingEx) {
-            NotificationView.showError("HTTP error: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -199,13 +179,13 @@ public class ManageStoreProductsPresenter {
         //load all the products in the sytem except the products in the store:
         try {
             // Get all products in the system
-            String allUrl = "http://localhost:8080/stock/getAllProducts?token="
+            String allUrl = Base.url+"/stock/getAllProducts?token="
                     + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8);
             ResponseEntity<ApiResponse> allResponse = restTemplate.getForEntity(allUrl, ApiResponse.class);
             ProductDTO[] allProducts = mapper.convertValue(allResponse.getBody().getData(), ProductDTO[].class);
 
             // Get products already in this store
-            String inStoreUrl = "http://localhost:8080/stock/getProductsInStore?storeId=" + storeId;
+            String inStoreUrl = Base.url+"/stock/getProductsInStore?storeId=" + storeId;
             ResponseEntity<ApiResponse> storeResponse = restTemplate.getForEntity(inStoreUrl, ApiResponse.class);
             ItemStoreDTO[] storeItems = mapper.convertValue(storeResponse.getBody().getData(), ItemStoreDTO[].class);
 
@@ -220,13 +200,13 @@ public class ManageStoreProductsPresenter {
 
             comboBox.setItems(notInStore);
         } catch (Exception e) {
-            NotificationView.showError("Could not load product list: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
         }
     }
 
     public void addExistingProductAsItem(int storeId, String token, ProductDTO product, String price, String quantity, Dialog dialog) {
         try {
-            String addItemUrl = "http://localhost:8080/stock/addItem"
+            String addItemUrl = Base.url+"/stock/addItem"
                     + "?storeId=" + storeId
                     + "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
                     + "&productId=" + product.getProductId()
@@ -239,7 +219,52 @@ public class ManageStoreProductsPresenter {
             dialog.close();
             loadProducts(storeId, token);
         } catch (Exception e) {
-            NotificationView.showError("Failed to add item: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
+        }
+    }
+
+    public void setProductToAuction(int storeId, String token, int productId, int quantity, long time, double startPrice) {
+        String url = String.format(
+                Base.url+"/stock/setProductToAuction?token=%s&storeId=%d&productId=%d&quantity=%d&time=%d&startPrice=%.2f",
+                UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                storeId, productId, quantity, time, startPrice
+        );
+
+        try {
+            restTemplate.postForEntity(url, null, ApiResponse.class);
+            NotificationView.showSuccess("Product set to auction!");
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+    }
+
+    public void setProductToBid(int storeId, String token, int productId, int quantity) {
+        try {
+            String url = String.format(
+                    Base.url+"/stock/setProductToBid?token=%s&storeId=%d&productId=%d&quantity=%d",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                    storeId, productId, quantity
+            );
+
+            restTemplate.postForEntity(url, null, ApiResponse.class);
+            NotificationView.showSuccess("Product set to bid successfully!");
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+    }
+
+    public void setProductToRandom(int storeId, String token, int productId, int quantity, double productPrice, long randomTime) {
+        try {
+            String url = String.format(
+                    Base.url+"/stock/setProductToRandom?token=%s&productId=%d&quantity=%d&productPrice=%.2f&storeId=%d&randomTime=%d",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                    productId, quantity, productPrice, storeId, randomTime
+            );
+
+            restTemplate.postForEntity(url, null, ApiResponse.class);
+            NotificationView.showSuccess("Product set to random draw!");
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
         }
     }
 

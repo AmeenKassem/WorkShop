@@ -13,11 +13,10 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
 
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.MainLayout;
@@ -47,7 +46,7 @@ public class InitPresenter {
 
     private void connectAsGuest() {
         try {
-            String url = "http://localhost:8080/api/users/generateGuest";
+            String url = Base.url+"/api/users/generateGuest";
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON); // Optional for GET/params
             HttpEntity<Void> entity = new HttpEntity<>(headers); // no body
@@ -94,7 +93,7 @@ public class InitPresenter {
             System.out.println("the token is: " + token);
             try {
                 ResponseEntity<ApiResponse> response = restTemplate.postForEntity(
-                        "http://localhost:8080/api/users/logout?token=" + token,
+                        Base.url+"/api/users/logout?token=" + token,
                         null,
                         ApiResponse.class);
 
@@ -108,49 +107,28 @@ public class InitPresenter {
                 System.out.println("session invalidated");
 
             } catch (HttpClientErrorException e) {
-                try {
-                    String responseBody = e.getResponseBodyAsString();
-                    ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-
-                    if (errorBody.getErrNumber() != -1) {
-                        NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-                    } else {
-                        NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
-                    }
-                } catch (Exception parsingEx) {
-                    NotificationView.showError("HTTP error: " + e.getMessage());
-                }
-
-            } catch (Exception e) {
-                NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
-
+                ExceptionHandlers.handleException(e);
             }
         }
-
         // Clear session and redirect
-        // guest token -> main layout it wil generated aoyomaticlly
-        // Remove session attributes
         VaadinSession.getCurrent().setAttribute("auth-token", null);
         VaadinSession.getCurrent().setAttribute("user-type", "guest");
         UI.getCurrent().getPage().executeJs("window.closeNotificationSocket();");
         VaadinSession.getCurrent().getSession().invalidate();
-        // Navigate to home page and re-init MainLayout
-        // Force hard refresh to homepage (will also reload MainLayout cleanly)
-        //UI.getCurrent().navigate("");
         UI.getCurrent().getPage().setLocation("/");
-        //UI.getCurrent().getPage().reload(); // Force hard refresh to reinitialize MainLayout
     }
 
     public void handleReceiptsDisplay() {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         if (token == null) {
+            System.out.println("No token found, cannot fetch receipts.");
             NotificationView.showError(ExceptionHandlers.getErrorMessage(1001));
             return;
         }
 
         try {
             String url = String.format(
-                    "http://localhost:8080/api/history/getreceipts?token=%s",
+                    Base.url+"/api/history/getreceipts?token=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
             HttpHeaders headers = new HttpHeaders();
@@ -173,29 +151,12 @@ public class InitPresenter {
 
                 System.out.println("ok2");
                 PurchaseView.showReceiptDialog(receipts);
-
             } else {
-
                 NotificationView.showError(ExceptionHandlers.getErrorMessage(responseBody.getErrNumber()));
             }
-            // } catch (Exception e) {
-            //     NotificationView.showError("Failed getting receipts : " + e.getMessage());
-            // }
-        } catch (HttpClientErrorException e) {
-            try {
-                String responseBody = e.getResponseBodyAsString();
-                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-                if (errorBody.getErrNumber() != -1) {
-                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-                } else {
-                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
-                }
-            } catch (Exception parsingEx) {
-                NotificationView.showError("HTTP error: " + e.getMessage());
-            }
-
         } catch (Exception e) {
-            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
+
         }
 
     }

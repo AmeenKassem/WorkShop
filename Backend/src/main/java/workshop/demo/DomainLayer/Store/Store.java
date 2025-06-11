@@ -1,7 +1,7 @@
 package workshop.demo.DomainLayer.Store;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -9,9 +9,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import workshop.demo.DTOs.OfferDTO;
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.StoreDTO;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 
 public class Store {
 
@@ -25,6 +27,7 @@ public class Store {
     //must add something for messages
     private List<String> messgesInStore;
     private Discount discount;
+    private final List<PurchasePolicy> purchasePolicies = new ArrayList<>();
 
     public Store(int storeID, String storeName, String category) {
         logger.debug("Creating store: ID={}, Name={}, Category={}", storeID, storeName, category);
@@ -105,7 +108,9 @@ public class Store {
     public void setDiscount(Discount discount) {
         this.discount = discount;
     }
+
     public void addDiscount(Discount d) {
+        
         if (discount instanceof CompositeDiscount) {
             ((CompositeDiscount) discount).addDiscount(d);
         } else if (discount == null) {
@@ -116,8 +121,10 @@ public class Store {
             combo.addDiscount(discount);
             combo.addDiscount(d);
             this.discount = combo;
+            
         }
     }
+
     public boolean removeDiscountByName(String name) {
         if (discount instanceof CompositeDiscount composite) {
             return composite.removeDiscountByName(name);
@@ -127,6 +134,38 @@ public class Store {
         }
         return false;
     }
+    public void addPurchasePolicy(PurchasePolicy p) throws Exception {
+        if(p==null)
+            throw new Exception("Policy must not be null");
+        purchasePolicies.add(p);
+    }
+    public void removePurchasePolicy(PurchasePolicy p){
+        purchasePolicies.remove(p);
+    }
+    public List<PurchasePolicy> getPurchasePolicies(){
+        return Collections.unmodifiableList(purchasePolicies);
+    }
+    public void assertPurchasePolicies(UserDTO buyer, List<ItemStoreDTO> cart) throws Exception {
+        for(PurchasePolicy p : purchasePolicies){
+            if(!p.isSatisfied(buyer,cart))
+                throw new Exception(p.violationMessage());
+        }
+    }
+    public Discount findDiscountByName(String targetName) {
+        if (discount == null || targetName == null) return null;
+        return dfsFind(discount, targetName);
+    }
 
+    // ---------------- private helper ----------------
+    private Discount dfsFind(Discount node, String targetName) {
+        if (node.getName().equals(targetName)) return node;
+        if (node instanceof CompositeDiscount comp) {
+            for (Discount child : comp.getDiscounts()) {
+                Discount found = dfsFind(child, targetName);
+                if (found != null) return found;
+            }
+        }
+        return null; // not found in this branch
+    }
 
 }

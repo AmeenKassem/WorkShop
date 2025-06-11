@@ -37,25 +37,21 @@ public class AdminHandler {
     private final List<LocalDateTime> registerEvents = new ArrayList<>();
 
     @Autowired
-    public AdminHandler(IOrderRepo orderRepo, IStoreRepo storeRepo, IUserRepo userRepo, IAuthRepo authRepo) {
+    public AdminHandler(IOrderRepo orderRepo, IStoreRepo storeRepo, IUserRepo userRepo, IAuthRepo authRepo) throws UIException {
         this.orderRepo = orderRepo;
         this.storeRepo = storeRepo;
         this.userRepo = userRepo;
         this.authRepo = authRepo;
         //inialize the admin here:
-        try {
             initAdmin();
-        } catch (UIException e) {
-            // TODO Auto-generated catch block
-            //here must do something
-            e.printStackTrace();
-        }
+
 
     }
 
     private void initAdmin() throws UIException {
 
         this.userRepo.registerUser("admin", "Admin123", 23);
+        this.userRepo.getRegisteredUserByName("admin").setAdmin();
     }
 
     public List<PurchaseHistoryDTO> viewPurchaseHistory(String adminToken) throws Exception {
