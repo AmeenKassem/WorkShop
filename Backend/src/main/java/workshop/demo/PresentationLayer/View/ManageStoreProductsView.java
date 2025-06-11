@@ -1,8 +1,10 @@
 package workshop.demo.PresentationLayer.View;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
@@ -20,6 +22,8 @@ import com.vaadin.flow.server.VaadinSession;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
+import workshop.demo.PresentationLayer.Presenter.ManageStoreDiscountsPresenter;
 import workshop.demo.PresentationLayer.Presenter.ManageStoreProductsPresenter;
 
 @Route(value = "manage-store-products", layout = MainLayout.class)
@@ -31,6 +35,8 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
     private final Span errorMessage = new Span();
     private String token;
     private int storeId;
+    private final ManageStoreDiscountsPresenter discPresenter = new ManageStoreDiscountsPresenter();
+
 
     public ManageStoreProductsView() {
         this.presenter = new ManageStoreProductsPresenter(this);
@@ -47,11 +53,12 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         productSection.addClassName("products-section");
 
         Button addProductBtn = new Button("+ Add Item", e -> openAddItemDialog());
-        addProductBtn.addClassName("add-product-btn");
+        Button manageDiscBtn = new Button("⚙️ Manage Discounts", e -> openDiscountDialog());
 
-        HorizontalLayout footer = new HorizontalLayout(addProductBtn);
+        HorizontalLayout footer = new HorizontalLayout(addProductBtn, manageDiscBtn);
         footer.addClassName("footer-buttons");
         footer.setWidthFull();
+
 
         add(title, errorMessage, productSection, footer);
     }
@@ -302,5 +309,86 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         dialog.getFooter().add(new HorizontalLayout(confirm, cancel));
         dialog.open();
     }
+    private void openDiscountDialog() {
+        Dialog dlg = new Dialog();
+        dlg.setHeaderTitle("Add / Combine Discounts");
+
+        // form fields
+        TextField nameField = new TextField("Name");
+        NumberField percent = new NumberField("Percent (0-100)");
+        percent.setMin(0); percent.setMax(100); percent.setValue(0.0);
+        //TextField condition = new TextField("Condition");
+        ComboBox<String> predBox = new ComboBox<>("Predicate");
+        predBox.setItems("TOTAL", "QUANTITY", "CATEGORY", "PRODUCT");
+        predBox.setValue("TOTAL");
+
+        ComboBox<String> opBox   = new ComboBox<>("Op");
+        opBox.setItems(">", "<", ">=", "==", ":");
+        opBox.setValue(">");
+
+        TextField valueField     = new TextField("Value");
+        predBox.addValueChangeListener(e ->
+                valueField.setPlaceholder(
+                        switch (e.getValue()) {
+                            case "TOTAL"     -> "₪ (number)";
+                            case "QUANTITY"  -> "amount";
+                            case "CATEGORY"  -> "name";
+                            case "PRODUCT"   -> "id";
+                            default -> "";
+                        }));
+
+
+        ComboBox<String> typeBox  = new ComboBox<>("Type", "VISIBLE", "INVISIBLE");
+        typeBox.setValue("VISIBLE");
+
+        ComboBox<String> logicBox = new ComboBox<>("Logic",
+                "SINGLE","AND","OR","XOR","MAX","MULTIPLY");
+        logicBox.setValue("SINGLE");
+
+        CheckboxGroup<String> subs = new CheckboxGroup<>();
+        subs.setLabel("Sub-discounts");
+        try {
+            subs.setItems(discPresenter.fetchDiscountNames(storeId, token));
+        } catch (Exception ex) {
+            ExceptionHandlers.handleException(ex);
+        }
+
+        Button save = new Button("Save", e -> {
+            try {
+                if (!valueField.isEmpty() && valueField.getValue().contains(" ")) {
+                    Notification.show("Value must not contain spaces");
+                    return;
+                }
+
+                discPresenter.addDiscount(
+                        storeId, token,
+                        nameField.getValue(),
+                        percent.getValue(),
+                        typeBox.getValue(),
+                        (valueField.isEmpty() ? "" :
+                                predBox.getValue() + opBox.getValue() + valueField.getValue()),
+
+                        logicBox.getValue(),
+                        new ArrayList<>(subs.getSelectedItems())
+                );
+                NotificationView.showSuccess("Discount added!");
+                dlg.close();
+            } catch (Exception ex) {
+                ExceptionHandlers.handleException(ex);
+            }
+        });
+        Button cancel = new Button("Cancel", e -> dlg.close());
+
+        dlg.add(new VerticalLayout(
+                nameField, percent,
+                new HorizontalLayout(predBox, opBox, valueField),
+
+                new HorizontalLayout(typeBox, logicBox),
+                subs,
+                new HorizontalLayout(save, cancel)
+        ));
+        dlg.open();
+    }
+
 
 }

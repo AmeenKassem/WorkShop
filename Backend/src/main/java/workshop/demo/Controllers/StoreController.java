@@ -275,7 +275,9 @@ public class StoreController {
             @RequestParam String token,
             @RequestParam String name,@RequestParam double percent,@RequestParam CreateDiscountDTO.Type type
             ,@RequestParam String condition,@RequestParam CreateDiscountDTO.Logic logic,
-            @RequestParam String[] subDiscountsNames) {
+            @RequestParam(required = false) String[] subDiscountsNames) {
+        if (subDiscountsNames == null) subDiscountsNames = new String[0];
+
         try {
             storeService.addDiscountToStore(storeId, token, name,percent,type,condition,logic,subDiscountsNames); // assumes permission check is inside service
             return ResponseEntity.ok(new ApiResponse<>("Discount added successfully", null));
@@ -325,6 +327,11 @@ public class StoreController {
         } catch (Exception ex){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(null,ex.getMessage(),-1));
         }
+    }
+    @GetMapping("/discountNames")
+    public ApiResponse names(@RequestParam int storeId, @RequestParam String token) throws UIException {
+        String[] arr = storeService.getAllDiscountNames(storeId, token);
+        return new ApiResponse(arr, null);
     }
 
 
