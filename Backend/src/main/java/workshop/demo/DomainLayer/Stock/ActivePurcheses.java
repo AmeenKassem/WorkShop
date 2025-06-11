@@ -355,5 +355,10 @@ public class ActivePurcheses {
 }
 
 
+    public Auction getAuctionById(int res) {
+        return activeAuction.get(res);
+    }
+
+
 
 }

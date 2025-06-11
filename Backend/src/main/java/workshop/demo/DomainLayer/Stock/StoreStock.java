@@ -194,4 +194,17 @@ public class StoreStock {
         return this.storeID;
     }
 
+    public void IncreaseQuantitytoBuy(int productId, int quantity) throws UIException {
+        item foundItem = getItemByProductId(productId);
+        if (foundItem == null) {
+            throw new UIException("Item not found with ID " + productId, ErrorCodes.PRODUCT_NOT_FOUND);
+        }
+        synchronized (foundItem) {
+            if (foundItem.getQuantity() < quantity) {
+                throw new UIException("Insufficient stock", ErrorCodes.INSUFFICIENT_STOCK);
+            }
+            foundItem.changeQuantity(foundItem.getQuantity() + quantity);
+        }
+    }
+
 }

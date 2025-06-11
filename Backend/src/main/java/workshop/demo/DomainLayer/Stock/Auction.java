@@ -6,6 +6,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.security.access.method.P;
+
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.AuctionStatus;
 import workshop.demo.DTOs.SingleBidDTO;
@@ -57,6 +59,23 @@ public class Auction {
         }, time);
     }
 
+    public void endAuction() {
+        for (SingleBid singleBid : bids) {
+            if (maxBid == singleBid.getBidPrice()) {
+                winner = singleBid;
+                winner.markAsWinner();
+            } else {
+                singleBid.markAsLosed();
+            }
+        }
+        status = AuctionStatus.FINISH;
+    }
+
+    public boolean mustReturnToStock(){
+        return status==AuctionStatus.FINISH && bids.isEmpty();
+    }
+
+    
     public SingleBid bid(int userId, double price) throws UIException {
         synchronized (lock) {
             if (status == AuctionStatus.FINISH) {
