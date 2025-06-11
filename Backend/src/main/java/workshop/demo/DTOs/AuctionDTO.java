@@ -16,6 +16,7 @@ public class AuctionDTO {
     public int quantity;
     public String storeName;
     public String productName;
+    public long endTimeMillis;
 
     public AuctionDTO() {
     }

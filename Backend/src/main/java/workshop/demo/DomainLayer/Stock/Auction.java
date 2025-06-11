@@ -6,8 +6,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.springframework.security.access.method.P;
-
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.AuctionStatus;
 import workshop.demo.DTOs.SingleBidDTO;
@@ -31,6 +29,7 @@ public class Auction {
     private int storeId;
     private AtomicInteger idGen = new AtomicInteger();
     private final Object lock = new Object();
+    private long endTimeMillis;
 
     public Auction(int productId, int quantity, long time, int id, int storeId, double startPrice) {
         this.productId = productId;
@@ -40,8 +39,7 @@ public class Auction {
         this.storeId = storeId;
         this.auctionId = id;
         this.status = AuctionStatus.IN_PROGRESS;
-        this.startPrice = startPrice;
-        this.maxBid = startPrice;
+        this.endTimeMillis = System.currentTimeMillis() + time;
 
         timer.schedule(new TimerTask() {
             @Override
@@ -104,6 +102,7 @@ public class Auction {
         res.quantity = quantity;
         res.winner = winner;
         res.storeId = storeId;
+        res.endTimeMillis = this.endTimeMillis;
 
         SingleBidDTO[] arrayBids = new SingleBidDTO[bids.size()];
         for (int i = 0; i < arrayBids.length; i++) {

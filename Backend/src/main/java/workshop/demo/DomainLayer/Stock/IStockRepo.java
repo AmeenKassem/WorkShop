@@ -110,9 +110,9 @@ public interface IStockRepo {
 
     RandomDTO[] searchActiveRandoms(ProductSearchCriteria criteria) throws UIException;
 
-    AuctionDTO[] searchActiveAuctions(ProductSearchCriteria criteria, String storeName) throws UIException ;
+    AuctionDTO[] searchActiveAuctions(ProductSearchCriteria criteria) throws UIException ;
 
-    BidDTO[] searchActiveBids(ProductSearchCriteria criteria, String storeName) throws UIException;
+    BidDTO[] searchActiveBids(ProductSearchCriteria criteria) throws UIException;
 
       public void changequantity(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
             throws Exception;

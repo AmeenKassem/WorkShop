@@ -522,7 +522,7 @@ public class StockRepository implements IStockRepo {
     }
 
     @Override
-    public BidDTO[] searchActiveBids(ProductSearchCriteria criteria, String storeName) throws UIException {
+    public BidDTO[] searchActiveBids(ProductSearchCriteria criteria) throws UIException {
         ItemStoreDTO[] storeItems = search(criteria);
         List<BidDTO> result = new ArrayList<>();
         for (ItemStoreDTO item : storeItems) {
@@ -538,7 +538,7 @@ public class StockRepository implements IStockRepo {
     }
 
     @Override
-    public AuctionDTO[] searchActiveAuctions(ProductSearchCriteria criteria, String storeName) throws UIException {
+    public AuctionDTO[] searchActiveAuctions(ProductSearchCriteria criteria) throws UIException {
         ItemStoreDTO[] storeItems = search(criteria);
         List<AuctionDTO> result = new ArrayList<>();
         for (ItemStoreDTO item : storeItems) {
