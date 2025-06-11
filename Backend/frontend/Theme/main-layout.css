@@ -1,82 +1,104 @@
 /* ===== Header Styles ===== */
 .app-header {
-    padding: 1.5rem 2rem;
-    background-color: #ffffff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    padding: 1rem 2rem;
+    background-color: #232f3e;
+    color: white;
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
+    width: 100vw;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
 }
 
+/* ===== Market Title Styles ===== */
 .market-title {
-    font-size: 2rem;
+    font-size: 3rem; /* Larger font size for better visibility */
     font-weight: bold;
     margin: 0;
-    color: #222;
+    color: #ff9900; /* Amazon orange color */
 }
 
+/* ===== Subtitle Styles ===== */
 .market-subtitle {
-    font-size: 0.95rem;
-    color: #666;
-    text-align: center;
-    margin-top: 0.3rem;
-    white-space: pre-line;
+    font-size: 1.1rem;
+    color: #ccc;
+    text-align: left;     /* ❗ היה center – עכשיו מיושר לשמאל */
+    margin-top: 0.5rem;
+    max-width: 100%;      /* ❗ היה 80% – עכשיו יתאים לרוחב */
 }
 
-/* ===== Right Button Column ===== */
+/* ===== Right Button Column (Under the header) ===== */
 .right-button-column {
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-left: auto;
+    justify-content: center; /* Center buttons under the header */
+    gap: 1.5rem;
+    margin-top: 2rem; /* Space between header and buttons */
     padding: 1rem;
 }
 
 /* ===== Buttons ===== */
+
+.header-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
 .right-button {
-    background-color: #333;
+    background-color: #ff9900;
     color: white;
-    border-radius: 8px;
     font-weight: bold;
-    padding: 0.5rem 1.2rem;
-    width: fit-content;
-    text-align: center;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
     text-decoration: none;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    min-width: 100px;
+    text-align: center;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .right-button:hover {
-    background-color: #555;
-    transform: scale(1.05);
+    background-color: #f77f00;
 }
 
 .home-button {
-    background-color: #333;
+    background-color: #232f3e; /* Dark background for home button */
     color: white;
-    padding: 0.8rem 1.5rem;
-    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    border-radius: 15px;
     text-decoration: none;
     font-weight: bold;
-    font-size: 1rem;
+    font-size: 1.2rem;
+    width: 250px; /* Uniform width */
+    text-align: center;
     transition: background-color 0.3s ease;
+}
+
+.home-button:hover {
+    background-color: #2e3a53; /* Slightly lighter shade on hover */
 }
 
 /* ===== Store Cards ===== */
 .store-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1.5rem;
+    gap: 2rem;
+    margin-top: 2.5rem;
+    padding: 0 4rem;
 }
 
 .store-card {
-    background-color: white;
+    background-color: #fff;
     border-radius: 12px;
-    padding: 1rem;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
+    max-height: 300px; /* Limit height for uniform cards */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .store-card:hover {
@@ -86,12 +108,13 @@
 
 .store-card h3 {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     font-weight: bold;
+    color: #333;
 }
 
 .store-card p {
-    margin: 0.5rem 0 0 0;
-    color: #555;
-    font-size: 0.95rem;
+    margin: 0.5rem 0;
+    color: #777;
+    font-size: 1rem;
 }

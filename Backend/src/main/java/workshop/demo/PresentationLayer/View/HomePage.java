@@ -13,20 +13,13 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.IntegerField;
-import com.vaadin.flow.component.textfield.NumberField;
-import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
-import workshop.demo.DTOs.AuctionDTO;
-import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.PaymentDetails;
-import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.PresentationLayer.Presenter.HomePagePresenter;
 
@@ -40,143 +33,128 @@ public class HomePage extends VerticalLayout {
     private final Div resultsContainer = new Div();
 
     public HomePage() {
-
         this.homePagePresenter = new HomePagePresenter(this);
+
+        addClassName("home-view");
         setSizeFull();
         setSpacing(false);
         setPadding(true);
         setAlignItems(Alignment.STRETCH);
-        addClassName("home-view");
-        add(resultsContainer);
 
-        //add search bar 
-        add(createSearchBar());
+        add(createSearchBar()); // אזור חיפוש
+        add(resultsContainer);  // תוצאות חיפוש (\u05deעל featured)
 
-        //showButtonsAsGorU();
+        // כותרת
         Span title = new Span("🔥 Featured Stores");
-        title.getStyle().set("font-size", "24px").set("font-weight", "bold");
-        // Container for store cards
+        title.addClassName("section-title");
+
+        // רשת חנויות
         Div storeContainer = new Div();
         storeContainer.addClassName("store-container");
-        // Fetch stores
+
         List<StoreDTO> stores = this.homePagePresenter.fetchStores();
         if (stores == null || stores.isEmpty()) {
             Paragraph noStores = new Paragraph("No stores yet.");
             noStores.getStyle().set("font-size", "18px").set("color", "gray");
             storeContainer.add(noStores);
         } else {
-
             for (StoreDTO store : stores) {
                 storeContainer.add(this.homePagePresenter.createStoreCard(store));
             }
         }
+
         add(title, storeContainer);
     }
 
-   private VerticalLayout createSearchBar() {
-    VerticalLayout layout = new VerticalLayout();
-    layout.setSpacing(false);
-    layout.setPadding(true);
-    layout.getStyle().set("background-color", "#f5f6ff").set("border-radius", "12px").set("padding", "20px");
+    private VerticalLayout createSearchBar() {
+        VerticalLayout layout = new VerticalLayout();
+        layout.addClassName("search-panel");
 
-    TextField searchField = new TextField("Search");
-    searchField.setPlaceholder("Enter keyword or product name");
-    searchField.setWidth("280px");
+        TextField searchField = new TextField("Search");
+        searchField.setPlaceholder("Enter keyword or product name");
+        searchField.setWidth("280px");
 
-    ComboBox<Category> categoryCombo = new ComboBox<>("Category");
-    categoryCombo.setItems(Category.values());
-    categoryCombo.setPlaceholder("Select Category");
-    categoryCombo.setWidth("200px");
+        ComboBox<Category> categoryCombo = new ComboBox<>("Category");
+        categoryCombo.setItems(Category.values());
+        categoryCombo.setPlaceholder("Select Category");
+        categoryCombo.setWidth("200px");
 
-    ComboBox<String> searchBySelector = new ComboBox<>("Search By");
-    searchBySelector.setItems("Keyword", "Product Name");
-    searchBySelector.setPlaceholder("Search By");
-    searchBySelector.setRequired(true);
-    searchBySelector.setWidth("180px");
+        ComboBox<String> searchBySelector = new ComboBox<>("Search By");
+        searchBySelector.setItems("Keyword", "Product Name");
+        searchBySelector.setPlaceholder("Search By");
+        searchBySelector.setRequired(true);
+        searchBySelector.setWidth("180px");
 
-    TextField minPriceField = new TextField("Min Price");
-    minPriceField.setPlaceholder("Insert minimum price");
-    minPriceField.setWidth("150px");
+        TextField minPriceField = new TextField("Min Price");
+        minPriceField.setPlaceholder("Insert minimum price");
+        minPriceField.setWidth("150px");
 
-    TextField maxPriceField = new TextField("Max Price");
-    maxPriceField.setPlaceholder("Insert maximum price");
-    maxPriceField.setWidth("150px");
+        TextField maxPriceField = new TextField("Max Price");
+        maxPriceField.setPlaceholder("Insert maximum price");
+        maxPriceField.setWidth("150px");
 
-    ComboBox<Integer> productRateCombo = new ComboBox<>("Product Rate");
-    productRateCombo.setItems(1, 2, 3, 4, 5);
-    productRateCombo.setPlaceholder("Product rate (1-5)");
-    productRateCombo.setWidth("160px");
+        ComboBox<Integer> productRateCombo = new ComboBox<>("Product Rate");
+        productRateCombo.setItems(1, 2, 3, 4, 5);
+        productRateCombo.setPlaceholder("Product rate (1-5)");
+        productRateCombo.setWidth("160px");
 
-    Button searchBtn = new Button("Search", event -> {
-        String searchBy = searchBySelector.getValue();
-        String inputText = searchField.getValue();
-        Category category = categoryCombo.getValue();
-        Double minPrice = parseDouble(minPriceField.getValue());
-        Double maxPrice = parseDouble(maxPriceField.getValue());
-        Integer productRate = productRateCombo.getValue();
+        Button searchBtn = new Button("Search", event -> {
+            String searchBy = searchBySelector.getValue();
+            String inputText = searchField.getValue();
+            Category category = categoryCombo.getValue();
+            Double minPrice = parseDouble(minPriceField.getValue());
+            Double maxPrice = parseDouble(maxPriceField.getValue());
+            Integer productRate = productRateCombo.getValue();
 
-        if (searchBy == null) {
-            NotificationView.showError("Please select search mode.");
-            return;
-        }
+            if (searchBy == null || inputText == null || inputText.isBlank()) {
+                NotificationView.showError("Please fill all required fields.");
+                return;
+            }
 
-        if (inputText == null || inputText.isBlank()) {
-            NotificationView.showError("Please enter a search value.");
-            return;
-        }
+            String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+            String name = searchBy.equals("Product Name") ? inputText : null;
+            String keyword = searchBy.equals("Keyword") ? inputText : null;
 
-        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-        String name = searchBy.equals("Product Name") ? inputText : null;
-        String keyword = searchBy.equals("Keyword") ? inputText : null;
+            List<ItemStoreDTO> items = homePagePresenter.searchNormal(token, name, keyword, category, minPrice, maxPrice, productRate);
+            resultsContainer.removeAll();
+            if (items == null || items.isEmpty()) {
+                NotificationView.showError("No results found.");
+                return;
+            }
+            items.forEach(item -> resultsContainer.add(createItemCard(item)));
+        });
 
-        List<ItemStoreDTO> items = homePagePresenter.searchNormal(token, name, keyword, category, minPrice, maxPrice, productRate);
-        resultsContainer.removeAll();
-        if (items == null || items.isEmpty()) {
-            NotificationView.showError("No results found.");
-            return;
-        }
-        items.forEach(item -> resultsContainer.add(createItemCard(item)));
-    });
+        searchBtn.getStyle()
+                .set("background-color", "#2E2E2E")
+                .set("color", "white")
+                .set("font-weight", "bold")
+                .set("border-radius", "12px")
+                .set("padding", "6px 16px");
 
-    searchBtn.getStyle()
-            .set("background-color", "#2E2E2E")
-            .set("color", "white")
-            .set("font-weight", "bold")
-            .set("border-radius", "12px")
-            .set("padding", "6px 16px");
+        HorizontalLayout row1 = new HorizontalLayout(searchField, categoryCombo, searchBySelector);
+        HorizontalLayout row2 = new HorizontalLayout(minPriceField, maxPriceField, productRateCombo, searchBtn);
+        row1.setSpacing(true);
+        row2.setSpacing(true);
+        row2.setDefaultVerticalComponentAlignment(Alignment.END);
 
-    HorizontalLayout row1 = new HorizontalLayout(searchField, categoryCombo, searchBySelector);
-    HorizontalLayout row2 = new HorizontalLayout(minPriceField, maxPriceField, productRateCombo, searchBtn);
-    row1.setSpacing(true);
-    row2.setSpacing(true);
-    row2.setDefaultVerticalComponentAlignment(Alignment.END);
-
-    layout.add(row1, row2);
-    return layout;
-}
-
-    private Double parseDouble(String value) {
-        try {
-            return value != null && !value.isBlank() ? Double.parseDouble(value) : null;
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        layout.add(row1, row2);
+        return layout;
     }
 
     private Div createItemCard(ItemStoreDTO item) {
         Div card = new Div();
-        card.getStyle()
-                .set("padding", "12px")
-                .set("border", "1px solid #ddd")
-                .set("border-radius", "10px")
-                .set("margin-bottom", "10px");
+        card.addClassName("store-card");
 
-        Span name = new Span("🛍 " + item.getProductName());
+        Span name = new Span("🍭 " + item.getProductName());
         Paragraph store = new Paragraph("Store: " + item.getStoreName());
         Paragraph price = new Paragraph("Price: $" + item.getPrice());
 
         Button addToCart = new Button("Add to My Cart", e -> showAddToCartDialog(item));
-        addToCart.getStyle().set("background-color", "#007bff").set("color", "white");
+        addToCart.getStyle().set("background-color", "#007bff")
+                            .set("color", "white")
+                            .set("font-weight", "bold")
+                            .set("border-radius", "8px")
+                            .set("margin-top", "8px");
 
         card.add(name, price, store, addToCart);
         return card;
@@ -184,7 +162,6 @@ public class HomePage extends VerticalLayout {
 
     private void showAddToCartDialog(ItemStoreDTO item) {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("🛒 Add to Cart");
 
@@ -202,7 +179,6 @@ public class HomePage extends VerticalLayout {
                     Notification.show("Quantity must be positive.");
                     return;
                 }
-
                 homePagePresenter.addToCart(token, item, quantity);
                 dialog.close();
             } catch (NumberFormatException ex) {
@@ -211,11 +187,16 @@ public class HomePage extends VerticalLayout {
         });
 
         Button cancel = new Button("Cancel", e -> dialog.close());
-
-        HorizontalLayout buttons = new HorizontalLayout(submit, cancel);
-        layout.add(quantityField, buttons);
+        layout.add(quantityField, new HorizontalLayout(submit, cancel));
         dialog.add(layout);
         dialog.open();
     }
 
+    private Double parseDouble(String value) {
+        try {
+            return value != null && !value.isBlank() ? Double.parseDouble(value) : null;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
 }
