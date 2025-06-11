@@ -323,15 +323,18 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
     /* ------------------------------------------------------------------
      *  Add / Combine Discounts dialog  –  backend-compatible version
      * ------------------------------------------------------------------ */
+    /* --------------------------------------------------------------
+     *  Add / Combine Discounts dialog – hardened numeric handling
+     * -------------------------------------------------------------- */
     private void openDiscountDialog() {
 
         Dialog dlg = new Dialog();
         dlg.setHeaderTitle("Add / Combine Discounts");
 
-        /* ── generic fields ─────────────────────────────────────────── */
-        TextField   nameField = new TextField("Name");
+        /* ── generic fields ─────────────────────────────────────── */
+        TextField nameField = new TextField("Name");
 
-        NumberField percent   = new NumberField("Percent (0-100)");
+        NumberField percent = new NumberField("Percent (0-100)");
         percent.setMin(0); percent.setMax(100); percent.setValue(0.0);
 
         ComboBox<String> typeBox  = new ComboBox<>("Type", "VISIBLE", "INVISIBLE");
@@ -341,35 +344,27 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                 "SINGLE","AND","OR","XOR","MAX","MULTIPLY");
         logicBox.setValue("SINGLE");
 
-        /* ── predicate section ─────────────────────────────────────── */
+        /* ── predicate section ─────────────────────────────────── */
         ComboBox<String> predBox = new ComboBox<>("Predicate");
         predBox.setItems("TOTAL", "QUANTITY", "CATEGORY", "PRODUCT");
         predBox.setPlaceholder("Predicate (optional)");
         predBox.setClearButtonVisible(true);
 
-        /* operator – backend only accepts ">" for TOTAL/QUANTITY */
-        ComboBox<String> opBox = new ComboBox<>("Op");
-        opBox.setEnabled(false);                     // enabled only for TOTAL/QUANTITY
+        ComboBox<String> opBox = new ComboBox<>("Op");   // visible but never enabled now
+        opBox.setEnabled(false);
 
-        /* value editor wrapper – swaps actual component at runtime */
         Div valueWrapper = new Div();
 
-        /* helper: rebuild operator + value editor on predicate change */
-        Runnable refreshPredicateUI = () -> {
+        /* refresh helper */
+        Runnable refreshUI = () -> {
             String p = predBox.getValue();
 
-            /* 1️⃣ operator list */
+            // operator (always ">")
             if ("TOTAL".equals(p) || "QUANTITY".equals(p)) {
-                opBox.setItems(">");                 // single choice
-                opBox.setValue(">");                 // preset
-                opBox.setEnabled(false);             // no alternative
-            } else {
-                opBox.clear();
-                opBox.setItems();
-                opBox.setEnabled(false);
-            }
+                opBox.setItems(">"); opBox.setValue(">"); opBox.setEnabled(false);
+            } else { opBox.clear(); opBox.setItems(); opBox.setEnabled(false); }
 
-            /* 2️⃣ value editor */
+            // value editor
             valueWrapper.removeAll();
             switch (p == null ? "" : p) {
                 case "TOTAL", "QUANTITY" -> {
@@ -385,19 +380,20 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                 }
                 case "PRODUCT" -> {
                     ComboBox<ItemStoreDTO> prod = new ComboBox<>("Value");
-                    prod.setItems(currentProducts.keySet());          // ItemStoreDTOs
+                    prod.setItems(currentProducts.keySet());
                     prod.setItemLabelGenerator(ItemStoreDTO::getProductName);
                     prod.setPlaceholder("Choose product");
                     prod.setPageSize(20);
                     valueWrapper.add(prod);
                 }
-                default -> valueWrapper.add(new Span());              // blank
+                default -> valueWrapper.add(new Span());
             }
         };
-        predBox.addValueChangeListener(e -> refreshPredicateUI.run());
-        refreshPredicateUI.run();                                     // init once
+        predBox.addValueChangeListener(e -> refreshUI.run());
+        refreshUI.run();
 
-        /* ── sub-discount list & delete button ────────────────────── */
+        /* ── sub-discount list / delete unchanged … ───────────────── */
+
         CheckboxGroup<String> subs = new CheckboxGroup<>();
         subs.setLabel("Sub-discounts");
         try { subs.setItems(discPresenter.fetchDiscountNames(storeId, token)); }
@@ -405,10 +401,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
         Button deleteBtn = new Button("🗑 Delete selected", ev -> {
             var toDelete = new ArrayList<>(subs.getSelectedItems());
-            if (toDelete.isEmpty()) {
-                Notification.show("Select a discount first");
-                return;
-            }
+            if (toDelete.isEmpty()) { Notification.show("Select a discount first"); return; }
             toDelete.forEach(name -> {
                 try { discPresenter.deleteDiscount(storeId, token, name); }
                 catch (Exception ex) { ExceptionHandlers.handleException(ex); }
@@ -417,46 +410,50 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             catch (Exception ex) { ExceptionHandlers.handleException(ex); }
         });
 
-        /* ── SAVE / CANCEL ────────────────────────────────────────── */
+        /* ── SAVE ───────────────────────────────────────────────── */
         Button save = new Button("Save", e -> {
             try {
                 /* 1 extract value */
                 String valuePart = "";
                 if (valueWrapper.getElement().getChildCount() > 0) {
                     Component editor = valueWrapper.getChildren().findFirst().get();
-
                     if (editor instanceof ComboBox<?> cb &&
-                            cb.getValue() instanceof ItemStoreDTO dto) {     // PRODUCT
-                        valuePart = String.valueOf(dto.getProductId());      // id only
+                            cb.getValue() instanceof ItemStoreDTO dto) {
+                        valuePart = String.valueOf(dto.getProductId());  // PRODUCT → id
                     } else if (editor instanceof HasValue<?,?> hv &&
-                            hv.getValue() != null) {                      // others
+                            hv.getValue() != null) {
                         valuePart = hv.getValue().toString();
                     }
                 }
 
-                /* 2 trim ".0" if numeric */
+                /* 2 normalize numeric (trim, strip .0) */
+                valuePart = valuePart.trim();
                 String predicate = predBox.getValue();
                 if (("TOTAL".equals(predicate) || "QUANTITY".equals(predicate)) &&
-                        valuePart.endsWith(".0")) {
-                    valuePart = valuePart.substring(0, valuePart.length() - 2);
+                        valuePart.isBlank()) {
+                    Notification.show("Enter a numeric value for " + predicate);
+                    return;
                 }
+                if (valuePart.endsWith(".0")) valuePart = valuePart.substring(0, valuePart.length() - 2);
 
-                /* 3 build backend-compliant condition string */
+                /* 3 build condition */
                 String condition;
                 switch (predicate == null ? "" : predicate) {
                     case ""         -> condition = "";
                     case "CATEGORY" -> condition = "CATEGORY:" + valuePart;
                     case "TOTAL"    -> condition = "TOTAL>"    + valuePart;
-                    case "QUANTITY" -> condition = "QUANTITY>"+ valuePart;
+                    case "QUANTITY" -> condition = "QUANTITY>" + valuePart;
                     case "PRODUCT"  -> condition = "ITEM:"     + valuePart;
                     default         -> condition = "";
                 }
 
-                /* 4 send to backend */
+                System.out.println("DEBUG addDiscount condition = [" + condition + "]");
+
+                /* 4 send */
                 discPresenter.addDiscount(
                         storeId, token,
                         nameField.getValue(),
-                        percent.getValue() / 100.0,          // 0–1 range
+                        percent.getValue() / 100.0,
                         typeBox.getValue(),
                         condition,
                         logicBox.getValue(),
@@ -472,7 +469,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
         Button cancel = new Button("Cancel", e -> dlg.close());
 
-        /* ── assemble dialog ─────────────────────────────────────── */
+        /* ── assemble dialog ───────────────────────────────────── */
         dlg.add(new VerticalLayout(
                 nameField, percent,
                 new HorizontalLayout(predBox, opBox, valueWrapper),
@@ -483,6 +480,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         ));
         dlg.open();
     }
+
 
 
 
