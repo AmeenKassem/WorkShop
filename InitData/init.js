@@ -136,11 +136,11 @@ async function addProductAndItem(
   }
 }
 
-async function addStore(token) {
+async function addStore(token, name) {
   const tokenAdder = token;
   const req = qs.stringify({
     token: tokenAdder,
-    storeName: "masho masho",
+    storeName: name,
     category: "Electronics",
   });
   const responseReg = await axios.post(api + "/api/store/addStore", req, {
@@ -148,153 +148,248 @@ async function addStore(token) {
       "Content-Type": "application/x-www-form-urlencoded",
     },
   });
-  return responseReg.data.data;
+  return await responseReg.data.data;
 }
 
 // loginUsers();
 // const tokenUser =tokenMap['user1'];
 // console.log(tokenUser)
 // const storeId = addStore(tokenUser);
-
 const products = [
   // Electronics
   [
     "iPhone 14 Pro Max",
-    "Electronics",
+    "Electronics", // Matches enum
     "Apple flagship smartphone with A16 chip",
-    "phone",
-  ]
-  ,
+    "phone", // Changed to single string
+  ],
   [
     "Google Pixel 8",
-    "Electronics",
+    "Electronics", // Matches enum
     "Google's latest smartphone with AI camera features",
-    "phone",
+    "phone", // Changed to single string
   ],
   [
     "OnePlus 11",
-    "Electronics",
+    "Electronics", // Matches enum
     "Fast and smooth Android smartphone",
-    ["phone"],
+    "phone", // Changed to single string
   ],
   [
     "Xiaomi 13 Pro",
-    "Electronics",
+    "Electronics", // Matches enum
     "High-performance phone with Leica camera",
-    "phone",
+    "phone", // Changed to single string
   ],
   [
     "Galaxy A71 FE",
-    "Electronics",
+    "Electronics", // Matches enum
     "Affordable Samsung phone with premium features",
-    "phone",
+    "phone", // Changed to single string
   ],
-  ["Galaxy S23 Ultra", "Electronics", "High-end Samsung smartphone", "phone"],
+  [
+    "Galaxy S23 Ultra",
+    "Electronics", // Matches enum
+    "High-end Samsung smartphone",
+    "phone", // Changed to single string
+  ],
   [
     "Sony WH-1000XM5",
-    "Electronics",
+    "Electronics", // Matches enum
     "Noise-cancelling headphones",
-    "headphones",
+    "headphones", // Changed to single string
   ],
   [
     "iPad Pro 12.9",
-    "Electronics",
+    "Electronics", // Matches enum
     "Large screen tablet for professionals",
-    "tablet",
+    "tablet", // Changed to single string
+  ],
+
+  // CAMERA -> Mapped to Electronics (or add 'Camera' to your enum)
+  [
+    "Canon EOS R10",
+    "Electronics", // Changed from CAMERA to Electronics
+    "Mirrorless camera with 24MP sensor",
+    "camera", // Changed to single string
+  ],
+  [
+    "GoPro HERO11",
+    "Electronics", // Changed from CAMERA to Electronics
+    "Action camera for adventure lovers",
+    "gopro,action_camera", // Changed to single string, comma-separated
+  ],
+  [
+    "Sony Alpha ZV-E10",
+    "Electronics", // Changed from CAMERA to Electronics
+    "Vlogging camera with flip screen",
+    "vlog,camera", // Changed to single string
   ],
 
   // HOME
   [
     "Cozy Bean Bag",
-    "HOME",
+    "Home", // Matches enum (assuming case-insensitivity on backend or map 'HOME' to 'Home')
     "Comfortable seating for your living room",
-    "furniture",
+    "furniture,bean_bag", // Changed to single string
   ],
-  ["LED Floor Lamp", "HOME", "Bright floor lamp with 3 color modes", "lamp"],
-  ["Wall-mounted Bookshelf", "HOME", "Space-saving modern bookshelf", "shelf"],
+  [
+    "LED Floor Lamp",
+    "Home", // Matches enum
+    "Bright floor lamp with 3 color modes",
+    "lamp,lighting", // Changed to single string
+  ],
+  [
+    "Wall-mounted Bookshelf",
+    "Home", // Matches enum
+    "Space-saving modern bookshelf",
+    "shelf,bookshelf,storage", // Changed to single string
+  ],
 
-  // FASHION
-  ["Slim Fit Blazer", "FASHION", "Stylish blazer for formal events", "blazer"],
-  ["Nike Air Max", "FASHION", "Popular running shoes", "shoes"],
-  ["Leather Handbag", "FASHION", "Elegant handbag for daily use", "handbag"],
+  // FASHION -> Mapped to Clothing
+  [
+    "Slim Fit Blazer",
+    "Clothing",
+    "Stylish blazer for formal events",
+    "blazer,clothing",
+  ], // Changed category and keywords
+  ["Nike Air Max", "Clothing", "Popular running shoes", "shoes,sneakers,nike"], // Changed category and keywords
+  [
+    "Leather Handbag",
+    "Clothing",
+    "Elegant handbag for daily use",
+    "handbag,accessories",
+  ], // Changed category and keywords
 
-  // CAMERA
-  ["Canon EOS R10", "CAMERA", "Mirrorless camera with 24MP sensor", "camera"],
-  ["GoPro HERO11", "CAMERA", "Action camera for adventure lovers", "gopro"],
-  ["Sony Alpha ZV-E10", "CAMERA", "Vlogging camera with flip screen", "vlog"],
-
-  // HOME_APPLIANCE
+  // HOME_APPLIANCE -> Mapped to Home (or add 'HomeAppliance' to your enum)
   [
     "Dyson V11 Vacuum",
-    "HOME_APPLIANCE",
+    "Home", // Changed from HOME_APPLIANCE to Home
     "Cordless powerful vacuum cleaner",
-    "vacuum",
+    "vacuum,cleaning", // Changed to single string
   ],
   [
     "Samsung Air Purifier",
-    "HOME_APPLIANCE",
+    "Home", // Changed from HOME_APPLIANCE to Home
     "Removes dust and allergens",
-    "air",
+    "air_purifier,home_comfort", // Changed to single string
   ],
   [
     "Bosch Dishwasher",
-    "HOME_APPLIANCE",
+    "Home", // Changed from HOME_APPLIANCE to Home
     "Energy-efficient dishwasher",
-    "dishwasher",
+    "dishwasher,kitchen_appliance", // Changed to single string
   ],
 
-  // KITCHEN
-  ["NutriBullet Blender", "KITCHEN", "Blender for smoothies", "blender"],
-  ["Instant Pot Duo", "KITCHEN", "Electric pressure cooker", "pressure"],
-  ["Chef’s Knife Set", "KITCHEN", "Premium stainless steel knives", "knife"],
+  // KITCHEN -> Mapped to Home (or add 'Kitchen' to your enum)
+  [
+    "NutriBullet Blender",
+    "Home",
+    "Blender for smoothies",
+    "blender,kitchen_appliance",
+  ], // Changed category and keywords
+  [
+    "Instant Pot Duo",
+    "Home",
+    "Electric pressure cooker",
+    "pressure_cooker,instant_pot",
+  ], // Changed category and keywords
+  [
+    "Chef’s Knife Set",
+    "Home",
+    "Premium stainless steel knives",
+    "knife_set,cookware",
+  ], // Changed category and keywords
 
-  // GARDEN
-  ["Electric Lawn Mower", "GARDEN", "Quiet and eco-friendly", "lawn"],
-  ["Hose Reel Cart", "GARDEN", "Organize your garden hose", "hose"],
-  ["LED Solar Garden Lights", "GARDEN", "Eco lighting for outdoors", "lights"],
+  // GARDEN -> Mapped to Home (or add 'Garden' to your enum)
+  [
+    "Electric Lawn Mower",
+    "Home",
+    "Quiet and eco-friendly",
+    "lawn_mower,gardening",
+  ], // Changed category and keywords
+  ["Hose Reel Cart", "Home", "Organize your garden hose", "hose,garden_tool"], // Changed category and keywords
+  [
+    "LED Solar Garden Lights",
+    "Home",
+    "Eco lighting for outdoors",
+    "garden_lights,solar_lights", // Changed to single string
+  ],
 
-  // OFFICE
+  // OFFICE -> Mapped to Home (or add 'Office' to your enum)
   [
     "Ergonomic Office Chair",
-    "OFFICE",
+    "Home",
     "Comfortable chair with lumbar support",
-    "chair",
+    "office_chair,furniture", // Changed to single string
   ],
-  ["Standing Desk", "OFFICE", "Adjustable height desk", "desk"],
-  ["Logitech MX Master 3", "OFFICE", "Precision wireless mouse", "mouse"],
+  [
+    "Standing Desk",
+    "Home",
+    "Adjustable height desk",
+    "standing_desk,office_furniture",
+  ], // Changed category and keywords
+  [
+    "Logitech MX Master 3",
+    "Home",
+    "Precision wireless mouse",
+    "mouse,computer_accessories", // Changed to single string
+  ],
 
-  // AUTOMOTIVE
+  // AUTOMOTIVE -> Mapped to Electronics (or add 'Automotive' to your enum)
   [
     "Car Jump Starter",
-    "AUTOMOTIVE",
+    "Electronics",
     "Portable jump starter for emergencies",
-    "starter",
+    "jump_starter,car_accessories", // Changed to single string
   ],
-  ["Magnetic Phone Mount", "AUTOMOTIVE", "Mount for dashboard", "mount"],
-  ["Tire Inflator", "AUTOMOTIVE", "Electric pump for car tires", "inflator"],
+  [
+    "Magnetic Phone Mount",
+    "Electronics",
+    "Mount for dashboard",
+    "phone_mount,car_accessories", // Changed to single string
+  ],
+  [
+    "Tire Inflator",
+    "Electronics",
+    "Electric pump for car tires",
+    "tire_inflator,car_tool", // Changed to single string
+  ],
 
   // TOYS
-  ["LEGO Star Wars", "TOYS", "Buildable Star Wars ship", "lego"],
-  ["Barbie Dreamhouse", "TOYS", "3-story dollhouse", "barbie"],
-  ["RC Monster Truck", "TOYS", "Remote control stunt truck", "rc"],
+  ["LEGO Star Wars", "Toys", "Buildable Star Wars ship", "lego,star_wars,toy"], // Matches enum, keywords to single string
+  ["Barbie Dreamhouse", "Toys", "3-story dollhouse", "barbie,dollhouse,toy"], // Matches enum, keywords to single string
+  [
+    "RC Monster Truck",
+    "Toys",
+    "Remote control stunt truck",
+    "rc_car,monster_truck,toy", // Matches enum, keywords to single string
+  ],
 ];
 
-// loginUsers();
-// addStore('eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ7XCJ1c2VyTmFtZVwiOlwidXNlcjFcIixcImlkXCI6Mn0iLCJpYXQiOjE3NDc4OTY0NDgsImV4cCI6MTc0NzkwMDA0OH0.oD0Sz5lENWmcl_g2IlItzYsh0F6wpxaA-JD9voH6tWk')
-// addProductAndItem(
-//   tokenUser,
-//   2,
-//   "galaxy a71 fe",
-//   "Electronics",
-//   "aasdasd",
-//   "phones",
-//   5,
-//   10
-// );
-// loginUsers();
-const tokenUSer =
-  "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ7XCJ1c2VyTmFtZVwiOlwidXNlcjFcIixcImlkXCI6NH0iLCJpYXQiOjE3NDk2NTY4MzgsImV4cCI6MTc0OTY2MDQzOH0.CMMdwjiZ1JXa2n9LrrqbzJVKqRK7Z7CXgRySeS_qyFU";
-// addStore(tokenUSer)
-products.forEach(([name, category, description, keyword]) => {
-  addProductAndItem(tokenUSer, 1, name, category, description, keyword, 5, 10);
-});
+//run this for adding users :
+
+async function runScript() {
+  try {
+    
+    // loginUsers();
+
+    const tokenUSer =
+      "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ7XCJ1c2VyTmFtZVwiOlwidXNlcjFcIixcImlkXCI6NH0iLCJpYXQiOjE3NDk2NTg1MjUsImV4cCI6MTc0OTY2MjEyNX0.rXwLb0tvVexgzQPB6kKMDjD47sBjXHHywtX9DfusrYk";
+    // const storeData = await addStore(userToken, "newStoreName");
+    // console.log(storeData);
+    // products.forEach(([name, category, description, keyword]) => {
+    //   addProductAndItem(tokenUSer, storeData, name, category, description, keyword, 5, 10);
+    // });
+    // Now you can use await inside this async function
+    const storeInfo = await addStore(tokenUSer, newStoreName);
+    console.log("Store added successfully:", storeInfo);
+  } catch (error) {
+    console.error("Failed to add store:", error.message);
+    if (error.response) {
+      console.error("Server response data:", error.response.data);
+      console.error("Server status:", error.response.status);
+    }
+  }
+}
+runScript();
