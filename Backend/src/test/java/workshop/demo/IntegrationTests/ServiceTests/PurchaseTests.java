@@ -133,7 +133,7 @@ public class PurchaseTests {
         assertEquals(1,
                 stockService.addItem(createdStoreId, NOToken, productId_laptop, 10, 2000, Category.Electronics));
         itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.Electronics, 0, createdStoreId, "Laptop", "TestStore");
-        stockService.setProductToRandom(NOToken, productId_laptop, 1, 2000, createdStoreId, 5000);
+        stockService.setProductToRandom(NOToken, productId_laptop, 1, 2000, createdStoreId, 1000);
         stockService.setProductToAuction(NOToken, createdStoreId, productId_laptop, 1, 1000, 2);
         assertTrue(stockService.getAllAuctions(NOToken, createdStoreId).length == 1);
         assertTrue(stockService.getAllRandomInStore(NOToken, createdStoreId).length == 1);
@@ -421,6 +421,59 @@ public class PurchaseTests {
 
         assertEquals(8, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
     }
+    @Test
+    void Set_ProductToRandom_time() throws Exception {
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+        assertEquals(8, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
+        purchaseService.participateInRandom(NGToken, 1, 1, 200, paymentDetails);
+Thread.sleep(1000);
+        assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].participations.length == 1);
+        assertFalse(stockService.getAllRandomInStore(NOToken, 1)[0].participations[0].won());
+
+        ReceiptDTO[] receipts = purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
+
+        assertNotNull(receipts);
+        assertEquals(0, receipts.length);
+
+        assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].participations[0].mustRefund);
+
+        assertEquals(8, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
+    }
+    @Test
+    void Set_ProductToRandom_time1() throws Exception {
+        PaymentDetails paymentDetails1 = new PaymentDetails("111","test","12/25","113") ;// fill if needed
+
+        PaymentDetails paymentDetails = new PaymentDetails("111","test","12/25",null) ;// fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+        assertEquals(8, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
+        purchaseService.participateInRandom(NGToken, 1, 1, 200, paymentDetails1);
+        Thread.sleep(1000);
+        assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].participations.length == 1);
+        assertFalse(stockService.getAllRandomInStore(NOToken, 1)[0].participations[0].won());
+
+        assertThrows(Exception.class, () -> purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails));
+
+
+
+    }
+    @Test
+    void Set_ProductToRandom_time2() throws Exception {
+        PaymentDetails paymentDetails1 = new PaymentDetails("111","test","12/25","113") ;// fill if needed
+
+        PaymentDetails paymentDetails = new PaymentDetails(null,"test","12/25","113") ;// fill if needed
+            SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+            assertEquals(8, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
+            purchaseService.participateInRandom(NGToken, 1, 1, 200, paymentDetails1);
+            Thread.sleep(1000);
+            assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].participations.length == 1);
+            assertFalse(stockService.getAllRandomInStore(NOToken, 1)[0].participations[0].won());
+
+            assertThrows(Exception.class, () -> purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails));
+
+
+
+        }
 
     // Needs Fixing!
     @Test
@@ -1051,5 +1104,9 @@ public class PurchaseTests {
     // boolean result = stockRepository.updatePrice(existingStoreId, 1, 10);
     // assertTrue(result);
     // }
+
+
+
+
 
 }

@@ -59,7 +59,7 @@ public class StockStoreTests {
     @Test
     void test_getRandomCardIfWinner_notExists_shouldReturnNull() {
         ActivePurcheses ap = new ActivePurcheses(1);
-        assertNull(ap.getRandomCardIfWinner(777, 20)); // ID 777 does not exist
+        assertNull(ap.getRandomCardforuser(777, 20)); // ID 777 does not exist
     }
 
 

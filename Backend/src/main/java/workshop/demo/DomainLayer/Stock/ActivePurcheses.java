@@ -248,13 +248,12 @@ public class ActivePurcheses {
 
    
 
-    public ParticipationInRandomDTO getRandomCardIfWinner(int specialId, int userId) {
+    public ParticipationInRandomDTO getRandomCardforuser(int specialId, int userId) {
         if (activeRandom.containsKey(specialId)) {
             Random random = activeRandom.get(specialId);
-            if (random.userIsWinner(userId))
-                return random.getWinner();
+            return random.getCard(userId);
         }
-        return null;
+        else return null;
     }
 
     public SingleBid getBidIfWinner(int specialId, int bidId, SpecialType type) {

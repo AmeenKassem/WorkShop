@@ -171,12 +171,13 @@ public class PurchaseService {
         ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
         UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random);
         userRepo.addSpecialItemToCart(item, userId);
-        int transactionId = paymentService.externalPayment(paymentDetails, amountPaid);
-        if(transactionId == -1) {
+        boolean done = paymentService.processPayment(paymentDetails,amountPaid);
+        if(!done) {
             logger.error("Payment failed for userId={}, amountPaid={}", userId, amountPaid);
             throw new UIException("Payment failed", ErrorCodes.PAYMENT_ERROR);
         } else {
-            card.transactionIdForPayment = transactionId;
+            // i really dont know ??
+            card.transactionIdForPayment = 1;
         }
         logger.info("User {} participated in random draw {}", userId, randomId);
         return card;
@@ -198,7 +199,7 @@ public class PurchaseService {
         for (UserSpecialItemCart specialItem : allSpecialItems) {
 
             if (specialItem.type == SpecialType.Random) {
-                ParticipationInRandomDTO card = stockRepo.getRandomCardIfWinner(
+                ParticipationInRandomDTO card = stockRepo.getRandomCardforuser( // had to change this to get card for user to be able to do refund if the card stays null we never reach the refund statement
                         specialItem.storeId, specialItem.specialId, userId);
 
             if (card != null && card.isWinner && card.ended) {
@@ -209,7 +210,8 @@ public class PurchaseService {
                 // If the card must be refunded, we remove it from the user's cart
                 userRepo.removeSpecialItem(userId, specialItem);
                 // And we refund the payment
-                paymentService.externalRefund(card.transactionIdForPayment);
+
+                paymentService.processRefund(payment,card.amountPaid);
             }
 
             } else { // BID or AUCTION

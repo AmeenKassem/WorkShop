@@ -850,6 +850,154 @@ public class UserTests {
         assertEquals(1, result.length);
         assertEquals("Laptop", result[0].productName);
     }
+    @Test
+    void testSearchByProductName_Match() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                "laptop", null, null, null,
+                -1.0, -1.0, -1.0, -1.0
+        );
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(1, result.length);
+    }
+
+    @Test
+    void testSearchByProductName_NoMatch() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                "phone", null, null, null,
+                -1.0, -1.0, -1.0, -1.0
+        );
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(0, result.length);
+    }
+
+    @Test
+    void testSearchByCategory_Match() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, Category.Electronics, null, null,
+                -1.0, -1.0, -1.0, -1.0
+        );
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(1, result.length);
+    }
+
+    @Test
+    void testSearchByCategory_NoMatch() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, Category.Books, null, null,
+                -1.0, -1.0, -1.0, -1.0
+        );
+        Exception ex = assertThrows(Exception.class, ()
+                -> stockService.searchProducts(NGToken, criteria));
+    }
+
+    @Test
+    void testSearchByKeyword_Match() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, "top", null,
+                -1.0, -1.0, -1.0, -1.0
+        );
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(1, result.length);
+    }
+
+    @Test
+    void testSearchByKeyword_NoMatch() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, "banana", null,
+                -1.0, -1.0, -1.0, 1
+        );
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(0, result.length);
+    }
+
+    @Test
+    void testSearchByMinPrice_Pass() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, null,
+                1500.0, -1.0, -1.0, -1.0
+        );
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(1, result.length);
+    }
+
+    @Test
+    void testSearchByMinPrice_TooHigh() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, null,
+                3000.0, -1.0, -1.0, -1.0
+        );
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(0, result.length);
+    }
+
+    @Test
+    void testSearchByMaxPrice_Pass() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, null,
+                -1.0, 3000.0, -1.0, -1.0
+        );
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(1, result.length);
+    }
+
+    @Test
+    void testSearchByMaxPrice_TooLow() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, null,
+                -1.0, 1000.0, -1.0, -1.0
+        );
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(0, result.length);
+    }
+
+    @Test
+    void testSearchByRatingRange_Pass() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, null,
+                -1.0, -1.0, 0.0, 5.0
+        );
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(1, result.length);
+    }
+
+    @Test
+    void testSearchByMinRating_TooHigh() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, null,
+                -1.0, -1.0, 4.9, -1.0
+        );
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(0, result.length);
+    }
+
+    @Test
+    void testSearchByMaxRating_TooLow() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, null,
+                -1.0, -1.0, -1.0, 0.0
+        );
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(0, result.length);
+    }
+
+    @Test
+    void testSearchByStoreId_Match() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, 1,
+                -1.0, -1.0, -1.0, -1
+        );
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(1, result.length);
+    }
+
+    @Test
+    void testSearchByStoreId_NoMatch() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, 99,
+                -1.0, -1.0, -1.0, -1
+        );
+        assertThrows(Exception.class, () ->stockService.searchProducts(NGToken, criteria));
+    }
 
 
 }

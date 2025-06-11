@@ -133,6 +133,7 @@ public class Random {
     }
 
     public boolean userIsWinner(int userId) {
+        if(winner == null) return false;
         return winner.userId == userId;
     }
 

@@ -94,7 +94,7 @@ public interface IStockRepo {
     // ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[] matchesProducts) throws Exception;
     void checkProductExists_ThrowException(int productId) throws UIException;
 
-    ParticipationInRandomDTO getRandomCardIfWinner(int storeId, int specialId, int userId);
+    ParticipationInRandomDTO getRandomCardforuser(int storeId, int specialId, int userId);
 
     SingleBid getBidIfWinner(int storeId, int specialId, int bidId, SpecialType type);
 
