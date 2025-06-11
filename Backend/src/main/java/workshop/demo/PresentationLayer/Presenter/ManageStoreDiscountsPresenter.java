@@ -23,7 +23,7 @@ public class ManageStoreDiscountsPresenter {
      */
     public List<String> fetchDiscountNames(int storeId, String token) throws Exception {
         String url = String.format(
-                "http://localhost:8080/api/store/discountNames?storeId=%d&token=%s",
+                Base.url+"/api/store/discountNames?storeId=%d&token=%s",
                 storeId,
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
@@ -42,7 +42,7 @@ public class ManageStoreDiscountsPresenter {
                             List<String> subNames) throws Exception {
 
         UriComponentsBuilder b = UriComponentsBuilder
-                .fromHttpUrl("http://localhost:8080/api/store/addDiscount")
+                .fromHttpUrl(Base.url+"/api/store/addDiscount")
                 .queryParam("storeId", storeId)
                 .queryParam("token",  UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8))
                 .queryParam("name",   UriUtils.encodeQueryParam(name,  StandardCharsets.UTF_8))
