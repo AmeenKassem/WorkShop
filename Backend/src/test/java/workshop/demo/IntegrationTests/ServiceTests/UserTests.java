@@ -803,6 +803,7 @@ public class UserTests {
 
     }
 
+
     @Test
     void test_searchActiveRandoms_shouldReturnProduct() throws Exception {
         int productId = 1;
@@ -998,6 +999,7 @@ public class UserTests {
         );
         assertThrows(Exception.class, () ->stockService.searchProducts(NGToken, criteria));
     }
+
 
 
 }

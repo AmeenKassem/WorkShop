@@ -22,6 +22,7 @@ public class Random {
     private final Object lock = new Object();
     private Timer timer;
     private boolean isActive = true;
+    private boolean canceled;
 
     public Random(int productId, int quantity, double productPrice, int id, int storeId, long randomTime) {
         this.productId = productId;
@@ -33,6 +34,7 @@ public class Random {
         this.id = id;
         this.isActive = true;
         this.timer = new Timer();
+        this.canceled =false;
 
         timer.schedule(new TimerTask() {
             @Override
@@ -147,5 +149,11 @@ public class Random {
 
     public int getProductId() {
         return productId;
+    }
+    public boolean isCanceled(){
+        return canceled;
+    }
+    public void setCancel(boolean canceled){
+        this.canceled=canceled;
     }
 }
