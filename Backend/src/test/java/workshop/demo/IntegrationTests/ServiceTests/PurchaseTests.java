@@ -104,6 +104,8 @@ public class PurchaseTests {
     ItemStoreDTO itemStoreDTO;
     String GToken;
     String Admin;
+    int createdStoreId;
+    int productId_laptop;
 
     @BeforeEach
     void setup() throws Exception {
@@ -122,19 +124,21 @@ public class PurchaseTests {
         assertTrue(authRepo.getUserName(NOToken).equals("owner"));
         // ======================= STORE CREATION =======================
 
-        int createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
+        createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
 
         // ======================= PRODUCT & ITEM ADDITION =======================
-        String[] keywords = {"Laptop", "Lap", "top"};
-        int productId = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
+        String[] keywords = { "Laptop", "Lap", "top" };
+        productId_laptop = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
 
-        assertEquals(1, stockService.addItem(createdStoreId, NOToken, productId, 10, 2000, Category.Electronics));
+        assertEquals(1,
+                stockService.addItem(createdStoreId, NOToken, productId_laptop, 10, 2000, Category.Electronics));
         itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.Electronics, 0, createdStoreId, "Laptop", "TestStore");
-        stockService.setProductToRandom(NOToken, productId, 1, 2000, createdStoreId, 5000);
-        stockService.setProductToAuction(NOToken, createdStoreId, productId, 1, 1000, 2);
+        stockService.setProductToRandom(NOToken, productId_laptop, 1, 2000, createdStoreId, 5000);
+        stockService.setProductToAuction(NOToken, createdStoreId, productId_laptop, 1, 1000, 2);
         assertTrue(stockService.getAllAuctions(NOToken, createdStoreId).length == 1);
         assertTrue(stockService.getAllRandomInStore(NOToken, createdStoreId).length == 1);
-        //  assertTrue(stockService.getAllBidsStatus(NOToken, createdStoreId).length == 1);
+        // assertTrue(stockService.getAllBidsStatus(NOToken, createdStoreId).length ==
+        // 1);
         String token = userService.generateGuest();
         userService.register(token, "adminUser2", "adminPass2", 22);
         Admin = userService.login(token, "adminUser2", "adminPass2");
@@ -246,9 +250,7 @@ public class PurchaseTests {
 
         suspensionService.suspendRegisteredUser(authRepo.getUserId(NGToken), 1, Admin);
 
-        UIException ex = assertThrows(UIException.class, ()
-                -> stockService.addRegularBid(NGToken, 1, 1, 30.0)
-        );
+        UIException ex = assertThrows(UIException.class, () -> stockService.addRegularBid(NGToken, 1, 1, 30.0));
 
         assertEquals("Suspended user trying to perform an action", ex.getMessage());
     }
@@ -359,9 +361,7 @@ public class PurchaseTests {
 
         suspensionService.suspendRegisteredUser(authRepo.getUserId(NGToken), 1, Admin);
 
-        UIException ex = assertThrows(UIException.class, ()
-                -> stockService.addBidOnAucction(NGToken, 1, 1, 60.0)
-        );
+        UIException ex = assertThrows(UIException.class, () -> stockService.addBidOnAucction(NGToken, 1, 1, 60.0));
 
         assertEquals("Suspended user trying to perform an action", ex.getMessage());
     }
@@ -391,7 +391,7 @@ public class PurchaseTests {
     void Set_ProductToRandom_Success() throws Exception {
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
-
+        assertEquals(8, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
         purchaseService.participateInRandom(NGToken, 1, 1, 2000, paymentDetails);
 
         assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].participations.length == 1);
@@ -419,6 +419,7 @@ public class PurchaseTests {
         assertTrue(userRepo.getUserCart(authRepo.getUserId(NGToken)).getAllCart().size() == 0);
         assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
 
+        assertEquals(8, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
     }
 
     // Needs Fixing!
@@ -431,15 +432,24 @@ public class PurchaseTests {
         purchaseService.participateInRandom(NOToken, 1, 1, 1999, paymentDetails);
 
         assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].participations.length == 2);
-        assertFalse(stockService.getAllRandomInStore(NOToken, 1)[0].participations[0].won());
+        ParticipationInRandomDTO player1 = stockService.getAllRandomInStore(NOToken,
+                createdStoreId)[0].participations[0];
+        ParticipationInRandomDTO player2 = stockService.getAllRandomInStore(NOToken,
+                createdStoreId)[0].participations[1];
+        xorAssert(player1.won(), player2.won());
         // assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].winner.userId==4);
 
-        ReceiptDTO[] receipts = purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
+        ReceiptDTO[] receipts1 = purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
+        ReceiptDTO[] receipts2 = purchaseService.finalizeSpecialCart(NOToken, paymentDetails, supplyDetails);
 
-        assertNotNull(receipts);
-        assertEquals(0, receipts.length);
+        xorAssert(receipts1.length == 1, receipts2.length == 1);
         assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
+        assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NOToken)).getSpecialCart().isEmpty());
+    }
 
+    private void xorAssert(boolean a, boolean b) {
+        assertTrue(a || b);
+        assertFalse(a && b);
     }
 
     @Test
@@ -457,9 +467,8 @@ public class PurchaseTests {
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if
 
         suspensionService.suspendRegisteredUser(authRepo.getUserId(NGToken), 1, Admin);
-        UIException ex = assertThrows(UIException.class, ()
-                -> purchaseService.participateInRandom(NGToken, 1, 1, 100, paymentDetails)
-        );
+        UIException ex = assertThrows(UIException.class,
+                () -> purchaseService.participateInRandom(NGToken, 1, 1, 100, paymentDetails));
 
         assertEquals("Suspended user trying to perform an action", ex.getMessage());
     }
@@ -503,7 +512,8 @@ public class PurchaseTests {
         storeService.MakeOfferToAddManagerToStore(1, NOToken, "noPermManager", emptyPerms);
         storeService.reciveAnswerToOffer(1, authRepo.getUserName(NOToken), "noPermManager", true, false);
 
-        // Step 3: Manager tries to get auctions (should fail due to missing SpecialType permission)
+        // Step 3: Manager tries to get auctions (should fail due to missing SpecialType
+        // permission)
         UIException ex = assertThrows(UIException.class, () -> {
             stockService.getAllAuctions(managerToken, 1);
         });
@@ -1025,5 +1035,21 @@ public class PurchaseTests {
         assertEquals(1, dto.bids.length);
         assertEquals(b.getId(), dto.bids[0].id);
     }
+    //
+    // @Test
+    // void updatePrice_throwDevException_whenStoreNotExists() {
+    // int nonExistingStoreId = 999;
+    // assertThrows(DevException.class, () -> {
+    // stockRepository.updatePrice(nonExistingStoreId, 1, 10);
+    // });
+    // }
+
+    // @Test
+    // void updatePrice_success_whenStoreExists() throws Exception {
+    // int existingStoreId = 1;
+    // storeService.addStoreToSystem(NOToken,); // or however you initialize a store
+    // boolean result = stockRepository.updatePrice(existingStoreId, 1, 10);
+    // assertTrue(result);
+    // }
 
 }

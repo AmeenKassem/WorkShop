@@ -335,10 +335,16 @@ public class StoreService {
         }
         return res;
     }
-
-    public void addDiscountToStore(int storeId, String token, CreateDiscountDTO dto) throws UIException, DevException {
+//    private String name;
+//    private double percent;
+//    private CreateDiscountDTO.Type type;
+//    private String condition; // e.g. "CATEGORY:DAIRY", "TOTAL>100", or null
+//    private CreateDiscountDTO.Logic logic ;// default to simple discount
+//    private List<CreateDiscountDTO> subDiscounts;
+    public void addDiscountToStore(int storeId, String token, String name, double percent, CreateDiscountDTO.Type type
+    , String condition, CreateDiscountDTO.Logic logic,String[] subDiscountsNames) throws Exception {
         logger.info("User attempting to add a discount to store {}", storeId);
-
+        //
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
@@ -352,7 +358,25 @@ public class StoreService {
         }
 
         Store store = storeRepo.findStoreByID(storeId);
+        //Hmode
+        List<Discount> subDiscounts = new ArrayList<>();
+        //Find createDiscountDTO for each subDiscount and add it to the subDiscounts list
+        for(String target : subDiscountsNames){
+            Discount d = store.findDiscountByName(target);
+            if(d==null)
+                throw new Exception("Discount "+target+" not found in store");
+            boolean removed = store.removeDiscountByName(target);
+            if(!removed)
+                throw new Exception("Failed to remove discount "+target+"!");
+            subDiscounts.add(d);
+        }
+        CreateDiscountDTO dto = new CreateDiscountDTO(name,percent,type,condition,logic,List.of());
         Discount discount = DiscountFactory.fromDTO(dto);
+        if (!subDiscounts.isEmpty()) {
+            if (!(discount instanceof CompositeDiscount comp))
+                throw new Exception("Chosen logic does not allow sub‑discounts");
+            subDiscounts.forEach(comp::addDiscount);
+        }
         store.addDiscount(discount);
         logger.info("Discount '{}' added successfully to store {}", discount.getName(), storeId);
     }

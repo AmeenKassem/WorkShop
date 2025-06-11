@@ -114,7 +114,7 @@ public class GuestTests {
         System.out.println(createdStoreId + "aaaaaaaaaaaaaaaaa");
 
         // ======================= PRODUCT & ITEM ADDITION =======================
-        String[] keywords = {"Laptop", "Lap", "top"};
+        String[] keywords = { "Laptop", "Lap", "top" };
         stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(createdStoreId, NOToken, 1, 10, 2000, Category.Electronics));
@@ -214,18 +214,22 @@ public class GuestTests {
     }
 
     @Test
-    void testGuestGetProductInfo() throws Exception {
+    void testGuestGetProductInfo() {
+        try {
+            // ===== GUEST REQUESTS PRODUCT INFO =====
+            ProductDTO info = stockService.getProductInfo(GToken, 1);
+    
+            // ===== ASSERTIONS =====
+            assertNotNull(info);
+            System.out.println(info.getCategory());
+            assertTrue(info.getName().equals("Laptop"));
+            assertTrue(info.getProductId() == 1);
+            assertTrue(info.getCategory().equals(Category.Electronics));
+            assertTrue(info.getDescription().equals("Gaming Laptop"));
 
-        // ===== GUEST REQUESTS PRODUCT INFO =====
-        ProductDTO info = stockService.getProductInfo(GToken, 1);
-
-        // ===== ASSERTIONS =====
-        assertNotNull(info);
-        System.out.println(info.getName());
-        assertTrue(info.getName().equals("Laptop"));
-        assertTrue(info.getProductId() == 1);
-        assertTrue(info.getCategory().equals(Category.Electronics));
-        assertTrue(info.getDescription().equals("Gaming Laptop"));
+        } catch (Exception e) {
+            assertTrue(false);
+        }
 
     }
 
@@ -365,7 +369,7 @@ public class GuestTests {
     void testGuestSearchProducts_Success() throws Exception {
 
         // --- Step 2: Prepare search criteria ---
-        String[] keywords = {"Laptop", "Lap", "top"};
+        String[] keywords = { "Laptop", "Lap", "top" };
         System.out.println(storeService.getFinalRateInStore(1));
 
         ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.Electronics, null, 1, 0, 3000, 0,
@@ -403,7 +407,7 @@ public class GuestTests {
     @Test
     void testSearchProducts_NoMatches() throws Exception {
 
-        String[] keywords = {"Laptop", "Lap", "top"};
+        String[] keywords = { "Laptop", "Lap", "top" };
         ProductSearchCriteria criteria = new ProductSearchCriteria("aa", Category.Electronics, keywords[0], 1, 0, 5000,
                 0, 5);
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);

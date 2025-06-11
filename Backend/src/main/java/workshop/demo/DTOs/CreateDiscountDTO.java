@@ -9,14 +9,14 @@ public class CreateDiscountDTO {
     }
 
     public enum Logic {
-        SINGLE, AND, OR, MAX, XOR
+        SINGLE, AND, OR, MAX, XOR,MULTIPLY
     }
 
     private String name;
     private double percent;
     private Type type;
-    private String condition; // e.g. "CATEGORY:DAIRY", "TOTAL>100", or null
-    private Logic logic;// default to simple discount
+    private String condition; // e.g. "CATEGORY:DAIRY", "TOTAL>100", or null : "CATEGORY:DIARY ^ TOTAL>100 OR ..."
+    private Logic logic ;// default to simple discount
     private List<CreateDiscountDTO> subDiscounts;
     private String coupon;
 

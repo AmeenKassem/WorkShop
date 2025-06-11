@@ -9,6 +9,7 @@ public enum Category {
     Beauty,
     Sports,
     Grocery,
-    Furniture
+    Furniture,
+    ALCOHOL
 
 }

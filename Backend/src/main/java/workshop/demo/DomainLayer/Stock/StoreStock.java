@@ -17,6 +17,7 @@ public class StoreStock {
 
     private final Map<Integer, item> stock;//productId, item
     private int storeID;
+    //discounts for this store 
 
     public StoreStock(int storeID) {
         this.stock = new ConcurrentHashMap<>();

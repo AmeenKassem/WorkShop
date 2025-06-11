@@ -273,9 +273,11 @@ public class StoreController {
     public ResponseEntity<?> addDiscountToStore(
             @RequestParam int storeId,
             @RequestParam String token,
-            @RequestBody CreateDiscountDTO dto) {
+            @RequestParam String name,@RequestParam double percent,@RequestParam CreateDiscountDTO.Type type
+            ,@RequestParam String condition,@RequestParam CreateDiscountDTO.Logic logic,
+            @RequestParam String[] subDiscountsNames) {
         try {
-            storeService.addDiscountToStore(storeId, token, dto); // assumes permission check is inside service
+            storeService.addDiscountToStore(storeId, token, name,percent,type,condition,logic,subDiscountsNames); // assumes permission check is inside service
             return ResponseEntity.ok(new ApiResponse<>("Discount added successfully", null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
