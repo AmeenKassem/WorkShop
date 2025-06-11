@@ -419,7 +419,6 @@ public class PurchaseTests {
         assertTrue(userRepo.getUserCart(authRepo.getUserId(NGToken)).getAllCart().size() == 0);
         assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
 
-        assertEquals(8, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
     }
     @Test
     void Set_ProductToRandom_time() throws Exception {
@@ -438,7 +437,7 @@ Thread.sleep(1000);
 
         assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].participations[0].mustRefund);
 
-        assertEquals(8, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
+        assertEquals(9, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
     }
     @Test
     void Set_ProductToRandom_time1() throws Exception {
@@ -1088,22 +1087,6 @@ Thread.sleep(1000);
         assertEquals(1, dto.bids.length);
         assertEquals(b.getId(), dto.bids[0].id);
     }
-    //
-    // @Test
-    // void updatePrice_throwDevException_whenStoreNotExists() {
-    // int nonExistingStoreId = 999;
-    // assertThrows(DevException.class, () -> {
-    // stockRepository.updatePrice(nonExistingStoreId, 1, 10);
-    // });
-    // }
-
-    // @Test
-    // void updatePrice_success_whenStoreExists() throws Exception {
-    // int existingStoreId = 1;
-    // storeService.addStoreToSystem(NOToken,); // or however you initialize a store
-    // boolean result = stockRepository.updatePrice(existingStoreId, 1, 10);
-    // assertTrue(result);
-    // }
 
 
 

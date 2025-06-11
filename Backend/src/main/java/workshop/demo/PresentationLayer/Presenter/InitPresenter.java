@@ -121,6 +121,7 @@ public class InitPresenter {
     public void handleReceiptsDisplay() {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         if (token == null) {
+            System.out.println("No token found, cannot fetch receipts.");
             NotificationView.showError(ExceptionHandlers.getErrorMessage(1001));
             return;
         }
