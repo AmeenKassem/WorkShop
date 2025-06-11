@@ -117,7 +117,7 @@ public interface IStockRepo {
       public void changequantity(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
             throws Exception;
 
-        public void returnProductToStock(int storeId, int productId, int quantity , int specialId) throws UIException;
+        public void returnProductToStock(int storeId, int productId, int quantity , int specialId) throws UIException, DevException;
 
         public boolean isProductRefunded(int specialId) ;
 

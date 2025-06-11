@@ -2,6 +2,7 @@ package workshop.demo.InfrastructureLayer;
 
 import java.util.ArrayList;
 import java.util.List;
+//import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -28,6 +29,7 @@ import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
+import workshop.demo.DomainLayer.Store.Random;
 import workshop.demo.DomainLayer.User.CartItem;
 
 @Repository
@@ -172,7 +174,7 @@ public class StockRepository implements IStockRepo {
         return res;
     }
 
-    public void returnProductToStock(int storeId, int productId, int quantity,int specialId) throws UIException {
+    public void returnProductToStock(int storeId, int productId, int quantity,int specialId) throws UIException, DevException {
         StoreStock storeStock = storeStocks.get(storeId);
         if (storeStock == null) {
             throw new UIException("Store not found with ID: " + storeId, ErrorCodes.STORE_NOT_FOUND);
@@ -180,7 +182,13 @@ public class StockRepository implements IStockRepo {
         if (randomRefunded.containsKey(specialId) && randomRefunded.get(specialId)) { //the productalready refunded
             throw new UIException("Product already refunded for this random.", specialId);
         }
-        storeStock.returnProductToStock(productId, quantity);
+        Random random = getActivePurchases(storeId).getRandom(specialId);
+        if(!random.isCanceled()){
+
+            storeStock.returnProductToStock(productId, random.getDTO().quantity);
+            random.setCancel(true);
+        }
+
     }
 
 
