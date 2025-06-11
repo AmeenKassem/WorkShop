@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
@@ -14,6 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import workshop.demo.DTOs.UserDTO;
@@ -25,13 +27,15 @@ public class Guest {
 
     private static final Logger logger = LoggerFactory.getLogger(Guest.class);
 
-    @Id 
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    // @OneToOne(cascade = CascadeType.ALL)
     @Transient
     private ShoppingCart cart = new ShoppingCart();
 
-    // private 
+    // private
 
     public Guest() {
         // id = id2;

@@ -6,11 +6,24 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Transient;
+
+// @Entity
 public class ShoppingCart {
 
+    // @Transient
     private static final Logger logger = LoggerFactory.getLogger(ShoppingCart.class);
 
+    // @jakarta.persistence.Id
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // private Long Id;
+
+    // @Transient
     private HashMap<Integer, ShoppingBasket> storeBaskets = new HashMap<>();
 
     public HashMap<Integer, ShoppingBasket> getBaskets() {

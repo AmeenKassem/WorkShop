@@ -173,11 +173,11 @@ public class StockRepository implements IStockRepo {
         return res;
     }
 
-    @Override
-    public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
-            throws UIException, DevException {
-        return getActivePurchases(storeId).participateInRandom(userId, randomId, amountPaid);
-    }
+    // @Override
+    // public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
+    //         throws UIException, DevException {
+    //     return getActivePurchases(storeId).participateInRandom(userId, randomId, amountPaid);
+    // }
 
     @Override
     public ParticipationInRandomDTO endRandom(int storeId, int randomId) throws Exception {
