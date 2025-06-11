@@ -71,7 +71,7 @@ public class StockService {
     public RandomDTO[] searchActiveRandoms(String token, ProductSearchCriteria criteria) throws Exception {
         logger.info("Starting searchRandoms with criteria: {}", criteria);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
+        //String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
         RandomDTO[] randoms = stockRepo.searchActiveRandoms(criteria);
         storeRepo.fillWithStoreName(randoms);
         return randoms;
@@ -80,8 +80,8 @@ public class StockService {
     public BidDTO[] searchActiveBids(String token, ProductSearchCriteria criteria) throws Exception {
         logger.info("Starting searchBids with criteria: {}", criteria);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
-        BidDTO[] bids = stockRepo.searchActiveBids(criteria, storeName);
+        //String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
+        BidDTO[] bids = stockRepo.searchActiveBids(criteria);
         storeRepo.fillWithStoreName(bids);
         return bids;
     }
@@ -89,8 +89,8 @@ public class StockService {
     public AuctionDTO[] searchActiveAuctions(String token, ProductSearchCriteria criteria) throws Exception {
         logger.info("Starting searchAuctions with criteria: {}", criteria);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
-        AuctionDTO[] auctions = stockRepo.searchActiveAuctions(criteria, storeName);
+        //String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
+        AuctionDTO[] auctions = stockRepo.searchActiveAuctions(criteria);
         storeRepo.fillWithStoreName(auctions);
         return auctions;
     }
