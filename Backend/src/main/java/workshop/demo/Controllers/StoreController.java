@@ -82,6 +82,7 @@ public class StoreController {
             @RequestParam int ownerToDelete) {
 
         try {
+            System.out.println("in the controller -> Trying to delete owner with ID = " + ownerToDelete);
             storeService.DeleteOwnershipFromStore(storeId, token, ownerToDelete);
             return ResponseEntity.ok(new ApiResponse<>("Owner deleted successfully", null));
         } catch (UIException ex) {
