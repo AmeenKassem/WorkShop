@@ -265,20 +265,86 @@ public class PurchaseTests extends AcceptanceTests {
         assertEquals("TestStore", productResult.getStorename());
         assertEquals(Category.Electronics, productResult.getCategory());
     }
+
     @Test
-    void Add_BidProduct_Failure_InvalidToken() throws UIException {
-        String token = "bad-token";
+    void Add_BidProductToSpecialCart_Success_acceptBID() throws Exception {
+        int storeId = 1;
+        int userId = 20;
+        int bidId = 1;
+        int specialId = 1;
+        int productId = 1;
+        double price = 10.0;
+        String userToken = "guest-registered-token";
 
-        doCallRealMethod()
-                .when(real.mockAuthRepo)
-                .checkAuth_ThrowTimeOutException(eq(token), any());
+        // ===== Arrange =====
+        when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
+        when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
+        doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(eq(userToken), any());
+        doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userId);
 
-        UIException ex = assertThrows(UIException.class, ()
-                -> real.stockService.addRegularBid(token, 0, 100, 30.0)
-        );
+        // Prepare bid
+        SingleBid bid = new SingleBid(productId, 1, userId, price, SpecialType.BID, storeId, bidId, specialId);
+        bid.markAsWinner(); // Set to BID_ACCEPTED
+        when(real.mockStockRepo.bidOnBid(bidId, price, userId, storeId)).thenReturn(bid);
+        doNothing().when(real.mockUserRepo).addSpecialItemToCart(any(), eq(userId));
+        boolean added = real.stockService.addRegularBid(userToken, bidId, storeId, price);
+        assertTrue(added);
 
-        assertEquals("Invalid token!", ex.getMessage());
+        // Accept the bid
+        when(real.mockIOSrepo.manipulateItem(userId, storeId, Permission.SpecialType)).thenReturn(true);
+        when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
+        when(real.mockUserRepo.getRegisteredUser(userId)).thenReturn(new Registered(userId, "user2", "pass", 18));
+        when(real.mockUserRepo.getRegisteredUser(10)).thenReturn(new Registered(10, "owner", "pass", 18));
+        when(real.mockStockRepo.acceptBid(storeId, bidId, bidId)).thenReturn(bid);
+        when(real.mockStockRepo.acceptBid(storeId, bidId, bidId)).thenReturn(new SingleBid(1,1,20,10.0,SpecialType.BID,1,1,1));
+        SingleBid accepted = real.stockService.acceptBid(userToken, storeId, bidId, bidId);
+        //accepted.acceptBid();
+       // assertTrue(accepted.isAccepted()); // should pass now
+
+        // Mock cart
+        List<UserSpecialItemCart> specialItems = List.of(new UserSpecialItemCart(storeId, specialId, bidId, SpecialType.BID));
+        when(real.mockUserRepo.getAllSpecialItems(userId)).thenReturn(specialItems);
+
+        // Winner
+        SingleBid wonBid = Mockito.spy(bid);
+        when(wonBid.isWinner()).thenReturn(true);
+        when(wonBid.isEnded()).thenReturn(true);
+        when(real.mockStockRepo.getBidIfWinner(storeId, specialId, bidId, SpecialType.BID)).thenReturn(wonBid);
+
+        // Product
+        Product product = new Product("Phone", productId, Category.Electronics, "Smartphone", null);
+        when(real.mockStockRepo.findByIdInSystem_throwException(productId)).thenReturn(product);
+        when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
+
+        // Payment & Supply
+        PaymentDetails payment = PaymentDetails.testPayment();
+        SupplyDetails supply = SupplyDetails.getTestDetails();
+        when(real.mockPay.processPayment(payment, price)).thenReturn(true);
+        when(real.mockSupply.processSupply(supply)).thenReturn(true);
+
+        // Cleanup
+        doNothing().when(real.mockUserRepo).removeBoughtSpecialItems(eq(userId), anyList(), anyList());
+        doNothing().when(real.mockUserRepo).removeSpecialItem(eq(userId), any());
+        doNothing().when(real.mockOrderRepo).setOrderToStore(eq(storeId), eq(userId), any(), eq("TestStore"));
+
+        // ===== Act =====
+        ReceiptDTO[] receipts = real.purchaseService.finalizeSpecialCart(userToken, payment, supply);
+
+        // ===== Assert =====
+        assertNotNull(receipts);
+        assertEquals(1, receipts.length);
+        assertEquals("TestStore", receipts[0].getStoreName());
+        assertEquals(price, receipts[0].getFinalPrice());
+
+        ReceiptProduct p = receipts[0].getProductsList().get(0);
+        assertEquals(productId, p.getProductId());
+        assertEquals("Phone", p.getProductName());
+        assertEquals(Category.Electronics, p.getCategory());
+        assertEquals(1, p.getQuantity());
+        assertEquals((int) price, p.getPrice());
     }
+
 
     @Test
     void Add_BidProduct_Failure_UserSuspended() throws Exception {

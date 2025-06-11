@@ -12,6 +12,7 @@ public class RandomDTO {
     public double productPrice;
     public double amountLeft;
     public String productName;
+    public long remainingSeconds;
 
     public RandomDTO() {
     }

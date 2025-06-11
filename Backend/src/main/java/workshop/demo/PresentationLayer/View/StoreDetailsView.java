@@ -666,13 +666,32 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Paragraph store = new Paragraph("Store: " + random.storeName);
         Paragraph amountLeft = new Paragraph("Left Amount: " + random.amountLeft);
         Paragraph price = new Paragraph("Price: $" + random.productPrice);
-
+        //bashar
+        Paragraph timer = new Paragraph("⏱ Time Left: " + formatTimeLeft(random.remainingSeconds * 1000));
+        //bashar
         Button participate = new Button("Join Random Draw", e -> showRandomParticipationDialog(random));
         participate.getStyle().set("background-color", "#9c27b0").set("color", "white");
 
-        card.add(name, store, amountLeft, price, participate);
+        card.add(name, store, amountLeft, price, timer, participate);//bashar add timer
         return card;
     }
+//bashar
+
+    private String formatTimeLeft(long millis) {
+        long seconds = millis / 1000;
+        long minutes = (seconds % 3600) / 60;
+        long hours = (seconds / 3600);
+        return String.format("%02dh:%02dm", hours, minutes);
+    }
+
+//bashar
+//    private String formatTimeLeft(long millis) {
+//        long seconds = millis / 1000;
+//        long minutes = (seconds % 3600) / 60;
+//        long hours = (seconds / 3600);
+//        return String.format("%02dh:%02dm", hours, minutes);
+//    }
+
 
     private Div createItemCard(ItemStoreDTO item) {
         Div card = new Div();
