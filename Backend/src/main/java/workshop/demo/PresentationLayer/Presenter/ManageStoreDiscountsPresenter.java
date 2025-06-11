@@ -63,6 +63,18 @@ public class ManageStoreDiscountsPresenter {
             throw new Exception(rsp == null ? "null response" : rsp.getErrorMsg());
         }
     }
+    public void deleteDiscount(int storeId, String token, String name) throws Exception {
+        String url = UriComponentsBuilder
+                .fromHttpUrl(Base.url+"/api/store/removeDiscountByName")
+                .queryParam("storeId", storeId)
+                .queryParam("token",  UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8))
+                .queryParam("discountName", UriUtils.encodeQueryParam(name, StandardCharsets.UTF_8))
+                .toUriString();
+
+        ApiResponse rsp = rest.postForObject(url, null, ApiResponse.class);
+        if (rsp == null || rsp.getErrNumber() != -1)
+            throw new Exception(rsp == null ? "null response" : rsp.getErrorMsg());
+    }
 
 
 }

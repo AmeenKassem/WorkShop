@@ -352,7 +352,24 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         } catch (Exception ex) {
             ExceptionHandlers.handleException(ex);
         }
-
+        Button deleteBtn = new Button("🗑 Delete selected", ev -> {
+            var toDelete = new ArrayList<>(subs.getSelectedItems());
+            if (toDelete.isEmpty()) {
+                Notification.show("Select a discount first"); return;
+            }
+            toDelete.forEach(name -> {
+                try {
+                    discPresenter.deleteDiscount(storeId, token, name);   // presenter call
+                } catch (Exception ex) {
+                    ExceptionHandlers.handleException(ex);
+                }
+            });
+            try {                                   // refresh the list
+                subs.setItems(discPresenter.fetchDiscountNames(storeId, token));
+            } catch (Exception ex) {
+                ExceptionHandlers.handleException(ex);
+            }
+        });
         Button save = new Button("Save", e -> {
             try {
                 if (!valueField.isEmpty() && valueField.getValue().contains(" ")) {
@@ -363,7 +380,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                 discPresenter.addDiscount(
                         storeId, token,
                         nameField.getValue(),
-                        percent.getValue(),
+                        (percent.getValue()/100),
                         typeBox.getValue(),
                         (valueField.isEmpty() ? "" :
                                 predBox.getValue() + opBox.getValue() + valueField.getValue()),
@@ -385,9 +402,11 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
                 new HorizontalLayout(typeBox, logicBox),
                 subs,
+                deleteBtn,
                 new HorizontalLayout(save, cancel)
         ));
         dlg.open();
+
     }
 
 
