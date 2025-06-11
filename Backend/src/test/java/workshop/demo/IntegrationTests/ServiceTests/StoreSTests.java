@@ -1183,7 +1183,7 @@ public class StoreSTests {
 
     @Test
     void test_getRandomCardIfWinner_exception_returnsNull() {
-        ParticipationInRandomDTO result = stockRepository.getRandomCardIfWinner(999, 1, 10); // storeId 999 not set up
+        ParticipationInRandomDTO result = stockRepository.getRandomCardforuser(999, 1, 10); // storeId 999 not set up
         assertNull(result);
     }
 

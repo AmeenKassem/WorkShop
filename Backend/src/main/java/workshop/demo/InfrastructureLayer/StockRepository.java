@@ -367,9 +367,9 @@ public class StockRepository implements IStockRepo {
     }
 
     @Override
-    public ParticipationInRandomDTO getRandomCardIfWinner(int storeId, int specialId, int userId) {
+    public ParticipationInRandomDTO getRandomCardforuser(int storeId, int specialId, int userId) {
         try {
-            return getActivePurchases(storeId).getRandomCardIfWinner(specialId, userId);
+            return getActivePurchases(storeId).getRandomCardforuser(specialId, userId);
         } catch (UIException ex) {
             return null;
         }
