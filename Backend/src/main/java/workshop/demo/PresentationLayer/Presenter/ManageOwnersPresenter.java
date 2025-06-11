@@ -6,7 +6,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,7 +30,7 @@ public class ManageOwnersPresenter {
     public void loadOwners(int storeId) {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         String url = String.format(
-                Base.url+"/api/store/viewRolesAndPermissions?storeId=%d&token=%s",
+                Base.url + "/api/store/viewRolesAndPermissions?storeId=%d&token=%s",
                 storeId,
                 token
         );
@@ -80,8 +79,9 @@ public class ManageOwnersPresenter {
 
     public void deleteOwner(int storeId, int workerId) {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        System.out.println("Trying to delete owner with ID = " + workerId);
         String url = String.format(
-                Base.url+"/deleteOwner?storeId=%d&token=%s&ownerToDelete=%d",
+                Base.url + "/api/store/deleteOwner?storeId=%d&token=%s&ownerToDelete=%d",
                 storeId,
                 token,
                 workerId
@@ -93,7 +93,7 @@ public class ManageOwnersPresenter {
         try {
             ResponseEntity<ApiResponse> response = restTemplate.exchange(
                     url,
-                    HttpMethod.DELETE,
+                    HttpMethod.POST,
                     entity,
                     ApiResponse.class
             );
@@ -115,7 +115,7 @@ public class ManageOwnersPresenter {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
 
         String url = String.format(
-                Base.url+"/api/store/makeOfferOwner?storeId=%d&token=%s&newOwner=%s",
+                Base.url + "/api/store/makeOfferOwner?storeId=%d&token=%s&newOwner=%s",
                 storeId,
                 token,
                 newOwnerUsername

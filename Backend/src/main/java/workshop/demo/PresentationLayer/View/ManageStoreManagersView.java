@@ -10,7 +10,6 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -158,10 +157,10 @@ public class ManageStoreManagersView extends VerticalLayout implements HasUrlPar
     }
 
     public void showSuccess(String message) {
-        Notification.show(message, 3000, Notification.Position.BOTTOM_START);
+        NotificationView.showSuccess(message);
     }
 
     public void showError(String message) {
-        Notification.show(message, 3000, Notification.Position.BOTTOM_START);
+        NotificationView.showError(message);
     }
 }

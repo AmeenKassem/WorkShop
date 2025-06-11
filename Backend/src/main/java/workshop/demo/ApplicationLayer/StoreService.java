@@ -22,7 +22,12 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Store.*;
+import workshop.demo.DomainLayer.Store.CompositeDiscount;
+import workshop.demo.DomainLayer.Store.Discount;
+import workshop.demo.DomainLayer.Store.DiscountFactory;
+import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.PurchasePolicy;
+import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
@@ -145,6 +150,7 @@ public class StoreService {
         userRepo.checkUserRegister_ThrowException(ownerToDelete);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
+        logger.info("about to send to repo");
         suConnectionRepo.DeleteOwnershipFromStore(storeId, ownerId, ownerToDelete);
         logger.info("Successfully removed owner {} from store {} by {}", ownerToDelete, storeId, ownerId);
     }
@@ -297,7 +303,7 @@ public class StoreService {
             boolean isManager = node.getIsManager();
             Permission[] permissions = suConnectionRepo.getPermissions(node);
             boolean setByMe = node.getParentId() == userId;
-            result.add(new WorkerDTO(userId, username, isManager, !isManager, storeName, permissions, setByMe));
+            result.add(new WorkerDTO(node.getMyId(), username, isManager, !isManager, storeName, permissions, setByMe));
         }
         return result;
     }
@@ -341,8 +347,9 @@ public class StoreService {
 //    private String condition; // e.g. "CATEGORY:DAIRY", "TOTAL>100", or null
 //    private CreateDiscountDTO.Logic logic ;// default to simple discount
 //    private List<CreateDiscountDTO> subDiscounts;
-    public void addDiscountToStore(int storeId, String token, String name, double percent, CreateDiscountDTO.Type type
-    , String condition, CreateDiscountDTO.Logic logic,String[] subDiscountsNames) throws Exception {
+
+    public void addDiscountToStore(int storeId, String token, String name, double percent, CreateDiscountDTO.Type type,
+            String condition, CreateDiscountDTO.Logic logic, String[] subDiscountsNames) throws Exception {
         logger.info("User attempting to add a discount to store {}", storeId);
         //
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -361,20 +368,23 @@ public class StoreService {
         //Hmode
         List<Discount> subDiscounts = new ArrayList<>();
         //Find createDiscountDTO for each subDiscount and add it to the subDiscounts list
-        for(String target : subDiscountsNames){
+        for (String target : subDiscountsNames) {
             Discount d = store.findDiscountByName(target);
-            if(d==null)
-                throw new Exception("Discount "+target+" not found in store");
+            if (d == null) {
+                throw new Exception("Discount " + target + " not found in store");
+            }
             boolean removed = store.removeDiscountByName(target);
-            if(!removed)
-                throw new Exception("Failed to remove discount "+target+"!");
+            if (!removed) {
+                throw new Exception("Failed to remove discount " + target + "!");
+            }
             subDiscounts.add(d);
         }
-        CreateDiscountDTO dto = new CreateDiscountDTO(name,percent,type,condition,logic,List.of());
+        CreateDiscountDTO dto = new CreateDiscountDTO(name, percent, type, condition, logic, List.of());
         Discount discount = DiscountFactory.fromDTO(dto);
         if (!subDiscounts.isEmpty()) {
-            if (!(discount instanceof CompositeDiscount comp))
+            if (!(discount instanceof CompositeDiscount comp)) {
                 throw new Exception("Chosen logic does not allow sub‑discounts");
+            }
             subDiscounts.forEach(comp::addDiscount);
         }
         store.addDiscount(discount);
@@ -402,9 +412,10 @@ public class StoreService {
 
         logger.info("Discount '{}' removed from store {}", discountName, storeId);
     }
-    public void addPurchasePolicy(String token,int storeId,String policyKey/*"NO_ALCOHOL""MIN_QTY"*/,
-                                  Integer param/*when MIN_QTY*/) throws Exception {
-        authRepo.checkAuth_ThrowTimeOutException(token,logger);
+
+    public void addPurchasePolicy(String token, int storeId, String policyKey/*"NO_ALCOHOL""MIN_QTY"*/,
+            Integer param/*when MIN_QTY*/) throws Exception {
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
@@ -415,17 +426,19 @@ public class StoreService {
             throw new UIException("You do not have permission to remove discounts", ErrorCodes.NO_PERMISSION);
         }
         Store store = storeRepo.findStoreByID(storeId);
-        switch (policyKey){
+        switch (policyKey) {
             case "NO_ALCOHOL" ->
                 store.addPurchasePolicy(PurchasePolicy.noAlcoholUnder18());
             case "MIN_QTY" ->
                 store.addPurchasePolicy(PurchasePolicy.minQuantityPerProduct(param));
-            default -> throw new UIException("Unknown Policy!",ErrorCodes.NO_POLICY);
+            default ->
+                throw new UIException("Unknown Policy!", ErrorCodes.NO_POLICY);
         }
     }
-    public void removePurchasePolicy(String token,int storeId,String policyKey/*"NO_ALCOHOL""MIN_QTY"*/,
-                                  Integer param/*when MIN_QTY*/) throws Exception {
-        authRepo.checkAuth_ThrowTimeOutException(token,logger);
+
+    public void removePurchasePolicy(String token, int storeId, String policyKey/*"NO_ALCOHOL""MIN_QTY"*/,
+            Integer param/*when MIN_QTY*/) throws Exception {
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
@@ -436,17 +449,21 @@ public class StoreService {
             throw new UIException("You do not have permission to remove discounts", ErrorCodes.NO_PERMISSION);
         }
         Store store = storeRepo.findStoreByID(storeId);
-        PurchasePolicy policy = switch (policyKey){
-            case "NO_ALCOHOL" -> PurchasePolicy.noAlcoholUnder18();
+        PurchasePolicy policy = switch (policyKey) {
+            case "NO_ALCOHOL" ->
+                PurchasePolicy.noAlcoholUnder18();
             case "MIN_QTY" -> {
-                if(param==null)
+                if (param == null) {
                     throw new Exception("Param is required!");
+                }
                 yield PurchasePolicy.minQuantityPerProduct(param);
             }
-            default -> throw new UIException("Unknown Policy!",ErrorCodes.NO_POLICY);
+            default ->
+                throw new UIException("Unknown Policy!", ErrorCodes.NO_POLICY);
         };
         store.removePurchasePolicy(policy);
     }
+
     public String[] getAllDiscountNames(int storeId, String token) throws UIException {
         Store store = storeRepo.findStoreByID(storeId);                     // assumes auth already validated
         List<String> out = new ArrayList<>();
@@ -456,7 +473,9 @@ public class StoreService {
 
     /* private DFS used by the public method */
     private void collectNames(Discount node, List<String> acc) {
-        if (node == null) return;
+        if (node == null) {
+            return;
+        }
         acc.add(node.getName());
         if (node instanceof CompositeDiscount comp) {
             comp.getDiscounts().forEach(d -> collectNames(d, acc));
