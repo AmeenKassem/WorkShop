@@ -37,6 +37,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
+import workshop.demo.PresentationLayer.Presenter.Base;
 
 // Add a custom tag so the component can be found in the DOM
 @Tag("notification-handler")
@@ -251,17 +252,17 @@ public class NotificationView extends com.vaadin.flow.component.Component {
 
                     // First check if the notification.js is loaded
                     page.executeJs("console.log('Testing if JS module is loaded properly');");
-
+                    String wsUrl = Base.url.replace("http","ws");
                     // Then initialize the WebSocket with proper error handling
                     page.executeJs("try { "
                             + "console.log('About to initialize notification socket for: ' + $0); "
                             + "if (typeof window.initNotificationSocket === 'function') { "
-                            + "  window.initNotificationSocket($0); "
+                            + "  window.initNotificationSocket($0, $1); "
                             + "  console.log('WebSocket initialization called'); "
                             + "} else { "
                             + "  console.error('initNotificationSocket function not found!'); "
                             + "} "
-                            + "} catch(e) { console.error('Error initializing WebSocket:', e); }", username);
+                            + "} catch(e) { console.error('Error initializing WebSocket:', e); }", username, wsUrl);
 
                     // Set the flag to avoid multiple initializations
                     session.setAttribute("ws-initialized", true);
@@ -297,7 +298,7 @@ public class NotificationView extends com.vaadin.flow.component.Component {
 
         // Construct URL with query parameters
         String url = String.format(
-                "http://localhost:8080/api/store/respondToOffer?storeId=%d&senderName=%s&receiverName=%s&answer=%s&toBeOwner=%s",
+                Base.url+"/api/store/respondToOffer?storeId=%d&senderName=%s&receiverName=%s&answer=%s&toBeOwner=%s",
                 storeId,
                 UriUtils.encodeQueryParam(senderName, StandardCharsets.UTF_8),
                 UriUtils.encodeQueryParam(receiverName, StandardCharsets.UTF_8),
