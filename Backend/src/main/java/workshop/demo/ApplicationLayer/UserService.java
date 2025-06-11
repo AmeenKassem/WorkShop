@@ -143,7 +143,12 @@ public class UserService {
                 itemToSend.setValues(stockRepo.GetProductNameForBid(item.storeId, item.specialId, item.type), card.isWinner, card.ended);
             } else {
                 SingleBid bid = stockRepo.getBid(item.storeId, item.specialId, item.bidId, item.type);
-                itemToSend.setValues(stockRepo.GetProductNameForBid(item.storeId, item.specialId, item.type), bid.isWinner() || bid.isAccepted(), bid.isEnded());
+
+                //bashar bashar baaa
+                //add the if to fix bug of null bid details that lead to unload special cart
+                if (bid != null) {
+                    itemToSend.setValues(stockRepo.GetProductNameForBid(item.storeId, item.specialId, item.type), bid.isWinner() || bid.isAccepted(), bid.isEnded());
+                }
             }
             result.add(itemToSend);
         }
