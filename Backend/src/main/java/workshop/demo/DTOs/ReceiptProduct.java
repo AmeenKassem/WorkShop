@@ -10,7 +10,8 @@ public class ReceiptProduct {
     private int price;
     private int productId;
 
-    public ReceiptProduct(String productName, String storename, int quantity, int price, int productId, Category category) {
+    public ReceiptProduct(String productName, String storename, int quantity, int price, int productId,
+            Category category) {
         this.productName = productName;
         this.storename = storename;
         this.quantity = quantity;
@@ -20,6 +21,18 @@ public class ReceiptProduct {
     }
 
     public ReceiptProduct() {
+    }
+
+    @Override
+    public String toString() {
+        return "ReceiptProduct{" +
+                "productName='" + productName + '\'' +
+                ", category=" + category +
+                ", storename='" + storename + '\'' +
+                ", quantity=" + quantity +
+                ", price=" + price +
+                ", productId=" + productId +
+                '}';
     }
 
     public String getProductName() {

@@ -246,28 +246,28 @@ public class UserController {
     public ResponseEntity<?> getSpecialCart(@RequestParam String token) {
         ApiResponse<SpecialCartItemDTO[]> res;
         try {
-            //SpecialCartItemDTO[] cartItems = userService.getSpecialCart(token);
+            SpecialCartItemDTO[] cartItems = userService.getSpecialCart(token);
 
-            SpecialCartItemDTO special1 = new SpecialCartItemDTO();
-            special1.setIds(201, 1001, 0, SpecialType.Random);
-            special1.setValues("Mystery Box", false, false);
+            // SpecialCartItemDTO special1 = new SpecialCartItemDTO();
+            // special1.setIds(201, 1001, 0, SpecialType.Random);
+            // special1.setValues("Mystery Box", false, false);
 
-            SpecialCartItemDTO special2 = new SpecialCartItemDTO();
-            special2.setIds(202, 1002, 0, SpecialType.Auction);
-            special2.setValues("Rare Coin", true, true);
+            // SpecialCartItemDTO special2 = new SpecialCartItemDTO();
+            // special2.setIds(202, 1002, 0, SpecialType.Auction);
+            // special2.setValues("Rare Coin", true, true);
 
-            SpecialCartItemDTO special3 = new SpecialCartItemDTO();
-            special3.setIds(203, 1003, 10001, SpecialType.BID);
-            special3.setValues("Gaming Chair", false, true);
-            SpecialCartItemDTO[] cartItems = new SpecialCartItemDTO[] { special1,
-            special2, special3 };
+            // SpecialCartItemDTO special3 = new SpecialCartItemDTO();
+            // special3.setIds(203, 1003, 10001, SpecialType.BID);
+            // special3.setValues("Gaming Chair", false, true);
+            // SpecialCartItemDTO[] cartItems = new SpecialCartItemDTO[] { special1,
+            // special2, special3 };
             res = new ApiResponse<>(cartItems, null);
             return ResponseEntity.ok(res);
 
-        // } catch (UIException ex) {
-        //     return ResponseEntity
-        //             .status(HttpStatus.BAD_REQUEST)
-        //             .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (UIException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
