@@ -407,7 +407,7 @@ public class StockController {
     @GetMapping("/getAllRandomInStore")
     public ResponseEntity<?> getAllRandomInStore(@RequestParam String token, @RequestParam int storeId) {
         try {
-            RandomDTO[] randoms = stockService.getAllRandomInStore(token, storeId);
+            RandomDTO[] randoms = stockService.getAllRandomInStoreToUser(token, storeId);
             return ResponseEntity.ok(new ApiResponse<>(randoms, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()

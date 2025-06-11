@@ -295,9 +295,18 @@ public class StockService {
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         storeRepo.checkStoreExistance(storeId);
-        // if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-        //     throw new UIException("you have no permession to see random info.", ErrorCodes.NO_PERMISSION);
-        // }
+        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+            throw new UIException("you have no permession to see random info.", ErrorCodes.NO_PERMISSION);
+        }
+        return stockRepo.getRandomsInStore(storeId);
+    }
+
+    public RandomDTO[] getAllRandomInStoreToUser(String token, int storeId) throws Exception, DevException {
+        logger.info("Fetching all randoms in store {}", storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        storeRepo.checkStoreExistance(storeId);
         return stockRepo.getRandomsInStore(storeId);
     }
 
