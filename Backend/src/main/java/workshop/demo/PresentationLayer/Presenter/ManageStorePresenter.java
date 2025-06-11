@@ -19,7 +19,7 @@ import org.springframework.web.util.UriUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.server.VaadinSession;
 
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.StoreDTO;

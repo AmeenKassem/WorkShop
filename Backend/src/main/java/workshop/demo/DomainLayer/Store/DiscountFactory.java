@@ -31,6 +31,11 @@ public class DiscountFactory {
                 dto.getSubDiscounts().forEach(sd -> xor.addDiscount(fromDTO(sd)));
                 yield xor;
             }
+            case MULTIPLY -> {
+                MultiplyDiscount mul = new MultiplyDiscount(dto.getName());
+                dto.getSubDiscounts().forEach(sd -> mul.addDiscount(fromDTO(sd)));
+                yield mul;
+            }
         };
     }
 

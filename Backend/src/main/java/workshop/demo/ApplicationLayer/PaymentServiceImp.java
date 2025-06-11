@@ -48,4 +48,12 @@ public class PaymentServiceImp implements IPaymentService {
         logger.info("Refund processed successfully for card ending with {}");
         return true;
     }
+
+    public int externalPayment(PaymentDetails paymentDetails, double totalPrice) throws UIException {
+        return 1;
+    }
+
+    public int externalRefund(int transactionId) throws UIException {
+        return 1;
+    }
 }

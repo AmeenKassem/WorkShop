@@ -11,11 +11,10 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
 
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.NotificationView;
 import workshop.demo.PresentationLayer.View.RegisterView;
@@ -27,7 +26,6 @@ public class RegisterPresenter {
 
     public RegisterPresenter(RegisterView view) {
         this.view = view;
-        //view.addRegisterListener(e -> register());
     }
 
     public void register() {
@@ -62,7 +60,6 @@ public class RegisterPresenter {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         HttpEntity<?> entity = new HttpEntity<>(headers);
-
         try {
             ResponseEntity<ApiResponse> response = restTemplate.exchange(
                     url,
@@ -81,29 +78,10 @@ public class RegisterPresenter {
                 } else {
                     NotificationView.showError("Registration failed.");
                 }
-            } else {
-                if (body != null && body.getErrNumber() != -1) {
-                    NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
-                }
+
             }
-
-        } catch (HttpClientErrorException e) {
-            try {
-                String responseBody = e.getResponseBodyAsString();
-                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-
-                if (errorBody.getErrNumber() != -1) {
-                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-                } else {
-                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
-                }
-            } catch (Exception parsingEx) {
-                NotificationView.showError("HTTP error: " + e.getMessage());
-            }
-
         } catch (Exception e) {
-            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
-
+            ExceptionHandlers.handleException(e);
         }
     }
 }

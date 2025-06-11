@@ -25,6 +25,9 @@ public class UserDTO {
         this.isAdmin = isAdmin;
     }
 
+    public UserDTO() {
+    }
+
     public int getId() {
         return id;
     }

@@ -35,7 +35,7 @@ import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 
 // Add a custom tag so the component can be found in the DOM
@@ -52,10 +52,10 @@ public class NotificationView extends com.vaadin.flow.component.Component {
 
         // Important: Add this component to the UI when it's created
         getElement().executeJs(
-                "const elem = this; " +
-                        "setTimeout(() => {" +
-                        "  console.log('NotificationView initialized and ready');" +
-                        "}, 100);");
+                "const elem = this; "
+                + "setTimeout(() => {"
+                + "  console.log('NotificationView initialized and ready');"
+                + "}, 100);");
     }
 
     public void setReceivedNotification(List<JsonObject> receivedNotifications) {
@@ -83,14 +83,14 @@ public class NotificationView extends com.vaadin.flow.component.Component {
      * This method is called from the JavaScript side when a notification is
      * received.
      */
-
     @ClientCallable
     public void receiveNotification(String msg) {
         System.out.println("Java: Received notification in receiveNotification method: " + msg);
 
         UI ui = getUI().orElse(UI.getCurrent());
-        if (ui == null)
+        if (ui == null) {
             return;
+        }
 
         ui.access(() -> {
             try {
@@ -147,7 +147,7 @@ public class NotificationView extends com.vaadin.flow.component.Component {
             // 🔽 This part is executed when Approve is clicked
             sendOfferResponse(json, true);
             receivedNotifications.remove(json); // remove this message
-            Notification.show("You accepted the offer");
+            //Notification.show("You accepted the offer");
             notification.close();
         });
 
@@ -253,15 +253,15 @@ public class NotificationView extends com.vaadin.flow.component.Component {
                     page.executeJs("console.log('Testing if JS module is loaded properly');");
 
                     // Then initialize the WebSocket with proper error handling
-                    page.executeJs("try { " +
-                            "console.log('About to initialize notification socket for: ' + $0); " +
-                            "if (typeof window.initNotificationSocket === 'function') { " +
-                            "  window.initNotificationSocket($0); " +
-                            "  console.log('WebSocket initialization called'); " +
-                            "} else { " +
-                            "  console.error('initNotificationSocket function not found!'); " +
-                            "} " +
-                            "} catch(e) { console.error('Error initializing WebSocket:', e); }", username);
+                    page.executeJs("try { "
+                            + "console.log('About to initialize notification socket for: ' + $0); "
+                            + "if (typeof window.initNotificationSocket === 'function') { "
+                            + "  window.initNotificationSocket($0); "
+                            + "  console.log('WebSocket initialization called'); "
+                            + "} else { "
+                            + "  console.error('initNotificationSocket function not found!'); "
+                            + "} "
+                            + "} catch(e) { console.error('Error initializing WebSocket:', e); }", username);
 
                     // Set the flag to avoid multiple initializations
                     session.setAttribute("ws-initialized", true);
@@ -346,7 +346,7 @@ public class NotificationView extends com.vaadin.flow.component.Component {
             showError("UNEXPECTED ERROR: " + e.getMessage());
         }
     }
-    
+
     public static void showSuccess(String msg) {
         Notification.show("✅ " + msg, 3000, Notification.Position.BOTTOM_CENTER);
     }
@@ -354,6 +354,11 @@ public class NotificationView extends com.vaadin.flow.component.Component {
     public static void showError(String msg) {
         Notification.show("❌ " + msg, 5000, Notification.Position.BOTTOM_CENTER);
     }
-    
+
+    public static void showInfo(String string) {
+        Notification notification = new Notification(string, 3000, Notification.Position.BOTTOM_CENTER);
+        notification.addThemeVariants(NotificationVariant.LUMO_CONTRAST);
+        notification.open();
+    }
 
 }

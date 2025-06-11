@@ -17,25 +17,25 @@ import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.ReceiptProduct;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.ActivePurcheses;
+import workshop.demo.DomainLayer.Stock.Auction;
+import workshop.demo.DomainLayer.Stock.BID;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
-import workshop.demo.DomainLayer.Store.ActivePurcheses;
+import workshop.demo.DomainLayer.Store.Random;
 import workshop.demo.DomainLayer.User.CartItem;
 
 @Repository
 public class StockRepository implements IStockRepo {
 
-    // private HashMap<Category, List<Integer>> categoryToProductId = new
-    // HashMap<>();
-    // private HashMap<Integer, Product> idToProduct = new HashMap<>();
     private AtomicInteger idGen = new AtomicInteger(1);
     private ConcurrentHashMap<Integer, ActivePurcheses> storeId2ActivePurchases;// must be thread safe
     private ConcurrentHashMap<Category, List<Product>> allProducts;
@@ -59,7 +59,7 @@ public class StockRepository implements IStockRepo {
     private void checkQuantity(int productId, int quantity, int storeId) throws UIException {
         if (storeStocks.get(storeId).getItemByProductId(productId).getQuantity() < quantity) {
             throw new UIException("there is no quantity to move it to special purchases",
-                    ErrorCodes.INSUFFICIENT_ITEM_QUANTITY_TO_RANDOM);
+                    ErrorCodes.INSUFFICIENT_STOCK);
         }
     }
 
@@ -165,19 +165,19 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public int addProductToRandom(int productId, int quantity, double productPrice, int storeId,
-            long RandomTime) throws UIException, DevException {
+                                  long RandomTime) throws UIException, DevException {
         checkQuantity(productId, quantity, storeId);
         int res = getActivePurchases(storeId).addProductToRandom(productId, quantity, productPrice, storeId,
                 RandomTime);
         this.decreaseQuantitytoBuy(storeId, productId, quantity);
         return res;
     }
-
-    @Override
-    public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
-            throws UIException, DevException {
-        return getActivePurchases(storeId).participateInRandom(userId, randomId, amountPaid);
-    }
+//    //no one use
+//    @Override
+//    public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
+//            throws UIException, DevException {
+//        return getActivePurchases(storeId).participateInRandom(userId, randomId, amountPaid);
+//    }
 
     @Override
     public ParticipationInRandomDTO endRandom(int storeId, int randomId) throws Exception {
@@ -198,15 +198,15 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public ItemStoreDTO[] getProductsInStore(int storeId) throws UIException, DevException {
-        return search(new ProductSearchCriteria(null, null, null, storeId, null, null, null, null),null);
+        return search(new ProductSearchCriteria(null, null, null, storeId, null, null, null, null));
     }
 
     @Override
     public item addItem(int storeId, int productId, int quantity, int price, Category category)
             throws UIException, DevException {
-        if (storeStocks.get(storeId) == null) {
-            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        }
+//        if (storeStocks.get(storeId) == null) {
+//            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
+//        }
         item toAdd = new item(productId, quantity, price, category);
         this.storeStocks.get(storeId).addItem(toAdd);
         return toAdd;
@@ -214,45 +214,45 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public void removeItem(int storeId, int productId) throws UIException, DevException {
-        if (storeStocks.get(storeId) == null) {
-            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        }
+//        if (storeStocks.get(storeId) == null) {
+//            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
+//        }
         this.storeStocks.get(storeId).removeItem(productId);
 
     }
 
     @Override
     public void decreaseQuantitytoBuy(int storeId, int productId, int quantity) throws UIException, DevException {
-        if (storeStocks.get(storeId) == null) {
-            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        }
+//        if (storeStocks.get(storeId) == null) {
+//            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
+//        }
         this.storeStocks.get(storeId).decreaseQuantitytoBuy(productId, quantity);
 
     }
 
     @Override
     public boolean updateQuantity(int storeId, int productId, int newQuantity) throws UIException, DevException {
-        if (storeStocks.get(storeId) == null) {
-            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        }
+//        if (storeStocks.get(storeId) == null) {
+//            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
+//        }
         this.storeStocks.get(storeId).changeQuantity(productId, newQuantity);
         return true;
     }
 
     @Override
     public boolean updatePrice(int storeId, int productId, int newPrice) throws UIException, DevException {
-        if (storeStocks.get(storeId) == null) {
-            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        }
+//        if (storeStocks.get(storeId) == null) {
+//            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
+//        }
         this.storeStocks.get(storeId).updatePrice(productId, newPrice);
         return true;
     }
 
     @Override
     public void rankProduct(int storeId, int productId, int newRank) throws DevException, UIException {
-        if (storeStocks.get(storeId) == null) {
-            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        }
+//        if (storeStocks.get(storeId) == null) {
+//            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
+//        }
         this.storeStocks.get(storeId).rankProduct(productId, newRank);
     }
 
@@ -260,9 +260,9 @@ public class StockRepository implements IStockRepo {
     public boolean checkAvailability(List<CartItem> cartItems) {
         for (CartItem itemDTO : cartItems) {
             StoreStock stock = storeStocks.get(itemDTO.storeId);
-            if (stock == null) {
-                return false;
-            }
+//            if (stock == null) {
+//                return false;
+//            }
             item storeItem = stock.getItemByProductId(itemDTO.productId);
             if (storeItem == null || storeItem.getQuantity() < itemDTO.quantity) {
                 return false;
@@ -273,9 +273,9 @@ public class StockRepository implements IStockRepo {
 
     @Override
     public item getItemByStoreAndProductId(int storeId, int productId) throws DevException {
-        if (storeStocks.get(storeId) == null) {
-            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        }
+//        if (storeStocks.get(storeId) == null) {
+//            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
+//        }
         return storeStocks.get(storeId).getItemByProductId(productId);
     }
 
@@ -288,9 +288,9 @@ public class StockRepository implements IStockRepo {
     @Override
     public void validateAndDecreaseStock(int storeId, int productId, int amount) throws DevException, UIException {
         item storeItem = getItemByStoreAndProductId(storeId, productId);
-        if (storeItem == null || storeItem.getQuantity() < amount) {
-            throw new DevException("unvaliable");
-        }
+//        if (storeItem == null || storeItem.getQuantity() < amount) {
+//            throw new DevException("unvaliable");
+//        }
         decreaseQuantitytoBuy(storeId, productId, amount);
     }
 
@@ -321,9 +321,29 @@ public class StockRepository implements IStockRepo {
     public List<ReceiptProduct> processCartItemsForStore(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
             throws Exception {
         StoreStock storeStock = storeStocks.get(storeId);
-        if (storeStock == null) {
-            throw new DevException("Store stock not initialized for storeId: " + storeId);
+//        if (storeStock == null) {
+//            throw new DevException("Store stock not initialized for storeId: " + storeId);
+//        }
+        List<ItemCartDTO> dtoList = new ArrayList<>();
+        for (CartItem item : cartItems) {
+            ItemCartDTO dto = new ItemCartDTO();
+            dto.storeId = item.storeId;
+            dto.productId = item.productId;
+            dto.quantity = item.quantity;
+            dto.price = item.price;
+            dto.name = item.name;
+            dto.storeName = StoreName;
+            dto.category = item.category;
+            dtoList.add(dto);
         }
+        return storeStock.ProcessCartItems(dtoList, isGuest, StoreName);
+    }
+    public void changequantity(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
+            throws Exception {
+        StoreStock storeStock = storeStocks.get(storeId);
+//        if (storeStock == null) {
+//            throw new DevException("Store stock not initialized for storeId: " + storeId);
+//        }
         List<ItemCartDTO> dtoList = new ArrayList<>();
         for (CartItem item : cartItems) {
             ItemCartDTO dto = new ItemCartDTO();
@@ -336,7 +356,7 @@ public class StockRepository implements IStockRepo {
             dto.category=item.category;
             dtoList.add(dto);
         }
-        return storeStock.ProcessCartItems(dtoList, isGuest, StoreName);
+        storeStock.changequantity(dtoList, isGuest, StoreName);
     }
 
     @Override
@@ -407,7 +427,7 @@ public class StockRepository implements IStockRepo {
     // 'getMatchesItems'");
     // }
     @Override
-    public ItemStoreDTO[] search(ProductSearchCriteria criteria,String storeName) throws UIException {
+    public ItemStoreDTO[] search(ProductSearchCriteria criteria) throws UIException {
         List<Product> matchesCategoryProduct = getProductsFilteredByCategory(criteria);
         List<ItemStoreDTO> result = new ArrayList<>();
         for (Product product : matchesCategoryProduct) {
@@ -418,7 +438,7 @@ public class StockRepository implements IStockRepo {
             for (StoreStock store : matchesStores) {
                 item item = store.getItemByProductId(product.getProductId());
                 if (criteria.matchesForStore(item)) {
-                    ItemStoreDTO toAdd = convertToItemStoreDTO(item, product, store.getStoreStockId(),storeName);
+                    ItemStoreDTO toAdd = convertToItemStoreDTO(item, product, store.getStoreStockId());
                     result.add(toAdd);
                 }
             }
@@ -427,8 +447,56 @@ public class StockRepository implements IStockRepo {
 
     }
 
-    private ItemStoreDTO convertToItemStoreDTO(item item, Product product, int storeId,String storeName) {
-        return new ItemStoreDTO(product.getProductId(), item.getQuantity(), item.getPrice(), product.getCategory(), item.getFinalRank(), storeId, product.getName(),storeName);
+    @Override
+    public RandomDTO[] searchActiveRandoms(ProductSearchCriteria criteria) throws UIException {
+        ItemStoreDTO[] storeItems = search(criteria);
+        List<RandomDTO> result = new ArrayList<>();
+        for (ItemStoreDTO item : storeItems) {
+            int productId = item.getProductId();
+            ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
+            List<RandomDTO> randoms = active.getRandomsForProduct(productId);
+            for (RandomDTO random : randoms) {
+                random.productName = item.getProductName();
+                result.add(random);
+            }
+        }
+        return result.toArray(new RandomDTO[0]);
+    }
+
+    @Override
+    public BidDTO[] searchActiveBids(ProductSearchCriteria criteria, String storeName) throws UIException {
+        ItemStoreDTO[] storeItems = search(criteria);
+        List<BidDTO> result = new ArrayList<>();
+        for (ItemStoreDTO item : storeItems) {
+            int productId = item.getProductId();
+            ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
+            List<BidDTO> bids = active.getBidsForProduct(productId);
+            for (BidDTO bid : bids) {
+                bid.productName = item.getProductName();
+                result.add(bid);
+            }
+        }
+        return result.toArray(new BidDTO[0]);
+    }
+
+    @Override
+    public AuctionDTO[] searchActiveAuctions(ProductSearchCriteria criteria, String storeName) throws UIException {
+        ItemStoreDTO[] storeItems = search(criteria);
+        List<AuctionDTO> result = new ArrayList<>();
+        for (ItemStoreDTO item : storeItems) {
+            int productId = item.getProductId();
+            ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
+            List<AuctionDTO> auctions = active.getAuctionsForProduct(productId);
+            for (AuctionDTO auction : auctions) {
+                auction.productName = item.getProductName();
+                result.add(auction);
+            }
+        }
+        return result.toArray(new AuctionDTO[0]);
+    }
+
+    private ItemStoreDTO convertToItemStoreDTO(item item, Product product, int storeId) {
+        return new ItemStoreDTO(product.getProductId(), item.getQuantity(), item.getPrice(), product.getCategory(), item.getFinalRank(), storeId, product.getName(),null);
     }
 
     private List<StoreStock> getMatchesStore(ProductSearchCriteria criteria) {
@@ -468,7 +536,5 @@ public class StockRepository implements IStockRepo {
         }
         return allProductDTOs.toArray(new ProductDTO[0]);
     }
-
-
 
 }

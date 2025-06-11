@@ -1,14 +1,18 @@
 package workshop.demo.InfrastructureLayer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import workshop.demo.DTOs.OfferDTO;
+import com.vaadin.flow.component.UI;
+
 import workshop.demo.DomainLayer.Exceptions.DevException;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
+import workshop.demo.DomainLayer.StoreUserConnection.Offer;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 
@@ -162,7 +166,7 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     @Override
     public void makeOffer(int storeId, int senderId, int reciverId, boolean toBeOwner, List<Permission> per,
             String Message) throws Exception {
-        OfferDTO offer = new OfferDTO(senderId, reciverId, toBeOwner, per, Message);
+        Offer offer = new Offer(senderId, reciverId, toBeOwner, per, Message);
         this.data.makeOffer(offer, storeId);
     }
 
@@ -172,7 +176,7 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     }
 
     @Override
-    public OfferDTO getOffer(int storeId, int senderId, int reciverId) throws Exception {
+    public Offer getOffer(int storeId, int senderId, int reciverId) throws Exception {
         return this.data.getOffer(storeId, senderId, reciverId);
     }
 
@@ -185,14 +189,14 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     public int removeUserAccordingly(int userId) throws Exception {
         return this.data.removeUserAccordingly(userId);
     }
- public void clear() {
-            data.clearData();
 
-        this.data= new SuperDataStructure(); 
+    public void clear() {
+        data.clearData();
+
+        this.data = new SuperDataStructure();
     }
 
-
-        @Override
+    @Override
     public Permission[] getPermissions(Node node) {
         return this.data.getPermissions(node);
     }
@@ -201,14 +205,19 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     public List<Node> getAllWorkers(int storeId) throws Exception {
         return this.data.getAllWorkers(storeId);
     }
+
     @Override
     public boolean hasPermission(int userId, int storeId, Permission permission) {
         try {
             Node worker = getWorkerInStoreById(storeId, userId);
-            if (worker == null) return false;
+            if (worker == null) {
+                return false;
+            }
 
             // If the user is an owner, allow all
-            if (!worker.getIsManager()) return true;
+            if (!worker.getIsManager()) {
+                return true;
+            }
 
             // If the user is a manager, check for specific permission
             return worker.getMyAuth().hasAutho(permission);
@@ -217,5 +226,16 @@ public class SUConnectionRepository implements ISUConnectionRepo {
         }
     }
 
+    @Override
+    public List<Node> getOwnersInStore(int storeId) throws UIException, DevException {
+        List<Node> owners = this.data.getAllWorkers(storeId);
+        List<Node> ownersInStore = new ArrayList<>();
+        for (Node worker : owners) {
+            if (!worker.getIsManager()) { // If the worker is an owner
+                ownersInStore.add(worker);
+            }
+        }
+        return ownersInStore;
+    }
 
 }

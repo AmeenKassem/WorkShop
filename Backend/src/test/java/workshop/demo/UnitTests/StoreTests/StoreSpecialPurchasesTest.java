@@ -45,7 +45,7 @@ public class StoreSpecialPurchasesTest {
         int productId = 101; // You should ensure this product exists in your product catalog
         int quantity = 3;
         int price = 150;
-        Category category = Category.ELECTRONICS; // Adjust this to match your enum or object
+        Category category = Category.Electronics; // Adjust this to match your enum or object
         stockRepo.addStore(id);
         stockRepo.addItem(storeId1, productId, quantity, price, category);
 

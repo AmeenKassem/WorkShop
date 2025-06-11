@@ -1,6 +1,6 @@
 // package workshop.demo.UnitTests.PurchaseTests;
 // // package workshop.demo.PurchaseTests;
-
+//
 // import java.util.List;
 // import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 // import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -103,7 +103,7 @@
 //         when(authRepo.getUserId(token)).thenReturn(userId);
 //         when(userRepo.isRegistered(userId)).thenReturn(true);
 //         assertDoesNotThrow(() -> purchaseService.submitBid(token, bid)); //dont throw exception
-//         verify(purchaseRepo, times(1)).saveBid(bid); // here im verify that saveBid was called once and already checked it in purchaseTests 
+//         verify(purchaseRepo, times(1)).saveBid(bid); // here im verify that saveBid was called once and already checked it in purchaseTests
 //     }
 //     @Test
 //     public void testSearchProductInStore_success() throws Exception {
@@ -181,7 +181,7 @@
 //         // Add random to store
 //         long randomTime = System.currentTimeMillis() + 100000;
 //         int randomId = stockRepo.addProductToRandom(productId, 5, 20.0, storeId, randomTime);
-//         when(paymentService.processPayment(any(), eq(20.0))).thenReturn(true); // Mock payment  
+//         when(paymentService.processPayment(any(), eq(20.0))).thenReturn(true); // Mock payment
 //         PurchaseService service = new PurchaseService(authRepo, stockRepo, storeRepo, userRepo, purchaseRepo, orderRepo, paymentService, supplyService);
 //         PaymentDetails payment = new PaymentDetails("1234", "User", "12/25", "123");
 //         ParticipationInRandomDTO result = service.participateInRandom("token", randomId, storeId, 20.0, payment);
@@ -217,7 +217,7 @@
 //         Exception ex = assertThrows(Exception.class, () -> service.finalizeAuctionWins(token, payment));
 //         assertEquals("product not avaliable", ex.getMessage());
 //     }
-//     //dont pass 
+//     //dont pass
 //     @Test
 //     public void testFinalizeAcceptedBids_success() throws Exception {
 //         String token = "token";
@@ -275,7 +275,7 @@
 //         ItemCartDTO item = new ItemCartDTO(storeId, Category.ELECTRONICS, productId, 1, 999, "Laptop", "High-end", "TechZone");
 //         realUserRepo.addBidToRegularCart(new SingleBid(productId, 1, userId, 999.0, SpecialType.BID, productId, storeId, 1));
 //         realUserRepo.getUserCart(userId).addItem(storeId, item);
-//         // Build PurchaseService 
+//         // Build PurchaseService
 //         PurchaseService service = new PurchaseService(mockAuthRepo, realStockRepo, realStoreRepo, realUserRepo, realPurchaseRepo, realOrderRepo,
 //                 paymentService, supplyService
 //         );
@@ -337,7 +337,7 @@
 //         when(authRepo.getUserId(token)).thenReturn(userId);
 //         when(userRepo.isRegistered(userId)).thenReturn(true);
 //         when(userRepo.getWinningCards(userId)).thenReturn(winningCards);
-//         when(stockRepo.findByIdInSystem(productId)).thenThrow(new Exception("product not avaliable")); // simulate the product avaliable 
+//         when(stockRepo.findByIdInSystem(productId)).thenThrow(new Exception("product not avaliable")); // simulate the product avaliable
 //         SupplyDetails supply = new SupplyDetails("Street", "City", "State", "000");
 //         Exception ex = assertThrows(Exception.class, () -> purchaseService.finalizeRandomWinnings(token, supply));
 //         assertEquals("product not avaliable", ex.getMessage());

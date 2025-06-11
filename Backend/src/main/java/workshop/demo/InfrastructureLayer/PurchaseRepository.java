@@ -10,8 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.SingleBid;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 
 @Repository
 public class PurchaseRepository implements IPurchaseRepo {

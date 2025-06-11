@@ -22,11 +22,18 @@ public class InvisibleDiscount implements Discount {
 
     @Override
     public double apply(DiscountScope scope) {
-        return isApplicable(scope) ? scope.getTotalPrice() * percent : 0;
+        String userCode= CouponContext.get();
+        if(!matchesCode(userCode)) return 0.0;
+        if(!isApplicable(scope)) return 0.0;
+        return scope.getTotalPrice() * percent;
     }
 
     @Override
     public String getName() {
         return name;
+    }
+    @Override
+    public boolean matchesCode(String code){
+        return code!=null && name.equals(code);
     }
 }

@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.server.VaadinSession;
 
-import workshop.demo.Contrrollers.ApiResponse;
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.ManageOwnersView;
@@ -67,21 +67,15 @@ public class ManageOwnersPresenter {
 
             view.buildManageUI(owners);
 
-        } catch (HttpClientErrorException e) {
-            try {
-                String responseBody = e.getResponseBodyAsString();
-                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-                NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-            } catch (Exception ex) {
-                NotificationView.showError("HTTP error: " + e.getMessage());
-            }
-            view.buildManageUI(List.of());
-
         } catch (Exception e) {
-            NotificationView.showError("❌ Failed to load owners: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
             view.buildManageUI(List.of());
-        }
 
+            // } catch (Exception e) {
+            //     NotificationView.showError("❌ Failed to load owners: " + e.getMessage());
+            //     view.buildManageUI(List.of());
+            // }
+        }
     }
 
     public void deleteOwner(int storeId, int workerId) {
@@ -112,23 +106,8 @@ public class ManageOwnersPresenter {
                 NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
             }
 
-        } catch (HttpClientErrorException e) {
-            try {
-                String responseBody = e.getResponseBodyAsString();
-                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-
-                if (errorBody.getErrNumber() != -1) {
-                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-                } else {
-                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
-                }
-            } catch (Exception parsingEx) {
-                NotificationView.showError("HTTP error: " + e.getMessage());
-            }
-
         } catch (Exception e) {
-            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
-
+            ExceptionHandlers.handleException(e);
         }
     }
 
@@ -160,22 +139,8 @@ public class ManageOwnersPresenter {
             } else if (body.getErrNumber() != -1) {
                 NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
             }
-        } catch (HttpClientErrorException e) {
-            try {
-                String responseBody = e.getResponseBodyAsString();
-                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-
-                if (errorBody.getErrNumber() != -1) {
-                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-                } else {
-                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
-                }
-            } catch (Exception parsingEx) {
-                NotificationView.showError("HTTP error: " + e.getMessage());
-            }
-
         } catch (Exception e) {
-            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
 
         }
 

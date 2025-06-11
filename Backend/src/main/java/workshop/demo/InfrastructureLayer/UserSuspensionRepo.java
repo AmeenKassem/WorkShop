@@ -95,8 +95,7 @@ public class UserSuspensionRepo implements IUserSuspensionRepo {
     Suspensions.clear();
 
     // Optional: shut down scheduler if tasks are scheduled per test
-    if (scheduler != null && !scheduler.isShutdown()) {
         scheduler.shutdownNow(); // or scheduler.shutdown();
     }
 }
-}
+

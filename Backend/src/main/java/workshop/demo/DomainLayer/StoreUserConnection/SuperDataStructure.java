@@ -10,7 +10,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.springframework.stereotype.Component;
 
-import workshop.demo.DTOs.OfferDTO;
+import com.vaadin.flow.component.UI;
+
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -19,7 +20,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 public class SuperDataStructure {
 
     private Map<Integer, Tree> employees;
-    private final Map<Integer, List<OfferDTO>> offers;//storeId, list of offers
+    private final Map<Integer, List<Offer>> offers;//storeId, list of offers
     private final ConcurrentHashMap<Integer, ReentrantLock> storeLocks = new ConcurrentHashMap<>();
 
     public SuperDataStructure() {
@@ -279,7 +280,7 @@ public class SuperDataStructure {
     }
 
     //make offer delete offer
-    public void makeOffer(OfferDTO offer, int storeId) {
+    public void makeOffer(Offer offer, int storeId) {
         synchronized (offers) {
             offers.computeIfAbsent(storeId, k -> new ArrayList<>()).add(offer);
         }
@@ -287,20 +288,20 @@ public class SuperDataStructure {
 
     public List<Permission> deleteOffer(int storeId, int senderId, int reciverId) throws Exception {
         synchronized (offers) {
-            List<OfferDTO> storeOffers = offers.get(storeId);
-            if (storeOffers == null) {
+            List<Offer> Offer = offers.get(storeId);
+            if (Offer == null) {
                 throw new Exception("store offers is null");
             }
 
-            Iterator<OfferDTO> iterator = storeOffers.iterator();
+            Iterator<Offer> iterator = Offer.iterator();
             while (iterator.hasNext()) {
-                OfferDTO offer = iterator.next();
+                Offer offer = iterator.next();
                 if (offer.getSenderId() == senderId && offer.getReceiverId() == reciverId) {
                     List<Permission> permissions = offer.getPermissions();
                     iterator.remove();
 
                     // Clean up empty list
-                    if (storeOffers.isEmpty()) {
+                    if (Offer.isEmpty()) {
                         offers.remove(storeId);
                     }
 
@@ -312,13 +313,13 @@ public class SuperDataStructure {
         return null; // offer not found
     }
 
-    public OfferDTO getOffer(int storeId, int senderId, int receiverId) throws Exception {
-        List<OfferDTO> storeOffers = offers.get(storeId);
+    public Offer getOffer(int storeId, int senderId, int receiverId) throws Exception {
+        List<Offer> storeOffers = offers.get(storeId);
         if (storeOffers == null) {
             throw new Exception("No offers found for store ID: " + storeId);
         }
 
-        for (OfferDTO offer : storeOffers) {
+        for (Offer offer : storeOffers) {
             if (offer.getSenderId() == senderId && offer.getReceiverId() == receiverId) {
                 return offer;
             }
@@ -354,7 +355,7 @@ public class SuperDataStructure {
         }
 
         // Remove offers where user is sender or receiver
-        for (List<OfferDTO> offerList : offers.values()) {
+        for (List<Offer> offerList : offers.values()) {
             boolean removed = offerList.removeIf(
                     offer -> offer.getSenderId() == userId || offer.getReceiverId() == userId
             );
@@ -370,19 +371,18 @@ public class SuperDataStructure {
     }
 
     public void clearData() {
-        if (employees != null) {
             employees.clear();
-        }
+
         offers.clear();
         storeLocks.clear();
     }
 
-    public List<Node> getAllWorkers(int storeId) throws Exception {
+    public List<Node> getAllWorkers(int storeId) throws UIException {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeId, k -> new ReentrantLock());
         lock.lock();
         try {
             if (!employees.containsKey(storeId)) {
-                throw new Exception("Store does not exist");
+                throw new UIException("Store does not exist", ErrorCodes.STORE_NOT_FOUND);
             }
             Tree tree = employees.get(storeId);
             List<Node> result = new ArrayList<>();
@@ -410,5 +410,7 @@ public class SuperDataStructure {
             return null; // Owner have no permessions
         }
     }
+
+
 
 }
