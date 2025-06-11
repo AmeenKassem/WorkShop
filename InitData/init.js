@@ -373,17 +373,14 @@ async function runScript() {
   try {
     
     // loginUsers();
-
     const tokenUSer =
       "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ7XCJ1c2VyTmFtZVwiOlwidXNlcjFcIixcImlkXCI6NH0iLCJpYXQiOjE3NDk2NTg1MjUsImV4cCI6MTc0OTY2MjEyNX0.rXwLb0tvVexgzQPB6kKMDjD47sBjXHHywtX9DfusrYk";
-    // const storeData = await addStore(userToken, "newStoreName");
+    const storeData = await addStore(tokenUSer, "newStoreName3");
     // console.log(storeData);
     // products.forEach(([name, category, description, keyword]) => {
     //   addProductAndItem(tokenUSer, storeData, name, category, description, keyword, 5, 10);
     // });
-    // Now you can use await inside this async function
-    const storeInfo = await addStore(tokenUSer, newStoreName);
-    console.log("Store added successfully:", storeInfo);
+    
   } catch (error) {
     console.error("Failed to add store:", error.message);
     if (error.response) {
