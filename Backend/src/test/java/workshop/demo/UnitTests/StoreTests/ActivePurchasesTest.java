@@ -20,7 +20,7 @@ public class ActivePurchasesTest {
 
     public int setAuction() throws Exception {
         active = new ActivePurcheses(0);
-        return active.addProductToAuction(0, 1, 1000,8);
+        return active.addProductToAuction(0, 1, 1000, 2);
     }
 
     public int setRandom() throws Exception {
@@ -101,28 +101,28 @@ public class ActivePurchasesTest {
 
     // @Test
     // public void testBid() {
-    //     try {
-    //         int BidId = active.addProductToBid(0, 1);
-    //         SingleBid bid = active.addUserBidToBid(BidId, 0, 100);
-    //         active.rejectBid(bid.getId(), BidId);
-    //         Assertions.assertFalse(bid.isWon());
-    //         SingleBid secondBid = active.addUserBidToBid(BidId, 0, 100);
-    //         active.acceptBid(secondBid.getId(), BidId);
-    //         Assertions.assertTrue(true);
-    //         try {
-    //             SingleBid nullBid = active.addUserBidToBid(BidId, 0, 10);
-    //             Assertions.assertTrue(false);
-    //         } catch (UIException ex) {
-    //             Assertions.assertTrue(true);
+    // try {
+    // int BidId = active.addProductToBid(0, 1);
+    // SingleBid bid = active.addUserBidToBid(BidId, 0, 100);
+    // active.rejectBid(bid.getId(), BidId);
+    // Assertions.assertFalse(bid.isWon());
+    // SingleBid secondBid = active.addUserBidToBid(BidId, 0, 100);
+    // active.acceptBid(secondBid.getId(), BidId);
+    // Assertions.assertTrue(true);
+    // try {
+    // SingleBid nullBid = active.addUserBidToBid(BidId, 0, 10);
+    // Assertions.assertTrue(false);
+    // } catch (UIException ex) {
+    // Assertions.assertTrue(true);
 
-    //         }
+    // }
 
-    //     } catch (Exception e) {
-    //         // TODO Auto-generated catch block
-    //         e.printStackTrace();
-    //         System.out.println(e.getMessage());
-    //         Assertions.assertTrue(false);
-    //     }
+    // } catch (Exception e) {
+    // // TODO Auto-generated catch block
+    // e.printStackTrace();
+    // System.out.println(e.getMessage());
+    // Assertions.assertTrue(false);
+    // }
     // }
 
     @Test
@@ -144,14 +144,14 @@ public class ActivePurchasesTest {
     @Test
     public void TestAddRandomFail() {
         Assertions.assertThrows(UIException.class, () -> {
-            active.addProductToAuction(0, 0, 10000,10);
+            active.addProductToAuction(0, 0, 10000, 2);
         }, "Expected participateInRandom to throw, but it didn't");
     }
 
     @Test
     public void TestAddRandomFail2() {
         Assertions.assertThrows(UIException.class, () -> {
-            active.addProductToAuction(0, 20, 0,15);
+            active.addProductToAuction(0, 20, 0, 2);
         }, "Expected participateInRandom to throw, but it didn't");
     }
 
@@ -175,7 +175,9 @@ public class ActivePurchasesTest {
             UIException ex = Assertions.assertThrows(UIException.class, () -> {
                 active.participateInRandom(0, id, 20.5);
             }, "Expected participateInRandom to throw, but it didn't");
-            Assertions.assertEquals("Maximum amount you can pay is: " + active.getRandom(id).getAmountLeft(), ex.getMessage());;
+            Assertions.assertEquals("Maximum amount you can pay is: " + active.getRandom(id).getAmountLeft(),
+                    ex.getMessage());
+            ;
         } catch (Exception e) {
             e.printStackTrace();
             Assertions.fail("Exception thrown: " + e.getMessage());
@@ -190,7 +192,8 @@ public class ActivePurchasesTest {
             UIException ex = Assertions.assertThrows(UIException.class, () -> {
                 active.participateInRandom(0, id, 0);
             }, "Expected participateInRandom to throw, but it didn't");
-            Assertions.assertEquals("Product price must be positive!", ex.getMessage());;
+            Assertions.assertEquals("Product price must be positive!", ex.getMessage());
+            ;
         } catch (Exception e) {
             e.printStackTrace();
             Assertions.fail("Exception thrown: " + e.getMessage());
@@ -231,50 +234,53 @@ public class ActivePurchasesTest {
             Assertions.fail("Exception thrown: " + e.getMessage());
         }
     }
-    //Needs Fixing!
-//    @Test
-//    public void concurrencyTest1() {
-//        try {
-//            int id = setRandom();
-//            boolean[] isSuccess = new boolean[2];
-//            CountDownLatch startSignal = new CountDownLatch(1);
-//            CountDownLatch doneSignal = new CountDownLatch(2); // 2 threads to wait for
-//            Thread t1 = new Thread(() -> {
-//                try {
-//                    //startSignal.await(); // wait for the signal to start
-//                    active.participateInRandom(0, id, 20.0);
-//                    isSuccess[0] = true;
-//                    // doneSignal.countDown(); // signal that this thread is done
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                    isSuccess[0] = false;
-//                }
-//            });
-//            Thread t2 = new Thread(() -> {
-//                try {
-//                    //startSignal.await(); // wait for the signal to start
-//                    active.participateInRandom(1, id, 20.0);
-//                    isSuccess[1] = true;
-//                    //doneSignal.countDown(); // signal that this thread is done
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                    isSuccess[1] = false;
-//                }
-//            });
-//            t1.start();
-//            t2.start();
-//            t1.join(); // wait for t1 to finish
-//            t2.join(); // wait for t2 to finish
-//            //startSignal.countDown(); // let both threads proceed
-//            //doneSignal.await(); // wait for both threads to finish
-//            Assertions.assertTrue(active.getRandom(id).getAmountLeft() <= 0, "The random should be over");
-//            Assertions.assertFalse(active.getRandom(id).isActive());
-//            Assertions.assertTrue(isSuccess[0] || isSuccess[1], "At least one thread should have succeeded");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            Assertions.fail("Exception thrown: " + e.getMessage());
-//        }
-//    }
+
+    // Needs Fixing!
+    // @Test
+    // public void concurrencyTest1() {
+    // try {
+    // int id = setRandom();
+    // boolean[] isSuccess = new boolean[2];
+    // CountDownLatch startSignal = new CountDownLatch(1);
+    // CountDownLatch doneSignal = new CountDownLatch(2); // 2 threads to wait for
+    // Thread t1 = new Thread(() -> {
+    // try {
+    // //startSignal.await(); // wait for the signal to start
+    // active.participateInRandom(0, id, 20.0);
+    // isSuccess[0] = true;
+    // // doneSignal.countDown(); // signal that this thread is done
+    // } catch (Exception e) {
+    // e.printStackTrace();
+    // isSuccess[0] = false;
+    // }
+    // });
+    // Thread t2 = new Thread(() -> {
+    // try {
+    // //startSignal.await(); // wait for the signal to start
+    // active.participateInRandom(1, id, 20.0);
+    // isSuccess[1] = true;
+    // //doneSignal.countDown(); // signal that this thread is done
+    // } catch (Exception e) {
+    // e.printStackTrace();
+    // isSuccess[1] = false;
+    // }
+    // });
+    // t1.start();
+    // t2.start();
+    // t1.join(); // wait for t1 to finish
+    // t2.join(); // wait for t2 to finish
+    // //startSignal.countDown(); // let both threads proceed
+    // //doneSignal.await(); // wait for both threads to finish
+    // Assertions.assertTrue(active.getRandom(id).getAmountLeft() <= 0, "The random
+    // should be over");
+    // Assertions.assertFalse(active.getRandom(id).isActive());
+    // Assertions.assertTrue(isSuccess[0] || isSuccess[1], "At least one thread
+    // should have succeeded");
+    // } catch (Exception e) {
+    // e.printStackTrace();
+    // Assertions.fail("Exception thrown: " + e.getMessage());
+    // }
+    // }
     @Test
     public void concurrencyTest2() {
         try {
@@ -285,7 +291,7 @@ public class ActivePurchasesTest {
                 try {
                     startSignal.await(); // wait for the signal to start
                     active.participateInRandom(0, id, 10.0);
-                    doneSignal.countDown(); // signal that this thread is done 
+                    doneSignal.countDown(); // signal that this thread is done
                 } catch (Exception e) {
                     e.printStackTrace();
 
@@ -303,8 +309,8 @@ public class ActivePurchasesTest {
             });
             t1.start();
             t2.start();
-            //t1.join(); // wait for t1 to finish
-            //t2.join(); // wait for t2 to finish
+            // t1.join(); // wait for t1 to finish
+            // t2.join(); // wait for t2 to finish
             startSignal.countDown(); // let both threads proceed
             doneSignal.await(); // wait for both threads to finish
             Assertions.assertTrue(active.getRandom(id).getAmountLeft() == 5.0);
