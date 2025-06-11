@@ -1,7 +1,7 @@
 console.log("🚀 Notification JS loaded");
 
 // Make sure the function is properly exposed to the global scope
-window.initNotificationSocket = function(username) {
+window.initNotificationSocket = function(username, baseWebSocketUrl) {
     console.log("Initializing notification socket for user: " + username);
     
     // Check if socket already exists and is open
@@ -14,7 +14,7 @@ window.initNotificationSocket = function(username) {
     
     try {
         // Make sure to use the correct WebSocket URL
-        const socket = new WebSocket("ws://localhost:8080/notifications?username=" + encodeURIComponent(username));
+        const socket = new WebSocket(`${baseWebSocketUrl}/notifications?username=${encodeURIComponent(username)}`);
         window.notificationSocket = socket;
         
         socket.onopen = function() {
