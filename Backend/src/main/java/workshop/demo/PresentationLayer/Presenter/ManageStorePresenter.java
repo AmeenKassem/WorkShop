@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -305,4 +306,37 @@ public class ManageStorePresenter {
         }
         return null;
     }
+    // ── purchase-policy helpers ─────────────────────────────────────────
+    public void addPurchasePolicy(int storeId, String token,
+                                  String policyKey, Integer param) throws Exception {
+
+        UriComponentsBuilder b = UriComponentsBuilder
+                .fromHttpUrl(Base.url + "/api/store/addPurchasePolicy")
+                .queryParam("storeId", storeId)
+                .queryParam("token", UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8))
+                .queryParam("policyKey", policyKey);
+        if (param != null) b.queryParam("param", param);
+
+        String url = b.build().toUriString();   // single encoding
+        ApiResponse rsp = restTemplate.postForObject(url, null, ApiResponse.class);
+        if (rsp == null || rsp.getErrNumber() != -1)
+            throw new Exception(rsp == null ? "null response" : rsp.getErrorMsg());
+    }
+
+    public void removePurchasePolicy(int storeId, String token,
+                                     String policyKey, Integer param) throws Exception {
+
+        UriComponentsBuilder b = UriComponentsBuilder
+                .fromHttpUrl(Base.url + "/api/store/removePurchasePolicy")
+                .queryParam("storeId", storeId)
+                .queryParam("token", UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8))
+                .queryParam("policyKey", policyKey);
+        if (param != null) b.queryParam("param", param);
+
+        String url = b.build().toUriString();
+        ApiResponse rsp = restTemplate.postForObject(url, null, ApiResponse.class);
+        if (rsp == null || rsp.getErrNumber() != -1)
+            throw new Exception(rsp == null ? "null response" : rsp.getErrorMsg());
+    }
+
 }
