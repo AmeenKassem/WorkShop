@@ -23,6 +23,8 @@ public class Random {
     private Timer timer;
     private boolean isActive = true;
     private boolean canceled;
+    private long endTimeMillis;
+
 
     public Random(int productId, int quantity, double productPrice, int id, int storeId, long randomTime) {
         this.productId = productId;
@@ -34,6 +36,8 @@ public class Random {
         this.id = id;
         this.isActive = true;
         this.timer = new Timer();
+        this.endTimeMillis = System.currentTimeMillis() + randomTime;
+
         this.canceled =false;
 
         timer.schedule(new TimerTask() {
@@ -111,6 +115,7 @@ public class Random {
         randomDTO.id = id;
         randomDTO.storeId = storeId;
         randomDTO.winner = winner;
+        randomDTO.endTimeMillis = getEndTimeMillis();
 
         ParticipationInRandomDTO[] participations = new ParticipationInRandomDTO[usersParticipations.size()];
         int i = 0;
@@ -156,4 +161,17 @@ public class Random {
     public void setCancel(boolean canceled){
         this.canceled=canceled;
     }
+    public long getEndTimeMillis() {
+        return endTimeMillis;
+    }
+
+    public long getRemainingTimeMillis() {
+        long now = System.currentTimeMillis();
+        return Math.max(0, endTimeMillis - now);
+    }
+
+    public long getRemainingSeconds() {
+        return getRemainingTimeMillis() / 1000;
+    }
+
 }

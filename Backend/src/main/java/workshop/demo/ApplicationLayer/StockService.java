@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
@@ -26,6 +25,7 @@ import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
+import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
@@ -71,7 +71,7 @@ public class StockService {
     public RandomDTO[] searchActiveRandoms(String token, ProductSearchCriteria criteria) throws Exception {
         logger.info("Starting searchRandoms with criteria: {}", criteria);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
+        //String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
         RandomDTO[] randoms = stockRepo.searchActiveRandoms(criteria);
         storeRepo.fillWithStoreName(randoms);
         return randoms;
@@ -80,8 +80,8 @@ public class StockService {
     public BidDTO[] searchActiveBids(String token, ProductSearchCriteria criteria) throws Exception {
         logger.info("Starting searchBids with criteria: {}", criteria);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
-        BidDTO[] bids = stockRepo.searchActiveBids(criteria, storeName);
+        //String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
+        BidDTO[] bids = stockRepo.searchActiveBids(criteria);
         storeRepo.fillWithStoreName(bids);
         return bids;
     }
@@ -89,8 +89,8 @@ public class StockService {
     public AuctionDTO[] searchActiveAuctions(String token, ProductSearchCriteria criteria) throws Exception {
         logger.info("Starting searchAuctions with criteria: {}", criteria);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
-        AuctionDTO[] auctions = stockRepo.searchActiveAuctions(criteria, storeName);
+        //String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
+        AuctionDTO[] auctions = stockRepo.searchActiveAuctions(criteria);
         storeRepo.fillWithStoreName(auctions);
         return auctions;
     }
@@ -136,7 +136,7 @@ public class StockService {
         UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, bid.getSpecialId(), bid.getId(),
                 SpecialType.BID);
         userRepo.addSpecialItemToCart(specialItem, userId);
-        for(Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
+        for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
             String ownerName = userRepo.getRegisteredUser(worker.getMyId()).getUsername();
             notificationRepo.sendDelayedMessageToUser(ownerName, "User " + userRepo.getRegisteredUser(userId).getUsername() + " placed a bid on your product");
         }
@@ -244,9 +244,9 @@ public class StockService {
 
         SingleBid bidAccepted = stockRepo.acceptBid(storeId, bidId, bidToAcceptId);
         if (!bidAccepted.isWinner()) {
-            notificationRepo.sendDelayedMessageToUser(userRepo.getRegisteredUser(bidAccepted.getUserId()).getUsername(), "Owner "+ userRepo.getRegisteredUser(userId).getUsername() + " accepted your bid");
-        } else{
-            notificationRepo.sendDelayedMessageToUser(userRepo.getRegisteredUser(bidAccepted.getUserId()).getUsername(), "Owner "+ userRepo.getRegisteredUser(userId).getUsername() + " accepted your bid and you are the winner!");
+            notificationRepo.sendDelayedMessageToUser(userRepo.getRegisteredUser(bidAccepted.getUserId()).getUsername(), "Owner " + userRepo.getRegisteredUser(userId).getUsername() + " accepted your bid");
+        } else {
+            notificationRepo.sendDelayedMessageToUser(userRepo.getRegisteredUser(bidAccepted.getUserId()).getUsername(), "Owner " + userRepo.getRegisteredUser(userId).getUsername() + " accepted your bid and you are the winner!");
         }
         logger.info("Bid accepted. User: {} is the winner.", bidAccepted.getUserId());
         return bidAccepted;
@@ -298,6 +298,15 @@ public class StockService {
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to see random info.", ErrorCodes.NO_PERMISSION);
         }
+        return stockRepo.getRandomsInStore(storeId);
+    }
+
+    public RandomDTO[] getAllRandomInStoreToUser(String token, int storeId) throws Exception, DevException {
+        logger.info("Fetching all randoms in store {}", storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        storeRepo.checkStoreExistance(storeId);
         return stockRepo.getRandomsInStore(storeId);
     }
 
@@ -428,7 +437,6 @@ public class StockService {
     //     susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
     //     return stockRepo.participateInRandom(userId, randomId, storeId, price);
     // }
-
     public BidDTO[] getAllBidsStatus_user(String token, int storeId) throws Exception, DevException {
         logger.info("Fetching bid status for store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);

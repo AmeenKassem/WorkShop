@@ -11,7 +11,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -46,7 +45,7 @@ public class ManageStoreManagersPresenter {
     public void loadManagers() {
         try {
             String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-            URI uri = UriComponentsBuilder.fromHttpUrl(Base.url+"/api/store/viewRolesAndPermissions")
+            URI uri = UriComponentsBuilder.fromHttpUrl(Base.url + "/api/store/viewRolesAndPermissions")
                     .queryParam("token", token)
                     .queryParam("storeId", storeId)
                     .build().toUri();
@@ -78,7 +77,7 @@ public class ManageStoreManagersPresenter {
                     .collect(Collectors.toSet());
 
             String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-            URI uri = UriComponentsBuilder.fromHttpUrl(Base.url+"/api/store/makeOfferManager")
+            URI uri = UriComponentsBuilder.fromHttpUrl(Base.url + "/api/store/makeOfferManager")
                     .queryParam("storeId", storeId)
                     .queryParam("token", token)
                     .queryParam("managerName", username)
@@ -114,7 +113,7 @@ public class ManageStoreManagersPresenter {
 
             String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
 
-            URI uri = UriComponentsBuilder.fromHttpUrl(Base.url+"/api/store/changePermissions")
+            URI uri = UriComponentsBuilder.fromHttpUrl(Base.url + "/api/store/changePermissions")
                     .queryParam("token", token)
                     .queryParam("managerId", managerId)
                     .queryParam("storeId", storeId)
@@ -144,14 +143,14 @@ public class ManageStoreManagersPresenter {
         try {
             String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
 
-            URI uri = UriComponentsBuilder.fromHttpUrl(Base.url+"/api/store/deleteManager")
+            URI uri = UriComponentsBuilder.fromHttpUrl(Base.url + "/api/store/deleteManager")
                     .queryParam("token", token)
                     .queryParam("managerId", managerId)
                     .queryParam("storeId", storeId)
                     .build().toUri();
 
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(List.of(MediaType.APPLICATION_JSON));
             HttpEntity<Void> entity = new HttpEntity<>(headers);
 
             ResponseEntity<ApiResponse> response = restTemplate.exchange(uri, HttpMethod.POST, entity, ApiResponse.class);

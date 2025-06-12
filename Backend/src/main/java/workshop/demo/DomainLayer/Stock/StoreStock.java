@@ -15,9 +15,9 @@ import workshop.demo.DomainLayer.User.CartItem;
 
 public class StoreStock {
 
-    private final Map<Integer, item> stock;//productId, item
+    private final Map<Integer, item> stock;// productId, item
     private int storeID;
-    //discounts for this store 
+    // discounts for this store
 
     public StoreStock(int storeID) {
         this.stock = new ConcurrentHashMap<>();
@@ -25,7 +25,7 @@ public class StoreStock {
     }
 
     // public item getProductById(int id) {
-    //     return stock.get(id);
+    // return stock.get(id);
     // }
     public List<item> getAllItemsInStock() {
         return new ArrayList<>(stock.values());
@@ -52,7 +52,7 @@ public class StoreStock {
         foundItem.changeQuantity(0);
     }
 
-    //update quantity
+    // update quantity
     public void changeQuantity(int itemId, int quantity) throws UIException {
         item foundItem = getItemByProductId(itemId);
         if (foundItem == null) {
@@ -61,7 +61,7 @@ public class StoreStock {
         foundItem.changeQuantity(quantity);
     }
 
-    //decrase quantity to buy: -> check if I need synchronized the item???
+    // decrase quantity to buy: -> check if I need synchronized the item???
     public void decreaseQuantitytoBuy(int itemId, int quantity) throws UIException {
         item foundItem = getItemByProductId(itemId);
         if (foundItem == null) {
@@ -73,7 +73,7 @@ public class StoreStock {
             }
             foundItem.changeQuantity(foundItem.getQuantity() - quantity);
         }
-        //foundItem.changeQuantity(foundItem.getQuantity() - quantity);
+        // foundItem.changeQuantity(foundItem.getQuantity() - quantity);
     }
 
     public void returnProductToStock(int productId, int quantity) throws UIException {
@@ -81,9 +81,8 @@ public class StoreStock {
         if (storeItem == null) {
             throw new UIException("Item not found with ID " + productId, ErrorCodes.PRODUCT_NOT_FOUND);
         }
-        storeItem.changeQuantity(storeItem.getQuantity() + quantity); 
+        storeItem.changeQuantity(storeItem.getQuantity() + quantity);
     }
-
 
     public void updatePrice(int itemId, int newPrice) throws UIException {
         item foundItem = getItemByProductId(itemId);
@@ -93,13 +92,13 @@ public class StoreStock {
         foundItem.setPrice(newPrice);
     }
 
-    // rank product 
+    // rank product
     public void rankProduct(int productId, int newRank) throws UIException {
         item currenItem = getItemByProductId(productId);
         if (currenItem != null) {
             AtomicInteger[] ranks = currenItem.getRank();
             if (newRank >= 1 && newRank <= ranks.length) {
-                ranks[newRank - 1].incrementAndGet();  // thread-safe increment
+                ranks[newRank - 1].incrementAndGet(); // thread-safe increment
             } else {
                 throw new UIException("Invalid rank index: " + newRank, ErrorCodes.INVALID_RANK);
             }
@@ -112,27 +111,29 @@ public class StoreStock {
         return this.stock;
     }
 
-    // //display products in store 
+    // //display products in store
     // public List<ItemStoreDTO> getProductsInStore() {
-    //     List<ItemStoreDTO> itemStoreDTOList = new ArrayList<>();
-    //     for (item i : stock.values()) {
-    //         // If item is mutable and accessed by multiple threads, synchronize on the item
-    //         synchronized (i) {
-    //             ItemStoreDTO toAdd = new ItemStoreDTO(
-    //                     i.getProductId(),
-    //                     i.getQuantity(),
-    //                     i.getPrice(),
-    //                     i.getCategory(),
-    //                     i.getFinalRank(),
-    //                     storeID
-    //             );
-    //             itemStoreDTOList.add(toAdd);
-    //         }
-    //     }
-    //     return itemStoreDTOList;
+    // List<ItemStoreDTO> itemStoreDTOList = new ArrayList<>();
+    // for (item i : stock.values()) {
+    // // If item is mutable and accessed by multiple threads, synchronize on the
+    // item
+    // synchronized (i) {
+    // ItemStoreDTO toAdd = new ItemStoreDTO(
+    // i.getProductId(),
+    // i.getQuantity(),
+    // i.getPrice(),
+    // i.getCategory(),
+    // i.getFinalRank(),
+    // storeID
+    // );
+    // itemStoreDTOList.add(toAdd);
     // }
-    //may be changed later:
-    public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems, boolean isGuest, String storeName) throws UIException {
+    // }
+    // return itemStoreDTOList;
+    // }
+    // may be changed later:
+    public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems, boolean isGuest, String storeName)
+            throws UIException {
         List<ReceiptProduct> boughtItems = new ArrayList<>();
         for (ItemCartDTO dto : cartItems) {
             CartItem item = new CartItem(dto);
@@ -151,13 +152,13 @@ public class StoreStock {
                     item.getQuantity(),
                     item.getPrice(),
                     item.productId,
-                    item.category
-            ));
+                    item.category));
         }
         return boughtItems;
     }
-public void changequantity(List<ItemCartDTO> cartItems, boolean isGuest, String storeName) throws UIException {
-  List<ReceiptProduct> boughtItems = new ArrayList<>();
+
+    public void changequantity(List<ItemCartDTO> cartItems, boolean isGuest, String storeName) throws UIException {
+        List<ReceiptProduct> boughtItems = new ArrayList<>();
         for (ItemCartDTO dto : cartItems) {
             CartItem item = new CartItem(dto);
             item storeItem = getItemByProductId(item.getProductId());
@@ -170,11 +171,10 @@ public void changequantity(List<ItemCartDTO> cartItems, boolean isGuest, String 
                 }
             }
             decreaseQuantitytoBuy(item.getProductId(), item.getQuantity());
-    }}
+        }
+    }
 
-
-    
-    //just for testing
+    // just for testing
     public List<item> getItemsByCategoryObject(Category category) {
         List<item> result = new ArrayList<>();
         for (item i : stock.values()) {
@@ -185,7 +185,7 @@ public void changequantity(List<ItemCartDTO> cartItems, boolean isGuest, String 
         return result;
     }
 
-    //FOR STORE AND TESTING
+    // FOR STORE AND TESTING
     public item getItemByProductId(int productId) {
         return stock.get(productId);
     }
@@ -194,5 +194,17 @@ public void changequantity(List<ItemCartDTO> cartItems, boolean isGuest, String 
         return this.storeID;
     }
 
-    
+    public void IncreaseQuantitytoBuy(int productId, int quantity) throws UIException {
+        item foundItem = getItemByProductId(productId);
+        if (foundItem == null) {
+            throw new UIException("Item not found with ID " + productId, ErrorCodes.PRODUCT_NOT_FOUND);
+        }
+        synchronized (foundItem) {
+            if (foundItem.getQuantity() < quantity) {
+                throw new UIException("Insufficient stock", ErrorCodes.INSUFFICIENT_STOCK);
+            }
+            foundItem.changeQuantity(foundItem.getQuantity() + quantity);
+        }
+    }
+
 }

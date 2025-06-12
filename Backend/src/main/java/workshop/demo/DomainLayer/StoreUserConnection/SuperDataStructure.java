@@ -10,8 +10,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.springframework.stereotype.Component;
 
-import com.vaadin.flow.component.UI;
-
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -371,7 +369,7 @@ public class SuperDataStructure {
     }
 
     public void clearData() {
-            employees.clear();
+        employees.clear();
 
         offers.clear();
         storeLocks.clear();
@@ -410,7 +408,5 @@ public class SuperDataStructure {
             return null; // Owner have no permessions
         }
     }
-
-
 
 }

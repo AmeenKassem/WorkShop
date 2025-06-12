@@ -48,20 +48,31 @@ public class ManageStoreDiscountsPresenter {
                 .queryParam("name",   UriUtils.encodeQueryParam(name,  StandardCharsets.UTF_8))
                 .queryParam("percent", percent)
                 .queryParam("type",   type)
-                .queryParam("condition",
-                        UriUtils.encodeQueryParam(condition == null ? "" : condition, StandardCharsets.UTF_8))
+                .queryParam("condition", condition == null ? "" : condition)
                 .queryParam("logic",  logic);
 
         subNames.forEach(n ->
                 b.queryParam("subDiscountsNames",
                         UriUtils.encodeQueryParam(n, StandardCharsets.UTF_8)));
 
-        String url = b.build(true).toUriString();
+        String url = b.build().toUriString();
 
         ApiResponse rsp = rest.postForObject(url, null, ApiResponse.class);
         if (rsp == null || rsp.getErrNumber() != -1) {
             throw new Exception(rsp == null ? "null response" : rsp.getErrorMsg());
         }
+    }
+    public void deleteDiscount(int storeId, String token, String name) throws Exception {
+        String url = UriComponentsBuilder
+                .fromHttpUrl(Base.url+"/api/store/removeDiscountByName")
+                .queryParam("storeId", storeId)
+                .queryParam("token",  UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8))
+                .queryParam("discountName", UriUtils.encodeQueryParam(name, StandardCharsets.UTF_8))
+                .toUriString();
+
+        ApiResponse rsp = rest.postForObject(url, null, ApiResponse.class);
+        if (rsp == null || rsp.getErrNumber() != -1)
+            throw new Exception(rsp == null ? "null response" : rsp.getErrorMsg());
     }
 
 

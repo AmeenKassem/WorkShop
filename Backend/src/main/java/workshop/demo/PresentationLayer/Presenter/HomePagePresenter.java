@@ -42,7 +42,7 @@ public class HomePagePresenter {
 
     private RestTemplate restTemplate;
     private HomePage view;
-    private final String BASE_URL = Base.url+"/stock";
+    private final String BASE_URL = Base.url + "/stock";
 
     public HomePagePresenter(HomePage homePage) {
         this.view = homePage;
@@ -53,7 +53,7 @@ public class HomePagePresenter {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         try {
             String url = String.format(
-                    Base.url+"/api/store/allStores?token=%s",
+                    Base.url + "/api/store/allStores?token=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
             HttpHeaders headers = new HttpHeaders();
@@ -122,33 +122,6 @@ public class HomePagePresenter {
         return Collections.emptyList();
     }
 
-    private String buildUrl(String path, String token, String name, String keyword, Category category,
-            Double minPrice, Double maxPrice, Integer productRate) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(BASE_URL + path)
-                .queryParam("token", token);
-
-        if (name != null && !name.isEmpty()) {
-            builder.queryParam("productNameFilter", name);
-        }
-        if (keyword != null && !keyword.isEmpty()) {
-            builder.queryParam("keywordFilter", keyword);
-        }
-        if (category != null) {
-            builder.queryParam("categoryFilter", category);
-        }
-        if (minPrice != null) {
-            builder.queryParam("minPrice", minPrice);
-        }
-        if (maxPrice != null) {
-            builder.queryParam("maxPrice", maxPrice);
-        }
-        if (productRate != null) {
-            builder.queryParam("minProductRating", productRate);
-        }
-
-        return builder.toUriString();
-    }
-
     private HttpHeaders buildHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
@@ -160,7 +133,7 @@ public class HomePagePresenter {
         body.put("item", item);
         body.put("quantity", quantity);
         String url = String.format(
-                Base.url+"/api/users/addToCart?token=%s",
+                Base.url + "/api/users/addToCart?token=%s",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
         );
 
@@ -190,4 +163,163 @@ public class HomePagePresenter {
             ExceptionHandlers.handleException(e);
         }
     }
+
+    public boolean addRegularBid(String token, int bidId, int storeId, double price) {
+        try {
+            String url = String.format(
+                    Base.url + "/stock/addRegularBid?token=%s&bitId=%d&storeId=%d&price=%s",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                    bidId,
+                    storeId,
+                    Double.toString(price)
+            );
+
+            ResponseEntity<ApiResponse> response = restTemplate.postForEntity(url, null, ApiResponse.class);
+
+            if (response.getBody() != null && response.getBody().getErrNumber() == -1) {
+                NotificationView.showSuccess("Bid placed successfully!");
+                return true;
+            }
+
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+
+        return false;
+    }
+
+    public void participateInRandomDraw(String token, int randomId, int storeId, double amountPaid, PaymentDetails payment) {
+        try {
+            String url = String.format(
+                    Base.url + "/purchase/participateRandom?token=%s&randomId=%d&storeId=%d&amountPaid=%.2f",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                    randomId, storeId, amountPaid
+            );
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<PaymentDetails> entity = new HttpEntity<>(payment, headers);
+
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    ApiResponse.class
+            );
+
+            NotificationView.showSuccess("Successfully participated in the random draw!");
+
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+
+    }
+
+    public void placeBidOnAuction(String token, int auctionId, int storeId, int price) {
+        try {
+            String url = String.format(
+                    Base.url + "/stock/addBidOnAuction?token=%s&auctionId=%d&storeId=%d&price=%d",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                    auctionId, storeId, price
+            );
+
+            restTemplate.postForEntity(url, null, ApiResponse.class);
+            NotificationView.showSuccess(" Bid placed successfully!");
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+
+    }
+
+    public List<BidDTO> searchBids(String token, String name, String keyword, Category category,
+            Double minPrice, Double maxPrice, Integer productRate) {
+        try {
+            String url = buildUrl("/searchBids", token, name, keyword, category, minPrice, maxPrice, productRate);
+            ResponseEntity<ApiResponse<BidDTO[]>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    new HttpEntity<>(buildHeaders()),
+                    new ParameterizedTypeReference<>() {
+            }
+            );
+            ApiResponse<BidDTO[]> body = response.getBody();
+            if (body != null && body.getErrNumber() == -1) {
+                return List.of(body.getData());
+            }
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+        return Collections.emptyList();
+    }
+
+    public List<AuctionDTO> searchAuctions(String token, String name, String keyword, Category category,
+            Double minPrice, Double maxPrice, Integer productRate) {
+        try {
+            String url = buildUrl("/searchAuctions", token, name, keyword, category, minPrice, maxPrice, productRate);
+            ResponseEntity<ApiResponse<AuctionDTO[]>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    new HttpEntity<>(buildHeaders()),
+                    new ParameterizedTypeReference<>() {
+            }
+            );
+            ApiResponse<AuctionDTO[]> body = response.getBody();
+            if (body != null && body.getErrNumber() == -1) {
+                return List.of(body.getData());
+            }
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+        return Collections.emptyList();
+    }
+
+    public List<RandomDTO> searchRandoms(String token, String name, String keyword, Category category,
+            Double minPrice, Double maxPrice, Integer productRate) {
+        try {
+            String url = buildUrl("/searchRandoms", token, name, keyword, category, minPrice, maxPrice, productRate);
+            ResponseEntity<ApiResponse<RandomDTO[]>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    new HttpEntity<>(buildHeaders()),
+                    new ParameterizedTypeReference<>() {
+            }
+            );
+            ApiResponse<RandomDTO[]> body = response.getBody();
+            if (body != null && body.getErrNumber() == -1) {
+                return List.of(body.getData());
+            }
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+        return Collections.emptyList();
+    }
+
+    private String buildUrl(String path, String token, String name, String keyword, Category category,
+            Double minPrice, Double maxPrice, Integer productRate) {
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(BASE_URL + path)
+                .queryParam("token", token);
+
+        if (name != null && !name.isEmpty()) {
+            builder.queryParam("productNameFilter", name);
+        }
+        if (keyword != null && !keyword.isEmpty()) {
+            builder.queryParam("keywordFilter", keyword);
+        }
+        if (category != null) {
+            builder.queryParam("categoryFilter", category);
+        }
+        if (minPrice != null) {
+            builder.queryParam("minPrice", minPrice);
+        }
+        if (maxPrice != null) {
+            builder.queryParam("maxPrice", maxPrice);
+        }
+        if (productRate != null) {
+            builder.queryParam("minProductRating", productRate);
+        }
+
+        return builder.toUriString();
+    }
+
 }

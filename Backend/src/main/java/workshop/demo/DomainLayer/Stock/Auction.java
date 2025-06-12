@@ -6,6 +6,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.security.access.method.P;
+
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.AuctionStatus;
 import workshop.demo.DTOs.SingleBidDTO;
@@ -26,6 +28,7 @@ public class Auction {
     private int storeId;
     private AtomicInteger idGen = new AtomicInteger();
     private final Object lock = new Object();
+    private long endTimeMillis;
 
     public Auction(int productId, int quantity, long time, int id, int storeId) {
         this.productId = productId;
@@ -35,6 +38,7 @@ public class Auction {
         this.storeId = storeId;
         this.auctionId = id;
         this.status = AuctionStatus.IN_PROGRESS;
+        this.endTimeMillis = System.currentTimeMillis() + time;
 
         timer.schedule(new TimerTask() {
             @Override
@@ -52,6 +56,23 @@ public class Auction {
         }, time);
     }
 
+    public void endAuction() {
+        for (SingleBid singleBid : bids) {
+            if (maxBid == singleBid.getBidPrice()) {
+                winner = singleBid;
+                winner.markAsWinner();
+            } else {
+                singleBid.markAsLosed();
+            }
+        }
+        status = AuctionStatus.FINISH;
+    }
+
+    public boolean mustReturnToStock(){
+        return status==AuctionStatus.FINISH && bids.isEmpty();
+    }
+
+    
     public SingleBid bid(int userId, double price) throws UIException {
         synchronized (lock) {
             if (status == AuctionStatus.FINISH) {
@@ -80,6 +101,7 @@ public class Auction {
         res.quantity = quantity;
         res.winner = winner;
         res.storeId = storeId;
+        res.endTimeMillis = this.endTimeMillis;
 
         SingleBidDTO[] arrayBids = new SingleBidDTO[bids.size()];
         for (int i = 0; i < arrayBids.length; i++) {
@@ -88,7 +110,7 @@ public class Auction {
 
         // TODO set a time date for ending product.
         res.auctionId = this.auctionId;
-        res.bids = arrayBids; // this line wasnt here , so bids was always null 
+        res.bids = arrayBids; // this line wasnt here , so bids was always null
         return res;
     }
 

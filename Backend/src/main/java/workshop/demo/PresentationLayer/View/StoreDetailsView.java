@@ -668,6 +668,9 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Paragraph store = new Paragraph("Store: " + auction.storeName);
         Paragraph max = new Paragraph("Max Bid: $" + auction.maxBid);
 
+        String formattedTime = formatEndTime(auction.endTimeMillis);
+        Paragraph endsAt = new Paragraph("⏰ Ends at: " + formattedTime);
+
         Button makeAuction = new Button("Make Auction", e -> showAuctionBidDialog(auction));
         makeAuction.getStyle()
                 .set("background-color", "#2E2E2E")
@@ -676,7 +679,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 .set("border-radius", "8px")
                 .set("padding", "6px 16px");
 
-        card.add(name, store, max, makeAuction);
+        card.add(name, store, max,endsAt, makeAuction);
         return card;
     }
 
@@ -693,12 +696,23 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Paragraph amountLeft = new Paragraph("Left Amount: " + random.amountLeft);
         Paragraph price = new Paragraph("Price: $" + random.productPrice);
 
+        String formattedEndTime = formatEndTime(random.endTimeMillis);
+        Paragraph endTime = new Paragraph("🕒 Ends at: " + formattedEndTime);
+
+
+
         Button participate = new Button("Join Random Draw", e -> showRandomParticipationDialog(random));
         participate.getStyle().set("background-color", "#9c27b0").set("color", "white");
 
-        card.add(name, store, amountLeft, price, participate);
+        card.add(name, store, amountLeft, price, endTime,participate);
         return card;
     }
+    private String formatEndTime(long endMillis) {
+        return java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy - hh:mm a", java.util.Locale.ENGLISH)
+                .withZone(java.time.ZoneId.systemDefault())
+                .format(java.time.Instant.ofEpochMilli(endMillis));
+    }
+
 
     private Div createItemCard(ItemStoreDTO item) {
         Div card = new Div();
