@@ -1,15 +1,25 @@
 package workshop.demo.IntegrationTests.ServiceTests;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
-
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.OrderService;
@@ -20,18 +30,26 @@ import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.AuctionStatus;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.SpecialCartItemDTO;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.Status;
+import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.BID;
-import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.SingleBid;
-import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-import workshop.demo.DomainLayer.User.AdminInitilizer;
-import workshop.demo.DomainLayer.User.ShoppingBasket;
-import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
@@ -42,18 +60,9 @@ import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
-import workshop.demo.DTOs.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class PurchaseTests {
 
@@ -127,7 +136,7 @@ public class PurchaseTests {
         createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
 
         // ======================= PRODUCT & ITEM ADDITION =======================
-        String[] keywords = { "Laptop", "Lap", "top" };
+        String[] keywords = {"Laptop", "Lap", "top"};
         productId_laptop = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
 
         assertEquals(1,
@@ -420,13 +429,14 @@ public class PurchaseTests {
         assertTrue(userRepo.getRegisteredUser(authRepo.getUserId(NGToken)).getSpecialCart().isEmpty());
 
     }
+
     @Test
     void Set_ProductToRandom_time() throws Exception {
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
         assertEquals(8, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
         purchaseService.participateInRandom(NGToken, 1, 1, 200, paymentDetails);
-Thread.sleep(1000);
+        Thread.sleep(1000);
         assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].participations.length == 1);
         assertFalse(stockService.getAllRandomInStore(NOToken, 1)[0].participations[0].won());
 
@@ -439,11 +449,12 @@ Thread.sleep(1000);
 
         assertEquals(10, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
     }
+
     @Test
     void Set_ProductToRandom_time1() throws Exception {
-        PaymentDetails paymentDetails1 = new PaymentDetails("111","test","12/25","113") ;// fill if needed
+        PaymentDetails paymentDetails1 = new PaymentDetails("111", "test", "12/25", "113");// fill if needed
 
-        PaymentDetails paymentDetails = new PaymentDetails("111","test","12/25",null) ;// fill if needed
+        PaymentDetails paymentDetails = new PaymentDetails("111", "test", "12/25", null);// fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
         assertEquals(8, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
         purchaseService.participateInRandom(NGToken, 1, 1, 200, paymentDetails1);
@@ -453,26 +464,23 @@ Thread.sleep(1000);
 
         assertThrows(Exception.class, () -> purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails));
 
-
-
     }
+
     @Test
     void Set_ProductToRandom_time2() throws Exception {
-        PaymentDetails paymentDetails1 = new PaymentDetails("111","test","12/25","113") ;// fill if needed
+        PaymentDetails paymentDetails1 = new PaymentDetails("111", "test", "12/25", "113");// fill if needed
 
-        PaymentDetails paymentDetails = new PaymentDetails(null,"test","12/25","113") ;// fill if needed
-            SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
-            assertEquals(8, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
-            purchaseService.participateInRandom(NGToken, 1, 1, 200, paymentDetails1);
-            Thread.sleep(1000);
-            assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].participations.length == 1);
-            assertFalse(stockService.getAllRandomInStore(NOToken, 1)[0].participations[0].won());
+        PaymentDetails paymentDetails = new PaymentDetails(null, "test", "12/25", "113");// fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+        assertEquals(8, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
+        purchaseService.participateInRandom(NGToken, 1, 1, 200, paymentDetails1);
+        Thread.sleep(1000);
+        assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].participations.length == 1);
+        assertFalse(stockService.getAllRandomInStore(NOToken, 1)[0].participations[0].won());
 
-            assertThrows(Exception.class, () -> purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails));
+        assertThrows(Exception.class, () -> purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails));
 
-
-
-        }
+    }
 
     // Needs Fixing!
     @Test
@@ -1087,9 +1095,5 @@ Thread.sleep(1000);
         assertEquals(1, dto.bids.length);
         assertEquals(b.getId(), dto.bids[0].id);
     }
-
-
-
-
 
 }

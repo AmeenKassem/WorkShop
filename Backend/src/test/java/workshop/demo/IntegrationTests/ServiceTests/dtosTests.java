@@ -1,19 +1,40 @@
 package workshop.demo.IntegrationTests.ServiceTests;
 
-import org.junit.jupiter.api.Test;
-import workshop.demo.DTOs.*;
-import workshop.demo.DomainLayer.Exceptions.DevException;
-import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.NotificationDTO;
+import workshop.demo.DTOs.OrderDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DTOs.PurchaseHistoryDTO;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.ReviewDTO;
+import workshop.demo.DTOs.SpecialCartItemDTO;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.SystemAnalyticsDTO;
+import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DTOs.WorkerDTO;
+import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+
+@ActiveProfiles("test")
 public class dtosTests {
 
     @Test
@@ -441,9 +462,5 @@ public class dtosTests {
         dto.markAsLoser();
         assertFalse(dto.won());
     }
-
-
-
-
 
 }

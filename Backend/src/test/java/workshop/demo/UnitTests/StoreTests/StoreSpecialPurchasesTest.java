@@ -5,6 +5,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.DTOs.Category;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
@@ -16,6 +17,7 @@ import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 
 @SpringBootTest
+@ActiveProfiles("test")
 public class StoreSpecialPurchasesTest {
 
     private IStoreRepo storeRepo = new StoreRepository();

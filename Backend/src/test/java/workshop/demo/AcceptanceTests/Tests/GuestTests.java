@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.slf4j.Logger;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.AcceptanceTests.Utill.Real;
 import workshop.demo.DTOs.Category;
@@ -40,11 +41,11 @@ import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.CartItem;
-import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
 @SpringBootTest
+@ActiveProfiles("test")
 public class GuestTests extends AcceptanceTests {
 
     Real real = new Real();

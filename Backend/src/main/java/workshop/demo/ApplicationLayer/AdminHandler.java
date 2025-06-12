@@ -10,7 +10,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.PurchaseHistoryDTO;
@@ -25,7 +25,8 @@ import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
-@Service
+//@Service
+@Component
 public class AdminHandler {
 
     private final IOrderRepo orderRepo;
@@ -43,8 +44,7 @@ public class AdminHandler {
         this.userRepo = userRepo;
         this.authRepo = authRepo;
         //inialize the admin here:
-            initAdmin();
-
+        //initAdmin();
 
     }
 

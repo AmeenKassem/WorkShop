@@ -1,8 +1,9 @@
 package workshop.demo.IntegrationTests.ServiceTests;
 
-import org.junit.jupiter.api.AfterEach;
+import java.util.List;
 
 import static org.junit.Assert.assertNull;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.OrderService;
@@ -24,7 +26,14 @@ import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
@@ -40,9 +49,8 @@ import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 
-import java.util.List;
-
 @SpringBootTest
+@ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class GuestTests {
 
@@ -114,7 +122,7 @@ public class GuestTests {
         System.out.println(createdStoreId + "aaaaaaaaaaaaaaaaa");
 
         // ======================= PRODUCT & ITEM ADDITION =======================
-        String[] keywords = { "Laptop", "Lap", "top" };
+        String[] keywords = {"Laptop", "Lap", "top"};
         stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
 
         assertEquals(1, stockService.addItem(createdStoreId, NOToken, 1, 10, 2000, Category.Electronics));
@@ -218,7 +226,7 @@ public class GuestTests {
         try {
             // ===== GUEST REQUESTS PRODUCT INFO =====
             ProductDTO info = stockService.getProductInfo(GToken, 1);
-    
+
             // ===== ASSERTIONS =====
             assertNotNull(info);
             System.out.println(info.getCategory());
@@ -369,7 +377,7 @@ public class GuestTests {
     void testGuestSearchProducts_Success() throws Exception {
 
         // --- Step 2: Prepare search criteria ---
-        String[] keywords = { "Laptop", "Lap", "top" };
+        String[] keywords = {"Laptop", "Lap", "top"};
         System.out.println(storeService.getFinalRateInStore(1));
 
         ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop", Category.Electronics, null, 1, 0, 3000, 0,
@@ -407,7 +415,7 @@ public class GuestTests {
     @Test
     void testSearchProducts_NoMatches() throws Exception {
 
-        String[] keywords = { "Laptop", "Lap", "top" };
+        String[] keywords = {"Laptop", "Lap", "top"};
         ProductSearchCriteria criteria = new ProductSearchCriteria("aa", Category.Electronics, keywords[0], 1, 0, 5000,
                 0, 5);
         ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);

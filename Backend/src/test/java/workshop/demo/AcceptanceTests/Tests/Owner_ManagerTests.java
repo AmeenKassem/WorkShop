@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.AcceptanceTests.Utill.Real;
 import workshop.demo.ApplicationLayer.ReviewService;
@@ -36,6 +37,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.Registered;
 
 @SpringBootTest
+@ActiveProfiles("test")
 public class Owner_ManagerTests extends AcceptanceTests {
 
     Real real = new Real();

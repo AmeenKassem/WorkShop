@@ -3,12 +3,14 @@ package workshop.demo.UnitTests.UsersTests;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 
 @SpringBootTest
+@ActiveProfiles("test")
 public class AuthentecationTests {
 
     private final IAuthRepo auth = new AuthenticationRepo();

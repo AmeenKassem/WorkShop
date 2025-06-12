@@ -11,12 +11,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
+
 @SpringBootTest
+@ActiveProfiles("test")
 public class OwnershipTests {
 
     private ISUConnectionRepo repository;

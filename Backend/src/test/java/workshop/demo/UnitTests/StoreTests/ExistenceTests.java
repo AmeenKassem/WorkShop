@@ -8,13 +8,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
+
 @SpringBootTest
+@ActiveProfiles("test")
 public class ExistenceTests {
 
     private ISUConnectionRepo repository;

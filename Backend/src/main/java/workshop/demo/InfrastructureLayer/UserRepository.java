@@ -15,6 +15,8 @@ import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSpecialItemCart;
+import workshop.demo.DataAccessLayer.GuestJpaRepository;
+import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -25,7 +27,6 @@ import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingCart;
-import workshop.demo.DomainLayer.User.SpecialCart;
 
 @Repository
 public class UserRepository implements IUserRepo {
@@ -36,7 +37,10 @@ public class UserRepository implements IUserRepo {
     private ConcurrentHashMap<Integer, String> idToUsername; // id -> username
     private Encoder encoder;
     private AdminInitilizer adminInit;
-
+    @Autowired
+    private UserJpaRepository jpaRepo;
+    @Autowired
+    private GuestJpaRepository guestJpaRepository;
     private static final Logger logger = Logger.getLogger(UserRepository.class.getName());
 
     @Autowired
@@ -66,28 +70,50 @@ public class UserRepository implements IUserRepo {
         }
     }
 
+    // @Override
+    // public int registerUser(String username, String password, int age) throws UIException {
+    //     if (userExist(username)) {
+    //         throw new UIException("another user try to register with used username", ErrorCodes.USERNAME_USED);
+    //     }
+    //     String encPass = encoder.encodePassword(password);
+    //     int id = idGen.getAndIncrement();
+    //     Registered userToAdd = new Registered(id, username, encPass, age);
+    //     users.put(username, userToAdd);
+    //     idToUsername.put(id, username);
+    //     jpaRepo.save(userToAdd);
+    //     logger.log(Level.INFO, "User {0} registered successfully", username);
+    //     return id;
+    // }
     @Override
     public int registerUser(String username, String password, int age) throws UIException {
         if (userExist(username)) {
-
             throw new UIException("another user try to register with used username", ErrorCodes.USERNAME_USED);
         }
         String encPass = encoder.encodePassword(password);
-        int id = idGen.getAndIncrement();
-        Registered userToAdd = new Registered(id, username, encPass, age);
-        users.put(username, userToAdd);
-        idToUsername.put(id, username);
-        logger.log(Level.INFO, "User {0} registered successfully", username);
-        return id;
 
+        // jpa handels id:
+        Registered userToAdd = new Registered(username, encPass, age);
+
+        jpaRepo.save(userToAdd); // ID will be auto-generated
+
+        users.put(username, userToAdd);
+        idToUsername.put(userToAdd.getId(), username); // getId() after save()
+
+        logger.log(Level.INFO, "User {0} registered successfully", username);
+        return userToAdd.getId();
     }
 
     @Override
     public int generateGuest() {
-        int id = idGen.getAndIncrement();
-        Guest newGuest = new Guest(id);
-        guests.put(id, newGuest);
-        return id;
+        // int id = idGen.getAndIncrement();
+        // Guest newGuest = new Guest(id);
+        // guests.put(id, newGuest);
+        // guestJpaRepository.save(newGuest);
+        // return id;
+        Guest newGuest = new Guest(); // No ID passed
+        Guest saved = guestJpaRepository.save(newGuest); // Hibernate assigns ID
+        guests.put(saved.getId(), saved); // Use the generated ID
+        return saved.getId();
     }
 
     @Override
@@ -228,11 +254,10 @@ public class UserRepository implements IUserRepo {
         throw new UIException("User with ID " + userId + " not found", ErrorCodes.USER_NOT_FOUND);
     }
 
-  //  @Override
+    //  @Override
 //    public List<ItemCartDTO> getCartForUser(int ownerId) {
 //      //  throw new UnsupportedOperationException("Unimplemented method 'getCartForUser'");
 //    }
-
     @Override
     public void checkUserRegisterOnline_ThrowException(int userId) throws UIException {
         if (!(isRegistered(userId) && isOnline(userId))) {
@@ -291,13 +316,13 @@ public class UserRepository implements IUserRepo {
     }
 
     public void clear() {
-            guests.clear();
+        guests.clear();
 
-            users.clear();
+        users.clear();
 
-            idToUsername.clear();
+        idToUsername.clear();
 
-            idGen.set(1); // Reset to starting ID
+        idGen.set(1); // Reset to starting ID
 
     }
 

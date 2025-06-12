@@ -1,23 +1,72 @@
 package workshop.demo.UnitTests.StoreTests;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import workshop.demo.DTOs.*;
-import workshop.demo.DomainLayer.Exceptions.DevException;
-import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
-import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Stock.*;
-import workshop.demo.DomainLayer.Store.*;
-import workshop.demo.DomainLayer.StoreUserConnection.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
-class RandomTests {
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.AuctionStatus;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.CreateDiscountDTO;
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.SingleBidDTO;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.Status;
+import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.UserSpecialItemCart;
+import workshop.demo.DomainLayer.Exceptions.DevException;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
+import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.ActivePurcheses;
+import workshop.demo.DomainLayer.Stock.Auction;
+import workshop.demo.DomainLayer.Stock.BID;
+import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
+import workshop.demo.DomainLayer.Stock.SingleBid;
+import workshop.demo.DomainLayer.Stock.StoreStock;
+import workshop.demo.DomainLayer.Stock.item;
+import workshop.demo.DomainLayer.Store.AndDiscount;
+import workshop.demo.DomainLayer.Store.CompositeDiscount;
+import workshop.demo.DomainLayer.Store.Discount;
+import workshop.demo.DomainLayer.Store.DiscountConditions;
+import workshop.demo.DomainLayer.Store.DiscountFactory;
+import workshop.demo.DomainLayer.Store.DiscountScope;
+import workshop.demo.DomainLayer.Store.InvisibleDiscount;
+import workshop.demo.DomainLayer.Store.MaxDiscount;
+import workshop.demo.DomainLayer.Store.OrDiscount;
+import workshop.demo.DomainLayer.Store.Random;
+import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.Store.VisibleDiscount;
+import workshop.demo.DomainLayer.Store.XorDiscount;
+import workshop.demo.DomainLayer.StoreUserConnection.Node;
+import workshop.demo.DomainLayer.StoreUserConnection.Offer;
+import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
+import workshop.demo.DomainLayer.StoreUserConnection.Tree;
+
+@SpringBootTest
+@ActiveProfiles("test")
+public class RandomTests {
+
     private SingleBid auctionBid;
     private SingleBid standardBid;
     private Auction auction;
@@ -35,13 +84,14 @@ class RandomTests {
     private item testItem;
     private ActivePurcheses active;
     private final int storeId = 1;
+
     @BeforeEach
     void setUp() {
         active = new ActivePurcheses(storeId);
 
         bid = new BID(123, 2, 1, 10); // productId=123, quantity=2, bidId=1, storeId=10
         storeStock = new StoreStock(1);
-        testItem = new item(1, 10,1000, Category.Electronics);
+        testItem = new item(1, 10, 1000, Category.Electronics);
         storeStock.addItem(testItem);
         auction = new Auction(1, 5, 2000, 100, 10);
         random = new Random(1, 5, 100.0, 10, 200, 2000);
@@ -880,17 +930,18 @@ class RandomTests {
         });
         assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
     }
-        @Test
+
+    @Test
     public void testMatchesForStore_AllFiltersMatch() {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null,                          // productNameFilter
-                Category.Sports,              // categoryFilter
-                null,                          // keywordFilter
-                Integer.valueOf(1),           // storeId
-                Double.valueOf(10.0),         // minPrice
-                Double.valueOf(50.0),         // maxPrice
-                Double.valueOf(4.0),          // minStoreRating
-                Double.valueOf(5.0)           // maxStoreRating
+                null, // productNameFilter
+                Category.Sports, // categoryFilter
+                null, // keywordFilter
+                Integer.valueOf(1), // storeId
+                Double.valueOf(10.0), // minPrice
+                Double.valueOf(50.0), // maxPrice
+                Double.valueOf(4.0), // minStoreRating
+                Double.valueOf(5.0) // maxStoreRating
         );
         item testItem = new item(1, 1, 3, Category.Sports);
         AtomicInteger[] rank = new AtomicInteger[]{new AtomicInteger(0), new AtomicInteger(0), new AtomicInteger(1), new AtomicInteger(0), new AtomicInteger(0)};
@@ -901,60 +952,64 @@ class RandomTests {
     @Test
     public void testMatchesForStore_CategoryMismatch() {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null,                          // productNameFilter
-                Category.Sports,              // categoryFilter
-                null,                          // keywordFilter
-                Integer.valueOf(1),           // storeId
-                Double.valueOf(10.0),         // minPrice
-                Double.valueOf(50.0),         // maxPrice
-                Double.valueOf(4.0),          // minStoreRating
-                Double.valueOf(5.0)           // maxStoreRating
-        );        item testItem = new item(1, 1, 3, Category.Clothing);
+                null, // productNameFilter
+                Category.Sports, // categoryFilter
+                null, // keywordFilter
+                Integer.valueOf(1), // storeId
+                Double.valueOf(10.0), // minPrice
+                Double.valueOf(50.0), // maxPrice
+                Double.valueOf(4.0), // minStoreRating
+                Double.valueOf(5.0) // maxStoreRating
+        );
+        item testItem = new item(1, 1, 3, Category.Clothing);
         assertFalse(criteria.matchesForStore(testItem));
     }
 
     @Test
     public void testMatchesForStore_MinPriceFails() {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null,                          // productNameFilter
-                Category.Sports,              // categoryFilter
-                null,                          // keywordFilter
-                Integer.valueOf(1),           // storeId
-                Double.valueOf(10.0),         // minPrice
-                Double.valueOf(50.0),         // maxPrice
-                Double.valueOf(4.0),          // minStoreRating
-                Double.valueOf(5.0)           // maxStoreRating
-        );        item testItem = new item(1, 1, 3, Category.Sports);
+                null, // productNameFilter
+                Category.Sports, // categoryFilter
+                null, // keywordFilter
+                Integer.valueOf(1), // storeId
+                Double.valueOf(10.0), // minPrice
+                Double.valueOf(50.0), // maxPrice
+                Double.valueOf(4.0), // minStoreRating
+                Double.valueOf(5.0) // maxStoreRating
+        );
+        item testItem = new item(1, 1, 3, Category.Sports);
         assertFalse(criteria.matchesForStore(testItem));
     }
 
     @Test
     public void testMatchesForStore_MaxPriceFails() {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null,                          // productNameFilter
-                Category.Sports,              // categoryFilter
-                null,                          // keywordFilter
-                Integer.valueOf(1),           // storeId
-                Double.valueOf(10.0),         // minPrice
-                Double.valueOf(50.0),         // maxPrice
-                Double.valueOf(4.0),          // minStoreRating
-                Double.valueOf(5.0)           // maxStoreRating
-        );        item testItem = new item(1, 1, 3, Category.Sports);
+                null, // productNameFilter
+                Category.Sports, // categoryFilter
+                null, // keywordFilter
+                Integer.valueOf(1), // storeId
+                Double.valueOf(10.0), // minPrice
+                Double.valueOf(50.0), // maxPrice
+                Double.valueOf(4.0), // minStoreRating
+                Double.valueOf(5.0) // maxStoreRating
+        );
+        item testItem = new item(1, 1, 3, Category.Sports);
         assertFalse(criteria.matchesForStore(testItem));
     }
 
     @Test
     public void testMatchesForStore_MinRatingFails() {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null,                          // productNameFilter
-                Category.Sports,              // categoryFilter
-                null,                          // keywordFilter
-                Integer.valueOf(1),           // storeId
-                Double.valueOf(10.0),         // minPrice
-                Double.valueOf(50.0),         // maxPrice
-                Double.valueOf(4.0),          // minStoreRating
-                Double.valueOf(5.0)           // maxStoreRating
-        );        item testItem = new item(1, 1, 3, Category.Sports);
+                null, // productNameFilter
+                Category.Sports, // categoryFilter
+                null, // keywordFilter
+                Integer.valueOf(1), // storeId
+                Double.valueOf(10.0), // minPrice
+                Double.valueOf(50.0), // maxPrice
+                Double.valueOf(4.0), // minStoreRating
+                Double.valueOf(5.0) // maxStoreRating
+        );
+        item testItem = new item(1, 1, 3, Category.Sports);
         AtomicInteger[] rank = new AtomicInteger[]{new AtomicInteger(1), new AtomicInteger(0), new AtomicInteger(0), new AtomicInteger(0), new AtomicInteger(0)};
         testItem.setRank(rank);
         assertFalse(criteria.matchesForStore(testItem));
@@ -963,15 +1018,16 @@ class RandomTests {
     @Test
     public void testMatchesForStore_MaxRatingFails() {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null,                          // productNameFilter
-                Category.Sports,              // categoryFilter
-                null,                          // keywordFilter
-                Integer.valueOf(1),           // storeId
-                Double.valueOf(10.0),         // minPrice
-                Double.valueOf(50.0),         // maxPrice
-                Double.valueOf(4.0),          // minStoreRating
-                Double.valueOf(5.0)           // maxStoreRating
-        );        item testItem = new item(1, 1, 3, Category.Sports);
+                null, // productNameFilter
+                Category.Sports, // categoryFilter
+                null, // keywordFilter
+                Integer.valueOf(1), // storeId
+                Double.valueOf(10.0), // minPrice
+                Double.valueOf(50.0), // maxPrice
+                Double.valueOf(4.0), // minStoreRating
+                Double.valueOf(5.0) // maxStoreRating
+        );
+        item testItem = new item(1, 1, 3, Category.Sports);
         AtomicInteger[] rank = new AtomicInteger[]{new AtomicInteger(0), new AtomicInteger(0), new AtomicInteger(0), new AtomicInteger(0), new AtomicInteger(1)};
         testItem.setRank(rank);
         assertFalse(criteria.matchesForStore(testItem));
@@ -981,60 +1037,64 @@ class RandomTests {
     public void testProductIsMatch_AllFiltersMatch() {
         Product product = new Product("Fresh Milk", 1, Category.Sports, "Healthy and Cold", new String[]{"cold", "fresh"});
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null,                          // productNameFilter
-                Category.Sports,              // categoryFilter
-                null,                          // keywordFilter
-                Integer.valueOf(1),           // storeId
-                Double.valueOf(10.0),         // minPrice
-                Double.valueOf(50.0),         // maxPrice
-                Double.valueOf(4.0),          // minStoreRating
-                Double.valueOf(5.0)           // maxStoreRating
-        );        assertTrue(criteria.productIsMatch(product));
+                null, // productNameFilter
+                Category.Sports, // categoryFilter
+                null, // keywordFilter
+                Integer.valueOf(1), // storeId
+                Double.valueOf(10.0), // minPrice
+                Double.valueOf(50.0), // maxPrice
+                Double.valueOf(4.0), // minStoreRating
+                Double.valueOf(5.0) // maxStoreRating
+        );
+        assertTrue(criteria.productIsMatch(product));
     }
 
     @Test
     public void testProductIsMatch_NameFilterFails() {
         Product product = new Product("Bread", 1, Category.Sports, "Healthy and Cold", new String[]{"cold", "fresh"});
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null,                          // productNameFilter
-                Category.Sports,              // categoryFilter
-                null,                          // keywordFilter
-                Integer.valueOf(1),           // storeId
-                Double.valueOf(10.0),         // minPrice
-                Double.valueOf(50.0),         // maxPrice
-                Double.valueOf(4.0),          // minStoreRating
-                Double.valueOf(5.0)           // maxStoreRating
-        );        assertTrue(criteria.productIsMatch(product));
+                null, // productNameFilter
+                Category.Sports, // categoryFilter
+                null, // keywordFilter
+                Integer.valueOf(1), // storeId
+                Double.valueOf(10.0), // minPrice
+                Double.valueOf(50.0), // maxPrice
+                Double.valueOf(4.0), // minStoreRating
+                Double.valueOf(5.0) // maxStoreRating
+        );
+        assertTrue(criteria.productIsMatch(product));
     }
 
     @Test
     public void testProductIsMatch_CategoryMismatch() {
         Product product = new Product("Fresh Milk", 1, Category.Clothing, "Healthy and Cold", new String[]{"cold", "fresh"});
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null,                          // productNameFilter
-                Category.Sports,              // categoryFilter
-                null,                          // keywordFilter
-                Integer.valueOf(1),           // storeId
-                Double.valueOf(10.0),         // minPrice
-                Double.valueOf(50.0),         // maxPrice
-                Double.valueOf(4.0),          // minStoreRating
-                Double.valueOf(5.0)           // maxStoreRating
-        );        assertFalse(criteria.productIsMatch(product));
+                null, // productNameFilter
+                Category.Sports, // categoryFilter
+                null, // keywordFilter
+                Integer.valueOf(1), // storeId
+                Double.valueOf(10.0), // minPrice
+                Double.valueOf(50.0), // maxPrice
+                Double.valueOf(4.0), // minStoreRating
+                Double.valueOf(5.0) // maxStoreRating
+        );
+        assertFalse(criteria.productIsMatch(product));
     }
 
     @Test
     public void testProductIsMatch_KeywordFails() {
         Product product = new Product("Fresh Milk", 1, Category.Sports, "Healthy and Cold", new String[]{"sweet", "soft"});
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null,                          // productNameFilter
-                Category.Sports,              // categoryFilter
-                null,                          // keywordFilter
-                Integer.valueOf(1),           // storeId
-                Double.valueOf(10.0),         // minPrice
-                Double.valueOf(50.0),         // maxPrice
-                Double.valueOf(4.0),          // minStoreRating
-                Double.valueOf(5.0)           // maxStoreRating
-        );        assertTrue(criteria.productIsMatch(product));
+                null, // productNameFilter
+                Category.Sports, // categoryFilter
+                null, // keywordFilter
+                Integer.valueOf(1), // storeId
+                Double.valueOf(10.0), // minPrice
+                Double.valueOf(50.0), // maxPrice
+                Double.valueOf(4.0), // minStoreRating
+                Double.valueOf(5.0) // maxStoreRating
+        );
+        assertTrue(criteria.productIsMatch(product));
     }
 
     @Test
@@ -1048,6 +1108,7 @@ class RandomTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(null, Category.Clothing, null, null, null, null, null, null);
         assertTrue(criteria.specificCategory());
     }
+
     @Test
     void testEquals_SameReference() {
         UserSpecialItemCart cart = new UserSpecialItemCart(1, 2, 3, SpecialType.BID);
@@ -1070,7 +1131,7 @@ class RandomTests {
     void testEquals_DifferentStoreId() {
         UserSpecialItemCart c1 = new UserSpecialItemCart(1, 2, 3, SpecialType.BID);
         UserSpecialItemCart c2 = new UserSpecialItemCart(99, 2, 3, SpecialType.BID);
-        assertFalse(c1.equals(c2)); 
+        assertFalse(c1.equals(c2));
     }
 
     @Test
@@ -1093,6 +1154,7 @@ class RandomTests {
         UserSpecialItemCart c2 = new UserSpecialItemCart(1, 2, 999, SpecialType.Random); // bidId ignored
         assertTrue(c1.equals(c2));
     }
+
     @Test
     void testBidSuccess1() throws UIException {
         SingleBid b = bid.bid(5, 99.99);
@@ -1108,7 +1170,6 @@ class RandomTests {
 //        UIException ex = assertThrows(UIException.class, () -> bid.bid(2, 50));
 //        assertEquals("This bid is already closed!", ex.getMessage());
 //    }
-
 //    @Test
 //    void testAcceptBidSuccess() throws Exception {
 //        SingleBid b1 = bid.bid(1, 100);
@@ -1119,7 +1180,6 @@ class RandomTests {
 //        assertTrue(winner.isAccepted());
 //        assertFalse(bid.isOpen());
 //    }
-
 //    @Test
 //    void testAcceptBidTwiceThrows() throws Exception {
 //        SingleBid b1 = bid.bid(1, 100);
@@ -1128,7 +1188,6 @@ class RandomTests {
 //        UIException ex = assertThrows(UIException.class, () -> bid.acceptBid(b1.getId()));
 //        assertEquals("This bid is already closed!", ex.getMessage());
 //    }
-
     @Test
     void testAcceptBidWithInvalidIdThrows() throws Exception {
         bid.bid(1, 50);
@@ -1151,7 +1210,6 @@ class RandomTests {
 //        UIException ex = assertThrows(UIException.class, () -> bid.rejectBid(b1.getId()));
 //        assertEquals("The bid is already closed!", ex.getMessage());
 //    }
-
     @Test
     void testRejectBidWithInvalidIdThrows() {
         DevException ex = assertThrows(DevException.class, () -> bid.rejectBid(404));
@@ -1205,6 +1263,7 @@ class RandomTests {
     void testGetProductId() {
         assertEquals(123, bid.getProductId());
     }
+
     @Test
     void testAddItem_NewItem() {
         item newItem = new item(2, 5, 500, Category.Books);
@@ -1411,6 +1470,7 @@ class RandomTests {
         String[] actual = product.getKeywords();
         assertArrayEquals(newKeywords, actual);
     }
+
     @Test
     void testGetProductPrice_Success() throws Exception {
         int randomId = active.addProductToRandom(1, 5, 123.45, storeId, 99999);
@@ -1471,7 +1531,6 @@ class RandomTests {
 //        SingleBid result = active.getBidIfWinner(bidId, bid.getId(), SpecialType.BID);
 //        assertNotNull(result);
 //    }
-
     @Test
     void testGetBidIfWinner_ReturnsNull_NotFoundOrNotWinner() {
         assertNull(active.getBidIfWinner(999, 1, SpecialType.BID));
@@ -1499,8 +1558,6 @@ class RandomTests {
         assertNull(active.getBidWithId(1234, 1, SpecialType.Auction));
     }
 
-
-
     @Test
     void testGetCardWithId_NotFound() {
         assertNull(active.getCardWithId(5555, 1));
@@ -1523,7 +1580,6 @@ class RandomTests {
         int id = active.addProductToRandom(55, 1, 300, storeId, 99999);
         assertEquals(55, active.getProductIdForSpecial(id, SpecialType.Random));
     }
-
 
     @Test
     void testGetWinner_WhenNoWinner_ReturnsNull() {
@@ -1558,6 +1614,7 @@ class RandomTests {
         assertNotNull(auction.getWinner());
         assertFalse(auction.bidIsWinner(999)); // wrong ID
     }
+
     @Test
     void testGetBidPrice() {
         assertEquals(999.99, auctionBid.getBidPrice());

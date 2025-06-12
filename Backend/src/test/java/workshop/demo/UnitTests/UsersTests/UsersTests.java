@@ -1,27 +1,32 @@
 package workshop.demo.UnitTests.UsersTests;
 
-import org.junit.jupiter.api.Assertions;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.stereotype.Service;
+import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.User.*;
+import workshop.demo.DomainLayer.User.AdminInitilizer;
+import workshop.demo.DomainLayer.User.CartItem;
+import workshop.demo.DomainLayer.User.Guest;
+import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.UserRepository;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-@Service
 @SpringBootTest
+@ActiveProfiles("test")
 public class UsersTests {
 
     private IAuthRepo auth = new AuthenticationRepo();
@@ -35,11 +40,12 @@ public class UsersTests {
     private Guest guest;
 
     private int goodLogin(String username, String password) throws UIException {
-        int userIdFromRegister = userRepo.registerUser(username, password,22);
+        int userIdFromRegister = userRepo.registerUser(username, password, 22);
 
         int userIdFromLogIn = userRepo.login(username, password);
         return userIdFromLogIn;
     }
+
     @BeforeEach
     void setUp() {
         guest = new Guest(42);
@@ -52,7 +58,7 @@ public class UsersTests {
 
     @Test
     void testAddToCart_WithExplicitStore() {
-        CartItem item = new CartItem(new ItemCartDTO(1,1,1,1,"phone","store", Category.Electronics));
+        CartItem item = new CartItem(new ItemCartDTO(1, 1, 1, 1, "phone", "store", Category.Electronics));
         guest.addToCart(1, item);
 
         List<CartItem> items = guest.getCart();
@@ -62,7 +68,7 @@ public class UsersTests {
 
     @Test
     void testAddToCart_ImplicitStore() {
-        CartItem item = new CartItem(new ItemCartDTO(1,1,1,1,"phone","store", Category.Electronics)); // storeId = 2 inside item
+        CartItem item = new CartItem(new ItemCartDTO(1, 1, 1, 1, "phone", "store", Category.Electronics)); // storeId = 2 inside item
         guest.addToCart(item);
 
         List<CartItem> items = guest.getCart();
@@ -72,7 +78,7 @@ public class UsersTests {
 
     @Test
     void testGetCartItemsList() {
-        guest.addToCart(new CartItem(new ItemCartDTO(1,1,1,1,"phone","store", Category.Electronics)));
+        guest.addToCart(new CartItem(new ItemCartDTO(1, 1, 1, 1, "phone", "store", Category.Electronics)));
         List<CartItem> items = guest.getCart();
         assertEquals(1, items.size());
     }
@@ -85,7 +91,7 @@ public class UsersTests {
 
     @Test
     void testClearCart() {
-        guest.addToCart(1, new CartItem(new ItemCartDTO(1,1,1,1,"phone","store", Category.Electronics)));
+        guest.addToCart(1, new CartItem(new ItemCartDTO(1, 1, 1, 1, "phone", "store", Category.Electronics)));
         assertFalse(guest.getCart().isEmpty());
 
         guest.clearCart();
@@ -94,7 +100,7 @@ public class UsersTests {
 
     @Test
     void testModifyCartAddToBuy() {
-        CartItem item = new CartItem(new ItemCartDTO(1,1,1,1,"phone","store", Category.Electronics));
+        CartItem item = new CartItem(new ItemCartDTO(1, 1, 1, 1, "phone", "store", Category.Electronics));
         guest.addToCart(item);
 
         guest.ModifyCartAddQToBuy(500, 10); // should call inner logic
@@ -104,7 +110,7 @@ public class UsersTests {
 
     @Test
     void testRemoveItem() {
-        CartItem item = new CartItem(new ItemCartDTO(1,600,1,1,"phone","store", Category.Electronics));
+        CartItem item = new CartItem(new ItemCartDTO(1, 600, 1, 1, "phone", "store", Category.Electronics));
         guest.addToCart(item);
 
         guest.removeItem(600);
@@ -117,10 +123,11 @@ public class UsersTests {
         assertNotNull(guest.getUserDTO());
         assertEquals(42, guest.getUserDTO().id);
     }
+
     @Test
     public void test_register_and_login() throws UIException {
         int guestId = userRepo.generateGuest();
-        int userIdFromRegister = userRepo.registerUser("bhaa", "123123",22);
+        int userIdFromRegister = userRepo.registerUser("bhaa", "123123", 22);
 
         int userIdFromLogIn = userRepo.login("bhaa", "123123");
 
@@ -140,7 +147,7 @@ public class UsersTests {
 
     @Test
     public void testOnlineAafterLogin() throws UIException {
-        int registeredId = userRepo.registerUser("layan", "123",22);
+        int registeredId = userRepo.registerUser("layan", "123", 22);
         int loggedInId = userRepo.login("layan", "123");
         assertEquals(registeredId, loggedInId);
         boolean isOnline = userRepo.isOnline(loggedInId);
@@ -165,7 +172,7 @@ public class UsersTests {
     // }
     @Test
     public void onlineTest() throws UIException {
-        userRepo.registerUser("ghanem2", "123321",22);
+        userRepo.registerUser("ghanem2", "123321", 22);
 
     }
 

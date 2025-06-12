@@ -1,18 +1,40 @@
 package workshop.demo.UnitTests.UsersTests;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.stereotype.Service;
+import org.springframework.test.context.ActiveProfiles;
 
-import workshop.demo.ApplicationLayer.*;
+import workshop.demo.ApplicationLayer.AdminHandler;
+import workshop.demo.ApplicationLayer.OrderService;
+import workshop.demo.ApplicationLayer.PaymentServiceImp;
+import workshop.demo.ApplicationLayer.PurchaseService;
+import workshop.demo.ApplicationLayer.StockService;
+import workshop.demo.ApplicationLayer.StoreService;
+import workshop.demo.ApplicationLayer.SupplyServiceImp;
+import workshop.demo.ApplicationLayer.UserService;
+import workshop.demo.ApplicationLayer.UserSuspensionService;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.InfrastructureLayer.*;
+import workshop.demo.InfrastructureLayer.AuthenticationRepo;
+import workshop.demo.InfrastructureLayer.Encoder;
+import workshop.demo.InfrastructureLayer.NotificationRepository;
+import workshop.demo.InfrastructureLayer.OrderRepository;
+import workshop.demo.InfrastructureLayer.PurchaseRepository;
+import workshop.demo.InfrastructureLayer.SUConnectionRepository;
+import workshop.demo.InfrastructureLayer.StockRepository;
+import workshop.demo.InfrastructureLayer.StoreRepository;
+import workshop.demo.InfrastructureLayer.UserRepository;
+import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 
 @Service
 @SpringBootTest
+@ActiveProfiles("test")
 public class SuspendTests {
 
     @Autowired
@@ -57,7 +79,8 @@ public class SuspendTests {
     @Autowired
     OrderService orderService;
 
-    public SuspendTests() throws Exception {}
+    public SuspendTests() throws Exception {
+    }
 
     @Test
     public void test_suspendRegisteredUser() throws Exception {
@@ -185,6 +208,7 @@ public class SuspendTests {
         });
         assertFalse(suspensionService.isUserSuspended(userId));
     }
+
     @Test
     void test_suspendGuestUser_UserIsNotAdmin_ThrowsException() throws Exception {
         // Arrange: Create a non-admin user

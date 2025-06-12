@@ -5,6 +5,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
@@ -14,6 +15,7 @@ import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 
 @SpringBootTest
+@ActiveProfiles("test")
 public class ActivePurchasesTest {
 
     private ActivePurcheses active = new ActivePurcheses(0); // or @Autowired if it's a Spring bean
@@ -114,9 +116,7 @@ public class ActivePurchasesTest {
     //             Assertions.assertTrue(false);
     //         } catch (UIException ex) {
     //             Assertions.assertTrue(true);
-
     //         }
-
     //     } catch (Exception e) {
     //         // TODO Auto-generated catch block
     //         e.printStackTrace();
@@ -124,7 +124,6 @@ public class ActivePurchasesTest {
     //         Assertions.assertTrue(false);
     //     }
     // }
-
     @Test
     public void TestAddRandom() {
         try {
@@ -231,6 +230,7 @@ public class ActivePurchasesTest {
             Assertions.fail("Exception thrown: " + e.getMessage());
         }
     }
+
     //Needs Fixing!
 //    @Test
 //    public void concurrencyTest1() {

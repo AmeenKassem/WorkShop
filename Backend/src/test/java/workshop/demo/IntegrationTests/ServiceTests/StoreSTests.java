@@ -5,13 +5,27 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
+
 import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
@@ -22,7 +36,20 @@ import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.OrderDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -32,7 +59,6 @@ import workshop.demo.DomainLayer.Notification.RealTimeNotificationDecorator;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Store.PurchasePolicy;
 import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Offer;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
@@ -48,10 +74,8 @@ import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 import workshop.demo.SocketCommunication.SocketHandler;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 @SpringBootTest
+@ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class StoreSTests {
 
@@ -129,7 +153,7 @@ public class StoreSTests {
         assertEquals(created1, 1);
 
         // ======================= PRODUCT & ITEM ADDITION =======================
-        String[] keywords = { "Laptop", "Lap", "top" };
+        String[] keywords = {"Laptop", "Lap", "top"};
         stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
         itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.Electronics, 0, 1, "Laptop", "TestStore");
 
@@ -163,7 +187,7 @@ public class StoreSTests {
     @Test
     void testOwner_AddProductToStock() throws Exception {
 
-        String[] keywords = { "Tablet", "Touchscreen" };
+        String[] keywords = {"Tablet", "Touchscreen"};
 
         stockService.addProduct(NOToken, "Tablet", Category.Electronics, "10-inch Tablet", keywords);
 
@@ -364,7 +388,7 @@ public class StoreSTests {
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(1, NOToken, authRepo.getUserName(token1), a);
         storeService.reciveAnswerToOffer(1, authRepo.getUserName(NOToken), "token", true, false); // false = toBeOwner →
-                                                                                                  // false = manager
+        // false = manager
         // when decide equals true some list is null (i think its permissions list)
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
 
@@ -647,7 +671,9 @@ public class StoreSTests {
         storeService.rankStore(NGToken, 1, 0);
         assertTrue(storeService.getFinalRateInStore(1) == 3);
 
-        /// 3 is deafult
+    
+
+    /// 3 is deafult
 
     }
 
@@ -1210,7 +1236,7 @@ public class StoreSTests {
         decorator.sendDelayedMessageToUser("user", "msg2");
 
         String[] messages = decorator.getDelayedMessages("user");
-        assertArrayEquals(new String[] { "msg1", "msg2" }, messages);
+        assertArrayEquals(new String[]{"msg1", "msg2"}, messages);
     }
 
     @Test
@@ -1264,7 +1290,6 @@ public class StoreSTests {
     //
     // assertThrows(RuntimeException.class, () -> notifier.send("user", "msg"));
     // }
-
     @Test
     void testBaseNotifierIsUserOnline() {
         SocketHandler handler = mock(SocketHandler.class);

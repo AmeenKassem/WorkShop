@@ -4,9 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.AfterEach;
-
 import static org.junit.Assert.assertArrayEquals;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -19,9 +18,30 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 
-import workshop.demo.ApplicationLayer.*;
-import workshop.demo.DTOs.*;
+import workshop.demo.ApplicationLayer.AdminHandler;
+import workshop.demo.ApplicationLayer.NotificationService;
+import workshop.demo.ApplicationLayer.OrderService;
+import workshop.demo.ApplicationLayer.PaymentServiceImp;
+import workshop.demo.ApplicationLayer.PurchaseService;
+import workshop.demo.ApplicationLayer.StockService;
+import workshop.demo.ApplicationLayer.StoreService;
+import workshop.demo.ApplicationLayer.SupplyServiceImp;
+import workshop.demo.ApplicationLayer.UserService;
+import workshop.demo.ApplicationLayer.UserSuspensionService;
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DTOs.PurchaseHistoryDTO;
+import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.SystemAnalyticsDTO;
+import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
@@ -37,15 +57,8 @@ import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
-import org.mockito.Mockito;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 @SpringBootTest
+@ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserTests {
 
@@ -803,7 +816,6 @@ public class UserTests {
 
     }
 
-
     @Test
     void test_searchActiveRandoms_shouldReturnProduct() throws Exception {
         int productId = 1;
@@ -851,6 +863,7 @@ public class UserTests {
         assertEquals(1, result.length);
         assertEquals("Laptop", result[0].productName);
     }
+
     @Test
     void testSearchByProductName_Match() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
@@ -997,9 +1010,7 @@ public class UserTests {
                 null, null, null, 99,
                 -1.0, -1.0, -1.0, -1
         );
-        assertThrows(Exception.class, () ->stockService.searchProducts(NGToken, criteria));
+        assertThrows(Exception.class, () -> stockService.searchProducts(NGToken, criteria));
     }
-
-
 
 }

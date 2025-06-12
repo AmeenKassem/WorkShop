@@ -2,24 +2,35 @@ package workshop.demo.AcceptanceTests.Tests;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.Mockito;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-
 import org.slf4j.Logger;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+
 import workshop.demo.AcceptanceTests.Utill.Real;
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -32,11 +43,8 @@ import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-
 @SpringBootTest
+@ActiveProfiles("test")
 public class PurchaseTests extends AcceptanceTests {
 
     private static final Logger logger = LoggerFactory.getLogger(PurchaseTests.class);

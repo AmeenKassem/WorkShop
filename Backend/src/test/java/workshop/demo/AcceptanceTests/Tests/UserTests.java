@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.AcceptanceTests.Utill.Real;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
@@ -47,6 +48,7 @@ import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
 @SpringBootTest
+@ActiveProfiles("test")
 public class UserTests extends AcceptanceTests {
 
     Real real = new Real();

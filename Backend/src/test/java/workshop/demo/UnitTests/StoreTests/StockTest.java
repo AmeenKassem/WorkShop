@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.DTOs.Category;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -14,6 +15,7 @@ import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
 
 @SpringBootTest
+@ActiveProfiles("test")
 public class StockTest {
 
     private StoreStock store;

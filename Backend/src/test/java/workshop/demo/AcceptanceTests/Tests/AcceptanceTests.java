@@ -3,6 +3,8 @@ package workshop.demo.AcceptanceTests.Tests;
 import java.util.List;
 
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+
 import workshop.demo.AcceptanceTests.Utill.Bridge;
 import workshop.demo.AcceptanceTests.Utill.Proxy;
 import workshop.demo.DTOs.Category;
@@ -10,7 +12,9 @@ import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+
 @SpringBootTest
+@ActiveProfiles("test")
 public abstract class AcceptanceTests {
 
     private final Bridge bridge = new Proxy();

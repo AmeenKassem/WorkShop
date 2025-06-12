@@ -96,6 +96,22 @@
             <artifactId>gwt-elemental</artifactId>
             <version>2.8.2.vaadin2</version>
         </dependency>
+        <!-- for data base -->
+        <!-- <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>6.1.2.Final</version>
+        </dependency> -->
+        <!-- Microsoft SQL Server JDBC Driver -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -106,36 +122,36 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
-        <!-- JaCoCo plugin with exclusions -->
-        <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.10</version>
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>prepare-agent</goal>
-                    </goals>
-                </execution>
-                <execution>
-                    <id>report</id>
-                    <phase>verify</phase>
-                    <goals>
-                        <goal>report</goal>
-                    </goals>
-                    <configuration>
-                        <excludes>
-                            <exclude>workshop/demo/PresentationLayer/**</exclude>
-                            <exclude>workshop/demo/Controllers/**</exclude>
-                            <exclude>workshop/demo/SocketCommunication/**</exclude>
-                            <exclude>workshop/demo/DomainLayer/Exceptions/**</exclude>
-                        </excludes>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
-    </plugins>
-</build>
+            <!-- JaCoCo plugin with exclusions -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.10</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>workshop/demo/PresentationLayer/**</exclude>
+                                <exclude>workshop/demo/Controllers/**</exclude>
+                                <exclude>workshop/demo/SocketCommunication/**</exclude>
+                                <exclude>workshop/demo/DomainLayer/Exceptions/**</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 
 </project>

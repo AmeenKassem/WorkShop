@@ -1,29 +1,38 @@
 package workshop.demo.AcceptanceTests.Tests;
 
-import jakarta.validation.constraints.Null;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.test.context.ActiveProfiles;
+
 import workshop.demo.AcceptanceTests.Utill.Real;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.CreateDiscountDTO;
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.CartItem;
-import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
-
+@ActiveProfiles("test")
 public class ATPurchasePolicyTests {
 
     Real real = new Real();
@@ -119,7 +128,6 @@ public class ATPurchasePolicyTests {
         int auctionid = real.stockService.setProductToAuction(ownerToken, storeId, productId, 1, 5000, 2);
     }
 
-
     @Test
     void testBuyRegisteredCart_WithMinQuantityPolicy_Success() throws Exception {
         String token = "user-token-2";
@@ -207,7 +215,6 @@ public class ATPurchasePolicyTests {
         });
 
         assertTrue(ex.getMessage().contains("18"));
-
 
     }
 
@@ -344,7 +351,7 @@ public class ATPurchasePolicyTests {
                 CreateDiscountDTO.Logic.SINGLE,
                 List.of()
         );
-        String []a= new String[0];
+        String[] a = new String[0];
         real.storeService.addDiscountToStore(storeId, ownerToken, "50% Electronics",
                 0.5,
                 CreateDiscountDTO.Type.VISIBLE,
@@ -412,7 +419,7 @@ public class ATPurchasePolicyTests {
                 CreateDiscountDTO.Logic.SINGLE,
                 List.of()
         );
-        String []a= new String[0];
+        String[] a = new String[0];
         real.storeService.addDiscountToStore(storeId, ownerToken, "40% Discount", 0.4,
                 CreateDiscountDTO.Type.VISIBLE,
                 "CATEGORY:Electronics",
@@ -468,7 +475,7 @@ public class ATPurchasePolicyTests {
                 CreateDiscountDTO.Logic.SINGLE,
                 List.of()
         );
-        String []a= new String[0];
+        String[] a = new String[0];
         real.storeService.addDiscountToStore(storeId, ownerToken, "InvalidDiscount", 0.5,
                 CreateDiscountDTO.Type.VISIBLE,
                 "CATEGORY:TOYS",
@@ -520,7 +527,7 @@ public class ATPurchasePolicyTests {
                 CreateDiscountDTO.Logic.SINGLE,
                 List.of()
         );
-        String []a= new String[0];
+        String[] a = new String[0];
         real.storeService.addDiscountToStore(storeId, ownerToken, "Invalid 50%", 0.5,
                 CreateDiscountDTO.Type.VISIBLE,
                 "CATEGORY:BOOKS",
@@ -575,7 +582,7 @@ public class ATPurchasePolicyTests {
                 CreateDiscountDTO.Logic.SINGLE,
                 List.of()
         );
-        String []a= new String[0];
+        String[] a = new String[0];
         real.storeService.addDiscountToStore(storeId, ownerToken, "20% Electronics", 0.2,
                 CreateDiscountDTO.Type.VISIBLE,
                 "CATEGORY:Electronics",
