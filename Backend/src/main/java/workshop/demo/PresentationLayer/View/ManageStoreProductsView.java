@@ -71,7 +71,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         this.token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         this.storeId = storeId;
         if (token == null) {
-            Notification.show("⚠️ You must be logged in.");
+            NotificationView.showError("⚠️ You must be logged in.");
             return;
         }
         presenter.loadProducts(storeId, token);
@@ -90,7 +90,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         Button addBtn = new Button(" Add", e -> {
             ProductDTO selected = productSelect.getValue();
             if (selected == null || priceField.isEmpty() || quantityField.isEmpty()) {
-                Notification.show("Please fill in all fields.");
+                NotificationView.showInfo("Please fill in all fields.");
                 return;
             }
 
@@ -198,7 +198,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         Button add = new Button("Add to Store", e -> {
             if (name.isEmpty() || description.isEmpty() || category.isEmpty()
                     || price.isEmpty() || quantity.isEmpty()) {
-                Notification.show("Please fill in all fields");
+                NotificationView.showInfo("Please fill in all fields");
                 return;
             }
 
@@ -401,7 +401,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
         Button deleteBtn = new Button("🗑 Delete selected", ev -> {
             var toDelete = new ArrayList<>(subs.getSelectedItems());
-            if (toDelete.isEmpty()) { Notification.show("Select a discount first"); return; }
+            if (toDelete.isEmpty()) { NotificationView.showError("Select a discount first"); return; }
             toDelete.forEach(name -> {
                 try { discPresenter.deleteDiscount(storeId, token, name); }
                 catch (Exception ex) { ExceptionHandlers.handleException(ex); }
@@ -431,7 +431,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                 String predicate = predBox.getValue();
                 if (("TOTAL".equals(predicate) || "QUANTITY".equals(predicate)) &&
                         valuePart.isBlank()) {
-                    Notification.show("Enter a numeric value for " + predicate);
+                    NotificationView.showError("Enter a numeric value for " + predicate);
                     return;
                 }
                 if (valuePart.endsWith(".0")) valuePart = valuePart.substring(0, valuePart.length() - 2);
