@@ -127,7 +127,11 @@ public class MyCartView extends VerticalLayout {
         card.addClassName("item-card");
 
         card.add(createStyledLabel("🏪 Store: " + item.storeId));
-        card.add(createStyledLabel("📦 Product: " + item.name));
+String productName = item.name != null
+        ? item.name
+        : presenter.getProductNameById(item.productId);
+
+card.add(createStyledLabel("📦 Product: " + productName));
         card.add(createStyledLabel("💰 Price: ₪" + item.price));
         card.add(createStyledLabel("📦 Quantity: " + item.quantity));
         card.add(createStyledLabel("🧮 Subtotal: ₪" + (item.price * item.quantity)));

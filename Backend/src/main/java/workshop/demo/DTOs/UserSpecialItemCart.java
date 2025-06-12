@@ -6,13 +6,15 @@ public class UserSpecialItemCart {
     public int specialId;
     public int bidId;
     public SpecialType type;
+    public  String Pname;
 
     // Constructor
-    public UserSpecialItemCart(int storeId, int specialId, int bidId, SpecialType type) {
+    public UserSpecialItemCart(int storeId, int specialId, int bidId, SpecialType type,String Pname) {
         this.storeId = storeId;
         this.specialId = specialId;
         this.bidId = bidId;
         this.type = type;
+        this.Pname=Pname;
     }
 
     public UserSpecialItemCart() {

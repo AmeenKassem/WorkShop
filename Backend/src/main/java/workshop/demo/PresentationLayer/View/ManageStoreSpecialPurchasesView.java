@@ -64,7 +64,11 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
             card.setWidth("300px");
             card.getStyle().set("border", "1px solid #ccc").set("margin-right", "10px").set("padding", "10px");
 
-            card.add(new Paragraph("Product: " + dto.productName));
+String productName = dto.productName != null
+        ? dto.productName
+        : presenter.getProductNameById(dto.productId);
+
+card.add(new Paragraph("Product: " + productName));
             card.add(new Paragraph("Amount Left: $" + dto.amountLeft));
             card.add(new Paragraph("Winner: " + (dto.winner != null ? dto.winner.userId : "Not yet")));
 
@@ -84,7 +88,11 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
             card.setWidth("300px");
             card.getStyle().set("border", "1px solid #ccc").set("margin-right", "10px").set("padding", "10px");
 
-            card.add(new Paragraph("Product: " + dto.productName));
+String productName = dto.productName != null
+        ? dto.productName
+        : presenter.getProductNameById(dto.productId);
+
+card.add(new Paragraph("Product: " + productName));
             card.add(new Paragraph("Max Bid: $" + dto.maxBid));
             card.add(new Paragraph("Winner: " + (dto.winner != null ? dto.winner.getUserId() : "Not yet")));
 
@@ -106,8 +114,12 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
             bidLayout.setSpacing(true);
             bidLayout.getStyle().set("border", "1px solid #ccc").set("margin-right", "10px").set("padding", "10px");
 
-            bidLayout.add(new H3("Bid: " + bid.productName));
-            bidLayout.add(new Paragraph("Store: " + bid.storeName));
+String productName = bid.productName != null
+        ? bid.productName
+        : presenter.getProductNameById(bid.productId);
+
+bidLayout.add(new H3("Bid: " + productName));
+            bidLayout.add(new Paragraph("Store: " + (bid.storeName != null ? bid.storeName : String.valueOf(bid.storeId))));
             bidLayout.add(new Paragraph("Quantity: " + bid.quantity));
 
             Button showOffers = new Button("Show User Offers");

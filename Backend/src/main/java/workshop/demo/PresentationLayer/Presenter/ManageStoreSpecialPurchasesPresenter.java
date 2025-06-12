@@ -10,6 +10,7 @@ import org.springframework.web.util.UriUtils;
 import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SingleBidDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
@@ -139,4 +140,32 @@ public class ManageStoreSpecialPurchasesPresenter {
         this.storeId = storeId;
         loadAllSpecials();
     }
+    public String getProductNameById(int productId) {
+    try {
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        String url = String.format("%s/getAllProducts?token=%s",
+                baseUrl,
+                UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
+
+        ResponseEntity<ApiResponse<ProductDTO[]>> response = restTemplate.exchange(
+                url, HttpMethod.GET, null,
+                new ParameterizedTypeReference<ApiResponse<ProductDTO[]>>() {}
+        );
+
+        ApiResponse<ProductDTO[]> body = response.getBody();
+        if (body != null && body.getData() != null) {
+            for (ProductDTO dto : body.getData()) {
+                if (dto.getProductId() == productId) {
+                    return dto.getName(); // assuming ProductDTO has getId() and getName()
+                }
+            }
+        }
+
+        NotificationView.showError("Product not found for ID: " + productId);
+    } catch (Exception e) {
+        ExceptionHandlers.handleException(e);
+    }
+    return "Unknown Product";
+}
+
 }

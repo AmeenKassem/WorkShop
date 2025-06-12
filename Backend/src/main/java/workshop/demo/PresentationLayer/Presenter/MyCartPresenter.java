@@ -20,6 +20,7 @@ import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
@@ -203,4 +204,36 @@ public class MyCartPresenter {
             ExceptionHandlers.handleException(e);
         }
     }
+    public String getProductNameById(int productId) {
+    try {
+        String token = getToken();
+        if (token == null) return "Unknown Product";
+
+        String url = String.format(Base.url + "/stock/getAllProducts?token=%s",
+                UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
+
+        ResponseEntity<ApiResponse<ProductDTO[]>> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ApiResponse<ProductDTO[]>>() {
+                });
+
+        ApiResponse<ProductDTO[]> body = response.getBody();
+
+        if (body != null && body.getData() != null) {
+            for (ProductDTO dto : body.getData()) {
+                if (dto.getProductId() == productId) {
+                    return dto.getName(); // assuming ProductDTO has getId() and getName()
+                }
+            }
+        }
+
+        NotificationView.showError("Product not found for ID: " + productId);
+    } catch (Exception e) {
+        ExceptionHandlers.handleException(e);
+    }
+    return "Unknown Product";
+}
+
 }

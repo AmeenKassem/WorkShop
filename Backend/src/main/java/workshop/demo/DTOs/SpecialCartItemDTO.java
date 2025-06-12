@@ -16,11 +16,12 @@ public class SpecialCartItemDTO {
     }
 
     // Setter for x1 fields
-    public void setIds(int storeId, int specialId, int bidId, SpecialType type) {
+    public void setIds(int storeId, int specialId, int bidId, SpecialType type,String Pname) {
         this.storeId = storeId;
         this.specialId = specialId;
         this.bidId = bidId;
         this.type = type;
+        productName=Pname;
     }
 
     // Setter for x2 fields

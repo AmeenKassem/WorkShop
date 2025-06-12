@@ -134,7 +134,7 @@ public class dtosTests {
         SpecialCartItemDTO dto = new SpecialCartItemDTO();
 
         // Use both setter methods
-        dto.setIds(10, 200, 3000, SpecialType.Auction);
+        dto.setIds(10, 200, 3000, SpecialType.Auction,"Laptop");
         dto.setValues("Gaming Mouse", true, false);
 
         // Verify all getter values

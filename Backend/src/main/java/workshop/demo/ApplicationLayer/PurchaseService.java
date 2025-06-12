@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SpecialType;
@@ -169,7 +170,10 @@ public class PurchaseService {
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
-        UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random);
+        ProductDTO p= stockRepo.GetProductInfo(card.productId);
+        String productName = "Unknown Product";
+
+        UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random,productName);
         userRepo.addSpecialItemToCart(item, userId);
         boolean done = paymentService.processPayment(paymentDetails,amountPaid);
         if(!done) {

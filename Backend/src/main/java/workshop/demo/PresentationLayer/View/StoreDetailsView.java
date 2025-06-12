@@ -259,11 +259,12 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
 
     private void showStoreReviewsDialog() {
         try {
-            List<ReviewDTO> reviews = presenter.getStoreReviews(myStoreId);
-            List<String> filteredReviews = reviews.stream()
-                    .map(r -> "👤 " + r.getName() + ": " + r.getReviewMsg())
-                    .toList();
-            showDialog(filteredReviews);
+        List<ReviewDTO> reviews = presenter.getStoreReviews(myStoreId);
+List<String> filteredReviews = reviews.stream()
+    .map(r -> "👤 " + (r.getName() != null ? r.getName() : "Guest") + ": " + r.getReviewMsg())
+    .toList();
+showDialog(filteredReviews);
+
         } catch (Exception e) {
             showDialog(List.of("Failed to load reviews: " + e.getMessage()));
         }
@@ -384,9 +385,10 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         try {
             List<ReviewDTO> reviews = presenter.getProductReviews(item.getStoreId(), item.getProductId());
 
-            List<String> formatted = reviews.stream()
-                    .map(r -> "👤 " + r.getName() + ": " + r.getReviewMsg())
-                    .toList();
+          List<String> formatted = reviews.stream()
+    .map(r -> "👤 " + (r.getName() != null ? r.getName() : "Guest") + ": " + r.getReviewMsg())
+    .toList();
+
 
             showDialog(formatted);
         } catch (Exception e) {

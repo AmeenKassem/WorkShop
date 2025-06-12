@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
@@ -32,8 +31,6 @@ import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 
 @SpringBootTest
@@ -135,7 +132,7 @@ public class PurchaseTests extends AcceptanceTests {
     }
 
     @Test
-    void Add_BidProductToSpecialCart_Success() throws UIException, DevException {
+    void Add_BidProductToSpecialCart_Success() throws Exception {
         int storeId = 100;
         int userId = 20;
         String userToken = "user-token-2";
@@ -145,7 +142,10 @@ public class PurchaseTests extends AcceptanceTests {
         doNothing().when(real.mockUserRepo).checkUserRegister_ThrowException(userId);
         doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userId);
-
+      ProductDTO[] mockProducts = new ProductDTO[] {
+        new ProductDTO(1, "Laptop", Category.Electronics, "Fast gaming laptop"),
+    };
+              when(real.mockStockRepo.getAllProducts()).thenReturn(mockProducts);
         when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
 
         int specialId = 5000;
@@ -176,6 +176,10 @@ public class PurchaseTests extends AcceptanceTests {
         doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userId);
         doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(eq(userToken), any());
+              ProductDTO[] mockProducts = new ProductDTO[] {
+        new ProductDTO(1, "Laptop", Category.Electronics, "Fast gaming laptop"),
+    };
+              when(real.mockStockRepo.getAllProducts()).thenReturn(mockProducts);
 //        int userId = 20;
 //        String userGuestToken = "guest-token-2";
 //        String userToken = "user-token-2";
@@ -210,8 +214,8 @@ public class PurchaseTests extends AcceptanceTests {
         assertEquals(userId, accepted.getUserId());
 
         // ===== MOCK: Cart Preparation Phase =====
-        List<UserSpecialItemCart> specialItems = List.of(new UserSpecialItemCart(storeId, specialId, bidId, SpecialType.BID));
-        UserSpecialItemCart a = new UserSpecialItemCart(8, 9, 9, SpecialType.Auction);
+        List<UserSpecialItemCart> specialItems = List.of(new UserSpecialItemCart(storeId, specialId, bidId, SpecialType.BID,"laptop"));
+        UserSpecialItemCart a = new UserSpecialItemCart(8, 9, 9, SpecialType.Auction,"laptop");
         a.equals(specialItems.get(0));
 
         when(real.mockUserRepo.getAllSpecialItems(userId)).thenReturn(specialItems);
@@ -336,7 +340,7 @@ public class PurchaseTests extends AcceptanceTests {
     }
 
     @Test
-    void Add_AuctionBidToSpecialCart_Success() throws UIException, DevException {
+    void Add_AuctionBidToSpecialCart_Success() throws Exception {
         int storeId = 100;
         int userId = 20;
         String userToken = "user-token-2";
@@ -344,7 +348,10 @@ public class PurchaseTests extends AcceptanceTests {
         double price = 60.0;
 
         when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
-
+          ProductDTO[] mockProducts = new ProductDTO[] {
+        new ProductDTO(1, "Laptop", Category.Electronics, "Fast gaming laptop"),
+    };
+              when(real.mockStockRepo.getAllProducts()).thenReturn(mockProducts);
         int specialId = 6000;
         SingleBid mockBid = Mockito.mock(SingleBid.class);
         when(mockBid.getSpecialId()).thenReturn(specialId);
@@ -378,12 +385,15 @@ public class PurchaseTests extends AcceptanceTests {
         SingleBid auctionBid = new SingleBid(productId, 1, userId, price, SpecialType.Auction, storeId, auctionId, specialId);
         when(real.mockStockRepo.bidOnAuction(storeId, userId, auctionId, price)).thenReturn(auctionBid);
         doNothing().when(real.mockUserRepo).addSpecialItemToCart(any(), eq(userId));
-
+      ProductDTO[] mockProducts = new ProductDTO[] {
+        new ProductDTO(1, "Laptop", Category.Electronics, "Fast gaming laptop"),
+    };
+              when(real.mockStockRepo.getAllProducts()).thenReturn(mockProducts);
         boolean added = real.stockService.addBidOnAucction(userToken, auctionId, storeId, price);
         assertTrue(added);
 
         // ===== MOCK: Special Cart Contains Auction Item =====
-        List<UserSpecialItemCart> specialItems = List.of(new UserSpecialItemCart(storeId, specialId, auctionId, SpecialType.Auction));
+        List<UserSpecialItemCart> specialItems = List.of(new UserSpecialItemCart(storeId, specialId, auctionId, SpecialType.Auction,"laptop"));
         when(real.mockUserRepo.getAllSpecialItems(userId)).thenReturn(specialItems);
 
         // ===== MOCK: Auction Result = Winner & Ended =====
@@ -550,7 +560,7 @@ public class PurchaseTests extends AcceptanceTests {
        // assertEquals(randomId, participationResult.randomId);
 
         // ===== MOCK: Special cart contains random item =====
-        UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, randomId, -1, SpecialType.Random);
+        UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, randomId, -1, SpecialType.Random,"laptop");
         when(real.mockUserRepo.getAllSpecialItems(userId)).thenReturn(List.of(specialItem));
 
         // ===== MOCK: Returning the winning card during finalizeSpecialCart =====
