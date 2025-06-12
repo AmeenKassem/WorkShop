@@ -1,59 +1,14 @@
-/* ===== Header Styles ===== */
 .app-header {
     padding: 1rem 2rem;
     background-color: #232f3e;
     color: white;
-    padding: 1rem 2rem;
-    background-color: #232f3e;
-    color: white;
     display: flex;
-    justify-content: space-between;
     justify-content: space-between;
     align-items: center;
     width: 100vw;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     box-sizing: border-box;
-    width: 100vw;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    box-sizing: border-box;
 }
-
-/* ===== Market Title Styles ===== */
-/* ===== Market Title Styles ===== */
-.market-title {
-    font-size: 3rem; /* Larger font size for better visibility */
-    font-weight: bold;
-    margin: 0;
-    color: #ff9900; /* Amazon orange color */
-}
-
-/* ===== Subtitle Styles ===== */
-/* ===== Subtitle Styles ===== */
-.market-subtitle {
-    font-size: 1.1rem;
-    color: #ccc;
-    text-align: left;     /* ❗ היה center – עכשיו מיושר לשמאל */
-    margin-top: 0.5rem;
-    max-width: 100%;      /* ❗ היה 80% – עכשיו יתאים לרוחב */
-}
-
-/* ===== Right Button Column (Under the header) ===== */
-/* ===== Right Button Column (Under the header) ===== */
-.right-button-column {
-    display: flex;
-    justify-content: center; /* Center buttons under the header */
-    gap: 1.5rem;
-    margin-top: 2rem; /* Space between header and buttons */
-    padding: 1rem;
-}
-
-/* ===== Buttons ===== */
-
-.header-buttons {
-    display: flex;
-    gap: 1rem;
-}
-
 
 .header-buttons {
     display: flex;
@@ -62,11 +17,7 @@
 
 .right-button {
     background-color: #ff9900;
-    background-color: #ff9900;
     color: white;
-    font-weight: bold;
-    font-size: 0.85rem;
-    padding: 0.4rem 0.8rem;
     font-weight: bold;
     font-size: 0.85rem;
     padding: 0.4rem 0.8rem;
@@ -74,101 +25,10 @@
     text-decoration: none;
     min-width: 100px;
     text-align: center;
-    min-width: 100px;
-    text-align: center;
     cursor: pointer;
-    transition: background-color 0.3s ease;
     transition: background-color 0.3s ease;
 }
 
 .right-button:hover {
     background-color: #f77f00;
-    background-color: #f77f00;
 }
-
-.home-button {
-    background-color: #232f3e; /* Dark background for home button */
-    background-color: #232f3e; /* Dark background for home button */
-    color: white;
-    padding: 1rem 1.5rem;
-    border-radius: 15px;
-    padding: 1rem 1.5rem;
-    border-radius: 15px;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 1.2rem;
-    width: 250px; /* Uniform width */
-    text-align: center;
-    font-size: 1.2rem;
-    width: 250px; /* Uniform width */
-    text-align: center;
-    transition: background-color 0.3s ease;
-}
-
-.home-button:hover {
-    background-color: #2e3a53; /* Slightly lighter shade on hover */
-}
-
-.home-button:hover {
-    background-color: #2e3a53; /* Slightly lighter shade on hover */
-}
-
-/* ===== Store Cards ===== */
-.store-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 2rem;
-    margin-top: 2.5rem;
-    padding: 0 4rem;
-    gap: 2rem;
-    margin-top: 2.5rem;
-    padding: 0 4rem;
-}
-
-.store-card {
-    background-color: #fff;
-    background-color: #fff;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    cursor: pointer;
-    max-height: 300px; /* Limit height for uniform cards */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    max-height: 300px; /* Limit height for uniform cards */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.store-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
-
-.store-card h3 {
-    margin: 0;
-    font-size: 1.4rem;
-    font-size: 1.4rem;
-    font-weight: bold;
-    color: #333;
-    color: #333;
-}
-
-.store-card p {
-    margin: 0.5rem 0;
-    color: #777;
-    font-size: 1rem;
-    margin: 0.5rem 0;
-    color: #777;
-    font-size: 1rem;
-}
-
-
-
-
-

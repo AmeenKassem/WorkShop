@@ -69,6 +69,12 @@ public class HomePage extends VerticalLayout {
 
     private VerticalLayout createSearchBar() {
         VerticalLayout layout = new VerticalLayout();
+        layout.getStyle()
+            .set("background-color", "#f5f6ff")
+            .set("border-radius", "12px")
+            .set("padding", "20px")
+            .set("box-shadow", "0 2px 10px rgba(0, 0, 0, 0.05)")
+            .set("margin-bottom", "1.5rem");
         layout.addClassName("search-panel");
 
         TextField searchField = new TextField("Search");
@@ -106,6 +112,7 @@ public class HomePage extends VerticalLayout {
             Double minPrice = parseDouble(minPriceField.getValue());
             Double maxPrice = parseDouble(maxPriceField.getValue());
             Integer productRate = productRateCombo.getValue();
+    
 
             if (searchBy == null || inputText == null || inputText.isBlank()) {
                 NotificationView.showError("Please fill all required fields.");
@@ -115,6 +122,7 @@ public class HomePage extends VerticalLayout {
             String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
             String name = searchBy.equals("Product Name") ? inputText : null;
             String keyword = searchBy.equals("Keyword") ? inputText : null;
+        
 
             List<ItemStoreDTO> items = homePagePresenter.searchNormal(token, name, keyword, category, minPrice, maxPrice, productRate);
             resultsContainer.removeAll();
@@ -124,14 +132,15 @@ public class HomePage extends VerticalLayout {
             }
             items.forEach(item -> resultsContainer.add(createItemCard(item)));
         });
-
-
-        searchBtn.getStyle()
-                .set("background-color", "#2E2E2E")
-                .set("color", "white")
-                .set("font-weight", "bold")
-                .set("border-radius", "12px")
-                .set("padding", "6px 16px");
+           
+    
+         searchBtn.getStyle()
+        .set("background-color", "#ff9900") 
+        .set("color", "white")
+        .set("font-weight", "bold")
+        .set("border-radius", "12px")
+        .set("padding", "6px 16px")
+        .set("font-size", "1rem");
 
         HorizontalLayout row1 = new HorizontalLayout(searchField, categoryCombo, searchBySelector);
         HorizontalLayout row2 = new HorizontalLayout(minPriceField, maxPriceField, productRateCombo, searchBtn);
