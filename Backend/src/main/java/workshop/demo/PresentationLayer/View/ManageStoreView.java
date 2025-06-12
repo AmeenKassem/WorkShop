@@ -198,7 +198,7 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
             try {
                 Integer p = paramField.isVisible() ? paramField.getValue().intValue() : null;
                 presenter.addPurchasePolicy(myStoreId, token, keyBox.getValue(), p);
-                Notification.show("Policy added");
+                NotificationView.showSuccess("Policy added");
                 dlg.close();
             } catch (Exception ex) { ExceptionHandlers.handleException(ex); }
         });
@@ -208,7 +208,7 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
             try {
                 Integer p = paramField.isVisible() ? paramField.getValue().intValue() : null;
                 presenter.removePurchasePolicy(myStoreId, token, keyBox.getValue(), p);
-                Notification.show("Policy removed");
+                NotificationView.showSuccess("Policy removed");
                 dlg.close();
             } catch (Exception ex) { ExceptionHandlers.handleException(ex); }
         });
