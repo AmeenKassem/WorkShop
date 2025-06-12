@@ -14,7 +14,7 @@ public class SingleBid {
     private Status status;
     private int storeId;
     private int userId;
-    private int productId;
+    public int productId;
     public int ownersNum;// number of owners at the time i added my bid
     private int acceptCounter;
 

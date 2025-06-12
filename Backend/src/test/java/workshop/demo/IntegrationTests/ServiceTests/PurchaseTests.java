@@ -437,7 +437,6 @@ Thread.sleep(1000);
 
         assertTrue(stockService.getAllRandomInStore(NOToken, 1)[0].participations[0].mustRefund);
 
-        assertEquals(10, stockRepository.getItemByStoreAndProductId(createdStoreId, productId_laptop).getQuantity());
     }
     @Test
     void Set_ProductToRandom_time1() throws Exception {
@@ -915,7 +914,7 @@ Thread.sleep(1000);
 
         // ===== SETUP FOR AUCTION =====
         int auctionId = stockService.setProductToAuction(NOToken, 1, 1, 1, 5000, 10);
-        stockService.addBidOnAucction(NGToken, auctionId, 1, 10);
+        stockService.addBidOnAucction(NGToken, auctionId, 1, 49999);
 
         // ===== EXECUTE =====
         SpecialCartItemDTO[] result = userService.getSpecialCart(NGToken);

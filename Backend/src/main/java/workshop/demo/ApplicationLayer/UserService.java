@@ -137,7 +137,7 @@ public class UserService {
         List<SpecialCartItemDTO> result = new ArrayList<>();
         for (UserSpecialItemCart item : specialIds) {
             SpecialCartItemDTO itemToSend = new SpecialCartItemDTO();
-            itemToSend.setIds(item.storeId, item.specialId, item.bidId, item.type);
+            itemToSend.setIds(item.storeId, item.specialId, item.bidId, item.type,item.Pname);
             if (item.type == SpecialType.Random) {
                 ParticipationInRandomDTO card = stockRepo.getRandomCard(item.storeId, item.specialId, item.bidId);
                 itemToSend.setValues(stockRepo.GetProductNameForBid(item.storeId, item.specialId, item.type), card.isWinner, card.ended);

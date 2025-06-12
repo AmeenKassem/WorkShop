@@ -110,22 +110,31 @@ public class StockService {
     }
 
     public boolean addBidOnAucction(String token, int auctionId, int storeId, double price)
-            throws UIException, DevException {
+            throws Exception {
         logger.info("User trying to bid on auction: {}, store: {}", auctionId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userRepo.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         SingleBid bid = stockRepo.bidOnAuction(storeId, userId, auctionId, price);
+        String productName = "Unknown Product";
+        ProductDTO[] products = getAllProducts(token);
+
+for (ProductDTO p : products) {
+    if (p.getProductId() == bid.productId) {
+        productName = p.getName();
+        break;
+    }
+}
         UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, bid.getSpecialId(), bid.getId(),
-                SpecialType.Auction);
+                SpecialType.Auction,productName);
         userRepo.addSpecialItemToCart(specialItem, userId);
         logger.info("Bid placed successfully by user: {} on auction: {}", userId, auctionId);
         return true;
 
     }
 
-    public boolean addRegularBid(String token, int bitId, int storeId, double price) throws UIException, DevException {
+    public boolean addRegularBid(String token, int bitId, int storeId, double price) throws Exception {
         logger.info("User attempting regular bid on bidId: {}, storeId: {}", bitId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
@@ -133,8 +142,16 @@ public class StockService {
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         SingleBid bid = stockRepo.bidOnBid(bitId, price, userId, storeId);
         bid.ownersNum = suConnectionRepo.getOwnersInStore(storeId).size();
+      ProductDTO[] products = getAllProducts(token);
+String productName = "Unknown Product";
+for (ProductDTO p : products) {
+    if (p.getProductId() == bid.productId) {
+        productName = p.getName();
+        break;
+    }
+}
         UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, bid.getSpecialId(), bid.getId(),
-                SpecialType.BID);
+                SpecialType.BID,productName);
         userRepo.addSpecialItemToCart(specialItem, userId);
         for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
             String ownerName = userRepo.getRegisteredUser(worker.getMyId()).getUsername();
