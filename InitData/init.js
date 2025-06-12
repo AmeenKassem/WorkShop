@@ -19,51 +19,51 @@ async function generateGuestToken() {
 
 async function loginUsers(user) {
   // for (const user of users) {
-    try {
-      const guestToken = await generateGuestToken();
-      console.log(guestToken);
-      const formDataReg = qs.stringify({
-        token: guestToken,
-        username: user.username,
-        password: user.password,
-        age: 30,
-      });
+  try {
+    const guestToken = await generateGuestToken();
+    console.log(guestToken);
+    const formDataReg = qs.stringify({
+      token: guestToken,
+      username: user.username,
+      password: user.password,
+      age: 30,
+    });
 
-      const responseReg = await axios.post(
-        api + "/api/users/register",
-        formDataReg,
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
-
-      console.log(responseReg.data.data);
-
-      const formData = qs.stringify({
-        token: guestToken,
-        username: user.username,
-        password: user.password,
-      });
-
-      const response = await axios.post(loginEndpoint, formData, {
+    const responseReg = await axios.post(
+      api + "/api/users/register",
+      formDataReg,
+      {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-      });
+      }
+    );
 
-      const token = response.data.data;
-      tokenMap[user.username] = token;
-      console.log(`✅ ${user.username} logged in with token: ${token}`);
-      return token;
-    } catch (err) {
-      console.error(
-        `❌ Failed login for ${user.username}:`,
-        err.response?.data || err.message
-      );
-      return false;
-    }
+    console.log(responseReg.data.data);
+
+    const formData = qs.stringify({
+      token: guestToken,
+      username: user.username,
+      password: user.password,
+    });
+
+    const response = await axios.post(loginEndpoint, formData, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    const token = response.data.data;
+    tokenMap[user.username] = token;
+    console.log(`✅ ${user.username} logged in with token: ${token}`);
+    return token;
+  } catch (err) {
+    console.error(
+      `❌ Failed login for ${user.username}:`,
+      err.response?.data || err.message
+    );
+    return false;
+  }
   // }
 
   console.log("\n=== Token Map ===");
@@ -371,17 +371,24 @@ const products = [
 
 async function runScript() {
   try {
-    
     // loginUsers();
-    const tokenUSer = await loginUsers({username:"bhaa3",password:"a123"})
+    const tokenUSer = await loginUsers({ username: "bhaa3", password: "a123" });
     console.log(tokenUSer);
-      // "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ7XCJ1c2VyTmFtZVwiOlwidXNlcjFcIixcImlkXCI6NX0iLCJpYXQiOjE3NDk3MTc2ODEsImV4cCI6MTc0OTcyMTI4MX0.nucufLfOKNLCxG3p-O3VHj-kXx5TYlMfzuUZsWQEtdQ";
+    // "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ7XCJ1c2VyTmFtZVwiOlwidXNlcjFcIixcImlkXCI6NX0iLCJpYXQiOjE3NDk3MTc2ODEsImV4cCI6MTc0OTcyMTI4MX0.nucufLfOKNLCxG3p-O3VHj-kXx5TYlMfzuUZsWQEtdQ";
     const storeData = await addStore(tokenUSer, "masho masho");
     // // console.log(storeData);
     products.forEach(([name, category, description, keyword]) => {
-      addProductAndItem(tokenUSer, storeData, name, category, description, keyword, 5, 10);
+      addProductAndItem(
+        tokenUSer,
+        storeData,
+        name,
+        category,
+        description,
+        keyword,
+        5,
+        10
+      );
     });
-    
   } catch (error) {
     console.error("Failed to add store:", error.message);
     if (error.response) {
