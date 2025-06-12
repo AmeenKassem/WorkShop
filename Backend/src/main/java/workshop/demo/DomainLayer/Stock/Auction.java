@@ -30,7 +30,7 @@ public class Auction {
     private final Object lock = new Object();
     private long endTimeMillis;
 
-    public Auction(int productId, int quantity, long time, int id, int storeId) {
+    public Auction(int productId, int quantity, long time, int id, int storeId, double min) {
         this.productId = productId;
         this.quantity = quantity;
         this.timer = new Timer();
@@ -39,7 +39,7 @@ public class Auction {
         this.auctionId = id;
         this.status = AuctionStatus.IN_PROGRESS;
         this.endTimeMillis = System.currentTimeMillis() + time;
-
+        maxBid = min;
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
