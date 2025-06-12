@@ -52,6 +52,7 @@ public class HomePage extends VerticalLayout {
         Div storeContainer = new Div();
         storeContainer.addClassName("store-container");
 
+
         List<StoreDTO> stores = this.homePagePresenter.fetchStores();
         if (stores == null || stores.isEmpty()) {
             Paragraph noStores = new Paragraph("No stores yet.");
@@ -124,6 +125,7 @@ public class HomePage extends VerticalLayout {
             items.forEach(item -> resultsContainer.add(createItemCard(item)));
         });
 
+
         searchBtn.getStyle()
                 .set("background-color", "#2E2E2E")
                 .set("color", "white")
@@ -147,7 +149,7 @@ public class HomePage extends VerticalLayout {
 
         Span name = new Span("🍭 " + item.getProductName());
         Paragraph store = new Paragraph("Store: " + item.getStoreName());
-        Paragraph price = new Paragraph("Price: $" + item.getPrice());
+        Paragraph price = new Paragraph("Price: ₪" + item.getPrice());
 
         Button addToCart = new Button("Add to My Cart", e -> showAddToCartDialog(item));
         addToCart.getStyle().set("background-color", "#007bff")

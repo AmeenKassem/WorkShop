@@ -5,6 +5,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
@@ -85,7 +86,7 @@ public class LoginView extends VerticalLayout {
         });
         // Register link
         RouterLink registerLink = new RouterLink("Don't have an account? Register here", RegisterView.class);
-        registerLink.getStyle().set("margin-top", "1rem").set("font-size", "0.9rem");
+        registerLink.addClassName("register-link");
 
         // Form layout
         VerticalLayout form = new VerticalLayout(title, usernameField, passwordField, loginButton, registerLink);
@@ -93,7 +94,10 @@ public class LoginView extends VerticalLayout {
         form.setSpacing(true);
         form.setWidthFull();
 
-        add(form);
+        HorizontalLayout centerLayout = new HorizontalLayout(form);
+        centerLayout.setWidthFull();
+        centerLayout.setJustifyContentMode(JustifyContentMode.CENTER);
+        add(centerLayout);
 
     }
 
