@@ -1,6 +1,6 @@
 const axios = require("axios");
 const qs = require("qs");
-const api = "http://10.0.0.6:8080";
+const api = "http://132.73.233.229:8080";
 const users = [
   { username: "user1", password: "pass1" },
   { username: "user2", password: "pass2" },
@@ -374,12 +374,12 @@ async function runScript() {
     
     // loginUsers();
     const tokenUSer =
-      "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ7XCJ1c2VyTmFtZVwiOlwidXNlcjFcIixcImlkXCI6NH0iLCJpYXQiOjE3NDk2NTg1MjUsImV4cCI6MTc0OTY2MjEyNX0.rXwLb0tvVexgzQPB6kKMDjD47sBjXHHywtX9DfusrYk";
-    const storeData = await addStore(tokenUSer, "newStoreName3");
+      "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ7XCJ1c2VyTmFtZVwiOlwidXNlcjFcIixcImlkXCI6NX0iLCJpYXQiOjE3NDk3MTc2ODEsImV4cCI6MTc0OTcyMTI4MX0.nucufLfOKNLCxG3p-O3VHj-kXx5TYlMfzuUZsWQEtdQ";
+    const storeData = await addStore(tokenUSer, "masho masho");
     // console.log(storeData);
-    // products.forEach(([name, category, description, keyword]) => {
-    //   addProductAndItem(tokenUSer, storeData, name, category, description, keyword, 5, 10);
-    // });
+    products.forEach(([name, category, description, keyword]) => {
+      addProductAndItem(tokenUSer, storeData, name, category, description, keyword, 5, 10);
+    });
     
   } catch (error) {
     console.error("Failed to add store:", error.message);
