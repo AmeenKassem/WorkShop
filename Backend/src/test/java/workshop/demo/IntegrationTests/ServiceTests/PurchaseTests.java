@@ -914,7 +914,7 @@ Thread.sleep(1000);
 
         // ===== SETUP FOR AUCTION =====
         int auctionId = stockService.setProductToAuction(NOToken, 1, 1, 1, 5000, 10);
-        stockService.addBidOnAucction(NGToken, auctionId, 1, 10);
+        stockService.addBidOnAucction(NGToken, auctionId, 1, 49999);
 
         // ===== EXECUTE =====
         SpecialCartItemDTO[] result = userService.getSpecialCart(NGToken);
