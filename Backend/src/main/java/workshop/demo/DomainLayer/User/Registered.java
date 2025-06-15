@@ -28,7 +28,7 @@ public class Registered extends Guest {
     private RoleOnSystem systemRole = RoleOnSystem.Regular;
     @Transient
     private List<UserSpecialItemCart> specialCart;
-
+    private Encoder encoder = new Encoder();
     public Registered(int id2, String username, String encrybtedPassword, int age) {
 
         super(id2);
@@ -41,6 +41,9 @@ public class Registered extends Guest {
         this.age = age;
     }
 
+    public Registered() {
+    }
+
     public Registered(String username, String encrybtedPassword, int age) {
         this.username = username;
         this.encrybtedPassword = encrybtedPassword;
@@ -51,14 +54,13 @@ public class Registered extends Guest {
         this.age = age;
     }
 
-    public boolean check(Encoder encoder, String username, String password) {
-        logger.debug("Registered user created:username={}", username);
+    
+
+    public boolean login(String username, String password) {
         boolean res = encoder.matches(password, encrybtedPassword) && username.equals(this.username);
-        logger.debug("Password match result: {}", res);
         if (res) {
             login();
         }
-
         return res;
     }
 

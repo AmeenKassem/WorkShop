@@ -120,16 +120,11 @@ public class UserRepository implements IUserRepo {
 
     @Override
     public int login(String username, String password) throws UIException {
-
-        if (userExist(username)) {
-            Registered user = users.get(username);
-            if (user.check(encoder, username, password)) {
-                logger.log(Level.INFO, "User logged in: {0}", username);
-                return user.getId();
-            } else {
-                logger.log(Level.WARNING, "Invalid password for user: {0}", username);
-                throw new UIException("Incorrect username or password.", ErrorCodes.WRONG_PASSWORD);
-            }
+        List<Registered> regs = regJpaRepo.findRegisteredUsersByUsername(username);
+        if (regs.size()==1) {
+            Registered user = regs.get(0);
+            if(user.login(username, password)) return user.getId();
+            else throw new UIException("wrong password!!", ErrorCodes.WRONG_PASSWORD);
         } else {
             throw new UIException("User not found: " + username, ErrorCodes.USER_NOT_FOUND);
         }
