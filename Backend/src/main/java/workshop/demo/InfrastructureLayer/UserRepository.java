@@ -38,7 +38,7 @@ public class UserRepository implements IUserRepo {
     private Encoder encoder;
     private AdminInitilizer adminInit;
     @Autowired
-    private UserJpaRepository jpaRepo;
+    private UserJpaRepository regJpaRepo;
     @Autowired
     private GuestJpaRepository guestJpaRepository;
     private static final Logger logger = Logger.getLogger(UserRepository.class.getName());
@@ -71,18 +71,20 @@ public class UserRepository implements IUserRepo {
     }
 
     // @Override
-    // public int registerUser(String username, String password, int age) throws UIException {
-    //     if (userExist(username)) {
-    //         throw new UIException("another user try to register with used username", ErrorCodes.USERNAME_USED);
-    //     }
-    //     String encPass = encoder.encodePassword(password);
-    //     int id = idGen.getAndIncrement();
-    //     Registered userToAdd = new Registered(id, username, encPass, age);
-    //     users.put(username, userToAdd);
-    //     idToUsername.put(id, username);
-    //     jpaRepo.save(userToAdd);
-    //     logger.log(Level.INFO, "User {0} registered successfully", username);
-    //     return id;
+    // public int registerUser(String username, String password, int age) throws
+    // UIException {
+    // if (userExist(username)) {
+    // throw new UIException("another user try to register with used username",
+    // ErrorCodes.USERNAME_USED);
+    // }
+    // String encPass = encoder.encodePassword(password);
+    // int id = idGen.getAndIncrement();
+    // Registered userToAdd = new Registered(id, username, encPass, age);
+    // users.put(username, userToAdd);
+    // idToUsername.put(id, username);
+    // jpaRepo.save(userToAdd);
+    // logger.log(Level.INFO, "User {0} registered successfully", username);
+    // return id;
     // }
     @Override
     public int registerUser(String username, String password, int age) throws UIException {
@@ -94,7 +96,7 @@ public class UserRepository implements IUserRepo {
         // jpa handels id:
         Registered userToAdd = new Registered(username, encPass, age);
 
-        jpaRepo.save(userToAdd); // ID will be auto-generated
+        regJpaRepo.save(userToAdd); // ID will be auto-generated
 
         users.put(username, userToAdd);
         idToUsername.put(userToAdd.getId(), username); // getId() after save()
@@ -118,6 +120,7 @@ public class UserRepository implements IUserRepo {
 
     @Override
     public int login(String username, String password) throws UIException {
+
         if (userExist(username)) {
             Registered user = users.get(username);
             if (user.check(encoder, username, password)) {
@@ -133,19 +136,19 @@ public class UserRepository implements IUserRepo {
     }
 
     private boolean userExist(String username) {
-        return users.containsKey(username);
+        return regJpaRepo.existsByUsername(username)==1;
     }
 
     private boolean userExist(int userid) {
         return idToUsername.containsKey(userid);
     }
-// changed from private to public
+    // changed from private to public
 
     public boolean guestExist(int id) {
-        return guests.containsKey(id);
+        return guestExist(id);
     }
-// changed it to handle users as well
-// added fucntion userexists that takes userid and returns name
+    // changed it to handle users as well
+    // added fucntion userexists that takes userid and returns name
 
     @Override
     public void addItemToGeustCart(int guestId, ItemCartDTO item) throws UIException {
@@ -153,10 +156,12 @@ public class UserRepository implements IUserRepo {
         if (guestExist(guestId)) {
             Guest geust = guests.get(guestId);
             geust.addToCart(itemCart);
-            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProductId(), guestId});
+            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}",
+                    new Object[] { item.getProductId(), guestId });
         } else if (userExist(guestId)) {
             getRegisteredUser(guestId).addToCart(itemCart);
-            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}", new Object[]{item.getProductId(), guestId});
+            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}",
+                    new Object[] { item.getProductId(), guestId });
         } else {
             throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
 
@@ -168,10 +173,12 @@ public class UserRepository implements IUserRepo {
         if (guestExist(guestId)) {
             Guest geust = guests.get(guestId);
             geust.ModifyCartAddQToBuy(productId, quantity);
-            logger.log(Level.INFO, "Item modified in guest cart: {0} for guest id: {1}", new Object[]{productId, guestId});
+            logger.log(Level.INFO, "Item modified in guest cart: {0} for guest id: {1}",
+                    new Object[] { productId, guestId });
         } else if (userExist(guestId)) {
             getRegisteredUser(guestId).ModifyCartAddQToBuy(productId, quantity);
-            logger.log(Level.INFO, "Item modified in guest cart: {0} for guest id: {1}", new Object[]{productId, guestId});
+            logger.log(Level.INFO, "Item modified in guest cart: {0} for guest id: {1}",
+                    new Object[] { productId, guestId });
         } else {
             throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
 
@@ -232,10 +239,12 @@ public class UserRepository implements IUserRepo {
         if (guestExist(guestId)) {
             Guest geust = guests.get(guestId);
             geust.removeItem(productId);
-            logger.log(Level.INFO, "Item removed from guest cart: {0} for guest id: {1}", new Object[]{productId, guestId});
+            logger.log(Level.INFO, "Item removed from guest cart: {0} for guest id: {1}",
+                    new Object[] { productId, guestId });
         } else if (userExist(guestId)) {
             getRegisteredUser(guestId).removeItem(productId);
-            logger.log(Level.INFO, "Item removed from guest cart: {0} for guest id: {1}", new Object[]{productId, guestId});
+            logger.log(Level.INFO, "Item removed from guest cart: {0} for guest id: {1}",
+                    new Object[] { productId, guestId });
         } else {
             throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
 
@@ -254,10 +263,11 @@ public class UserRepository implements IUserRepo {
         throw new UIException("User with ID " + userId + " not found", ErrorCodes.USER_NOT_FOUND);
     }
 
-    //  @Override
-//    public List<ItemCartDTO> getCartForUser(int ownerId) {
-//      //  throw new UnsupportedOperationException("Unimplemented method 'getCartForUser'");
-//    }
+    // @Override
+    // public List<ItemCartDTO> getCartForUser(int ownerId) {
+    // // throw new UnsupportedOperationException("Unimplemented method
+    // 'getCartForUser'");
+    // }
     @Override
     public void checkUserRegisterOnline_ThrowException(int userId) throws UIException {
         if (!(isRegistered(userId) && isOnline(userId))) {
@@ -338,33 +348,28 @@ public class UserRepository implements IUserRepo {
     public void removeSpecialItem(int userId, UserSpecialItemCart itemToRemove) throws UIException {
         Registered user = getRegisteredUser(userId);
 
-        user.getSpecialCart().removeIf(item
-                -> item.storeId == itemToRemove.storeId
+        user.getSpecialCart().removeIf(item -> item.storeId == itemToRemove.storeId
                 && item.specialId == itemToRemove.specialId
                 && item.bidId == itemToRemove.bidId
-                && item.type == itemToRemove.type
-        );
+                && item.type == itemToRemove.type);
     }
 
-    public void removeBoughtSpecialItems(int userId, List<SingleBid> winningBids, List<ParticipationInRandomDTO> winningRandoms) throws UIException {
+    public void removeBoughtSpecialItems(int userId, List<SingleBid> winningBids,
+            List<ParticipationInRandomDTO> winningRandoms) throws UIException {
         Registered user = getRegisteredUser(userId);
         List<UserSpecialItemCart> cart = user.getSpecialCart();
 
         for (SingleBid bid : winningBids) {
-            cart.removeIf(item
-                    -> item.storeId == bid.getStoreId()
+            cart.removeIf(item -> item.storeId == bid.getStoreId()
                     && item.specialId == bid.getSpecialId()
                     && item.bidId == bid.getId()
-                    && item.type == bid.getType()
-            );
+                    && item.type == bid.getType());
         }
 
         for (ParticipationInRandomDTO card : winningRandoms) {
-            cart.removeIf(item
-                    -> item.storeId == card.storeId
+            cart.removeIf(item -> item.storeId == card.storeId
                     && item.specialId == card.randomId
-                    && item.type == SpecialType.Random
-            );
+                    && item.type == SpecialType.Random);
         }
 
         logger.log(Level.INFO, "Removed bought special items from user {}'s cart", userId);

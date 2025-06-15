@@ -26,7 +26,14 @@ import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.SystemAnalyticsDTO;
 import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Order.IOrderRepo;
+import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.User.AdminInitilizer;
+import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 import workshop.demo.PresentationLayer.Requests.AddToCartRequest;
 
 @RestController
@@ -38,15 +45,19 @@ public class UserController {
     private final AdminHandler adminHandler;
 
     @Autowired
-    public UserController(Repos repos) throws Exception {
-        // this.userService = repos.userService;
-        this.adminHandler = new AdminHandler(repos.orderRepo, repos.storeRepo, repos.userRepo, repos.auth);
-        this.userSuspensionService = new UserSuspensionService(repos.UserSuspensionRepo, repos.userRepo, repos.auth);
-        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer,
-                adminHandler, repos.storeRepo);
-
+    public UserController(
+            IUserRepo userRepo,
+            IStoreRepo storeRepo,
+            IOrderRepo orderRepo,
+            IAuthRepo auth,                      // the JWT token provider
+            IStockRepo stockrepo,
+            AdminInitilizer adminInitializer,
+            IUserSuspensionRepo userSuspensionRepo
+    ) throws Exception {
+        this.adminHandler = new AdminHandler(orderRepo, storeRepo, userRepo, auth);
+        this.userSuspensionService = new UserSuspensionService(userSuspensionRepo, userRepo, auth);
+        this.userService = new UserService(userRepo, auth, stockrepo, adminInitializer, adminHandler, storeRepo);
     }
-
     // @ModelAttribute
     // public void beforeEveryRequest(HttpServletRequest request) {
     // System.out.println("must check if the system get published by admin ...");

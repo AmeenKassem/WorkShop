@@ -14,13 +14,18 @@ import workshop.demo.DomainLayer.Authentication.AuthoResponse;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.config.JwtConfig;
 
 @Repository
 public class AuthenticationRepo implements IAuthRepo {
 
-    private SecretKey SECRET = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final long EXPIRATION_MS = 1000 * 60 * 60;
+     private final SecretKey SECRET;
+    private final long EXPIRATION_MS;
 
+    public AuthenticationRepo(JwtConfig jwtConfig) {
+        this.SECRET = Keys.hmacShaKeyFor(jwtConfig.getSecret().getBytes());
+        this.EXPIRATION_MS = jwtConfig.getExpiration();
+    }
     private String generateToken(String tokenValue) {
         return Jwts.builder()
                 .setSubject(tokenValue)
