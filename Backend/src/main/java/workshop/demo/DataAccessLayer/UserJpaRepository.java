@@ -8,4 +8,5 @@ import workshop.demo.DomainLayer.User.Registered;
 @Repository
 public interface UserJpaRepository extends JpaRepository<Registered, Integer> {
 
+    
 }
