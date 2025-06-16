@@ -12,6 +12,8 @@ public class ShoppingCart {
 
     private HashMap<Integer, ShoppingBasket> storeBaskets = new HashMap<>();
 
+    public ShoppingCart(){}
+
     public HashMap<Integer, ShoppingBasket> getBaskets() {
         return storeBaskets;
     }

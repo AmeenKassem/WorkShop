@@ -35,7 +35,7 @@ public class UserRepository implements IUserRepo {
     private ConcurrentHashMap<Integer, Guest> guests; // id -> Guest
     private ConcurrentHashMap<String, Registered> users; // username -> Registered
     private ConcurrentHashMap<Integer, String> idToUsername; // id -> username
-    private Encoder encoder;
+    // private Encoder encoder;
     private AdminInitilizer adminInit;
     @Autowired
     private UserJpaRepository regJpaRepo;
@@ -44,8 +44,7 @@ public class UserRepository implements IUserRepo {
     private static final Logger logger = Logger.getLogger(UserRepository.class.getName());
 
     @Autowired
-    public UserRepository(Encoder encoder, AdminInitilizer adminInit) {
-        this.encoder = encoder;
+    public UserRepository(AdminInitilizer adminInit) {
         this.idGen = new AtomicInteger(1);
         this.adminInit = adminInit;
         users = new ConcurrentHashMap<>();
@@ -86,24 +85,24 @@ public class UserRepository implements IUserRepo {
     // logger.log(Level.INFO, "User {0} registered successfully", username);
     // return id;
     // }
-    @Override
-    public int registerUser(String username, String password, int age) throws UIException {
-        if (userExist(username)) {
-            throw new UIException("another user try to register with used username", ErrorCodes.USERNAME_USED);
-        }
-        String encPass = encoder.encodePassword(password);
+    // @Override
+    // public int registerUser(String username, String encPass, int age) throws UIException {
+    //     if (userExist(username)) {
+    //         throw new UIException("another user try to register with used username", ErrorCodes.USERNAME_USED);
+    //     }
+    //     // String encPass = encoder.encodePassword(password);
 
-        // jpa handels id:
-        Registered userToAdd = new Registered(username, encPass, age);
+    //     // jpa handels id:
+    //     Registered userToAdd = new Registered(username, encPass, age);
 
-        regJpaRepo.save(userToAdd); // ID will be auto-generated
+    //     regJpaRepo.save(userToAdd); // ID will be auto-generated
 
-        users.put(username, userToAdd);
-        idToUsername.put(userToAdd.getId(), username); // getId() after save()
+    //     users.put(username, userToAdd);
+    //     idToUsername.put(userToAdd.getId(), username); // getId() after save()
 
-        logger.log(Level.INFO, "User {0} registered successfully", username);
-        return userToAdd.getId();
-    }
+    //     logger.log(Level.INFO, "User {0} registered successfully", username);
+    //     return userToAdd.getId();
+    // }
 
     @Override
     public int generateGuest() {
@@ -118,17 +117,17 @@ public class UserRepository implements IUserRepo {
         return saved.getId();
     }
 
-    @Override
-    public int login(String username, String password) throws UIException {
-        List<Registered> regs = regJpaRepo.findRegisteredUsersByUsername(username);
-        if (regs.size()==1) {
-            Registered user = regs.get(0);
-            if(user.login(username, password)) return user.getId();
-            else throw new UIException("wrong password!!", ErrorCodes.WRONG_PASSWORD);
-        } else {
-            throw new UIException("User not found: " + username, ErrorCodes.USER_NOT_FOUND);
-        }
-    }
+    // @Override
+    // public int login(String username, String password) throws UIException {
+    //     List<Registered> regs = regJpaRepo.findRegisteredUsersByUsername(username);
+    //     if (regs.size()==1) {
+    //         Registered user = regs.get(0);
+    //         if(user.login(username, password)) return user.getId();
+    //         else throw new UIException("wrong password!!", ErrorCodes.WRONG_PASSWORD);
+    //     } else {
+    //         throw new UIException("User not found: " + username, ErrorCodes.USER_NOT_FOUND);
+    //     }
+    // }
 
     private boolean userExist(String username) {
         return regJpaRepo.existsByUsername(username)==1;
@@ -145,23 +144,23 @@ public class UserRepository implements IUserRepo {
     // changed it to handle users as well
     // added fucntion userexists that takes userid and returns name
 
-    @Override
-    public void addItemToGeustCart(int guestId, ItemCartDTO item) throws UIException {
-        CartItem itemCart = new CartItem(item);
-        if (guestExist(guestId)) {
-            Guest geust = guests.get(guestId);
-            geust.addToCart(itemCart);
-            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}",
-                    new Object[] { item.getProductId(), guestId });
-        } else if (userExist(guestId)) {
-            getRegisteredUser(guestId).addToCart(itemCart);
-            logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}",
-                    new Object[] { item.getProductId(), guestId });
-        } else {
-            throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
+    // @Override
+    // public void addItemToGeustCart(int guestId, ItemCartDTO item) throws UIException {
+    //     CartItem itemCart = new CartItem(item);
+    //     if (guestExist(guestId)) {
+    //         Guest geust = guests.get(guestId);
+    //         geust.addToCart(itemCart);
+    //         logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}",
+    //                 new Object[] { item.getProductId(), guestId });
+    //     } else if (userExist(guestId)) {
+    //         getRegisteredUser(guestId).addToCart(itemCart);
+    //         logger.log(Level.INFO, "Item added to guest cart: {0} for guest id: {1}",
+    //                 new Object[] { item.getProductId(), guestId });
+    //     } else {
+    //         throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
 
-        }
-    }
+    //     }
+    // }
 
     @Override
     public void ModifyCartAddQToBuy(int guestId, int productId, int quantity) throws UIException {
@@ -229,22 +228,22 @@ public class UserRepository implements IUserRepo {
         return false;
     }
 
-    @Override
-    public void removeItemFromGeustCart(int guestId, int productId) throws UIException {
-        if (guestExist(guestId)) {
-            Guest geust = guests.get(guestId);
-            geust.removeItem(productId);
-            logger.log(Level.INFO, "Item removed from guest cart: {0} for guest id: {1}",
-                    new Object[] { productId, guestId });
-        } else if (userExist(guestId)) {
-            getRegisteredUser(guestId).removeItem(productId);
-            logger.log(Level.INFO, "Item removed from guest cart: {0} for guest id: {1}",
-                    new Object[] { productId, guestId });
-        } else {
-            throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
+    // @Override
+    // public void removeItemFromGeustCart(int guestId, int productId) throws UIException {
+    //     if (guestExist(guestId)) {
+    //         Guest geust = guests.get(guestId);
+    //         geust.removeItem(productId);
+    //         logger.log(Level.INFO, "Item removed from guest cart: {0} for guest id: {1}",
+    //                 new Object[] { productId, guestId });
+    //     } else if (userExist(guestId)) {
+    //         getRegisteredUser(guestId).removeItem(productId);
+    //         logger.log(Level.INFO, "Item removed from guest cart: {0} for guest id: {1}",
+    //                 new Object[] { productId, guestId });
+    //     } else {
+    //         throw new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND);
 
-        }
-    }
+    //     }
+    // }
 
     @Override
     public ShoppingCart getUserCart(int userId) throws UIException {

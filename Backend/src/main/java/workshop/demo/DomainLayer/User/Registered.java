@@ -28,7 +28,6 @@ public class Registered extends Guest {
     private RoleOnSystem systemRole = RoleOnSystem.Regular;
     @Transient
     private List<UserSpecialItemCart> specialCart;
-    private Encoder encoder = new Encoder();
     public Registered(int id2, String username, String encrybtedPassword, int age) {
 
         super(id2);
@@ -56,13 +55,13 @@ public class Registered extends Guest {
 
     
 
-    public boolean login(String username, String password) {
-        boolean res = encoder.matches(password, encrybtedPassword) && username.equals(this.username);
-        if (res) {
-            login();
-        }
-        return res;
-    }
+    // public boolean login(String username, String password) {
+    //     boolean res = encoder.matches(password, encrybtedPassword) && username.equals(this.username);
+    //     if (res) {
+    //         login();
+    //     }
+    //     return res;
+    // }
 
     public void setAdmin() {
         systemRole = RoleOnSystem.Admin;
@@ -109,6 +108,10 @@ public class Registered extends Guest {
     @Override
     public UserDTO getUserDTO() {
         return new UserDTO(this.getId(), this.username, this.age, this.isOnline, this.isAdmin());
+    }
+
+    public String getEncodedPass() {
+        return encrybtedPassword;
     }
 
 }

@@ -15,6 +15,7 @@ import workshop.demo.DTOs.NotificationDTO;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
+import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -40,15 +41,16 @@ public class StoreService {
     private IStoreRepo storeRepo;
     private INotificationRepo notiRepo;
     private IAuthRepo authRepo;
-    private IUserRepo userRepo;
+    private UserJpaRepository userRepo;
     private IOrderRepo orderRepo;
     private ISUConnectionRepo suConnectionRepo;
     private IStockRepo stockRepo;
     private IUserSuspensionRepo susRepo;
     private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
+    private UserService userService; 
 
     @Autowired
-    public StoreService(IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, IUserRepo userRepo, IOrderRepo orderRepo,
+    public StoreService(UserService userService,IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, UserJpaRepository userRepo, IOrderRepo orderRepo,
             ISUConnectionRepo sUConnectionRepo, IStockRepo stock, IUserSuspensionRepo susRepo) {
         this.storeRepo = storeRepository;
         this.notiRepo = notiRepo;
@@ -58,6 +60,7 @@ public class StoreService {
         this.suConnectionRepo = sUConnectionRepo;
         this.stockRepo = stock;
         this.susRepo = susRepo;
+        this.userService=userService;
         logger.info("created the StoreService");
     }
 
@@ -66,7 +69,7 @@ public class StoreService {
         logger.info(token);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int bossId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(bossId);
+        userService.checkUserRegisterOnline_ThrowException(bossId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(bossId);
         int storeId = storeRepo.addStoreToSystem(bossId, storeName, category);
         suConnectionRepo.addNewStoreOwner(storeId, bossId);
@@ -94,15 +97,15 @@ public class StoreService {
         logger.info("User attempting to add a new owner (userId: {}) to store {}", newOwnerName, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(ownerId);
+        userService.checkUserRegisterOnline_ThrowException(ownerId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
-        int newOwnerId = userRepo.getRegisteredUserByName(newOwnerName).getId();
-        userRepo.checkUserRegister_ThrowException(newOwnerId);
+        int newOwnerId = userRepo.findRegisteredUsersByUsername(newOwnerName).get(0).getId();
+        userService.checkUserRegisterOnline_ThrowException(newOwnerId);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         suConnectionRepo.checkToAddOwner(storeId, ownerId, newOwnerId);
         logger.info("Making an offer to be a store owner from {} to {}", ownerId, newOwnerId);
-        String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
+        String owner = this.userRepo.findById(ownerId).get().getUsername();
         String storeName = this.storeRepo.getStoreNameById(storeId);
         String Message = String.format(
                 "In store: %s, the owner: %s is offering you: %s to become an owner of this store.",
@@ -117,8 +120,8 @@ public class StoreService {
     }
 
     public void reciveAnswerToOffer(int storeId, String senderName, String recievierName, boolean answer, boolean toBeOwner) throws Exception {
-        int senderId = userRepo.getRegisteredUserByName(senderName).getId();
-        int recievierId = userRepo.getRegisteredUserByName(recievierName).getId();
+        int senderId = userRepo.findRegisteredUsersByUsername(senderName).get(0).getId();
+        int recievierId = userRepo.findRegisteredUsersByUsername(recievierName).get(0).getId();
         //OfferDTO offer = suConnectionRepo.getOffer(storeId, senderId, recievierId);
         if (toBeOwner) {
             AddOwnershipToStore(storeId, senderId, recievierId, answer);
@@ -128,7 +131,7 @@ public class StoreService {
     }
 
     public int AddOwnershipToStore(int storeId, int ownerId, int newOwnerId, boolean decide) throws Exception {
-        userRepo.checkUserRegister_ThrowException(newOwnerId);
+        userService.checkUserRegisterOnline_ThrowException(newOwnerId);
         if (decide) {
             suConnectionRepo.getOffer(storeId, ownerId, newOwnerId);
             suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
@@ -145,9 +148,9 @@ public class StoreService {
         logger.info("user attempting to delete ownership of user {} from store {}", ownerToDelete, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(ownerId);
+        userService.checkUserRegisterOnline_ThrowException(ownerId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
-        userRepo.checkUserRegister_ThrowException(ownerToDelete);
+        userService.checkUserRegisterOnline_ThrowException(ownerToDelete);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         logger.info("about to send to repo");
@@ -160,17 +163,17 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
         logger.info("User {} attempting to add manager {} to store {}", ownerId, managerName, storeId);
-        userRepo.checkUserRegisterOnline_ThrowException(ownerId);
+        userService.checkUserRegisterOnline_ThrowException(ownerId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
-        int managerId = userRepo.getRegisteredUserByName(managerName).getId();
-        userRepo.checkUserRegister_ThrowException(managerId);
+        int managerId = userRepo.findRegisteredUsersByUsername(managerName).get(0).getId();
+        userService.checkUserRegisterOnline_ThrowException(managerId);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         suConnectionRepo.checkToAddManager(storeId, ownerId, managerId);
 
         logger.info("Making an offer to be a store manager from {} to {}", ownerId, managerId);
-        String owner = this.userRepo.getRegisteredUser(ownerId).getUsername();
-        String nameNew = this.userRepo.getRegisteredUser(managerId).getUsername();
+        String owner = this.userRepo.findById(ownerId).get().getUsername();
+        String nameNew = this.userRepo.findById(managerId).get().getUsername();
         String storeName = this.storeRepo.getStoreNameById(storeId);
         String message = String.format(
                 "In store: %s, the owner: %s is offering you: %s to be a manager of this store.",
@@ -183,7 +186,7 @@ public class StoreService {
     }
 
     public int AddManagerToStore(int storeId, int ownerId, int managerId, boolean decide) throws Exception {
-        userRepo.checkUserRegister_ThrowException(managerId);
+        userService.checkUserRegisterOnline_ThrowException(managerId);
         if (decide) {
             suConnectionRepo.getOffer(storeId, ownerId, managerId);
             suConnectionRepo.AddManagerToStore(storeId, ownerId, managerId);
@@ -202,8 +205,8 @@ public class StoreService {
         logger.info("user attempting to update permissions for manager {} in store {}", managerId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(ownerId);
-        userRepo.checkUserRegister_ThrowException(managerId);
+        userService.checkUserRegisterOnline_ThrowException(ownerId);
+        userService.checkUserRegisterOnline_ThrowException(managerId);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         suConnectionRepo.changePermissions(ownerId, managerId, storeId, authorization);
@@ -214,9 +217,9 @@ public class StoreService {
         logger.info("user attempting to delete manager {} from store {}", managerId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(ownerId);
+        userService.checkUserRegisterOnline_ThrowException(ownerId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
-        userRepo.checkUserRegister_ThrowException(managerId);
+        userService.checkUserRegisterOnline_ThrowException(managerId);
         storeRepo.checkStoreExistance(storeId);
         storeRepo.checkStoreIsActive(storeId);
         suConnectionRepo.deleteManager(storeId, ownerId, managerId);
@@ -232,7 +235,7 @@ public class StoreService {
         logger.info("about to rank store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        userService.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         this.storeRepo.checkStoreExistance(storeId);
         this.storeRepo.rankStore(storeId, newRank);
@@ -250,7 +253,7 @@ public class StoreService {
         logger.info("user attempting to deactivate store {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(ownerId);
+        userService.checkUserRegisterOnline_ThrowException(ownerId);
         storeRepo.checkStoreExistance(storeId);
         suConnectionRepo.checkMainOwnerToDeactivateStore_ThrowException(storeId, ownerId);
         List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
@@ -260,7 +263,7 @@ public class StoreService {
         logger.info("About to notify all employees");
         ///we have to notify the employees here
          for (int userId : toNotify) {
-            String userName = this.userRepo.getRegisteredUser(userId).getUsername();
+            String userName = this.userRepo.findById(userId).get().getUsername();
             String message = String.format("The store: %s is deactivated ✅", storeName);
             this.notiRepo.sendDelayedMessageToUser(userName, message);
         }
@@ -271,7 +274,7 @@ public class StoreService {
         logger.info("Admin attempting to close store {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int adminId = authRepo.getUserId(token);
-        userRepo.checkAdmin_ThrowException(adminId);
+        userService.checkAdmin_ThrowException(adminId);
         logger.info("trying to close store: {} by: {}", storeId, adminId);
         this.storeRepo.checkStoreExistance(storeId);
         String storeName = storeRepo.getStoreNameById(storeId);
@@ -282,7 +285,7 @@ public class StoreService {
         logger.info("About to notify all employees");
         //also notify the employees
         for (int userId : toNotify) {
-            String userName = this.userRepo.getRegisteredUser(userId).getUsername();
+            String userName = this.userRepo.findById(userId).get().getUsername();
             String message = String.format("The store: %s has been closed, you are no longer an employee there.", storeName);
 
             this.notiRepo.sendDelayedMessageToUser(userName, message);
@@ -299,7 +302,7 @@ public class StoreService {
         String storeName = storeRepo.getStoreNameById(storeId);
         List<WorkerDTO> result = new ArrayList<>();
         for (Node node : nodes) {
-            String username = userRepo.getRegisteredUser(node.getMyId()).getUsername();
+            String username = userRepo.findById(node.getMyId()).get().getUsername();
             boolean isManager = node.getIsManager();
             Permission[] permissions = suConnectionRepo.getPermissions(node);
             boolean setByMe = node.getParentId() == userId;
@@ -312,7 +315,7 @@ public class StoreService {
         logger.info("User attempting to get StoreDTO for store {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        userService.checkUserRegisterOnline_ThrowException(userId);
         storeRepo.checkStoreExistance(storeId);
         return storeRepo.getStoreDTO(storeId);
     }
@@ -322,7 +325,7 @@ public class StoreService {
         logger.info("trying to get the stores of the user");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        userService.checkUserRegisterOnline_ThrowException(userId);
         List<Integer> storesId = suConnectionRepo.getStoresIdForUser(userId);
         logger.info("got the stores Id for user:{}" + userId);
         for (int storeId : storesId) {
@@ -354,7 +357,7 @@ public class StoreService {
         //
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        userService.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
 
         storeRepo.checkStoreExistance(storeId);
@@ -394,7 +397,7 @@ public class StoreService {
     public void removeDiscountFromStore(String token, int storeId, String discountName) throws UIException, DevException {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        userService.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
 
         storeRepo.checkStoreExistance(storeId);
@@ -417,7 +420,7 @@ public class StoreService {
             Integer param/*when MIN_QTY*/) throws Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        userService.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
 
         storeRepo.checkStoreExistance(storeId);
@@ -440,7 +443,7 @@ public class StoreService {
             Integer param/*when MIN_QTY*/) throws Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        userService.checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
 
         storeRepo.checkStoreExistance(storeId);

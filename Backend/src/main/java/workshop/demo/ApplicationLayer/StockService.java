@@ -1,5 +1,7 @@
 package workshop.demo.ApplicationLayer;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.UserSpecialItemCart;
+import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -28,6 +31,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
 @Service
@@ -39,12 +43,13 @@ public class StockService {
     private IAuthRepo authRepo;
     private IStoreRepo storeRepo;
     private ISUConnectionRepo suConnectionRepo;
-    private IUserRepo userRepo;
+    private UserJpaRepository userRepo;
     private IUserSuspensionRepo susRepo;
     private INotificationRepo notificationRepo;
+    
 
     @Autowired
-    public StockService(IStockRepo stockRepo, IStoreRepo storeRepo, IAuthRepo authRepo, IUserRepo userRepo,
+    public StockService(IStockRepo stockRepo, IStoreRepo storeRepo, IAuthRepo authRepo, UserJpaRepository userRepo,
             ISUConnectionRepo cons, IUserSuspensionRepo susRepo, INotificationRepo notificationRepo) {
         this.stockRepo = stockRepo;
         this.authRepo = authRepo;
@@ -114,31 +119,36 @@ public class StockService {
         logger.info("User trying to bid on auction: {}, store: {}", auctionId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         SingleBid bid = stockRepo.bidOnAuction(storeId, userId, auctionId, price);
         UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, bid.getSpecialId(), bid.getId(),
                 SpecialType.Auction);
-        userRepo.addSpecialItemToCart(specialItem, userId);
+        userRepo.findById(userId).get().addSpecialItemToCart(specialItem);
         logger.info("Bid placed successfully by user: {} on auction: {}", userId, auctionId);
         return true;
 
+    }
+
+    private void checkUserRegisterOnline_ThrowException(int userId) throws UIException {
+        Optional<Registered> user = userRepo.findById(userId);
+        if(!user.isPresent()) throw new UIException("stock service:user not found!", ErrorCodes.USER_NOT_FOUND);
     }
 
     public boolean addRegularBid(String token, int bitId, int storeId, double price) throws UIException, DevException {
         logger.info("User attempting regular bid on bidId: {}, storeId: {}", bitId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         SingleBid bid = stockRepo.bidOnBid(bitId, price, userId, storeId);
         bid.ownersNum = suConnectionRepo.getOwnersInStore(storeId).size();
         UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, bid.getSpecialId(), bid.getId(),
                 SpecialType.BID);
-        userRepo.addSpecialItemToCart(specialItem, userId);
+        userRepo.findById(userId).get().addSpecialItemToCart(specialItem);
         for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
-            String ownerName = userRepo.getRegisteredUser(worker.getMyId()).getUsername();
-            notificationRepo.sendDelayedMessageToUser(ownerName, "User " + userRepo.getRegisteredUser(userId).getUsername() + " placed a bid on your product");
+            String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
+            notificationRepo.sendDelayedMessageToUser(ownerName, "User " + userRepo.findById(userId).get().getUsername() + " placed a bid on your product");
         }
         logger.info("Regular bid successful by user: {}", userId);
         return true;
@@ -149,7 +159,7 @@ public class StockService {
         logger.info("User requesting all auctions in store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
         logger.info("Returning auction list to user: {}", userId);
         storeRepo.checkStoreExistance(storeId);
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
@@ -162,7 +172,7 @@ public class StockService {
         logger.info("User requesting all auctions in store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
         logger.info("Returning auction list to user: {}", userId);
         storeRepo.checkStoreExistance(storeId);
 
@@ -174,7 +184,7 @@ public class StockService {
         logger.info("Setting product {} to auction in store {}", productId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         // must add the exceptions here:
         storeRepo.checkStoreExistance(storeId);
@@ -182,8 +192,8 @@ public class StockService {
             throw new UIException("you have no permession to set produt to auction.", ErrorCodes.NO_PERMISSION);
         }
         for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
-            String ownerName = userRepo.getRegisteredUser(worker.getMyId()).getUsername();
-            notificationRepo.sendDelayedMessageToUser(ownerName, "Owner " + userRepo.getRegisteredUser(userId).getUsername() + " set a product to auction in your store");
+            String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
+            notificationRepo.sendDelayedMessageToUser(ownerName, "Owner " + userRepo.findById(userId).get().getUsername() + " set a product to auction in your store");
         }
         return stockRepo.addAuctionToStore(storeId, productId, quantity, time, startPrice);
     }
@@ -192,7 +202,7 @@ public class StockService {
         logger.info("User attempting to set product {} as bid in store {}", productId, storeid);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         storeRepo.checkStoreExistance(storeid);
         // Node Worker= this.
@@ -200,8 +210,8 @@ public class StockService {
             throw new UIException("you have no permession to set product to bid.", ErrorCodes.NO_PERMISSION);
         }
         for (Node worker : suConnectionRepo.getOwnersInStore(storeid)) {
-            String ownerName = userRepo.getRegisteredUser(worker.getMyId()).getUsername();
-            notificationRepo.sendDelayedMessageToUser(ownerName, "Owner " + userRepo.getRegisteredUser(userId).getUsername() + " set a product to bid in your store");
+            String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
+            notificationRepo.sendDelayedMessageToUser(ownerName, "Owner " + userRepo.findById(userId).get().getUsername() + " set a product to bid in your store");
         }
 
         return stockRepo.addProductToBid(storeid, productId, quantity);
@@ -211,7 +221,7 @@ public class StockService {
         logger.info("Fetching bid status for store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
 
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to see auctions info.", ErrorCodes.NO_PERMISSION);
@@ -225,7 +235,7 @@ public class StockService {
         logger.info("Fetching bid for store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
         storeRepo.checkStoreExistance(storeId);
 
         return stockRepo.getAllBids(storeId);
@@ -235,7 +245,7 @@ public class StockService {
         logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidToAcceptId, bidId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
         storeRepo.checkStoreExistance(storeId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
@@ -244,9 +254,9 @@ public class StockService {
 
         SingleBid bidAccepted = stockRepo.acceptBid(storeId, bidId, bidToAcceptId);
         if (!bidAccepted.isWinner()) {
-            notificationRepo.sendDelayedMessageToUser(userRepo.getRegisteredUser(bidAccepted.getUserId()).getUsername(), "Owner " + userRepo.getRegisteredUser(userId).getUsername() + " accepted your bid");
+            notificationRepo.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(), "Owner " + userRepo.findById(userId).get().getUsername() + " accepted your bid");
         } else {
-            notificationRepo.sendDelayedMessageToUser(userRepo.getRegisteredUser(bidAccepted.getUserId()).getUsername(), "Owner " + userRepo.getRegisteredUser(userId).getUsername() + " accepted your bid and you are the winner!");
+            notificationRepo.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(), "Owner " + userRepo.findById(userId).get().getUsername() + " accepted your bid and you are the winner!");
         }
         logger.info("Bid accepted. User: {} is the winner.", bidAccepted.getUserId());
         return bidAccepted;
@@ -256,7 +266,7 @@ public class StockService {
         logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidTorejectId, bidId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
         storeRepo.checkStoreExistance(storeId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
@@ -270,11 +280,11 @@ public class StockService {
             long RandomTime) throws UIException, DevException {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
-            String ownerName = userRepo.getRegisteredUser(worker.getMyId()).getUsername();
-            notificationRepo.sendDelayedMessageToUser(ownerName, "Owner " + userRepo.getRegisteredUser(userId).getUsername() + " set a product to random in your store");
+            String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
+            notificationRepo.sendDelayedMessageToUser(ownerName, "Owner " + userRepo.findById(userId).get().getUsername() + " set a product to random in your store");
         }
         return stockRepo.addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
     }
@@ -284,7 +294,7 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
 
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         return stockRepo.endRandom(storeId, randomId);
     }
@@ -293,7 +303,7 @@ public class StockService {
         logger.info("Fetching all randoms in store {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
         storeRepo.checkStoreExistance(storeId);
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to see random info.", ErrorCodes.NO_PERMISSION);
@@ -305,7 +315,7 @@ public class StockService {
         logger.info("Fetching all randoms in store {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
         storeRepo.checkStoreExistance(storeId);
         return stockRepo.getRandomsInStore(storeId);
     }
@@ -314,7 +324,7 @@ public class StockService {
         logger.info("Fetching all randoms in store {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
         storeRepo.checkStoreExistance(storeId);
 
         return stockRepo.getRandomsInStore(storeId);
@@ -337,7 +347,7 @@ public class StockService {
         }
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         logger.info("HmodeID is:{}", storeId);
         storeRepo.checkStoreExistance(storeId);
@@ -355,7 +365,7 @@ public class StockService {
         logger.info("User attempting to add a new product to the system: name={}, category={}", name, category);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
 
         int productId = stockRepo.addProduct(name, category, description, keywords);
@@ -367,7 +377,7 @@ public class StockService {
         logger.info("User attempting to remove item {} from store {}", productId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int removerId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(removerId);
+        checkUserRegisterOnline_ThrowException(removerId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(removerId);
         storeRepo.checkStoreExistance(storeId);
 
@@ -385,7 +395,7 @@ public class StockService {
                 newQuantity);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int changerUserId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(changerUserId);
+        checkUserRegisterOnline_ThrowException(changerUserId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(changerUserId);
         storeRepo.checkStoreExistance(storeId);
         if (!suConnectionRepo.manipulateItem(changerUserId, storeId, Permission.UpdateQuantity)) {
@@ -400,7 +410,7 @@ public class StockService {
         logger.info("User attempting to update price of product {} in store {} to {}", productId, storeId, newPrice);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int changerUserId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(changerUserId);
+        checkUserRegisterOnline_ThrowException(changerUserId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(changerUserId);
         storeRepo.checkStoreExistance(storeId);
         if (!suConnectionRepo.manipulateItem(changerUserId, storeId, Permission.UpdatePrice)) {
@@ -415,7 +425,7 @@ public class StockService {
         logger.info("user attempting to update rank of product {} in store {} to {}", productId, storeId, newRank);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int updaterUserId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(updaterUserId);
+        checkUserRegisterOnline_ThrowException(updaterUserId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(updaterUserId);
         storeRepo.checkStoreExistance(storeId);
         this.stockRepo.rankProduct(storeId, productId, newRank);
@@ -433,7 +443,7 @@ public class StockService {
     //     logger.info("user participating in randomId: {} in store: {} with price: {}", randomId, storeId, price);
     //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
     //     int userId = authRepo.getUserId(token);
-    //     userRepo.checkUserRegisterOnline_ThrowException(userId);
+    //     checkUserRegisterOnline_ThrowException(userId);
     //     susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
     //     return stockRepo.participateInRandom(userId, randomId, storeId, price);
     // }
@@ -441,7 +451,7 @@ public class StockService {
         logger.info("Fetching bid status for store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        checkUserRegisterOnline_ThrowException(userId);
 
         storeRepo.checkStoreExistance(storeId);
 

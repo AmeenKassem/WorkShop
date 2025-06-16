@@ -21,6 +21,8 @@ import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSpecialItemCart;
+import workshop.demo.DataAccessLayer.GuestJpaRepository;
+import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -53,6 +55,8 @@ public class PurchaseService {
     private final IPaymentService paymentService;
     private final ISupplyService supplyService;
     private IUserSuspensionRepo susRepo;
+    // private UserJpaRepository regRepo;
+    // private GuestJpaRepository guestRepo;
     private static final Logger logger = LoggerFactory.getLogger(PurchaseService.class);
 
     @Autowired
@@ -68,6 +72,8 @@ public class PurchaseService {
         this.paymentService = paymentService;
         this.supplyService = supplyService;
         this.susRepo = susRepo;
+        // this.guestRepo = guestRepo;
+        // this.regRepo = regsRepo;
     }
 
     public ReceiptDTO[] buyGuestCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
@@ -97,7 +103,7 @@ public class PurchaseService {
     private ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails payment, SupplyDetails supply)
             throws Exception {
         logger.info("processCart called for userId={}, isGuest={}", userId, isGuest);
-
+        
         ShoppingCart cart = userRepo.getUserCart(userId);
         if (cart == null || cart.getAllCart().isEmpty()) {
             logger.warn("Cart is empty for userId={}", userId);

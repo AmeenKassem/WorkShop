@@ -1,16 +1,41 @@
 package workshop.demo.DomainLayer.User;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 
+@Entity
+@Table(name = "cart_item")
 public class CartItem {
 
-    public int productId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
     public int storeId;
+    public int productId;
     public int quantity;
     public int price;
     public String name;
+
+    @Enumerated(EnumType.STRING)
     public Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "guest_id")
+    private Guest guest;
+    // public int userId;
+    // @ManyToOne
+    // private Guest guest;
 
     public CartItem(ItemCartDTO dto) {
         this.productId = dto.productId;
@@ -18,14 +43,16 @@ public class CartItem {
         this.quantity = dto.quantity;
         this.price = dto.price;
         this.name = dto.name;
-        this.category =dto.category;
+        this.category = dto.category;
     }
 
-//    // Optional manual constructor
-//    public CartItem(int productId, int quantity, Category cat) {
-//        this.productId = productId;
-//        this.quantity = quantity;
-//    }
+    public CartItem(){}
+
+    // // Optional manual constructor
+    // public CartItem(int productId, int quantity, Category cat) {
+    // this.productId = productId;
+    // this.quantity = quantity;
+    // }
 
     // Getters
     public int getProductId() {
@@ -42,6 +69,10 @@ public class CartItem {
 
     public String getName() {
         return name;
+    }
+
+    public void setGuest(Guest user) {
+        guest = user;
     }
 
 }

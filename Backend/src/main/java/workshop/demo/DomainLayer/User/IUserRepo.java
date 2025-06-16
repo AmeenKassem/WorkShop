@@ -17,18 +17,6 @@ public interface IUserRepo {
 
     /**
      *
-     *
-     * @param guestToken the token will contains the id of the guest , to
-     * destroy geust token ...
-     * @param username
-     * @param password
-     * @return the new token of loged user
-     *
-     */
-    public int login(String username, String password) throws UIException;
-
-    /**
-     *
      * @param username of user to be loged out
      *
      * @return new id for guest
@@ -42,16 +30,7 @@ public interface IUserRepo {
      */
     public void destroyGuest(int id);
 
-    /**
-     * in this function , do not destroy the guest token , just add the user to
-     * the data ...
-     *
-     * @param token
-     * @param username
-     * @param password
-     */
-    public int registerUser(String username, String password, int age) throws UIException;
-
+   
     /**
      * this function must return a token with new id user for the guest , must
      * be called onLoad event.
@@ -61,9 +40,9 @@ public interface IUserRepo {
     public int generateGuest();
 
     //===========
-    public void addItemToGeustCart(int guestId, ItemCartDTO item) throws UIException;
+    // public void addItemToGeustCart(int guestId, ItemCartDTO item) throws UIException;
 
-    public void removeItemFromGeustCart(int guestId, int productId) throws UIException;
+    // public void removeItemFromGeustCart(int guestId, int productId) throws UIException;
 
     public void ModifyCartAddQToBuy(int guestId, int productId, int quantity) throws UIException;
 

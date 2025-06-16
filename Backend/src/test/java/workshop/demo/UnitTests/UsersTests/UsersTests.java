@@ -30,7 +30,7 @@ import workshop.demo.InfrastructureLayer.UserRepository;
 public class UsersTests {
 
     private IAuthRepo auth = new AuthenticationRepo();
-    private Encoder enc = new Encoder();
+    // private Encoder enc = new Encoder();
     private String adminKey = "123321";
 
     @Autowired

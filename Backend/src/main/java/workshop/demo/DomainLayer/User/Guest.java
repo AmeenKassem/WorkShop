@@ -1,16 +1,21 @@
 package workshop.demo.DomainLayer.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PostLoad;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import workshop.demo.DTOs.UserDTO;
@@ -26,6 +31,17 @@ public class Guest {
     private int id;
     @Transient
     private ShoppingCart cart = new ShoppingCart();
+
+    @OneToMany(mappedBy = "guest", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<CartItem> cartItems = new ArrayList<>();
+
+    @PostLoad
+    public void buildCartFromItems() {
+        cart = new ShoppingCart();
+        for (CartItem item : cartItems) {
+            cart.addItem(item.storeId, item);
+        }
+    }
 
     public Guest(int id2) {
         id = id2;
@@ -43,7 +59,7 @@ public class Guest {
     public void addToCart(int storeId, CartItem item) {
         logger.debug("addToCart called (explicit store): guestId={}, storeId={}, product={}", id, storeId,
                 item.productId);
-
+        cartItems.add(item);
         cart.addItem(storeId, item);
     }
 
@@ -56,11 +72,13 @@ public class Guest {
     public void addToCart(CartItem item) {
         logger.debug("addToCart called (from item.storeId): guestId={}, storeId={}, product={}", id, item.storeId,
                 item.productId);
-
+        cartItems.add(item);
         cart.addItem(item.storeId, item);
     }
 
     public List<CartItem> getCart() {
+        if (cart == null)
+            buildCartFromItems();
         logger.debug("getCart called for guestId={}, totalItems={}", id, cart.getAllCart().size());
 
         return cart.getAllCart();
