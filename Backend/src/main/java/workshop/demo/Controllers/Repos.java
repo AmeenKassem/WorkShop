@@ -13,7 +13,6 @@ import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
-import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 
@@ -34,8 +33,8 @@ public class Repos {
     // public IPaymentService paymentService = new PaymentServiceImp();
     // public ISupplyService supplyService = new SupplyServiceImp();
     // public ISUConnectionRepo sUConnectionRepo = new SUConnectionRepository();
-    @Autowired
-    public IUserRepo userRepo;
+    // @Autowired
+    // public IUserRepo userRepo;
 
     @Autowired
     public AdminInitilizer adminInitilizer;

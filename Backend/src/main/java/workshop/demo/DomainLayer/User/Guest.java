@@ -36,13 +36,11 @@ public class Guest {
     @OneToOne(mappedBy = "guest", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private ShoppingCart cart ;
 
-    public Guest(int id2) {
-        id = id2;
-        logger.debug("Guest created with ID={}", id2);
-
-    }
+    
 
     public Guest() {
+        cart = new ShoppingCart();
+        cart.setGuest(this);
     }
 
     public int getId() {
@@ -101,5 +99,7 @@ public class Guest {
     public Collection<ShoppingBasket> getBaskets() {
         return cart.getBaskets();
     }
+
+    
 
 }

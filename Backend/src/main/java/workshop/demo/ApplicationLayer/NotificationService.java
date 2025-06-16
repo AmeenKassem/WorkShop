@@ -7,20 +7,20 @@ import org.springframework.stereotype.Service;
 
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
-import workshop.demo.DomainLayer.User.IUserRepo;
+// import workshop.demo.DomainLayer.User.IUserRepo;
 
 @Service
 public class NotificationService {
 
     INotificationRepo notificationRepo;
-    IUserRepo userRepo;
+    // IUserRepo userRepo;
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
 
     @Autowired
-    public NotificationService(INotificationRepo notificationRepo, IUserRepo userRepo) {
+    public NotificationService(INotificationRepo notificationRepo) {
         this.notificationRepo = notificationRepo;
-        this.userRepo = userRepo;
+        // this.userRepo = userRepo;
     }
 
     public void sendRTMessageToUser(String username, String message) throws UIException {

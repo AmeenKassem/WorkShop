@@ -37,7 +37,7 @@ import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.CouponContext;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
-import workshop.demo.DomainLayer.User.IUserRepo;
+// import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
 @RestController
@@ -47,11 +47,11 @@ public class PurcheseContoller {
     private final PurchaseService purchaseService;
 
     @Autowired
-    public PurcheseContoller(IAuthRepo auth, IStockRepo stockrepo, IStoreRepo storeRepo, IUserRepo userRepo,
+    public PurcheseContoller(IAuthRepo auth, IStockRepo stockrepo, IStoreRepo storeRepo, 
             IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
             ISupplyService supplyService, IUserSuspensionRepo UserSuspensionRepo, UserJpaRepository userJpaRepo,
             GuestJpaRepository guestJpaRepository, IStoreRepoDB storeJpaRepo) {
-        this.purchaseService = new PurchaseService(auth, stockrepo, storeRepo, userRepo,
+        this.purchaseService = new PurchaseService(auth, stockrepo, storeRepo, 
                 purchaseRepo, orderRepo, paymentService, supplyService, UserSuspensionRepo, userJpaRepo,
                 guestJpaRepository,storeJpaRepo);
     }

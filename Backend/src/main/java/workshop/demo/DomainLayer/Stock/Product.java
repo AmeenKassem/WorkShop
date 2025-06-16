@@ -4,23 +4,38 @@ package workshop.demo.DomainLayer.Stock;
 import java.util.ArrayList;
 import java.util.List;
 
+// import com.vaadin.flow.component.template.Id;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 import workshop.demo.DTOs.Category;
 
+@Entity
 public class Product {
 
     private String name;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int productId;
     private String description;
-    private Category category;  // Using enum Category
+    private Category category; // Using enum Category
+
+    @Transient
     private String[] keywords; // List of keywords for the product
 
-    public Product(String name, int id, Category category, String description, String[] keywords) {
+    public Product(String name, Category category, String description, String[] keywords) {
         this.name = name;
-        this.productId = id;
+        // this.productId = id;
         this.category = category;
         this.description = description;
-        this.keywords = keywords; 
+        this.keywords = keywords;
     }
+
+    public Product(){}
 
     public String getName() {
         return name;
@@ -63,7 +78,7 @@ public class Product {
     }
 
     // public void addKeyword(String keyword) {
-    //     List<String> keys = new ArrayList<>(keywords);
+    // List<String> keys = new ArrayList<>(keywords);
     // }
 
 }

@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Transient;
 import workshop.demo.DTOs.ItemCartDTO;
@@ -25,14 +27,15 @@ public class Store {
     private static final Logger logger = LoggerFactory.getLogger(Store.class);
 
     @Id
-    private int storeID;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int storeId;
     @Column(unique = true)
     private String storeName;
     private String category;
     private boolean active;
     @Transient
-    private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
-    //must add something for messages
+    private AtomicInteger[] rank;// rank[x] is the number of people who ranked i+1
+    // must add something for messages
     @Transient
     private List<String> messgesInStore;
     @Transient
@@ -40,20 +43,21 @@ public class Store {
     @Transient
     private final List<PurchasePolicy> purchasePolicies = new ArrayList<>();
 
-    public Store(int storeID, String storeName, String category) {
-        logger.debug("Creating store: ID={}, Name={}, Category={}", storeID, storeName, category);
+    // public Store(int storeId, String storeName, String category) {
+    //     logger.debug("Creating store: ID={}, Name={}, Category={}", storeId, storeName, category);
 
-        this.storeID = storeID;
-        this.storeName = storeName;
-        this.category = category;
-        this.active = true;
-        this.rank = new AtomicInteger[5];
-        for (int i = 0; i < 5; i++) {
-            rank[i] = new AtomicInteger(0);
-        }
-        this.messgesInStore = Collections.synchronizedList(new LinkedList<>());
-    }
-    public Store(String storeName,String cat){
+    //     this.storeId = storeId;
+    //     this.storeName = storeName;
+    //     this.category = category;
+    //     this.active = true;
+    //     this.rank = new AtomicInteger[5];
+    //     for (int i = 0; i < 5; i++) {
+    //         rank[i] = new AtomicInteger(0);
+    //     }
+    //     this.messgesInStore = Collections.synchronizedList(new LinkedList<>());
+    // }
+
+    public Store(String storeName, String cat) {
         this.storeName = storeName;
         this.category = cat;
         this.active = true;
@@ -63,15 +67,15 @@ public class Store {
         }
     }
 
-    public Store(){
+    public Store() {
         this.rank = new AtomicInteger[5];
         for (int i = 0; i < 5; i++) {
             rank[i] = new AtomicInteger(0);
         }
     }
 
-    public int getStoreID() {
-        return storeID;
+    public int getstoreId() {
+        return storeId;
     }
 
     public String getStoreName() {
@@ -87,7 +91,7 @@ public class Store {
     }
 
     public synchronized void setActive(boolean active) {
-        logger.debug("Setting active status for store {} to {}", storeID, active);
+        logger.debug("Setting active status for store {} to {}", storeId, active);
 
         this.active = active;
     }
@@ -100,13 +104,13 @@ public class Store {
             return false;
         }
         rank[i - 1].incrementAndGet();
-        logger.debug("Ranking store {} with {}", storeID, i);
+        logger.debug("Ranking store {} with {}", storeId, i);
 
         return true;
     }
 
     public int getFinalRateInStore() {
-        logger.debug("Calculating final rank for store {}", storeID);
+        logger.debug("Calculating final rank for store {}", storeId);
 
         int totalVotes = 0;
         int WRank = 0;
@@ -125,7 +129,7 @@ public class Store {
     }
 
     public StoreDTO getStoreDTO() {
-        return new StoreDTO(storeID, storeName, category, active, getFinalRateInStore());
+        return new StoreDTO(storeId, storeName, category, active, getFinalRateInStore());
     }
 
     public Discount getDiscount() {
@@ -137,7 +141,7 @@ public class Store {
     }
 
     public void addDiscount(Discount d) {
-        
+
         if (discount instanceof CompositeDiscount) {
             ((CompositeDiscount) discount).addDiscount(d);
         } else if (discount == null) {
@@ -148,7 +152,7 @@ public class Store {
             combo.addDiscount(discount);
             combo.addDiscount(d);
             this.discount = combo;
-            
+
         }
     }
 
@@ -161,38 +165,54 @@ public class Store {
         }
         return false;
     }
+
     public void addPurchasePolicy(PurchasePolicy p) throws Exception {
-        if(p==null)
+        if (p == null)
             throw new Exception("Policy must not be null");
         purchasePolicies.add(p);
     }
-    public void removePurchasePolicy(PurchasePolicy p){
+
+    public void removePurchasePolicy(PurchasePolicy p) {
         purchasePolicies.remove(p);
     }
-    public List<PurchasePolicy> getPurchasePolicies(){
+
+    public List<PurchasePolicy> getPurchasePolicies() {
         return Collections.unmodifiableList(purchasePolicies);
     }
+
     public void assertPurchasePolicies(UserDTO buyer, List<ItemStoreDTO> cart) throws Exception {
-        for(PurchasePolicy p : purchasePolicies){
-            if(!p.isSatisfied(buyer,cart))
+        for (PurchasePolicy p : purchasePolicies) {
+            if (!p.isSatisfied(buyer, cart))
                 throw new Exception(p.violationMessage());
         }
     }
+
     public Discount findDiscountByName(String targetName) {
-        if (discount == null || targetName == null) return null;
+        if (discount == null || targetName == null)
+            return null;
         return dfsFind(discount, targetName);
     }
 
     // ---------------- private helper ----------------
     private Discount dfsFind(Discount node, String targetName) {
-        if (node.getName().equals(targetName)) return node;
+        if (node.getName().equals(targetName))
+            return node;
         if (node instanceof CompositeDiscount comp) {
             for (Discount child : comp.getDiscounts()) {
                 Discount found = dfsFind(child, targetName);
-                if (found != null) return found;
+                if (found != null)
+                    return found;
             }
         }
         return null; // not found in this branch
+    }
+
+    public void setCategory(String category2) {
+        category=category2;
+    }
+
+    public void setName(String storeName2) {
+       this.storeName= storeName2;
     }
 
 }

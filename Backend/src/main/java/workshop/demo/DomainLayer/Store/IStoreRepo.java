@@ -19,7 +19,7 @@ public interface IStoreRepo {
 
     // Store findStoreByID(int Id);
 
-    boolean checkStoreExistance(int ID) throws UIException;
+    // boolean checkStoreExistance(int ID) throws UIException;
 
     void deactivateStore(int storeId, int ownerId) throws Exception;
 
@@ -30,7 +30,7 @@ public interface IStoreRepo {
     public int getFinalRateInStore(int storeId) throws UIException, DevException;
     // public int getFinalRateInStore(int storeId) throws UIException, DevException;
 
-    public List<Store> getStores();
+    // public List<Store> getStores();
 
     String getStoreNameById(int storeId) throws UIException;
 
@@ -39,9 +39,9 @@ public interface IStoreRepo {
 
     //another: messages to response->4.12
     //another: getting info about the history of purcheses in a specific store -> dpne in order
-    boolean checkStoreIsActive(int storeId) throws DevException;
+    // boolean checkStoreIsActive(int storeId) throws DevException;
 
-    public StoreDTO getStoreDTO(int storeId) throws UIException;
+    // public StoreDTO getStoreDTO(int storeId) throws UIException;
 
     void fillWithStoreName(ItemStoreDTO[] items);
 

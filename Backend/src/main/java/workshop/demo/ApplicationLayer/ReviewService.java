@@ -17,42 +17,53 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Review.IReviewRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepoDB;
+// import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.Store.Store;
 
 @Service
 public class ReviewService {
 
     private IReviewRepo reviewRepo;
     private IAuthRepo authRepo;
-    private IUserRepo userRepo;
+    // private IUserRepo userRepo;
     private IStoreRepo storeRepo;
     private IStockRepo stockRepo;
+    private IStoreRepoDB storeJpaRepo;
 
     private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
 
     @Autowired
-    public ReviewService(IReviewRepo reviewRepo, IAuthRepo authRepo, IUserRepo userRepo, IStoreRepo storeRepo, IStockRepo stockRepo) {
+    public ReviewService(IReviewRepo reviewRepo, IAuthRepo authRepo, IStoreRepo storeRepo, IStockRepo stockRepo,
+            IStoreRepoDB storeJpaRepo) {
         this.authRepo = authRepo;
         this.reviewRepo = reviewRepo;
         this.storeRepo = storeRepo;
-        this.userRepo = userRepo;
+        // this.userRepo = userRepo;
         this.stockRepo = stockRepo;
+        this.storeJpaRepo = storeJpaRepo;
         logger.info("created review service");
     }
 
-    public boolean AddReviewToProduct(String token, int storeId, int productId, String review) throws UIException, DevException {
+    private UIException storeNotFound() {
+        return new UIException(" store does not exist.", ErrorCodes.STORE_NOT_FOUND);
+    }
+
+    public boolean AddReviewToProduct(String token, int storeId, int productId, String review)
+            throws UIException, DevException {
         logger.info("About to add review to product: {} in store: {}", productId, storeId);
 
         // Check user and store
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        storeRepo.checkStoreExistance(storeId);
+        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
 
         ItemStoreDTO[] items = stockRepo.getProductsInStore(storeId);
         boolean found = Arrays.stream(items)
                 .anyMatch(item -> item.getProductId() == productId);
 
         if (!found) {
-            throw new UIException("Product with ID " + productId + " not found in store " + storeId, ErrorCodes.PRODUCT_NOT_FOUND);
+            throw new UIException("Product with ID " + productId + " not found in store " + storeId,
+                    ErrorCodes.PRODUCT_NOT_FOUND);
         }
 
         int userId = authRepo.getUserId(token);
@@ -66,19 +77,19 @@ public class ReviewService {
     public boolean AddReviewToStore(String token, int storeId, String review) throws UIException {
         logger.info("about to add review to store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        storeRepo.checkStoreExistance(storeId);
+        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         reviewRepo.AddReviewToStore(storeId, authRepo.getUserId(token), authRepo.getUserName(token), review);
         logger.info("added review successfully!");
         return true;
     }
 
     public List<ReviewDTO> getReviewsForStore(int storeId) throws UIException {
-        storeRepo.checkStoreExistance(storeId);
+        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         return reviewRepo.getReviewsForStore(storeId);
     }
 
     public List<ReviewDTO> getReviewsForProduct(int storeId, int productId) throws UIException {
-        storeRepo.checkStoreExistance(storeId);
+        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         return reviewRepo.getReviewsForProduct(storeId, productId);
     }
 }

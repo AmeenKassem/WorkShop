@@ -17,7 +17,7 @@ import workshop.demo.DomainLayer.User.CartItem;
 
 public interface IStockRepo {
 
-    int addProduct(String name, Category category, String description, String[] keywords) throws Exception; // Adds
+//     int addProduct(String name, Category category, String description, String[] keywords) throws Exception; // Adds
     // a
     // global
     // product

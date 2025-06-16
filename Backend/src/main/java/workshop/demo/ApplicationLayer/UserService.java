@@ -16,7 +16,6 @@ import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.UserDTO;
-import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DataAccessLayer.GuestJpaRepository;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
@@ -28,8 +27,9 @@ import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
-import workshop.demo.DomainLayer.User.IUserRepo;
+// import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
+import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 import workshop.demo.InfrastructureLayer.Encoder;
 
 @Service
@@ -37,7 +37,7 @@ public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    private IUserRepo userRepo;
+    // private IUserRepo userRepo;
     private IAuthRepo authRepo;
     private IStockRepo stockRepo;
     private IStoreRepo storeRepo;
@@ -50,10 +50,10 @@ public class UserService {
     private GuestJpaRepository guestJpaRepository;
 
     @Autowired
-    public UserService(UserJpaRepository regJpaRepo, IUserRepo userRepo, IAuthRepo authRepo, IStockRepo stockRepo,
+    public UserService(UserJpaRepository regJpaRepo,  IAuthRepo authRepo, IStockRepo stockRepo,
             AdminInitilizer adminInitilizer,
             IStoreRepo storeRepo, GuestJpaRepository guestRepo) {
-        this.userRepo = userRepo;
+        // this.userRepo = userRepo;
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
         this.storeRepo = storeRepo;
@@ -87,7 +87,7 @@ public class UserService {
         }
         String encPass = encoder.encodePassword(password);
         Registered userToAdd = new Registered(username, encPass, age);
-        regJpaRepo.save(userToAdd); // ID will be auto-generated
+        userToAdd = regJpaRepo.save(userToAdd); // ID will be auto-generated
         logger.info("User {0} registered successfully,and persisted!", username);
         return userToAdd.getId();
     }
@@ -115,6 +115,7 @@ public class UserService {
             Registered user = regs.get(0);
             if (encoder.matches(pass, user.getEncodedPass())) {
                 user.login();
+                regJpaRepo.save(user);
                 return user.getId();
             } else
                 throw new UIException("wrong password!!", ErrorCodes.WRONG_PASSWORD);
@@ -128,7 +129,8 @@ public class UserService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int id = authRepo.getUserId(token);
         logger.info("Destroyed guest with ID={}", id);
-        userRepo.destroyGuest(id);
+        guestJpaRepository.deleteById(id);
+        // userRepo.destroyGuest(id);
         return true;
 
     }
@@ -148,7 +150,7 @@ public class UserService {
     public int logoutUserLogic(String username) throws UIException {
         List<Registered> regs = regJpaRepo.findRegisteredUsersByUsername(username);
         if (regs.size() == 1) {
-            Registered user =regs.get(0);
+            Registered user = regs.get(0);
             user.logout();
             regJpaRepo.save(user);
             logger.info("User logged out: {0}", username);
@@ -173,7 +175,7 @@ public class UserService {
             if (adminInitilizer.matchPassword(adminKey)) {
                 user.setAdmin();
                 regJpaRepo.save(user);
-                logger.info( "User {0} is now an admin.", user.getUsername());
+                logger.info("User {0} is now an admin.", user.getUsername());
                 return true;
             }
         }
@@ -183,7 +185,7 @@ public class UserService {
     public boolean addToUserCart(String token, ItemStoreDTO itemToAdd, int quantity) throws UIException {
         logger.info("addToUserCart called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId=authRepo.getUserId(token);
+        int userId = authRepo.getUserId(token);
         String storeName = this.storeRepo.getStoreNameById(itemToAdd.getStoreId());
         ItemCartDTO item = new ItemCartDTO(itemToAdd.getStoreId(), itemToAdd.getProductId(), quantity,
                 itemToAdd.getPrice(), itemToAdd.getProductName(), storeName, itemToAdd.getCategory());
@@ -198,9 +200,10 @@ public class UserService {
 
     private Guest getUser(int userId) throws UIException {
         Optional<Registered> reg = regJpaRepo.findById(userId);
-        if(!reg.isPresent()){
+        if (!reg.isPresent()) {
             Optional<Guest> guest = guestJpaRepository.findById(userId);
-            if(!guest.isPresent()) throw new UIException("id is not registered or guest", ErrorCodes.USER_NOT_FOUND);
+            if (!guest.isPresent())
+                throw new UIException("id is not registered or guest", ErrorCodes.USER_NOT_FOUND);
             return guest.get();
         }
         return reg.get();
@@ -209,7 +212,11 @@ public class UserService {
     public boolean ModifyCartAddQToBuy(String token, int productId, int quantity) throws UIException {
         logger.info("ModifyCartAddQToBuy called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        userRepo.ModifyCartAddQToBuy(authRepo.getUserId(token), productId, quantity);
+        int userId = authRepo.getUserId(token);
+        Guest user = getUser(userId);
+        user.ModifyCartAddQToBuy(productId, quantity);
+        guestJpaRepository.save(user);
+        // userRepo.ModifyCartAddQToBuy(, productId, quantity);
         logger.info("Cart modified for productId={}", productId);
         return true;
     }
@@ -228,7 +235,8 @@ public class UserService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(userId);
-        List<UserSpecialItemCart> specialIds = userRepo.getAllSpecialItems(userId);
+        Registered user = regJpaRepo.findById(userId).orElseThrow(()-> new UIException("user not dound in reg db!", ErrorCodes.USER_NOT_FOUND));
+        List<UserSpecialItemCart> specialIds = user.getSpecialCart();
         List<SpecialCartItemDTO> result = new ArrayList<>();
         for (UserSpecialItemCart item : specialIds) {
             SpecialCartItemDTO itemToSend = new SpecialCartItemDTO();
@@ -262,7 +270,8 @@ public class UserService {
             dto.quantity = item.quantity;
             dto.price = item.price;
             dto.name = item.name;
-            // dto.storeName = this.storeRepo.getStoreNameById(item.storeId); //TODO return this back
+            // dto.storeName = this.storeRepo.getStoreNameById(item.storeId); //TODO return
+            // this back
             dtos[i] = dto;
         }
 
@@ -273,24 +282,30 @@ public class UserService {
         logger.info("getUserDTO");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        return userRepo.getUserDTO(userId);
+        Guest user = getUser(userId);
+        return user.getUserDTO();
     }
 
     public List<UserDTO> getAllUsers(String token) throws UIException {
         logger.info("getAllUsers");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkAdmin_ThrowException(userId);
-        return userRepo.getAllUserDTOs();
+        regJpaRepo.findById(userId)
+                .orElseThrow(() -> new UIException("user is not registered!", ErrorCodes.USER_NOT_LOGGED_IN));
+        List<UserDTO> res = new ArrayList<>();
+        regJpaRepo.findAll().forEach((user) -> res.add(user.getUserDTO()));
+        return res;
     }
 
     public void checkUserRegisterOnline_ThrowException(int bossId) throws UIException {
         Optional<Registered> regs = regJpaRepo.findById(bossId);
-        if(!regs.isPresent()) throw new UIException("user not registered!", ErrorCodes.USER_NOT_LOGGED_IN);
+        if (!regs.isPresent())
+            throw new UIException("user not registered!", ErrorCodes.USER_NOT_LOGGED_IN);
     }
 
-	public void checkAdmin_ThrowException(int adminId) throws UIException {
-		Optional<Registered> reg = regJpaRepo.findById(adminId);
-        if(!reg.isPresent()) throw new UIException("user is not admin!!", ErrorCodes.NO_PERMISSION);
-	}
+    public void checkAdmin_ThrowException(int adminId) throws UIException {
+        Optional<Registered> reg = regJpaRepo.findById(adminId);
+        if (!reg.isPresent())
+            throw new UIException("user is not admin!!", ErrorCodes.NO_PERMISSION);
+    }
 }

@@ -4,10 +4,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.User.Registered;
+// import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
 import java.util.Map;
@@ -16,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class UserSuspensionService {
     private final IUserSuspensionRepo repo;
-    private final IUserRepo userRepo;
+    private final UserJpaRepository userRepo;
     private final IAuthRepo authRepo;
     private static final Logger logger = LoggerFactory.getLogger(UserSuspensionService.class);
 
@@ -24,7 +27,7 @@ public class UserSuspensionService {
     private final Map<Integer, Object> userLocks = new ConcurrentHashMap<>();
 
     @Autowired
-    public UserSuspensionService(IUserSuspensionRepo repo, IUserRepo userRepo, IAuthRepo authRepo) {
+    public UserSuspensionService(IUserSuspensionRepo repo, UserJpaRepository userRepo, IAuthRepo authRepo) {
         this.repo = repo;
         this.userRepo = userRepo;
         this.authRepo = authRepo;
@@ -70,7 +73,8 @@ public class UserSuspensionService {
         }
         int adminId = authRepo.getUserId(token);
         System.out.println("Admin ID resolved: " + adminId);
-        if (!userRepo.isAdmin(adminId)) {
+        Registered user = userRepo.findById(adminId).orElseThrow(()->new UIException("user is not registered", ErrorCodes.USER_NOT_FOUND));
+        if (!user.isAdmin()) {
             System.out.println("User " + adminId + " is NOT admin");
             throw new UIException("Only admins can suspend.", ErrorCodes.NO_PERMISSION);
         }

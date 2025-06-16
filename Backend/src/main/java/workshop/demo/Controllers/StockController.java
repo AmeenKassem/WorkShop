@@ -26,10 +26,11 @@ import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Stock.IStockRepoDB;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
-import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
 @RestController
@@ -46,7 +47,7 @@ public class StockController {
         UserJpaRepository userRepo,
         ISUConnectionRepo sUConnectionRepo,
         IUserSuspensionRepo userSuspensionRepo,
-        INotificationRepo notificationRepo
+        INotificationRepo notificationRepo, IStockRepoDB stockJpaRepo, IStoreRepoDB storeJpaRepo
     ) {
         this.stockService = new StockService(
             stockrepo,
@@ -55,7 +56,7 @@ public class StockController {
             userRepo,
             sUConnectionRepo,
             userSuspensionRepo,
-            notificationRepo
+            notificationRepo,stockJpaRepo,storeJpaRepo
         );
     }
 

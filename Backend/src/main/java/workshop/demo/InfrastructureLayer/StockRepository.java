@@ -70,14 +70,14 @@ public class StockRepository implements IStockRepo {
         }
     }
 
-    @Override
-    public int addProduct(String name, Category category, String description, String[] keywords) {
-        int id = idGen.getAndIncrement();
-        Product product = new Product(name, id, category, description, keywords);
-        // add it if not exist:
-        allProducts.computeIfAbsent(category, k -> new ArrayList<>()).add(product);
-        return id;
-    }
+    // // @Override
+    // public int addProduct(String name, Category category, String description, String[] keywords) {
+    //     int id = idGen.getAndIncrement();
+    //     Product product = new Product(name, id, category, description, keywords);
+    //     // add it if not exist:
+    //     allProducts.computeIfAbsent(category, k -> new ArrayList<>()).add(product);
+    //     return id;
+    // }
 
     @Override
     public Product findByIdInSystem_throwException(int productId) throws UIException {

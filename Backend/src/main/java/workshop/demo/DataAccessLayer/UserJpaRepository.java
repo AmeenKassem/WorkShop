@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import workshop.demo.DomainLayer.User.Registered;
+import workshop.demo.DomainLayer.User.RoleOnSystem;
 
 @Repository
 public interface UserJpaRepository extends JpaRepository<Registered, Integer> {
@@ -17,5 +18,8 @@ public interface UserJpaRepository extends JpaRepository<Registered, Integer> {
 
     @Query("SELECT r FROM Registered r WHERE r.username = :username")
     List<Registered> findRegisteredUsersByUsername(@Param("username") String username);
+
+    // @Query("SELECT COUNT(u) > 0 FROM Registered u WHERE u.id = :id AND u.systemRole = 'Admin'")
+    // int isAdmin(@Param("id") int id);
 
 }

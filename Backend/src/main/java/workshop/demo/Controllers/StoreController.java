@@ -30,7 +30,6 @@ import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
-import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
 @RestController
@@ -44,7 +43,6 @@ public class StoreController {
             IStoreRepo storeRepo,
             INotificationRepo notificationRepo,
             IAuthRepo authRepo,
-            IUserRepo userRepo,
             IOrderRepo orderRepo,
             ISUConnectionRepo sUConnectionRepo,
             IStockRepo stockRepo,
@@ -53,7 +51,6 @@ public class StoreController {
             AdminInitilizer adminInitilizer, GuestJpaRepository guest, IStoreRepoDB storeJpaRepo) {
         UserService userService = new UserService(
                 regJpaRepo,
-                userRepo,
                 authRepo,
                 stockRepo,
                 adminInitilizer,

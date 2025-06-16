@@ -14,7 +14,6 @@ import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.UserDTO;
-import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DataAccessLayer.GuestJpaRepository;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -24,12 +23,13 @@ import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
-import workshop.demo.DomainLayer.User.IUserRepo;
+// import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingCart;
+import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 
 @Repository
-public class UserRepository implements IUserRepo {
+public class UserRepository  {
 
     private AtomicInteger idGen;
     private ConcurrentHashMap<Integer, Guest> guests; // id -> Guest
@@ -56,7 +56,7 @@ public class UserRepository implements IUserRepo {
         return new ArrayList<>(users.keySet());
     }
 
-    // @Override
+    // 
     // public int logoutUser(String username) throws UIException {
     //     if (userExist(username)) {
     //         Registered user = users.get(username);
@@ -69,7 +69,7 @@ public class UserRepository implements IUserRepo {
     //     }
     // }
 
-    // @Override
+    // 
     // public int registerUser(String username, String password, int age) throws
     // UIException {
     // if (userExist(username)) {
@@ -85,7 +85,7 @@ public class UserRepository implements IUserRepo {
     // logger.log(Level.INFO, "User {0} registered successfully", username);
     // return id;
     // }
-    // @Override
+    // 
     // public int registerUser(String username, String encPass, int age) throws UIException {
     //     if (userExist(username)) {
     //         throw new UIException("another user try to register with used username", ErrorCodes.USERNAME_USED);
@@ -104,7 +104,7 @@ public class UserRepository implements IUserRepo {
     //     return userToAdd.getId();
     // }
 
-    // @Override
+    // 
     // public int generateGuest() {
     //     // int id = idGen.getAndIncrement();
     //     // Guest newGuest = new Guest(id);
@@ -117,7 +117,7 @@ public class UserRepository implements IUserRepo {
     //     return saved.getId();
     // }
 
-    // @Override
+    // 
     // public int login(String username, String password) throws UIException {
     //     List<Registered> regs = regJpaRepo.findRegisteredUsersByUsername(username);
     //     if (regs.size()==1) {
@@ -144,7 +144,7 @@ public class UserRepository implements IUserRepo {
     // changed it to handle users as well
     // added fucntion userexists that takes userid and returns name
 
-    // @Override
+    // 
     // public void addItemToGeustCart(int guestId, ItemCartDTO item) throws UIException {
     //     CartItem itemCart = new CartItem(item);
     //     if (guestExist(guestId)) {
@@ -162,7 +162,7 @@ public class UserRepository implements IUserRepo {
     //     }
     // }
 
-    @Override
+    
     public void ModifyCartAddQToBuy(int guestId, int productId, int quantity) throws UIException {
         if (guestExist(guestId)) {
             Guest geust = guests.get(guestId);
@@ -179,30 +179,30 @@ public class UserRepository implements IUserRepo {
         }
     }
 
-    @Override
+    
     public void destroyGuest(int id) {
         guests.remove(id);
         logger.log(Level.INFO, "guest destroyed: {0}", id);
     }
 
-    @Override
+    
     public boolean isAdmin(int id) throws UIException {
         Registered registered = getRegisteredUser(id);
         return registered != null && registered.isAdmin();
     }
 
-    @Override
+    
     public boolean isRegistered(int id) throws UIException {
         return getRegisteredUser(id) != null;
     }
 
-    @Override
+    
     public boolean isOnline(int id) throws UIException {
         Registered registered = getRegisteredUser(id);
         return registered != null && registered.isOnline();
     }
 
-    // @Override
+    // 
     public Registered getRegisteredUser(int id) throws UIException {
         if (idToUsername.containsKey(id)) {
             String username = idToUsername.get(id);
@@ -215,7 +215,7 @@ public class UserRepository implements IUserRepo {
         return null;
     }
 
-    // @Override
+    // 
     // public boolean setUserAsAdmin(int id, String adminKey) throws UIException {
     //     Registered registered = getRegisteredUser(id);
     //     if (registered != null) {
@@ -228,7 +228,7 @@ public class UserRepository implements IUserRepo {
     //     return false;
     // }
 
-    // @Override
+    // 
     // public void removeItemFromGeustCart(int guestId, int productId) throws UIException {
     //     if (guestExist(guestId)) {
     //         Guest geust = guests.get(guestId);
@@ -245,7 +245,7 @@ public class UserRepository implements IUserRepo {
     //     }
     // }
 
-    // @Override
+    // 
     // public ShoppingCart getUserCart(int userId) throws UIException {
     //     if (guests.containsKey(userId)) {
     //         return guests.get(userId).geCart();
@@ -257,12 +257,12 @@ public class UserRepository implements IUserRepo {
     //     throw new UIException("User with ID " + userId + " not found", ErrorCodes.USER_NOT_FOUND);
     // }
 
-    // @Override
+    // 
     // public List<ItemCartDTO> getCartForUser(int ownerId) {
     // // throw new UnsupportedOperationException("Unimplemented method
     // 'getCartForUser'");
     // }
-    @Override
+    
     public void checkUserRegisterOnline_ThrowException(int userId) throws UIException {
         if (!(isRegistered(userId) && isOnline(userId))) {
             // logger.error("User not logged in for setProductToBid: {}", userId);
@@ -270,7 +270,7 @@ public class UserRepository implements IUserRepo {
         }
     }
 
-    @Override
+    
     public void checkAdmin_ThrowException(int userId) throws UIException {
         checkUserRegisterOnline_ThrowException(userId);
         if (!isAdmin(userId)) {
@@ -278,7 +278,7 @@ public class UserRepository implements IUserRepo {
         }
     }
 
-    @Override
+    
     public void checkUserRegister_ThrowException(int userId) throws UIException {
         if (!(isRegistered(userId))) {
             // logger.error("User not logged in for setProductToBid: {}", userId);
@@ -286,17 +286,17 @@ public class UserRepository implements IUserRepo {
         }
     }
 
-    @Override
+    
     public void addSpecialItemToCart(UserSpecialItemCart item, int userId) throws DevException, UIException {
         getRegisteredUser(userId).addSpecialItemToCart(item);
     }
 
-    @Override
+    
     public List<UserSpecialItemCart> getAllSpecialItems(int userId) throws UIException {
         return getRegisteredUser(userId).getSpecialCart();
     }
 
-    @Override
+    
     public UserDTO getUserDTO(int userId) throws UIException {
         if (isRegistered(userId)) {
             logger.log(Level.INFO, "getUserDTO for registered user ID={}", userId);
@@ -309,7 +309,7 @@ public class UserRepository implements IUserRepo {
         }
     }
 
-    @Override
+    
     public List<UserDTO> getAllUserDTOs() {
         List<UserDTO> result = new ArrayList<>();
         for (String username : users.keySet()) {
@@ -330,7 +330,7 @@ public class UserRepository implements IUserRepo {
 
     }
 
-    @Override
+    
     public Registered getRegisteredUserByName(String name) throws UIException {
         Registered user = users.get(name);
         if (user == null) {

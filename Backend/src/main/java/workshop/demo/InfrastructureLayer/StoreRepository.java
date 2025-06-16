@@ -47,7 +47,7 @@ public class StoreRepository implements IStoreRepo {
                 throw new UIException("A store with thid name already exists.", ErrorCodes.STORE_EXIST);
             }
             int storeId = generateId();
-            stores.add(new Store(storeId, storeName, Category));
+            // stores.add(new Store(storeId, storeName, Category));
             return storeId;
         }
     }
@@ -64,7 +64,7 @@ public class StoreRepository implements IStoreRepo {
     @Override
     public void closeStore(int storeId) throws Exception {
         try {
-            stores.removeIf(store -> store.getStoreID() == storeId);
+            stores.removeIf(store -> store.getstoreId() == storeId);
         } catch (Exception e) {
             throw e;
 
@@ -76,17 +76,17 @@ public class StoreRepository implements IStoreRepo {
     public Store findStoreByID(int ID
     ) {
         for (Store store : this.stores) {
-            if (store.getStoreID() == ID) {
+            if (store.getstoreId() == ID) {
                 return store;
             }
         }
         return null;
     }
 
-    @Override
+    // @Override
     public boolean checkStoreExistance(int ID) throws UIException {
         for (Store store : this.stores) {
-            if (store.getStoreID() == ID) {
+            if (store.getstoreId() == ID) {
                 return true;
             }
         }

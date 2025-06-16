@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -22,7 +23,6 @@ import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DTOs.UserDTO;
-import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DataAccessLayer.GuestJpaRepository;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
@@ -44,10 +44,11 @@ import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
-import workshop.demo.DomainLayer.User.IUserRepo;
+// import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
+import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
 @Service
@@ -56,7 +57,7 @@ public class PurchaseService {
     private final IAuthRepo authRepo;
     private final IStockRepo stockRepo;
     private final IStoreRepo storeRepo;
-    private final IUserRepo userRepo;
+    // private final IUserRepo userRepo;
     private final IPurchaseRepo purchaseRepo;
     private IOrderRepo orderRepo;
     private final IPaymentService paymentService;
@@ -68,14 +69,14 @@ public class PurchaseService {
     private static final Logger logger = LoggerFactory.getLogger(PurchaseService.class);
 
     @Autowired
-    public PurchaseService(IAuthRepo authRepo, IStockRepo stockRepo, IStoreRepo storeRepo, IUserRepo userRepo,
+    public PurchaseService(IAuthRepo authRepo, IStockRepo stockRepo, IStoreRepo storeRepo,
             IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
             ISupplyService supplyService, IUserSuspensionRepo susRepo, UserJpaRepository regsRepo,
-            GuestJpaRepository guestRepo,IStoreRepoDB storeJpaRepo) {
+            GuestJpaRepository guestRepo, IStoreRepoDB storeJpaRepo) {
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
         this.storeRepo = storeRepo;
-        this.userRepo = userRepo;
+        // this.userRepo = userRepo;
         this.purchaseRepo = purchaseRepo;
         this.orderRepo = orderRepo;
         this.paymentService = paymentService;
@@ -83,7 +84,7 @@ public class PurchaseService {
         this.susRepo = susRepo;
         this.guestRepo = guestRepo;
         this.regRepo = regsRepo;
-        this.storeJpaRepo= storeJpaRepo;
+        this.storeJpaRepo = storeJpaRepo;
     }
 
     public ReceiptDTO[] buyGuestCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
@@ -126,9 +127,10 @@ public class PurchaseService {
 
         for (ShoppingBasket basket : user.getBaskets()) {
             int storeId = basket.getStoreId();
-            Store store =storeJpaRepo.findById(storeId).orElseThrow(()-> new UIException("store not found on db!", ErrorCodes.STORE_NOT_FOUND));
+            Store store = storeJpaRepo.findById(storeId)
+                    .orElseThrow(() -> new UIException("store not found on db!", ErrorCodes.STORE_NOT_FOUND));
             if (store == null || !store.isActive()) {
-                if(isGuest){
+                if (isGuest) {
                     throw new UIException(store.getStoreName(), ErrorCodes.STORE_NOT_FOUND);
                 }
                 logger.info("Skipping inactive or missing storeId={}", storeId);
@@ -154,7 +156,8 @@ public class PurchaseService {
 
             DiscountScope scope = new DiscountScope(itemStoreDTOS);
             // Hmode
-            UserDTO buyer = userRepo.getUserDTO(userId);
+            // UserDTO buyer = userRepo.getUserDTO(userId);
+            UserDTO buyer = getUser(isGuest, userId).getUserDTO();
             store.assertPurchasePolicies(buyer, itemStoreDTOS);
             // Hmode
             Discount discount = store.getDiscount();
@@ -179,8 +182,9 @@ public class PurchaseService {
     private boolean checkStockAvalibality(Collection<ShoppingBasket> baskets) {
         for (ShoppingBasket shoppingBasket : baskets) {
             StoreStock stock4store = stockRepo.findStoreStockById(shoppingBasket.getStoreId());
-            for (CartItem item  : shoppingBasket.getItems()) {
-                if(!stock4store.isAvaliable(item.productId, item.quantity))return false;
+            for (CartItem item : shoppingBasket.getItems()) {
+                if (!stock4store.isAvaliable(item.productId, item.quantity))
+                    return false;
             }
         }
         return true;
@@ -207,11 +211,11 @@ public class PurchaseService {
         logger.info("participateInRandom called with randomId={}, storeId={}", randomId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userRepo.checkUserRegisterOnline_ThrowException(userId);
+        Registered user = regRepo.findById(userId).orElseThrow(()->new UIException("user not logged in!", ErrorCodes.USER_NOT_LOGGED_IN));
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
         UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random);
-        userRepo.addSpecialItemToCart(item, userId);
+        user.addSpecialItemToCart(item);
         boolean done = paymentService.processPayment(paymentDetails, amountPaid);
         if (!done) {
             logger.error("Payment failed for userId={}, amountPaid={}", userId, amountPaid);
@@ -221,6 +225,7 @@ public class PurchaseService {
             card.transactionIdForPayment = 1;
         }
         logger.info("User {} participated in random draw {}", userId, randomId);
+        regRepo.save(user);
         return card;
     }
 
@@ -230,13 +235,13 @@ public class PurchaseService {
         int userId = authRepo.getUserId(token);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         logger.info("The user " + userId + " finalizing the special cart.");
-
+        Registered user = regRepo.findById(userId).orElseThrow(()->notLoggedInException());
         List<SingleBid> winningBids = new ArrayList<>();
         List<ParticipationInRandomDTO> winningRandoms = new ArrayList<>();
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
 
-        List<UserSpecialItemCart> allSpecialItems = new ArrayList<>(userRepo.getAllSpecialItems(userId));
-
+        List<UserSpecialItemCart> allSpecialItems = user.getAllSpecialItems();
+        List<UserSpecialItemCart> toPay = new ArrayList<>();
         for (UserSpecialItemCart specialItem : allSpecialItems) {
 
             if (specialItem.type == SpecialType.Random) {
@@ -248,18 +253,19 @@ public class PurchaseService {
 
                 if (card != null && card.isWinner && card.ended) {
                     winningRandoms.add(card); // Won
+
                 } else if ((card != null && !card.isWinner && card.ended) || card == null) {
-                    userRepo.removeSpecialItem(userId, specialItem); // Lost or not found → remove
+                    user.removeSpecialItem( specialItem); // Lost or not found → remove
                 } else if (card.mustRefund()) {
                     // If the card must be refunded, we remove it from the user's cart
-                    userRepo.removeSpecialItem(userId, specialItem);
+                    user.removeSpecialItem( specialItem);
                     // And we refund the payment
                     // paymentService.externalRefund(card.transactionIdForPayment);
                     stockRepo.returnProductToStock(specialItem.storeId, card.productId, 1, specialItem.specialId);
                     stockRepo.markRefunded(specialItem.specialId);
                 } else if (card.mustRefund()) {
                     // If the card must be refunded, we remove it from the user's cart
-                    userRepo.removeSpecialItem(userId, specialItem);
+                    user.removeSpecialItem( specialItem);
                     // And we refund the payment
 
                     paymentService.processRefund(payment, card.amountPaid);
@@ -272,7 +278,7 @@ public class PurchaseService {
                 if (bid != null && bid.isWinner() && bid.isEnded()) {
                     winningBids.add(bid); // Won
                 } else if ((bid != null && !bid.isWinner() && bid.isEnded()) || bid == null) {
-                    userRepo.removeSpecialItem(userId, specialItem); // Lost or not found → remove
+                    user.removeSpecialItem( specialItem); // Lost or not found → remove
                 }
             }
         }
@@ -281,11 +287,16 @@ public class PurchaseService {
         setRecieptMapForRandoms(storeToProducts, winningRandoms);
 
         if (supplyService.processSupply(supply) && paymentService.processPayment(payment, sumToPay)) {
-            userRepo.removeBoughtSpecialItems(userId, winningBids, winningRandoms); // Only remove bought
+            // user.removeBoughtSpecialItems(userId, winningBids, winningRandoms); // Only remove bought
+            user.clearSpecialCart();
             return saveReceipts(userId, storeToProducts);
         }
 
         throw new DevException("Something went wrong with supply or payment");
+    }
+
+    private UIException notLoggedInException() {
+        return new UIException("user not loggedIn", ErrorCodes.USER_NOT_LOGGED_IN);
     }
 
     public double setRecieptMapForBids(List<SingleBid> winningBids, Map<Integer, List<ReceiptProduct>> res)

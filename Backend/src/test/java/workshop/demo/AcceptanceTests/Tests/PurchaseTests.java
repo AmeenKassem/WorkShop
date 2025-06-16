@@ -30,7 +30,6 @@ import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.SupplyDetails;
-import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -42,6 +41,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingCart;
+import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 
 @SpringBootTest
 @ActiveProfiles("test")

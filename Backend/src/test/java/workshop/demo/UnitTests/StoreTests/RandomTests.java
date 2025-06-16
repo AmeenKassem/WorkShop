@@ -32,7 +32,6 @@ import workshop.demo.DTOs.SingleBidDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.Status;
 import workshop.demo.DTOs.StoreDTO;
-import workshop.demo.DTOs.UserSpecialItemCart;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -62,6 +61,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.Offer;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 import workshop.demo.DomainLayer.StoreUserConnection.Tree;
+import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 
 @SpringBootTest
 @ActiveProfiles("test")

@@ -108,4 +108,8 @@ public class ShoppingCart {
         }
         return baskets.values();
     }
+
+    public void setGuest(Guest guest){
+        this.guest=guest;
+    }
 }
