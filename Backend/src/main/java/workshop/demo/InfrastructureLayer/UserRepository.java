@@ -56,18 +56,18 @@ public class UserRepository implements IUserRepo {
         return new ArrayList<>(users.keySet());
     }
 
-    @Override
-    public int logoutUser(String username) throws UIException {
-        if (userExist(username)) {
-            Registered user = users.get(username);
-            user.logout();
-            logger.log(Level.INFO, "User logged out: {0}", username);
-            return generateGuest();
-        } else {
-            logger.log(Level.WARNING, "User not found: {0}", username);
-            throw new UIException("User not found: " + username, ErrorCodes.USER_NOT_FOUND);
-        }
-    }
+    // @Override
+    // public int logoutUser(String username) throws UIException {
+    //     if (userExist(username)) {
+    //         Registered user = users.get(username);
+    //         user.logout();
+    //         logger.log(Level.INFO, "User logged out: {0}", username);
+    //         return generateGuest();
+    //     } else {
+    //         logger.log(Level.WARNING, "User not found: {0}", username);
+    //         throw new UIException("User not found: " + username, ErrorCodes.USER_NOT_FOUND);
+    //     }
+    // }
 
     // @Override
     // public int registerUser(String username, String password, int age) throws
@@ -104,18 +104,18 @@ public class UserRepository implements IUserRepo {
     //     return userToAdd.getId();
     // }
 
-    @Override
-    public int generateGuest() {
-        // int id = idGen.getAndIncrement();
-        // Guest newGuest = new Guest(id);
-        // guests.put(id, newGuest);
-        // guestJpaRepository.save(newGuest);
-        // return id;
-        Guest newGuest = new Guest(); // No ID passed
-        Guest saved = guestJpaRepository.save(newGuest); // Hibernate assigns ID
-        guests.put(saved.getId(), saved); // Use the generated ID
-        return saved.getId();
-    }
+    // @Override
+    // public int generateGuest() {
+    //     // int id = idGen.getAndIncrement();
+    //     // Guest newGuest = new Guest(id);
+    //     // guests.put(id, newGuest);
+    //     // guestJpaRepository.save(newGuest);
+    //     // return id;
+    //     Guest newGuest = new Guest(); // No ID passed
+    //     Guest saved = guestJpaRepository.save(newGuest); // Hibernate assigns ID
+    //     guests.put(saved.getId(), saved); // Use the generated ID
+    //     return saved.getId();
+    // }
 
     // @Override
     // public int login(String username, String password) throws UIException {
@@ -202,7 +202,7 @@ public class UserRepository implements IUserRepo {
         return registered != null && registered.isOnline();
     }
 
-    @Override
+    // @Override
     public Registered getRegisteredUser(int id) throws UIException {
         if (idToUsername.containsKey(id)) {
             String username = idToUsername.get(id);
@@ -215,18 +215,18 @@ public class UserRepository implements IUserRepo {
         return null;
     }
 
-    @Override
-    public boolean setUserAsAdmin(int id, String adminKey) throws UIException {
-        Registered registered = getRegisteredUser(id);
-        if (registered != null) {
-            if (adminInit.matchPassword(adminKey)) {
-                registered.setAdmin();
-                logger.log(Level.INFO, "User {0} is now an admin.", registered.getUsername());
-                return true;
-            }
-        }
-        return false;
-    }
+    // @Override
+    // public boolean setUserAsAdmin(int id, String adminKey) throws UIException {
+    //     Registered registered = getRegisteredUser(id);
+    //     if (registered != null) {
+    //         if (adminInit.matchPassword(adminKey)) {
+    //             registered.setAdmin();
+    //             logger.log(Level.INFO, "User {0} is now an admin.", registered.getUsername());
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
 
     // @Override
     // public void removeItemFromGeustCart(int guestId, int productId) throws UIException {
@@ -245,17 +245,17 @@ public class UserRepository implements IUserRepo {
     //     }
     // }
 
-    @Override
-    public ShoppingCart getUserCart(int userId) throws UIException {
-        if (guests.containsKey(userId)) {
-            return guests.get(userId).geCart();
-        }
-        Registered registered = getRegisteredUser(userId);
-        if (registered != null) {
-            return registered.geCart();
-        }
-        throw new UIException("User with ID " + userId + " not found", ErrorCodes.USER_NOT_FOUND);
-    }
+    // @Override
+    // public ShoppingCart getUserCart(int userId) throws UIException {
+    //     if (guests.containsKey(userId)) {
+    //         return guests.get(userId).geCart();
+    //     }
+    //     Registered registered = getRegisteredUser(userId);
+    //     if (registered != null) {
+    //         return registered.geCart();
+    //     }
+    //     throw new UIException("User with ID " + userId + " not found", ErrorCodes.USER_NOT_FOUND);
+    // }
 
     // @Override
     // public List<ItemCartDTO> getCartForUser(int ownerId) {

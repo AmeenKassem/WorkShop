@@ -25,8 +25,20 @@ import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DataAccessLayer.GuestJpaRepository;
+import workshop.demo.DataAccessLayer.UserJpaRepository;
+import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Order.IOrderRepo;
+import workshop.demo.DomainLayer.Purchase.IPaymentService;
+import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
+import workshop.demo.DomainLayer.Purchase.ISupplyService;
+import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.CouponContext;
+import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepoDB;
+import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
 @RestController
 @RequestMapping("/purchase")
@@ -35,9 +47,13 @@ public class PurcheseContoller {
     private final PurchaseService purchaseService;
 
     @Autowired
-    public PurcheseContoller(Repos repo) {
-        this.purchaseService = new PurchaseService(repo.auth, repo.stockrepo, repo.storeRepo, repo.userRepo,
-                repo.purchaseRepo, repo.orderRepo, repo.paymentService, repo.supplyService, repo.UserSuspensionRepo);
+    public PurcheseContoller(IAuthRepo auth, IStockRepo stockrepo, IStoreRepo storeRepo, IUserRepo userRepo,
+            IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
+            ISupplyService supplyService, IUserSuspensionRepo UserSuspensionRepo, UserJpaRepository userJpaRepo,
+            GuestJpaRepository guestJpaRepository, IStoreRepoDB storeJpaRepo) {
+        this.purchaseService = new PurchaseService(auth, stockrepo, storeRepo, userRepo,
+                purchaseRepo, orderRepo, paymentService, supplyService, UserSuspensionRepo, userJpaRepo,
+                guestJpaRepository,storeJpaRepo);
     }
 
     @ModelAttribute
@@ -88,9 +104,12 @@ public class PurcheseContoller {
             PaymentDetails paymentdetails = PaymentDetails.getPaymentDetailsFromJSON(decodedPaymentJson);
             SupplyDetails supplydetails = SupplyDetails.getSupplyDetailsFromJSON(decodedSupplyJson);
             // // Create products
-            // ReceiptProduct p1 = new ReceiptProduct("Laptop", "TechStore", 1, 1200, 1, Category.Electronics);
-            // ReceiptProduct p2 = new ReceiptProduct("Chair", "HomeMart", 2, 150, 2, Category.Furniture);
-            // ReceiptProduct p3 = new ReceiptProduct("T-Shirt", "FashionHub", 3, 25, 3, Category.Clothing);
+            // ReceiptProduct p1 = new ReceiptProduct("Laptop", "TechStore", 1, 1200, 1,
+            // Category.Electronics);
+            // ReceiptProduct p2 = new ReceiptProduct("Chair", "HomeMart", 2, 150, 2,
+            // Category.Furniture);
+            // ReceiptProduct p3 = new ReceiptProduct("T-Shirt", "FashionHub", 3, 25, 3,
+            // Category.Clothing);
 
             // // Create ReceiptDTO instances
             // ReceiptDTO r1 = new ReceiptDTO("TechStore", "2025-06-01", List.of(p1), 1200);
@@ -154,12 +173,15 @@ public class PurcheseContoller {
 
             // Finalize special cart purchase
             ReceiptDTO[] receipts = purchaseService.finalizeSpecialCart(token,
-            paymentDetails, supplyDetails);
+                    paymentDetails, supplyDetails);
 
             // // Create products
-            // ReceiptProduct p1 = new ReceiptProduct("Laptop", "TechStore", 1, 1200, 1, Category.Electronics);
-            // ReceiptProduct p2 = new ReceiptProduct("Chair", "HomeMart", 2, 150, 2, Category.Furniture);
-            // ReceiptProduct p3 = new ReceiptProduct("T-Shirt", "FashionHub", 3, 25, 3, Category.Clothing);
+            // ReceiptProduct p1 = new ReceiptProduct("Laptop", "TechStore", 1, 1200, 1,
+            // Category.Electronics);
+            // ReceiptProduct p2 = new ReceiptProduct("Chair", "HomeMart", 2, 150, 2,
+            // Category.Furniture);
+            // ReceiptProduct p3 = new ReceiptProduct("T-Shirt", "FashionHub", 3, 25, 3,
+            // Category.Clothing);
 
             // // Create ReceiptDTO instances
             // ReceiptDTO r1 = new ReceiptDTO("TechStore", "2025-06-01", List.of(p1), 1200);

@@ -9,24 +9,35 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
+@Entity
 public class Store {
 
     private static final Logger logger = LoggerFactory.getLogger(Store.class);
 
+    @Id
     private int storeID;
+    @Column(unique = true)
     private String storeName;
     private String category;
     private boolean active;
+    @Transient
     private AtomicInteger[] rank;//rank[x] is the number of people who ranked i+1
     //must add something for messages
+    @Transient
     private List<String> messgesInStore;
+    @Transient
     private Discount discount;
+    @Transient
     private final List<PurchasePolicy> purchasePolicies = new ArrayList<>();
 
     public Store(int storeID, String storeName, String category) {
@@ -41,6 +52,22 @@ public class Store {
             rank[i] = new AtomicInteger(0);
         }
         this.messgesInStore = Collections.synchronizedList(new LinkedList<>());
+    }
+    public Store(String storeName,String cat){
+        this.storeName = storeName;
+        this.category = cat;
+        this.active = true;
+        this.rank = new AtomicInteger[5];
+        for (int i = 0; i < 5; i++) {
+            rank[i] = new AtomicInteger(0);
+        }
+    }
+
+    public Store(){
+        this.rank = new AtomicInteger[5];
+        for (int i = 0; i < 5; i++) {
+            rank[i] = new AtomicInteger(0);
+        }
     }
 
     public int getStoreID() {

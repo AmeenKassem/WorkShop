@@ -2,9 +2,11 @@ package workshop.demo.ApplicationLayer;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -34,11 +36,16 @@ import workshop.demo.DomainLayer.Purchase.ISupplyService;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.SingleBid;
+import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Store.Discount;
 import workshop.demo.DomainLayer.Store.DiscountScope;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.User.CartItem;
+import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
@@ -55,14 +62,16 @@ public class PurchaseService {
     private final IPaymentService paymentService;
     private final ISupplyService supplyService;
     private IUserSuspensionRepo susRepo;
-    // private UserJpaRepository regRepo;
-    // private GuestJpaRepository guestRepo;
+    private UserJpaRepository regRepo;
+    private GuestJpaRepository guestRepo;
+    private IStoreRepoDB storeJpaRepo;
     private static final Logger logger = LoggerFactory.getLogger(PurchaseService.class);
 
     @Autowired
     public PurchaseService(IAuthRepo authRepo, IStockRepo stockRepo, IStoreRepo storeRepo, IUserRepo userRepo,
             IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
-            ISupplyService supplyService, IUserSuspensionRepo susRepo) {
+            ISupplyService supplyService, IUserSuspensionRepo susRepo, UserJpaRepository regsRepo,
+            GuestJpaRepository guestRepo,IStoreRepoDB storeJpaRepo) {
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
         this.storeRepo = storeRepo;
@@ -72,8 +81,9 @@ public class PurchaseService {
         this.paymentService = paymentService;
         this.supplyService = supplyService;
         this.susRepo = susRepo;
-        // this.guestRepo = guestRepo;
-        // this.regRepo = regsRepo;
+        this.guestRepo = guestRepo;
+        this.regRepo = regsRepo;
+        this.storeJpaRepo= storeJpaRepo;
     }
 
     public ReceiptDTO[] buyGuestCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
@@ -103,25 +113,24 @@ public class PurchaseService {
     private ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails payment, SupplyDetails supply)
             throws Exception {
         logger.info("processCart called for userId={}, isGuest={}", userId, isGuest);
-        
-        ShoppingCart cart = userRepo.getUserCart(userId);
-        if (cart == null || cart.getAllCart().isEmpty()) {
-            logger.warn("Cart is empty for userId={}", userId);
-            throw new UIException("Shopping cart is empty or not found", ErrorCodes.CART_NOT_FOUND);
-        }
 
-        if (isGuest && !stockRepo.checkAvailability(cart.getAllCart())) {
-            logger.warn("Product availability check failed for guest userId={}", userId);
+        Guest user = getUser(isGuest, userId);
+
+        if (user.emptyCart())
+            throw new UIException("Shopping cart is empty or not found", ErrorCodes.CART_NOT_FOUND);
+
+        if (isGuest && checkStockAvalibality(user.getBaskets()))
             throw new UIException("Not all items are available for guest purchase", ErrorCodes.PRODUCT_NOT_FOUND);
-        }
 
         Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts = new HashMap<>();
 
-        for (ShoppingBasket basket : cart.getBaskets().values()) {
+        for (ShoppingBasket basket : user.getBaskets()) {
             int storeId = basket.getStoreId();
-            Store store = storeRepo.findStoreByID(storeId);
-
+            Store store =storeJpaRepo.findById(storeId).orElseThrow(()-> new UIException("store not found on db!", ErrorCodes.STORE_NOT_FOUND));
             if (store == null || !store.isActive()) {
+                if(isGuest){
+                    throw new UIException(store.getStoreName(), ErrorCodes.STORE_NOT_FOUND);
+                }
                 logger.info("Skipping inactive or missing storeId={}", storeId);
                 continue; // Skip this store
             }
@@ -140,15 +149,14 @@ public class PurchaseService {
             for (ReceiptProduct p : boughtItems) {
                 itemStoreDTOS.add(new ItemStoreDTO(
                         p.getProductId(), p.getQuantity(), p.getPrice(), p.getCategory(),
-                        0, storeId, p.getProductName(), storeName
-                ));
+                        0, storeId, p.getProductName(), storeName));
             }
 
             DiscountScope scope = new DiscountScope(itemStoreDTOS);
-            //Hmode
+            // Hmode
             UserDTO buyer = userRepo.getUserDTO(userId);
             store.assertPurchasePolicies(buyer, itemStoreDTOS);
-            //Hmode
+            // Hmode
             Discount discount = store.getDiscount();
             double discountAmount = (discount != null) ? discount.apply(scope) : 0.0;
             double total = stockRepo.calculateTotalPrice(boughtItems);
@@ -162,9 +170,36 @@ public class PurchaseService {
 
             storeToProducts.put(storeId, Pair.of(boughtItems, finalTotal));
         }
+        user.clearCart();
+        guestRepo.save(user);
 
-        userRepo.getUserCart(userId).clear();
         return saveReceiptsWithDiscount(userId, storeToProducts);
+    }
+
+    private boolean checkStockAvalibality(Collection<ShoppingBasket> baskets) {
+        for (ShoppingBasket shoppingBasket : baskets) {
+            StoreStock stock4store = stockRepo.findStoreStockById(shoppingBasket.getStoreId());
+            for (CartItem item  : shoppingBasket.getItems()) {
+                if(!stock4store.isAvaliable(item.productId, item.quantity))return false;
+            }
+        }
+        return true;
+    }
+
+    private Guest getUser(boolean isGuest, int userId) throws UIException {
+        if (isGuest) {
+            Optional<Guest> guset = guestRepo.findById(userId);
+            if (guset.isPresent())
+                return guset.get();
+            else
+                throw new UIException("there is no guest with given id", ErrorCodes.USER_NOT_FOUND);
+        } else {
+            Optional<Registered> user = regRepo.findById(userId);
+            if (user.isPresent())
+                return user.get();
+            else
+                throw new UIException("there is no guest with given id", ErrorCodes.USER_NOT_FOUND);
+        }
     }
 
     public ParticipationInRandomDTO participateInRandom(String token, int randomId, int storeId, double amountPaid,
@@ -177,8 +212,8 @@ public class PurchaseService {
         ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
         UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random);
         userRepo.addSpecialItemToCart(item, userId);
-        boolean done = paymentService.processPayment(paymentDetails,amountPaid);
-        if(!done) {
+        boolean done = paymentService.processPayment(paymentDetails, amountPaid);
+        if (!done) {
             logger.error("Payment failed for userId={}, amountPaid={}", userId, amountPaid);
             throw new UIException("Payment failed", ErrorCodes.PAYMENT_ERROR);
         } else {
@@ -205,28 +240,30 @@ public class PurchaseService {
         for (UserSpecialItemCart specialItem : allSpecialItems) {
 
             if (specialItem.type == SpecialType.Random) {
-                ParticipationInRandomDTO card = stockRepo.getRandomCardforuser( // had to change this to get card for user to be able to do refund if the card stays null we never reach the refund statement
+                ParticipationInRandomDTO card = stockRepo.getRandomCardforuser( // had to change this to get card for
+                                                                                // user to be able to do refund if the
+                                                                                // card stays null we never reach the
+                                                                                // refund statement
                         specialItem.storeId, specialItem.specialId, userId);
 
-            if (card != null && card.isWinner && card.ended) {
-                winningRandoms.add(card); // Won
-            } else if ((card != null && !card.isWinner && card.ended) || card == null) {
-                userRepo.removeSpecialItem(userId, specialItem); // Lost or not found → remove
-            } else if( card.mustRefund()){
-                // If the card must be refunded, we remove it from the user's cart
-                userRepo.removeSpecialItem(userId, specialItem);
-                // And we refund the payment
-                // paymentService.externalRefund(card.transactionIdForPayment);
-                stockRepo.returnProductToStock(specialItem.storeId, card.productId, 1,specialItem.specialId);
-                stockRepo.markRefunded(specialItem.specialId); 
-            } else if( card.mustRefund()){
-                // If the card must be refunded, we remove it from the user's cart
-                userRepo.removeSpecialItem(userId, specialItem);
-                // And we refund the payment
-   
+                if (card != null && card.isWinner && card.ended) {
+                    winningRandoms.add(card); // Won
+                } else if ((card != null && !card.isWinner && card.ended) || card == null) {
+                    userRepo.removeSpecialItem(userId, specialItem); // Lost or not found → remove
+                } else if (card.mustRefund()) {
+                    // If the card must be refunded, we remove it from the user's cart
+                    userRepo.removeSpecialItem(userId, specialItem);
+                    // And we refund the payment
+                    // paymentService.externalRefund(card.transactionIdForPayment);
+                    stockRepo.returnProductToStock(specialItem.storeId, card.productId, 1, specialItem.specialId);
+                    stockRepo.markRefunded(specialItem.specialId);
+                } else if (card.mustRefund()) {
+                    // If the card must be refunded, we remove it from the user's cart
+                    userRepo.removeSpecialItem(userId, specialItem);
+                    // And we refund the payment
 
-                paymentService.processRefund(payment,card.amountPaid);
-            }
+                    paymentService.processRefund(payment, card.amountPaid);
+                }
 
             } else { // BID or AUCTION
                 SingleBid bid = stockRepo.getBidIfWinner(
@@ -276,7 +313,7 @@ public class PurchaseService {
 
             res.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
             // paymentService.processPayment(payment, (int) bid.getBidPrice());
-            
+
         }
         // return res;
         return price;
@@ -324,7 +361,8 @@ public class PurchaseService {
         return receipts.toArray(new ReceiptDTO[0]);
     }
 
-    private ReceiptDTO[] saveReceiptsWithDiscount(int userId, Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts)
+    private ReceiptDTO[] saveReceiptsWithDiscount(int userId,
+            Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts)
             throws UIException {
         logger.info("saveReceipts called for userId={}", userId);
 

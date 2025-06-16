@@ -15,9 +15,9 @@ public interface IStoreRepo {
 
    // List<StoreDTO> viewAllStores();
 
-    public int addStoreToSystem(int bossID, String storeName, String Category) throws UIException;
+    // public int addStoreToSystem(int bossID, String storeName, String Category) throws UIException;
 
-    Store findStoreByID(int Id);
+    // Store findStoreByID(int Id);
 
     boolean checkStoreExistance(int ID) throws UIException;
 

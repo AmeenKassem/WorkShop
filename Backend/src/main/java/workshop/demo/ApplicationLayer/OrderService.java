@@ -1,6 +1,7 @@
 package workshop.demo.ApplicationLayer;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.IUserRepo;
 
@@ -24,15 +26,17 @@ public class OrderService {
     private IStoreRepo storeRepo;
     private IAuthRepo authRepo;
     private IUserRepo userRepo;
+    private IStoreRepoDB storeJpaRepo;
 
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     @Autowired
-    public OrderService(IOrderRepo orderRepo, IStoreRepo storeRepo, IAuthRepo authoRepo, IUserRepo userRepo) {
+    public OrderService(IOrderRepo orderRepo, IStoreRepo storeRepo, IAuthRepo authoRepo, IUserRepo userRepo,IStoreRepoDB storeJpaRepo) {
         this.orderRepo = orderRepo;
         this.storeRepo = storeRepo;
         this.authRepo = authoRepo;
         this.userRepo = userRepo;
+        this.storeJpaRepo = storeJpaRepo;
         logger.info("created Order/history service");
     }
 
@@ -40,8 +44,8 @@ public class OrderService {
 
     public List<OrderDTO> getAllOrderByStore(int storeId) throws Exception {
         logger.info("about to get all the orders that have been made in this history!");
-        Store store = this.storeRepo.findStoreByID(storeId);
-        if (store == null) {
+        Optional<Store> store = storeJpaRepo.findById(storeId);
+        if (!store.isPresent()) {
             logger.error("store not found!");
             throw new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND);
         }

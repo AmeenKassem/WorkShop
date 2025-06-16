@@ -207,4 +207,11 @@ public class StoreStock {
         }
     }
 
+
+    public boolean isAvaliable(int productId,int quantity){
+        if(!stock.containsKey(productId)) return false;
+        if(stock.get(productId).getQuantity()<quantity) return false;
+        return true;
+    }
+
 }

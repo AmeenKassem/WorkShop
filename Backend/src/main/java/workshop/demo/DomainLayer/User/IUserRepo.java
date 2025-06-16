@@ -13,7 +13,7 @@ import workshop.demo.DomainLayer.Stock.SingleBid;
 public interface IUserRepo {
 
     // added for tests
-    public boolean guestExist(int id);
+    // public boolean guestExist(int id);
 
     /**
      *
@@ -21,7 +21,7 @@ public interface IUserRepo {
      *
      * @return new id for guest
      */
-    public int logoutUser(String username) throws UIException;
+    // public int logoutUser(String username) throws UIException;
 
     /**
      * destroy cart and all data of the user
@@ -37,7 +37,7 @@ public interface IUserRepo {
      *
      * @return id .
      */
-    public int generateGuest();
+    // public int generateGuest();
 
     //===========
     // public void addItemToGeustCart(int guestId, ItemCartDTO item) throws UIException;
@@ -61,7 +61,7 @@ public interface IUserRepo {
      * @param adminKey
      * @return
      */
-    public boolean setUserAsAdmin(int id, String adminKey) throws UIException;
+    // public boolean setUserAsAdmin(int id, String adminKey) throws UIException;
 
     public void addSpecialItemToCart(UserSpecialItemCart item, int userId) throws DevException, UIException;
 
@@ -73,9 +73,9 @@ public interface IUserRepo {
      * @param userId the id of the user
      * @return ShoppingCart instance
      */
-    public Registered getRegisteredUser(int id) throws UIException;
+    // public Registered getRegisteredUser(int id) throws UIException;
 
-    public ShoppingCart getUserCart(int userId) throws UIException;
+    // public ShoppingCart getUserCart(int userId) throws UIException;
 
  //   public List<ItemCartDTO> getCartForUser(int ownerId) throws UIException;
 

@@ -37,7 +37,7 @@ public class StoreRepository implements IStoreRepo {
         this.stores = Collections.synchronizedList(new LinkedList<>());
     }
 
-    @Override
+    // @Override
     public int addStoreToSystem(int bossID, String storeName, String Category) throws UIException {
         synchronized (stores) {
             boolean nameExists = stores.stream()
@@ -72,7 +72,7 @@ public class StoreRepository implements IStoreRepo {
 
     }
 
-    @Override
+    // @Override
     public Store findStoreByID(int ID
     ) {
         for (Store store : this.stores) {

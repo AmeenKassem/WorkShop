@@ -26,6 +26,7 @@ import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
@@ -49,7 +50,7 @@ public class StoreController {
             IStockRepo stockRepo,
             IUserSuspensionRepo userSuspensionRepo,
             UserJpaRepository regJpaRepo,
-            AdminInitilizer adminInitilizer, GuestJpaRepository guest) {
+            AdminInitilizer adminInitilizer, GuestJpaRepository guest, IStoreRepoDB storeJpaRepo) {
         UserService userService = new UserService(
                 regJpaRepo,
                 userRepo,
@@ -66,7 +67,7 @@ public class StoreController {
                 orderRepo,
                 sUConnectionRepo,
                 stockRepo,
-                userSuspensionRepo);
+                userSuspensionRepo,storeJpaRepo);
     }
 
     @PostMapping("/addStore")

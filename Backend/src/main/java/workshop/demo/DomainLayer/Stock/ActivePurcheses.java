@@ -25,7 +25,7 @@ public class ActivePurcheses {
 
     private int storeId;
 
-    private HashMap<Integer, BID> activeBid = new HashMap<>(); 
+    private HashMap<Integer, BID> activeBid = new HashMap<>();
     private HashMap<Integer, Random> activeRandom = new HashMap<>();
     private HashMap<Integer, Auction> activeAuction = new HashMap<>();
 
@@ -33,16 +33,13 @@ public class ActivePurcheses {
     private static AtomicInteger auctionIdGen = new AtomicInteger();
     private static AtomicInteger randomIdGen = new AtomicInteger();
 
-    private HashMap<Integer, List<BID>> productIdToBids = new HashMap<>(); 
+    private HashMap<Integer, List<BID>> productIdToBids = new HashMap<>();
     private HashMap<Integer, List<Auction>> productIdToAuctions = new HashMap<>();
-   private HashMap<Integer, List<Random>> productIdToRandoms = new HashMap<>();
-
-
+    private HashMap<Integer, List<Random>> productIdToRandoms = new HashMap<>();
 
     public ActivePurcheses(int storeId) {
         this.storeId = storeId;
     }
-
 
     // ========== Auction ==========
 
@@ -58,7 +55,6 @@ public class ActivePurcheses {
         activeAuction.put(id, auction);
         productIdToAuctions.computeIfAbsent(productId, k -> new ArrayList<>()).add(auction);
         logger.debug("Auction created with id={}", id);
-
 
         return id;
     }
@@ -246,37 +242,34 @@ public class ActivePurcheses {
         return activeRandom.get(randomId).getProductPrice();
     }
 
-   
-
     public ParticipationInRandomDTO getRandomCardforuser(int specialId, int userId) {
         if (activeRandom.containsKey(specialId)) {
             Random random = activeRandom.get(specialId);
             return random.getCard(userId);
-        }
-        else return null;
+        } else
+            return null;
     }
 
     public SingleBid getBidIfWinner(int specialId, int bidId, SpecialType type) {
-    if (type == SpecialType.Auction) {
-        if (activeAuction.containsKey(specialId)) {
-            var auction = activeAuction.get(specialId);
-            SingleBid bid = auction.getBid(bidId);
-            if (bid != null && bid.isWinner()) {
-                return bid;
+        if (type == SpecialType.Auction) {
+            if (activeAuction.containsKey(specialId)) {
+                var auction = activeAuction.get(specialId);
+                SingleBid bid = auction.getBid(bidId);
+                if (bid != null && bid.isWinner()) {
+                    return bid;
+                }
+            }
+        } else { // BID
+            if (activeBid.containsKey(specialId)) {
+                var bidContainer = activeBid.get(specialId);
+                SingleBid bid = bidContainer.getBid(bidId);
+                if (bid != null && bid.isAccepted()) {
+                    return bid;
+                }
             }
         }
-    } else { // BID
-        if (activeBid.containsKey(specialId)) {
-            var bidContainer = activeBid.get(specialId);
-            SingleBid bid = bidContainer.getBid(bidId);
-            if (bid != null && bid.isAccepted()) {
-                return bid;
-            }
-        }
+        return null;
     }
-    return null;
-}
-
 
     public SingleBid getBidWithId(int specialId, int bidId, SpecialType type) {
         if (type == SpecialType.Auction) {
@@ -300,7 +293,7 @@ public class ActivePurcheses {
         return null;
     }
 
-    public int getProductIdForSpecial(int specialId,SpecialType type){
+    public int getProductIdForSpecial(int specialId, SpecialType type) {
         switch (type) {
             case Auction:
                 return activeAuction.get(specialId).getProductId();
@@ -323,7 +316,6 @@ public class ActivePurcheses {
         return result;
     }
 
-
     public List<BidDTO> getBidsForProduct(int productId) {
         List<BidDTO> result = new ArrayList<>();
         List<BID> bids = productIdToBids.getOrDefault(productId, new ArrayList<>());
@@ -342,23 +334,19 @@ public class ActivePurcheses {
         return result;
     }
 
- 
     public void clear() {
-    activeBid.clear();
-    activeRandom.clear();
-    activeAuction.clear();
+        activeBid.clear();
+        activeRandom.clear();
+        activeAuction.clear();
 
-    // Optionally reset static ID generators if needed
-    bidIdGen.set(0);
-    auctionIdGen.set(0);
-    randomIdGen.set(0);
-}
-
+        // Optionally reset static ID generators if needed
+        bidIdGen.set(0);
+        auctionIdGen.set(0);
+        randomIdGen.set(0);
+    }
 
     public Auction getAuctionById(int res) {
         return activeAuction.get(res);
     }
-
-
 
 }

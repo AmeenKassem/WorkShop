@@ -31,11 +31,8 @@ public class CartItem {
     public Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "guest_id")
-    private Guest guest;
-    // public int userId;
-    // @ManyToOne
-    // private Guest guest;
+    @JoinColumn(name = "shopping_cart_id")
+    private ShoppingCart shoppingCart;
 
     public CartItem(ItemCartDTO dto) {
         this.productId = dto.productId;
@@ -46,13 +43,10 @@ public class CartItem {
         this.category = dto.category;
     }
 
-    public CartItem(){}
+    public CartItem() {
+    }
 
-    // // Optional manual constructor
-    // public CartItem(int productId, int quantity, Category cat) {
-    // this.productId = productId;
-    // this.quantity = quantity;
-    // }
+
 
     // Getters
     public int getProductId() {
@@ -71,8 +65,23 @@ public class CartItem {
         return name;
     }
 
-    public void setGuest(Guest user) {
-        guest = user;
+    
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int cartItemId) {
+        id = cartItemId;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof CartItem) {
+            if (((CartItem) other).getId() == this.id)
+                return true;
+        }
+        return false;
     }
 
 }

@@ -126,4 +126,6 @@ public interface IStockRepo {
         public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
             throws UIException, DevException;
 
+        StoreStock findStoreStockById(int storeId);
+
 }

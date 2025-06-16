@@ -24,7 +24,7 @@ public class HistoryController {
     private final OrderService orderService;
 
     public HistoryController(Repos repo) {
-        this.orderService = new OrderService(repo.orderRepo, repo.storeRepo, repo.auth, repo.userRepo);
+        this.orderService = new OrderService(repo.orderRepo, repo.storeRepo, repo.auth, repo.userRepo,null);
     }
 
     @GetMapping("/getreceipts")

@@ -65,9 +65,11 @@ public class UserService {
 
     public String generateGuest() throws UIException, Exception {
         logger.info("generateGuest called");
-        int id = userRepo.generateGuest();
-        logger.info("Generated guest with ID={}", id);
-        return authRepo.generateGuestToken(id);
+        Guest guest = new Guest();
+        guest = guestJpaRepository.save(guest);
+
+        logger.info("Generated guest with ID={}", guest.getId());
+        return authRepo.generateGuestToken(guest.getId());
     }
 
     public boolean register(String token, String username, String password, int age) throws UIException {
@@ -187,7 +189,7 @@ public class UserService {
                 itemToAdd.getPrice(), itemToAdd.getProductName(), storeName, itemToAdd.getCategory());
         CartItem itemCart = new CartItem(item);
         Guest user = getUser(userId);
-        itemCart.setGuest(user);
+        // itemCart.setGuest(user);
         user.addToCart(itemCart);
         guestJpaRepository.save(user);
         logger.info("Item added to user cart");
@@ -215,7 +217,9 @@ public class UserService {
     public boolean removeItemFromCart(String token, int productId) throws UIException {
         logger.info("removeItemFromCart called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        getUser(authRepo.getUserId(token)).removeItem(productId);
+        Guest user = getUser(authRepo.getUserId(token));
+        user.removeItem(productId);
+        guestJpaRepository.save(user);
         logger.info("Item removed from cart for productId={}", productId);
         return true;
     }

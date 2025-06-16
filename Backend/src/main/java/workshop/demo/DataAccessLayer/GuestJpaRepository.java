@@ -12,8 +12,4 @@ import workshop.demo.DomainLayer.User.Guest;
 @Repository
 public interface GuestJpaRepository extends JpaRepository<Guest, Integer> {
 
-    @Query("SELECT g FROM Guest g LEFT JOIN FETCH g.cartItems WHERE g.id = :id")
-    Optional<Guest> findByIdWithCart(@Param("id") int id);
-
-    
 }

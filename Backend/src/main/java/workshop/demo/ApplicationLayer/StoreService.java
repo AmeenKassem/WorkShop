@@ -2,6 +2,7 @@ package workshop.demo.ApplicationLayer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ import workshop.demo.DomainLayer.Store.CompositeDiscount;
 import workshop.demo.DomainLayer.Store.Discount;
 import workshop.demo.DomainLayer.Store.DiscountFactory;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.Store.PurchasePolicy;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
@@ -48,10 +50,11 @@ public class StoreService {
     private IUserSuspensionRepo susRepo;
     private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
     private UserService userService; 
+    private IStoreRepoDB storeJpaRepo;
 
     @Autowired
     public StoreService(UserService userService,IStoreRepo storeRepository, INotificationRepo notiRepo, IAuthRepo authRepo, UserJpaRepository userRepo, IOrderRepo orderRepo,
-            ISUConnectionRepo sUConnectionRepo, IStockRepo stock, IUserSuspensionRepo susRepo) {
+            ISUConnectionRepo sUConnectionRepo, IStockRepo stock, IUserSuspensionRepo susRepo, IStoreRepoDB storeJpaRepo) {
         this.storeRepo = storeRepository;
         this.notiRepo = notiRepo;
         this.authRepo = authRepo;
@@ -61,6 +64,7 @@ public class StoreService {
         this.stockRepo = stock;
         this.susRepo = susRepo;
         this.userService=userService;
+        this.storeJpaRepo = storeJpaRepo;
         logger.info("created the StoreService");
     }
 
@@ -71,7 +75,12 @@ public class StoreService {
         int bossId = authRepo.getUserId(token);
         userService.checkUserRegisterOnline_ThrowException(bossId);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(bossId);
-        int storeId = storeRepo.addStoreToSystem(bossId, storeName, category);
+        
+        // persisting new store:
+
+        Store newStore = new Store(storeName, category);
+        newStore = storeJpaRepo.save(newStore);
+        int storeId = newStore.getStoreID();
         suConnectionRepo.addNewStoreOwner(storeId, bossId);
         stockRepo.addStore(storeId);
         //add store to history
@@ -329,15 +338,19 @@ public class StoreService {
         List<Integer> storesId = suConnectionRepo.getStoresIdForUser(userId);
         logger.info("got the stores Id for user:{}" + userId);
         for (int storeId : storesId) {
-            storeRepo.checkStoreExistance(storeId);
-            StoreDTO dto = storeRepo.getStoreDTO(storeId);
-            result.add(dto);
+            Optional<Store> store = storeJpaRepo.findById(storeId);
+            if(!store.isPresent()) throwStoreNotFoundException();
+            result.add(store.get().getStoreDTO());
         }
         return result;
     }
 
+    private void throwStoreNotFoundException() throws UIException {
+        throw new UIException("store id not found", ErrorCodes.STORE_NOT_FOUND);
+    }
+
     public List<StoreDTO> getAllStores() {
-        List<Store> stores = storeRepo.getStores();
+        List<Store> stores = storeJpaRepo.findAll();
         List<StoreDTO> res = new ArrayList<>();
         for (Store store : stores) {
             res.add(store.getStoreDTO());
@@ -367,7 +380,7 @@ public class StoreService {
             throw new UIException("You do not have permission to add discounts to this store", ErrorCodes.NO_PERMISSION);
         }
 
-        Store store = storeRepo.findStoreByID(storeId);
+        Store store =storeJpaRepo.findById(storeId).get();
         //Hmode
         List<Discount> subDiscounts = new ArrayList<>();
         //Find createDiscountDTO for each subDiscount and add it to the subDiscounts list
@@ -407,7 +420,7 @@ public class StoreService {
             throw new UIException("You do not have permission to remove discounts", ErrorCodes.NO_PERMISSION);
         }
 
-        Store store = storeRepo.findStoreByID(storeId);
+        Store store =storeJpaRepo.findById(storeId).get();
         boolean removed = store.removeDiscountByName(discountName);
         if (!removed) {
             throw new UIException("Discount not found: " + discountName, ErrorCodes.DISCOUNT_NOT_FOUND);
@@ -428,7 +441,7 @@ public class StoreService {
         if (!suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_PURCHASE_POLICY)) {
             throw new UIException("You do not have permission to remove discounts", ErrorCodes.NO_PERMISSION);
         }
-        Store store = storeRepo.findStoreByID(storeId);
+        Store store =storeJpaRepo.findById(storeId).get();
         switch (policyKey) {
             case "NO_ALCOHOL" ->
                 store.addPurchasePolicy(PurchasePolicy.noAlcoholUnder18());
@@ -451,7 +464,7 @@ public class StoreService {
         if (!suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_PURCHASE_POLICY)) {
             throw new UIException("You do not have permission to remove discounts", ErrorCodes.NO_PERMISSION);
         }
-        Store store = storeRepo.findStoreByID(storeId);
+        Store store =storeJpaRepo.findById(storeId).get();
         PurchasePolicy policy = switch (policyKey) {
             case "NO_ALCOHOL" ->
                 PurchasePolicy.noAlcoholUnder18();
@@ -468,7 +481,7 @@ public class StoreService {
     }
 
     public String[] getAllDiscountNames(int storeId, String token) throws UIException {
-        Store store = storeRepo.findStoreByID(storeId);                     // assumes auth already validated
+        Store store =storeJpaRepo.findById(storeId).get();                     // assumes auth already validated
         List<String> out = new ArrayList<>();
         collectNames(store.getDiscount(), out);                             // depth-first walk
         return out.toArray(String[]::new);

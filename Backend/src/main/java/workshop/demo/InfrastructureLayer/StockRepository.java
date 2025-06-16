@@ -604,4 +604,9 @@ public class StockRepository implements IStockRepo {
         randomRefunded.put(specialId, true);
     }
 
+    @Override
+    public StoreStock findStoreStockById(int storeId) {
+        return storeStocks.get(storeId);
+    }
+
 }
