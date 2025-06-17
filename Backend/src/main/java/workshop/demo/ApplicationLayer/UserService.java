@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
@@ -24,6 +25,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
@@ -40,7 +42,7 @@ public class UserService {
     // private IUserRepo userRepo;
     private IAuthRepo authRepo;
     private IStockRepo stockRepo;
-    private IStoreRepo storeRepo;
+    // private IStoreRepoDB storeRepo;
     private final AdminInitilizer adminInitilizer;
     // private final AdminHandler adminHandler;
     // @Autowired
@@ -48,15 +50,16 @@ public class UserService {
 
     private UserJpaRepository regJpaRepo;
     private GuestJpaRepository guestJpaRepository;
+    
 
     @Autowired
     public UserService(UserJpaRepository regJpaRepo,  IAuthRepo authRepo, IStockRepo stockRepo,
             AdminInitilizer adminInitilizer,
-            IStoreRepo storeRepo, GuestJpaRepository guestRepo) {
+             GuestJpaRepository guestRepo) {
         // this.userRepo = userRepo;
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
-        this.storeRepo = storeRepo;
+        // this.storeRepo = storeRepo;
         this.adminInitilizer = adminInitilizer;
         // this.adminHandler = adminHandler;
         this.regJpaRepo = regJpaRepo;
@@ -186,12 +189,13 @@ public class UserService {
         logger.info("addToUserCart called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        String storeName = this.storeRepo.getStoreNameById(itemToAdd.getStoreId());
+        // String storeName =storeRepo.findById(itemToAdd.);
         ItemCartDTO item = new ItemCartDTO(itemToAdd.getStoreId(), itemToAdd.getProductId(), quantity,
-                itemToAdd.getPrice(), itemToAdd.getProductName(), storeName, itemToAdd.getCategory());
+                itemToAdd.getPrice(), itemToAdd.getProductName(), itemToAdd.getStoreName(), itemToAdd.getCategory());
         CartItem itemCart = new CartItem(item);
         Guest user = getUser(userId);
         // itemCart.setGuest(user);
+        
         user.addToCart(itemCart);
         guestJpaRepository.save(user);
         logger.info("Item added to user cart");
@@ -209,14 +213,18 @@ public class UserService {
         return reg.get();
     }
 
+    @Transactional
     public boolean ModifyCartAddQToBuy(String token, int productId, int quantity) throws UIException {
         logger.info("ModifyCartAddQToBuy called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         Guest user = getUser(userId);
         user.ModifyCartAddQToBuy(productId, quantity);
-        guestJpaRepository.save(user);
+        // System.out.println(user.geCart().getAllCart().get(0).quantity+"<-quantity");
+        guestJpaRepository.saveAndFlush(user);
+        // user.geCart().getAllCart().get(0).setQuantity(quantity);
         // userRepo.ModifyCartAddQToBuy(, productId, quantity);
+
         logger.info("Cart modified for productId={}", productId);
         return true;
     }
@@ -226,7 +234,7 @@ public class UserService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         Guest user = getUser(authRepo.getUserId(token));
         user.removeItem(productId);
-        guestJpaRepository.save(user);
+        guestJpaRepository.saveAndFlush(user);
         logger.info("Item removed from cart for productId={}", productId);
         return true;
     }

@@ -12,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Transient;
 import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ProductDTO;
 
 @Entity
 public class Product {
@@ -77,8 +78,10 @@ public class Product {
         this.keywords = keywords;
     }
 
-    // public void addKeyword(String keyword) {
-    // List<String> keys = new ArrayList<>(keywords);
-    // }
+    public ProductDTO getDTO() {
+        return new ProductDTO(getProductId(), getName(), getCategory(),
+                getDescription());
+    }
 
+   
 }

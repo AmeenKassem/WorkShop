@@ -58,7 +58,7 @@ public class UserController {
     ) throws Exception {
         // this.adminHandler = new AdminHandler(orderRepo, storeRepo, userRepo, auth);
         this.userSuspensionService = new UserSuspensionService(userSuspensionRepo, userRepo, auth);
-        this.userService = new UserService(regRepo,auth, stockrepo, adminInitializer,  storeRepo,guest);
+        this.userService = new UserService(regRepo,auth, stockrepo, adminInitializer,guest);
     }
     // @ModelAttribute
     // public void beforeEveryRequest(HttpServletRequest request) {

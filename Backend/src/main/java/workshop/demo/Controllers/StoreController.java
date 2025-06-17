@@ -25,6 +25,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
@@ -48,13 +49,14 @@ public class StoreController {
             IStockRepo stockRepo,
             IUserSuspensionRepo userSuspensionRepo,
             UserJpaRepository regJpaRepo,
-            AdminInitilizer adminInitilizer, GuestJpaRepository guest, IStoreRepoDB storeJpaRepo) {
+            AdminInitilizer adminInitilizer, GuestJpaRepository guest, IStoreRepoDB storeJpaRepo,
+            IStoreStockRepo storeStock) {
         UserService userService = new UserService(
                 regJpaRepo,
                 authRepo,
                 stockRepo,
                 adminInitilizer,
-                storeRepo, guest);
+                guest);
 
         this.storeService = new StoreService(userService,
                 storeRepo,
@@ -64,7 +66,7 @@ public class StoreController {
                 orderRepo,
                 sUConnectionRepo,
                 stockRepo,
-                userSuspensionRepo,storeJpaRepo);
+                userSuspensionRepo, storeJpaRepo, storeStock);
     }
 
     @PostMapping("/addStore")

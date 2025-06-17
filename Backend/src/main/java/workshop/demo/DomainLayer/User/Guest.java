@@ -52,12 +52,14 @@ public class Guest {
                 item.productId);
         // cartItems.add(item);
         cart.addItem(storeId, item);
+        
     }
 
     public void addToCart(CartItem item) {
         logger.debug("addToCart called (from item.storeId): guestId={}, storeId={}, product={}", id, item.storeId,
                 item.productId);
         // cartItems.add(item);
+        // cart.setGuest(this);
         cart.addItem(item.storeId, item);
     }
 
@@ -81,11 +83,13 @@ public class Guest {
         logger.debug("ModifyCartAddQToBuy called for guestId={}, productId={}, quantity={}", id, productId, quantity);
 
         cart.ModifyCartAddQToBuy(productId, quantity);
+        cart.setGuest(this);
     }
 
     public void removeItem(int cartItemId) {
         logger.debug("removeItem called for guestId={}, productId={}", id, cartItemId);
         cart.removeItem(cartItemId);
+        cart.setGuest(this);
     }
 
     public void clearCart() {

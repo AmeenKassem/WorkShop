@@ -5,23 +5,52 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+
+// import com.vaadin.flow.component.template.Id;
+
+import jakarta.persistence.Transient;
 import workshop.demo.DTOs.Category;
 
+@Embeddable
 public class item {
     private static final Logger logger = LoggerFactory.getLogger(item.class);
 
+    // @Id
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // private int id;
+
     private int productId;
-    private AtomicInteger quantity;
+    private int quantity;
     private int price;
     private Category category;
+
+    // @ManyToOne
+    // @JoinColumn(name = "storeid")
+    // private StoreStock store;
+
+    @Transient
     private AtomicInteger[] rank;// rank[x] is the number of people who ranked i+1
 
-    // discounts ... 
+    // discounts ...
+
+    public item(){
+        rank=new AtomicInteger[5];
+        for (int i = 0; i < 5; i++) {
+            rank[i] = new AtomicInteger(0);
+        }
+    }
 
     public item(int produtId, int quantity, int price, Category category) {
         this.productId = produtId;
         this.price = price;
-        this.quantity = new AtomicInteger(quantity);
+        this.quantity = quantity;
         ;
         this.rank = new AtomicInteger[5];
         for (int i = 0; i < 5; i++) {
@@ -62,19 +91,19 @@ public class item {
     }
 
     public int getQuantity() {
-        return quantity.get();
+        return quantity;
     }
 
     public void AddQuantity() {
         logger.debug("Incrementing quantity for productId={}", productId);
 
-        this.quantity.incrementAndGet();
+        this.quantity++;
     }
 
     public void changeQuantity(int quantity) {
         logger.debug("Setting quantity for productId={} to {}", productId, quantity);
 
-        this.quantity.set(quantity);
+        this.quantity=(quantity);
     }
 
     public AtomicInteger[] getRank() {
@@ -105,6 +134,5 @@ public class item {
 
         this.rank = rank;
     }
-
 
 }

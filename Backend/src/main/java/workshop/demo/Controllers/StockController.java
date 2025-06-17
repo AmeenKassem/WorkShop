@@ -27,6 +27,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepoDB;
+import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
@@ -47,7 +48,7 @@ public class StockController {
         UserJpaRepository userRepo,
         ISUConnectionRepo sUConnectionRepo,
         IUserSuspensionRepo userSuspensionRepo,
-        INotificationRepo notificationRepo, IStockRepoDB stockJpaRepo, IStoreRepoDB storeJpaRepo
+        INotificationRepo notificationRepo, IStockRepoDB stockJpaRepo, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStock
     ) {
         this.stockService = new StockService(
             stockrepo,
@@ -56,7 +57,7 @@ public class StockController {
             userRepo,
             sUConnectionRepo,
             userSuspensionRepo,
-            notificationRepo,stockJpaRepo,storeJpaRepo
+            notificationRepo,stockJpaRepo,storeJpaRepo,storeStock
         );
     }
 

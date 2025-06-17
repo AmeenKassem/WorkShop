@@ -169,8 +169,11 @@ public class UserRepository  {
             geust.ModifyCartAddQToBuy(productId, quantity);
             logger.log(Level.INFO, "Item modified in guest cart: {0} for guest id: {1}",
                     new Object[] { productId, guestId });
+            guestJpaRepository.save(geust);
         } else if (userExist(guestId)) {
-            getRegisteredUser(guestId).ModifyCartAddQToBuy(productId, quantity);
+           Registered reg=  getRegisteredUser(guestId);
+           reg.ModifyCartAddQToBuy(productId, quantity);
+           regJpaRepo.save(reg);
             logger.log(Level.INFO, "Item modified in guest cart: {0} for guest id: {1}",
                     new Object[] { productId, guestId });
         } else {

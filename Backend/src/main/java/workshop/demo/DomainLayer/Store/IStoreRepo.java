@@ -32,7 +32,7 @@ public interface IStoreRepo {
 
     // public List<Store> getStores();
 
-    String getStoreNameById(int storeId) throws UIException;
+    // String getStoreNameById(int storeId) throws UIException;
 
     //another: getting info about the owners and manager->4.11
     //public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws UIException, DevException;
