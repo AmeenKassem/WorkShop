@@ -8,8 +8,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import workshop.demo.DataAccessLayer.StoreTreeJPARepository;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -17,20 +19,42 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 @Component
 public class SuperDataStructure {
 
+    @Autowired
+    private StoreTreeJPARepository storeTreeJPARepo;
+
     private Map<Integer, Tree> employees;
     private final Map<Integer, List<Offer>> offers;//storeId, list of offers
     private final ConcurrentHashMap<Integer, ReentrantLock> storeLocks = new ConcurrentHashMap<>();
 
+    @Autowired
     public SuperDataStructure() {
         employees = new ConcurrentHashMap<>();
         this.offers = new ConcurrentHashMap<>();
     }
 
+    // //----loading data--------
+    // //@PostConstruct
+    // @Transactional
+    // public void loadFromDB() {
+    //     for (StoreTreeEntity entity : storeTreeJPARepo.findAll()) {
+    //         try {
+    //             Tree tree = new Tree(entity); // Tree constructor handles building from DB
+    //             employees.put(entity.getStoreId(), tree);
+    //         } catch (DevException e) {
+    //             System.err.println("Failed to load store tree for storeId=" + entity.getStoreId());
+    //             e.printStackTrace();
+    //         }
+    //     }
+    // }
     public void addNewStore(int storeID, int bossId) {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeID, k -> new ReentrantLock());
         lock.lock();
         try {
-            this.employees.put(storeID, new Tree(bossId, false, -1));
+            Tree tree = new Tree(storeID, bossId, false);
+            this.employees.put(storeID, tree);
+            StoreTreeEntity entity = new StoreTreeEntity(storeID, tree.getAllNodes());
+            storeTreeJPARepo.save(entity);
+
         } finally {
             lock.unlock();
         }
@@ -96,7 +120,7 @@ public class SuperDataStructure {
             if (child != null && !child.getIsManager()) {
                 throw new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION);
             }
-            this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(newOnwerId, false, ownerId));
+            this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(storeID, newOnwerId, false, this.employees.get(storeID).getNodeById(ownerId)));
         } finally {
             lock.unlock();
         }
@@ -141,7 +165,7 @@ public class SuperDataStructure {
             if (child != null && child.getIsManager()) {
                 throw new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION);
             }
-            this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(newManagerId, true, ownerId));
+            this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(storeID, newManagerId, true, this.employees.get(storeID).getNodeById(ownerId)));
         } finally {
             lock.unlock();
         }

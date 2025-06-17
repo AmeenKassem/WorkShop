@@ -9,14 +9,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 
-@SpringBootTest
+// @SpringBootTest
 @ActiveProfiles("test")
 public class TreeTests {
 
@@ -28,11 +27,11 @@ public class TreeTests {
 
     @BeforeEach
     void setUp() throws UIException {
-        tree = new Tree(0, false, -1);
+        tree = new Tree(0, 0, false);
         root = tree.getRoot();
-        owner1 = new Node(1, false, 0);
-        owner12 = new Node(2, false, 1);
-        manager1 = new Node(10, true, 0);
+        owner1 = new Node(0, 1, false, null);
+        owner12 = new Node(0, 2, false, owner1);
+        manager1 = new Node(0, 10, true, owner1);
         root.addChild(manager1);
         root.addChild(owner1);
         owner1.addChild(owner12);

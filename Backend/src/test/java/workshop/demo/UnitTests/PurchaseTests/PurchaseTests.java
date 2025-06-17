@@ -13,7 +13,7 @@ import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.InfrastructureLayer.PurchaseRepository;
 
-@SpringBootTest
+//@SpringBootTest
 @ActiveProfiles("test")
 public class PurchaseTests {
 

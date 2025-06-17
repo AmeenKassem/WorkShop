@@ -11,11 +11,13 @@ import org.springframework.stereotype.Service;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.CreateDiscountDTO;
 import workshop.demo.DTOs.NotificationDTO;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
+import workshop.demo.DataAccessLayer.StoreTreeJPARepository;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -34,40 +36,67 @@ import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-// import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.DomainLayer.StoreUserConnection.StoreTreeEntity;
+import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
 @Service
 public class StoreService {
 
-    private IStoreRepo storeRepo;
-    private INotificationRepo notiRepo;
-    private IAuthRepo authRepo;
-    private UserJpaRepository userRepo;
-    private IOrderRepo orderRepo;
-    private ISUConnectionRepo suConnectionRepo;
-    private IStockRepo stockRepo;
-    private IUserSuspensionRepo susRepo;
-    private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
-    private UserService userService;
-    private IStoreRepoDB storeJpaRepo;
-
     @Autowired
-    public StoreService(UserService userService, IStoreRepo storeRepository, INotificationRepo notiRepo,
-            IAuthRepo authRepo, UserJpaRepository userRepo, IOrderRepo orderRepo,
-            ISUConnectionRepo sUConnectionRepo, IStockRepo stock, IUserSuspensionRepo susRepo,
-            IStoreRepoDB storeJpaRepo) {
-        this.storeRepo = storeRepository;
-        this.notiRepo = notiRepo;
-        this.authRepo = authRepo;
-        this.orderRepo = orderRepo;
-        this.userRepo = userRepo;
-        this.suConnectionRepo = sUConnectionRepo;
-        this.stockRepo = stock;
-        this.susRepo = susRepo;
-        this.userService = userService;
-        this.storeJpaRepo = storeJpaRepo;
-        logger.info("created the StoreService");
+    private IStoreRepo storeRepo;
+    @Autowired
+    private INotificationRepo notiRepo;
+    @Autowired
+    private IAuthRepo authRepo;
+    @Autowired
+    private UserJpaRepository userRepo;
+    @Autowired
+    private IOrderRepo orderRepo;
+    @Autowired
+    private ISUConnectionRepo suConnectionRepo;
+    @Autowired
+    private IStockRepo stockRepo;
+    @Autowired
+    private IUserSuspensionRepo susRepo;
+
+    private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private IStoreRepoDB storeJpaRepo;
+    @Autowired
+    private StoreTreeJPARepository storeTreeJPARepo;
+
+    // @Autowired
+    // public StoreService(UserService userService, IStoreRepo storeRepository, INotificationRepo notiRepo,
+    //         IAuthRepo authRepo, UserJpaRepository userRepo, IOrderRepo orderRepo,
+    //         ISUConnectionRepo sUConnectionRepo, IStockRepo stock, IUserSuspensionRepo susRepo,
+    //         IStoreRepoDB storeJpaRepo,StoreTreeJPARepository jPARepository) {
+    //     this.storeRepo = storeRepository;
+    //     this.notiRepo = notiRepo;
+    //     this.authRepo = authRepo;
+    //     this.orderRepo = orderRepo;
+    //     this.userRepo = userRepo;
+    //     this.suConnectionRepo = sUConnectionRepo;
+    //     this.stockRepo = stock;
+    //     this.susRepo = susRepo;
+    //     this.userService = userService;
+    //     this.storeJpaRepo = storeJpaRepo;
+    //     logger.info("created the StoreService");
+    // }
+    //----------loading data------------
+    @Transactional
+    public void loadStoreTreesIntoMemory() {
+        for (StoreTreeEntity entity : storeTreeJPARepo.findAll()) {
+            try {
+                Tree tree = new Tree(entity);
+                this.suConnectionRepo.getData().getEmployees().put(entity.getStoreId(), tree);
+            } catch (DevException e) {
+                System.err.println("Failed to load store tree for storeId=" + entity.getStoreId());
+                e.printStackTrace();
+            }
+        }
     }
 
     public int addStoreToSystem(String token, String storeName, String category) throws UIException, DevException {
@@ -79,7 +108,6 @@ public class StoreService {
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(bossId);
 
         // persisting new store:
-
         Store newStore = new Store();
         newStore.setActive(true);
         newStore.setName(storeName);
@@ -143,8 +171,9 @@ public class StoreService {
     }
 
     private void throwExceptionIfNotActive(Store store) throws UIException {
-        if (!store.isActive())
+        if (!store.isActive()) {
             throw new UIException("store is not active!", ErrorCodes.DEACTIVATED_STORE);
+        }
     }
 
     public void reciveAnswerToOffer(int storeId, String senderName, String recievierName, boolean answer,
@@ -363,8 +392,9 @@ public class StoreService {
         logger.info("got the stores Id for user:{}" + userId);
         for (int storeId : storesId) {
             Optional<Store> store = storeJpaRepo.findById(storeId);
-            if (!store.isPresent())
+            if (!store.isPresent()) {
                 throwStoreNotFoundException();
+            }
             result.add(store.get().getStoreDTO());
         }
         return result;

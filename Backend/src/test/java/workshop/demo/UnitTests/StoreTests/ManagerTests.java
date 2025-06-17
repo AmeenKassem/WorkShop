@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.DomainLayer.StoreUserConnection.Authorization;
@@ -20,7 +19,6 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 
-@SpringBootTest
 @ActiveProfiles("test")
 public class ManagerTests {
 
@@ -155,7 +153,7 @@ public class ManagerTests {
         repository.AddManagerToStore(storeId, owner1, newManagerId);
 
         // Another owner (owner2) tries to update the manager's permissions
-        Node owner2 = new Node(99, false, -1); // Not in the tree
+        Node owner2 = new Node(1, 99, false, null); // Not in the tree
         Exception exception = assertThrows(Exception.class, () -> {
             repository.changePermissions(owner2.getMyId(), newManagerId, storeId, updatedPermissions);
         });

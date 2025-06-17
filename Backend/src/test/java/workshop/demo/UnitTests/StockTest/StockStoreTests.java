@@ -13,7 +13,7 @@ import workshop.demo.DTOs.Category;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.item;
 
-@SpringBootTest
+//@SpringBootTest
 @ActiveProfiles("test")
 public class StockStoreTests {
 

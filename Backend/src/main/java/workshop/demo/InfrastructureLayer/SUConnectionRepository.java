@@ -6,8 +6,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import com.vaadin.flow.component.UI;
-
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
@@ -19,11 +17,12 @@ import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 @Repository
 public class SUConnectionRepository implements ISUConnectionRepo {
 
+    @Autowired
     private SuperDataStructure data;
 
     @Autowired
     public SUConnectionRepository() {
-        data = new SuperDataStructure();
+        //data = new SuperDataStructure();
     }
 
     @Override

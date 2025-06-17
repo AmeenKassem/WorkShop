@@ -18,7 +18,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 
-@SpringBootTest
+// @SpringBootTest
 @ActiveProfiles("test")
 public class OwnershipTests {
 

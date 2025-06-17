@@ -14,7 +14,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 
-@SpringBootTest
+//@SpringBootTest
 @ActiveProfiles("test")
 public class ActivePurchasesTest {
 

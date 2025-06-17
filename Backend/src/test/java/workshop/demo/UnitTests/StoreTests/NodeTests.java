@@ -13,14 +13,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
-@SpringBootTest
+// @SpringBootTest
 @ActiveProfiles("test")
 public class NodeTests {
 
@@ -32,10 +31,10 @@ public class NodeTests {
     @BeforeEach
     void setUp() throws UIException {
 
-        owner1 = new Node(1, false, 0);
-        owner12 = new Node(2, false, 1);//child of owner1
-        owner123 = new Node(3, false, 2);//child of owner 2
-        manager1 = new Node(10, true, 1);// manager by owner 1
+        owner1 = new Node(0, 1, false, null);
+        owner12 = new Node(0, 2, false, owner1);//child of owner1
+        owner123 = new Node(0, 3, false, owner12);//child of owner 2
+        manager1 = new Node(0, 10, true, owner1);// manager by owner 1
         owner1.addChild(manager1);
         owner1.addChild(owner12);
         owner12.addChild(owner123);

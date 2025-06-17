@@ -14,7 +14,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
 
-@SpringBootTest
+//@SpringBootTest
 @ActiveProfiles("test")
 public class StockTest {
 

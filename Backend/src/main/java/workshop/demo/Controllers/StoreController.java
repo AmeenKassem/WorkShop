@@ -1,6 +1,5 @@
 package workshop.demo.Controllers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,59 +13,46 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import workshop.demo.ApplicationLayer.StoreService;
-import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.CreateDiscountDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
-import workshop.demo.DataAccessLayer.GuestJpaRepository;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
-import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Notification.INotificationRepo;
-import workshop.demo.DomainLayer.Order.IOrderRepo;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
-import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-import workshop.demo.DomainLayer.User.AdminInitilizer;
-import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
 @RestController
 @RequestMapping("/api/store")
 public class StoreController {
 
-    private final StoreService storeService;
-
     @Autowired
-    public StoreController(
-            IStoreRepo storeRepo,
-            INotificationRepo notificationRepo,
-            IAuthRepo authRepo,
-            IOrderRepo orderRepo,
-            ISUConnectionRepo sUConnectionRepo,
-            IStockRepo stockRepo,
-            IUserSuspensionRepo userSuspensionRepo,
-            UserJpaRepository regJpaRepo,
-            AdminInitilizer adminInitilizer, GuestJpaRepository guest, IStoreRepoDB storeJpaRepo) {
-        UserService userService = new UserService(
-                regJpaRepo,
-                authRepo,
-                stockRepo,
-                adminInitilizer,
-                storeRepo, guest);
+    private StoreService storeService;
 
-        this.storeService = new StoreService(userService,
-                storeRepo,
-                notificationRepo,
-                authRepo,
-                regJpaRepo,
-                orderRepo,
-                sUConnectionRepo,
-                stockRepo,
-                userSuspensionRepo,storeJpaRepo);
-    }
-
+    // @Autowired
+    // public StoreController(
+    //         IStoreRepo storeRepo,
+    //         INotificationRepo notificationRepo,
+    //         IAuthRepo authRepo,
+    //         IOrderRepo orderRepo,
+    //         ISUConnectionRepo sUConnectionRepo,
+    //         IStockRepo stockRepo,
+    //         IUserSuspensionRepo userSuspensionRepo,
+    //         UserJpaRepository regJpaRepo,
+    //         AdminInitilizer adminInitilizer, GuestJpaRepository guest, IStoreRepoDB storeJpaRepo) {
+    //     UserService userService = new UserService(
+    //             regJpaRepo,
+    //             authRepo,
+    //             stockRepo,
+    //             adminInitilizer,
+    //             storeRepo, guest);
+    //     this.storeService = new StoreService(userService,
+    //             storeRepo,
+    //             notificationRepo,
+    //             authRepo,
+    //             regJpaRepo,
+    //             orderRepo,
+    //             sUConnectionRepo,
+    //             stockRepo,
+    //             userSuspensionRepo,storeJpaRepo);
+    // }
     @PostMapping("/addStore")
     public ResponseEntity<?> addStore(@RequestParam String token,
             @RequestParam String storeName,
@@ -314,16 +300,17 @@ public class StoreController {
             @RequestParam String name, @RequestParam double percent, @RequestParam CreateDiscountDTO.Type type,
             @RequestParam String condition, @RequestParam CreateDiscountDTO.Logic logic,
             @RequestParam(required = false) String[] subDiscountsNames) {
-        if (subDiscountsNames == null)
+        if (subDiscountsNames == null) {
             subDiscountsNames = new String[0];
+        }
 
         try {
             storeService.addDiscountToStore(storeId, token, name, percent, type, condition, logic, subDiscountsNames); // assumes
-                                                                                                                       // permission
-                                                                                                                       // check
-                                                                                                                       // is
-                                                                                                                       // inside
-                                                                                                                       // service
+            // permission
+            // check
+            // is
+            // inside
+            // service
             return ResponseEntity.ok(new ApiResponse<>("Discount added successfully", null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
