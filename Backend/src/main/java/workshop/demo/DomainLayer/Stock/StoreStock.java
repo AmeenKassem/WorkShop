@@ -1,11 +1,23 @@
 package workshop.demo.DomainLayer.Stock;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hibernate.cache.spi.support.AbstractReadWriteAccess.Item;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Transient;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ReceiptProduct;
@@ -13,15 +25,43 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.CartItem;
 
+@Entity
 public class StoreStock {
 
-    private final Map<Integer, item> stock;// productId, item
+    @Transient
+    private final Map<Integer, item> stock = new ConcurrentHashMap<>();// productId, item
+
+    @ElementCollection
+    private List<item> items;
+
+    @Id
     private int storeID;
     // discounts for this store
 
     public StoreStock(int storeID) {
-        this.stock = new ConcurrentHashMap<>();
+        // this.stock = new ConcurrentHashMap<>();
         this.storeID = storeID;
+    }
+
+    public StoreStock() {
+
+    }
+
+    @PostLoad
+    private void populateStockMap() {
+        if (items != null) {
+            for (item item : items) {
+                stock.put(item.getProductId(), item);
+            }
+        }
+    }
+
+     // Fill items list before saving to DB
+    @PrePersist
+    @PreUpdate
+    private void populateItemsFromStock() {
+        items.clear();
+        items.addAll(stock.values());
     }
 
     // public item getProductById(int id) {
@@ -38,6 +78,7 @@ public class StoreStock {
                 existingItem.AddQuantity();
             } else {
                 stock.put(newItem.getProductId(), newItem);
+                items.add(newItem);
             }
         }
 
@@ -207,10 +248,11 @@ public class StoreStock {
         }
     }
 
-
-    public boolean isAvaliable(int productId,int quantity){
-        if(!stock.containsKey(productId)) return false;
-        if(stock.get(productId).getQuantity()<quantity) return false;
+    public boolean isAvaliable(int productId, int quantity) {
+        if (!stock.containsKey(productId))
+            return false;
+        if (stock.get(productId).getQuantity() < quantity)
+            return false;
         return true;
     }
 

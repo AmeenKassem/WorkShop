@@ -11,13 +11,11 @@ import org.springframework.stereotype.Service;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import jakarta.annotation.PostConstruct;
 import workshop.demo.DTOs.CreateDiscountDTO;
 import workshop.demo.DTOs.NotificationDTO;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
-import workshop.demo.DataAccessLayer.StoreTreeJPARepository;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -26,6 +24,8 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
+import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Store.CompositeDiscount;
 import workshop.demo.DomainLayer.Store.Discount;
 import workshop.demo.DomainLayer.Store.DiscountFactory;
@@ -36,8 +36,6 @@ import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-import workshop.demo.DomainLayer.StoreUserConnection.StoreTreeEntity;
-import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
 @Service
@@ -65,42 +63,25 @@ public class StoreService {
     private UserService userService;
     @Autowired
     private IStoreRepoDB storeJpaRepo;
+    private IStoreStockRepo storeStock;
+
     @Autowired
-    private StoreTreeJPARepository storeTreeJPARepo;
-
-    // @Autowired
-    // public StoreService(UserService userService, IStoreRepo storeRepository, INotificationRepo notiRepo,
-    //         IAuthRepo authRepo, UserJpaRepository userRepo, IOrderRepo orderRepo,
-    //         ISUConnectionRepo sUConnectionRepo, IStockRepo stock, IUserSuspensionRepo susRepo,
-    //         IStoreRepoDB storeJpaRepo,StoreTreeJPARepository jPARepository) {
-    //     this.storeRepo = storeRepository;
-    //     this.notiRepo = notiRepo;
-    //     this.authRepo = authRepo;
-    //     this.orderRepo = orderRepo;
-    //     this.userRepo = userRepo;
-    //     this.suConnectionRepo = sUConnectionRepo;
-    //     this.stockRepo = stock;
-    //     this.susRepo = susRepo;
-    //     this.userService = userService;
-    //     this.storeJpaRepo = storeJpaRepo;
-    //     logger.info("created the StoreService");
-    // }
-    //----------loading data------------
-    // @Transactional
-    @PostConstruct
-    public void loadStoreTreesIntoMemory() {
-        System.out.println("innnn load");
-        for (StoreTreeEntity entity : storeTreeJPARepo.findAllWithNodes()) {
-            try {
-                Tree tree = new Tree(entity);
-                logger.debug("Loading storeId=" + entity.getStoreId() + ", nodes=" + entity.getAllNodes().size());
-
-                this.suConnectionRepo.getData().getEmployees().put(entity.getStoreId(), tree);
-            } catch (DevException e) {
-                logger.debug("Failed to load store tree for storeId=" + entity.getStoreId());
-                e.printStackTrace();
-            }
-        }
+    public StoreService(UserService userService, IStoreRepo storeRepository, INotificationRepo notiRepo,
+            IAuthRepo authRepo, UserJpaRepository userRepo, IOrderRepo orderRepo,
+            ISUConnectionRepo sUConnectionRepo, IStockRepo stock, IUserSuspensionRepo susRepo,
+            IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStock) {
+        this.storeRepo = storeRepository;
+        this.notiRepo = notiRepo;
+        this.authRepo = authRepo;
+        this.orderRepo = orderRepo;
+        this.userRepo = userRepo;
+        this.suConnectionRepo = sUConnectionRepo;
+        this.stockRepo = stock;
+        this.susRepo = susRepo;
+        this.userService = userService;
+        this.storeJpaRepo = storeJpaRepo;
+        this.storeStock = storeStock;
+        logger.info("created the StoreService");
     }
 
     public int addStoreToSystem(String token, String storeName, String category) throws UIException, DevException {
@@ -119,7 +100,8 @@ public class StoreService {
         newStore = storeJpaRepo.save(newStore);
         int storeId = newStore.getstoreId();
         suConnectionRepo.addNewStoreOwner(storeId, bossId);
-        stockRepo.addStore(storeId);
+        // stockRepo.addStore(storeId);
+        storeStock.save(new StoreStock(storeId));
         // add store to history
         this.orderRepo.addStoreTohistory(storeId);
         logger.info("Store '{}' added successfully with ID {} by boss {}", storeName, storeId, bossId);
@@ -161,7 +143,7 @@ public class StoreService {
         suConnectionRepo.checkToAddOwner(storeId, ownerId, newOwnerId);
         logger.info("Making an offer to be a store owner from {} to {}", ownerId, newOwnerId);
         String owner = this.userRepo.findById(ownerId).get().getUsername();
-        String storeName = this.storeRepo.getStoreNameById(storeId);
+        String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
         String Message = String.format(
                 "In store: %s, the owner: %s is offering you: %s to become an owner of this store.",
                 storeName, owner, newOwnerName);
@@ -237,7 +219,7 @@ public class StoreService {
         logger.info("Making an offer to be a store manager from {} to {}", ownerId, managerId);
         String owner = this.userRepo.findById(ownerId).get().getUsername();
         String nameNew = this.userRepo.findById(managerId).get().getUsername();
-        String storeName = this.storeRepo.getStoreNameById(storeId);
+        String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
         String message = String.format(
                 "In store: %s, the owner: %s is offering you: %s to be a manager of this store.",
                 storeName, owner, nameNew);
@@ -323,7 +305,7 @@ public class StoreService {
         suConnectionRepo.checkMainOwnerToDeactivateStore_ThrowException(storeId, ownerId);
         List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
         storeRepo.deactivateStore(storeId, ownerId);
-        String storeName = storeRepo.getStoreNameById(storeId);
+        String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
         logger.info("Store {} successfully deactivated by owner {}", storeId, ownerId);
         logger.info("About to notify all employees");
         /// we have to notify the employees here
@@ -342,7 +324,7 @@ public class StoreService {
         userService.checkAdmin_ThrowException(adminId);
         logger.info("trying to close store: {} by: {}", storeId, adminId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        String storeName = storeRepo.getStoreNameById(storeId);
+        String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
         List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
         this.storeRepo.closeStore(storeId);
         this.suConnectionRepo.closeStore(storeId);
@@ -365,7 +347,7 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         List<Node> nodes = suConnectionRepo.getAllWorkers(storeId); // return this as nodes
-        String storeName = storeRepo.getStoreNameById(storeId);
+        String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
         List<WorkerDTO> result = new ArrayList<>();
         for (Node node : nodes) {
             String username = userRepo.findById(node.getMyId()).get().getUsername();

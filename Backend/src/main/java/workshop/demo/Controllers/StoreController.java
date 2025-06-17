@@ -17,6 +17,13 @@ import workshop.demo.DTOs.CreateDiscountDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Notification.INotificationRepo;
+import workshop.demo.DomainLayer.Order.IOrderRepo;
+import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepoDB;
+import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 @RestController
@@ -24,35 +31,35 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 public class StoreController {
 
     @Autowired
-    private StoreService storeService;
+    public StoreController(
+            IStoreRepo storeRepo,
+            INotificationRepo notificationRepo,
+            IAuthRepo authRepo,
+            IOrderRepo orderRepo,
+            ISUConnectionRepo sUConnectionRepo,
+            IStockRepo stockRepo,
+            IUserSuspensionRepo userSuspensionRepo,
+            UserJpaRepository regJpaRepo,
+            AdminInitilizer adminInitilizer, GuestJpaRepository guest, IStoreRepoDB storeJpaRepo,
+            IStoreStockRepo storeStock) {
+        UserService userService = new UserService(
+                regJpaRepo,
+                authRepo,
+                stockRepo,
+                adminInitilizer,
+                guest);
 
-    // @Autowired
-    // public StoreController(
-    //         IStoreRepo storeRepo,
-    //         INotificationRepo notificationRepo,
-    //         IAuthRepo authRepo,
-    //         IOrderRepo orderRepo,
-    //         ISUConnectionRepo sUConnectionRepo,
-    //         IStockRepo stockRepo,
-    //         IUserSuspensionRepo userSuspensionRepo,
-    //         UserJpaRepository regJpaRepo,
-    //         AdminInitilizer adminInitilizer, GuestJpaRepository guest, IStoreRepoDB storeJpaRepo) {
-    //     UserService userService = new UserService(
-    //             regJpaRepo,
-    //             authRepo,
-    //             stockRepo,
-    //             adminInitilizer,
-    //             storeRepo, guest);
-    //     this.storeService = new StoreService(userService,
-    //             storeRepo,
-    //             notificationRepo,
-    //             authRepo,
-    //             regJpaRepo,
-    //             orderRepo,
-    //             sUConnectionRepo,
-    //             stockRepo,
-    //             userSuspensionRepo,storeJpaRepo);
-    // }
+        this.storeService = new StoreService(userService,
+                storeRepo,
+                notificationRepo,
+                authRepo,
+                regJpaRepo,
+                orderRepo,
+                sUConnectionRepo,
+                stockRepo,
+                userSuspensionRepo, storeJpaRepo, storeStock);
+    }
+
     @PostMapping("/addStore")
     public ResponseEntity<?> addStore(@RequestParam String token,
             @RequestParam String storeName,

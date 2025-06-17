@@ -13,23 +13,33 @@ import com.vaadin.flow.router.Route;
 import workshop.demo.PresentationLayer.Presenter.RegisterPresenter;
 
 @Route(value = "register", layout = MainLayout.class)
-@CssImport("./Theme/registerTheme.css")  //this links the CSS file
+@CssImport("./Theme/registerTheme.css")
 public class RegisterView extends VerticalLayout {
 
-    private final TextField usernameField = new TextField("Username");
-    private final PasswordField passwordField = new PasswordField("Password");
-    private final IntegerField ageField = new IntegerField("Age");
-    private final Button registerButton = new Button("Register");
+    private final TextField usernameField = new TextField("Username:");
+    private final PasswordField passwordField = new PasswordField("Password:");
+    private final IntegerField ageField = new IntegerField("Age:");
+    private final Button registerButton = new Button("Create Account");
     private final Span passwordFeedback = new Span();
     private RegisterPresenter presenter;
 
     public RegisterView() {
-        addClassName("register-view");
-        // Set placeholders and constraints
-        usernameField.setPlaceholder("Enter your username");
-        passwordField.setPlaceholder("Enter your password");
-        passwordFeedback.getStyle().set("color", "red");
-        passwordFeedback.setText("Password must be 8+ chars, include uppercase, lowercase, and a number.");
+        addClassName("login-container");
+
+        // Set up form layout
+        VerticalLayout form = new VerticalLayout();
+        form.addClassName("login-form");
+
+        H1 title = new H1("Create your account");
+        title.addClassName("login-title");
+
+        usernameField.setPlaceholder("Choose a username");
+        usernameField.addClassName("login-field");
+
+        passwordField.setPlaceholder("Create a secure password");
+        passwordField.addClassName("login-field");
+        passwordFeedback.setText("Password must include at least 5 characters, one digit and one lowercase letter.");
+        passwordFeedback.addClassName("password-feedback");
         passwordFeedback.setVisible(false);
 
         passwordField.addValueChangeListener(event -> {
@@ -41,12 +51,15 @@ public class RegisterView extends VerticalLayout {
         ageField.setMin(18);
         ageField.setMax(120);
         ageField.setHelperText("You must be 18 or older");
+        ageField.addClassName("login-field");
 
-        add(new H1("Create Account"), usernameField, passwordField, passwordFeedback, ageField, registerButton);
+        registerButton.addClassName("login-button");
+        registerButton.addClickListener(event -> presenter.register());
+
+        form.add(title, usernameField, passwordField, passwordFeedback, ageField, registerButton);
+        add(form);
 
         presenter = new RegisterPresenter(this);
-
-        registerButton.addClickListener(event -> presenter.register());
     }
 
     public String getUsername() {
@@ -66,8 +79,6 @@ public class RegisterView extends VerticalLayout {
         return password != null
                 && password.length() >= 5
                 && password.matches(".*[a-z].*")
-                //&& password.matches(".*[A-Z].*")
                 && password.matches(".*\\d.*");
     }
-
 }

@@ -84,4 +84,16 @@ public class CartItem {
         return false;
     }
 
+    public void setCart(ShoppingCart shoppingCart2) {
+        shoppingCart=shoppingCart2;
+    }
+
+    public ShoppingCart getShoppingCart() {
+       return shoppingCart;
+    }
+
+    public void setQuantity(int quantity2) {
+        quantity=quantity2;
+    }
+
 }

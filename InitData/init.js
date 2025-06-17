@@ -1,6 +1,6 @@
 const axios = require("axios");
 const qs = require("qs");
-const api = "http://10.0.0.6:8080";
+const api = "http://132.73.233.229:8080";
 const users = [
   { username: "user1", password: "pass1" },
   { username: "user2", password: "pass2" },
@@ -17,54 +17,54 @@ async function generateGuestToken() {
   return response.data.data;
 }
 
-async function loginUsers() {
-  for (const user of users) {
-    try {
-      const guestToken = await generateGuestToken();
-      console.log(guestToken);
-      const formDataReg = qs.stringify({
-        token: guestToken,
-        username: user.username,
-        password: user.password,
-        age: 30,
-      });
+async function loginUsers(user) {
+  // for (const user of users) {
+  try {
+    const guestToken = await generateGuestToken();
+    console.log(guestToken);
+    const formDataReg = qs.stringify({
+      token: guestToken,
+      username: user.username,
+      password: user.password,
+      age: 30,
+    });
 
-      const responseReg = await axios.post(
-        api + "/api/users/register",
-        formDataReg,
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
-
-      console.log(responseReg.data.data);
-
-      const formData = qs.stringify({
-        token: guestToken,
-        username: user.username,
-        password: user.password,
-      });
-
-      const response = await axios.post(loginEndpoint, formData, {
+    const responseReg = await axios.post(
+      api + "/api/users/register",
+      formDataReg,
+      {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-      });
+      }
+    );
 
-      const token = response.data.data;
-      tokenMap[user.username] = token;
-      console.log(`✅ ${user.username} logged in with token: ${token}`);
-      return true;
-    } catch (err) {
-      console.error(
-        `❌ Failed login for ${user.username}:`,
-        err.response?.data || err.message
-      );
-      return false;
-    }
+    console.log(responseReg.data.data);
+
+    const formData = qs.stringify({
+      token: guestToken,
+      username: user.username,
+      password: user.password,
+    });
+
+    const response = await axios.post(loginEndpoint, formData, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    const token = response.data.data;
+    tokenMap[user.username] = token;
+    console.log(`✅ ${user.username} logged in with token: ${token}`);
+    return token;
+  } catch (err) {
+    console.error(
+      `❌ Failed login for ${user.username}:`,
+      err.response?.data || err.message
+    );
+    return false;
   }
+  // }
 
   console.log("\n=== Token Map ===");
   console.log(tokenMap);
@@ -268,119 +268,127 @@ const products = [
     "Cordless powerful vacuum cleaner",
     "vacuum,cleaning", // Changed to single string
   ],
-  [
-    "Samsung Air Purifier",
-    "Home", // Changed from HOME_APPLIANCE to Home
-    "Removes dust and allergens",
-    "air_purifier,home_comfort", // Changed to single string
-  ],
-  [
-    "Bosch Dishwasher",
-    "Home", // Changed from HOME_APPLIANCE to Home
-    "Energy-efficient dishwasher",
-    "dishwasher,kitchen_appliance", // Changed to single string
-  ],
+  // [
+  //   "Samsung Air Purifier",
+  //   "Home", // Changed from HOME_APPLIANCE to Home
+  //   "Removes dust and allergens",
+  //   "air_purifier,home_comfort", // Changed to single string
+  // ],
+  // [
+  //   "Bosch Dishwasher",
+  //   "Home", // Changed from HOME_APPLIANCE to Home
+  //   "Energy-efficient dishwasher",
+  //   "dishwasher,kitchen_appliance", // Changed to single string
+  // ],
 
-  // KITCHEN -> Mapped to Home (or add 'Kitchen' to your enum)
-  [
-    "NutriBullet Blender",
-    "Home",
-    "Blender for smoothies",
-    "blender,kitchen_appliance",
-  ], // Changed category and keywords
-  [
-    "Instant Pot Duo",
-    "Home",
-    "Electric pressure cooker",
-    "pressure_cooker,instant_pot",
-  ], // Changed category and keywords
-  [
-    "Chef’s Knife Set",
-    "Home",
-    "Premium stainless steel knives",
-    "knife_set,cookware",
-  ], // Changed category and keywords
+  // // KITCHEN -> Mapped to Home (or add 'Kitchen' to your enum)
+  // [
+  //   "NutriBullet Blender",
+  //   "Home",
+  //   "Blender for smoothies",
+  //   "blender,kitchen_appliance",
+  // ], // Changed category and keywords
+  // [
+  //   "Instant Pot Duo",
+  //   "Home",
+  //   "Electric pressure cooker",
+  //   "pressure_cooker,instant_pot",
+  // ], // Changed category and keywords
+  // [
+  //   "Chef’s Knife Set",
+  //   "Home",
+  //   "Premium stainless steel knives",
+  //   "knife_set,cookware",
+  // ], // Changed category and keywords
 
-  // GARDEN -> Mapped to Home (or add 'Garden' to your enum)
-  [
-    "Electric Lawn Mower",
-    "Home",
-    "Quiet and eco-friendly",
-    "lawn_mower,gardening",
-  ], // Changed category and keywords
-  ["Hose Reel Cart", "Home", "Organize your garden hose", "hose,garden_tool"], // Changed category and keywords
-  [
-    "LED Solar Garden Lights",
-    "Home",
-    "Eco lighting for outdoors",
-    "garden_lights,solar_lights", // Changed to single string
-  ],
+  // // GARDEN -> Mapped to Home (or add 'Garden' to your enum)
+  // [
+  //   "Electric Lawn Mower",
+  //   "Home",
+  //   "Quiet and eco-friendly",
+  //   "lawn_mower,gardening",
+  // ], // Changed category and keywords
+  // ["Hose Reel Cart", "Home", "Organize your garden hose", "hose,garden_tool"], // Changed category and keywords
+  // [
+  //   "LED Solar Garden Lights",
+  //   "Home",
+  //   "Eco lighting for outdoors",
+  //   "garden_lights,solar_lights", // Changed to single string
+  // ],
 
-  // OFFICE -> Mapped to Home (or add 'Office' to your enum)
-  [
-    "Ergonomic Office Chair",
-    "Home",
-    "Comfortable chair with lumbar support",
-    "office_chair,furniture", // Changed to single string
-  ],
-  [
-    "Standing Desk",
-    "Home",
-    "Adjustable height desk",
-    "standing_desk,office_furniture",
-  ], // Changed category and keywords
-  [
-    "Logitech MX Master 3",
-    "Home",
-    "Precision wireless mouse",
-    "mouse,computer_accessories", // Changed to single string
-  ],
+  // // OFFICE -> Mapped to Home (or add 'Office' to your enum)
+  // [
+  //   "Ergonomic Office Chair",
+  //   "Home",
+  //   "Comfortable chair with lumbar support",
+  //   "office_chair,furniture", // Changed to single string
+  // ],
+  // [
+  //   "Standing Desk",
+  //   "Home",
+  //   "Adjustable height desk",
+  //   "standing_desk,office_furniture",
+  // ], // Changed category and keywords
+  // [
+  //   "Logitech MX Master 3",
+  //   "Home",
+  //   "Precision wireless mouse",
+  //   "mouse,computer_accessories", // Changed to single string
+  // ],
 
-  // AUTOMOTIVE -> Mapped to Electronics (or add 'Automotive' to your enum)
-  [
-    "Car Jump Starter",
-    "Electronics",
-    "Portable jump starter for emergencies",
-    "jump_starter,car_accessories", // Changed to single string
-  ],
-  [
-    "Magnetic Phone Mount",
-    "Electronics",
-    "Mount for dashboard",
-    "phone_mount,car_accessories", // Changed to single string
-  ],
-  [
-    "Tire Inflator",
-    "Electronics",
-    "Electric pump for car tires",
-    "tire_inflator,car_tool", // Changed to single string
-  ],
+  // // AUTOMOTIVE -> Mapped to Electronics (or add 'Automotive' to your enum)
+  // [
+  //   "Car Jump Starter",
+  //   "Electronics",
+  //   "Portable jump starter for emergencies",
+  //   "jump_starter,car_accessories", // Changed to single string
+  // ],
+  // [
+  //   "Magnetic Phone Mount",
+  //   "Electronics",
+  //   "Mount for dashboard",
+  //   "phone_mount,car_accessories", // Changed to single string
+  // ],
+  // [
+  //   "Tire Inflator",
+  //   "Electronics",
+  //   "Electric pump for car tires",
+  //   "tire_inflator,car_tool", // Changed to single string
+  // ],
 
-  // TOYS
-  ["LEGO Star Wars", "Toys", "Buildable Star Wars ship", "lego,star_wars,toy"], // Matches enum, keywords to single string
-  ["Barbie Dreamhouse", "Toys", "3-story dollhouse", "barbie,dollhouse,toy"], // Matches enum, keywords to single string
-  [
-    "RC Monster Truck",
-    "Toys",
-    "Remote control stunt truck",
-    "rc_car,monster_truck,toy", // Matches enum, keywords to single string
-  ],
+  // // TOYS
+  // ["LEGO Star Wars", "Toys", "Buildable Star Wars ship", "lego,star_wars,toy"], // Matches enum, keywords to single string
+  // ["Barbie Dreamhouse", "Toys", "3-story dollhouse", "barbie,dollhouse,toy"], // Matches enum, keywords to single string
+  // [
+  //   "RC Monster Truck",
+  //   "Toys",
+  //   "Remote control stunt truck",
+  //   "rc_car,monster_truck,toy", // Matches enum, keywords to single string
+  // ],
 ];
 
 //run this for adding users :
 
 async function runScript() {
   try {
-    
     // loginUsers();
-    const tokenUSer =
-      "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ7XCJ1c2VyTmFtZVwiOlwidXNlcjFcIixcImlkXCI6NH0iLCJpYXQiOjE3NDk2NTg1MjUsImV4cCI6MTc0OTY2MjEyNX0.rXwLb0tvVexgzQPB6kKMDjD47sBjXHHywtX9DfusrYk";
-    const storeData = await addStore(tokenUSer, "newStoreName3");
-    // console.log(storeData);
-    // products.forEach(([name, category, description, keyword]) => {
-    //   addProductAndItem(tokenUSer, storeData, name, category, description, keyword, 5, 10);
-    // });
-    
+    const tokenUSer = await loginUsers({ username: "bhaa3", password: "a123" });
+    console.log(tokenUSer);
+    // "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ7XCJ1c2VyTmFtZVwiOlwidXNlcjFcIixcImlkXCI6NX0iLCJpYXQiOjE3NDk3MTc2ODEsImV4cCI6MTc0OTcyMTI4MX0.nucufLfOKNLCxG3p-O3VHj-kXx5TYlMfzuUZsWQEtdQ";
+    const storeData = await addStore(tokenUSer, "masho masho");
+    // // console.log(storeData);
+    products.forEach(([name, category, description, keyword]) => {
+      addProductAndItem(
+        tokenUSer,
+        storeData,
+        name,
+        category,
+        description,
+        keyword,
+        5,
+        10
+      );
+    });
   } catch (error) {
     console.error("Failed to add store:", error.message);
     if (error.response) {

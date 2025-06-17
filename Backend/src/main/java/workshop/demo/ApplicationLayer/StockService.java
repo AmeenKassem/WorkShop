@@ -1,5 +1,7 @@
 package workshop.demo.ApplicationLayer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -23,9 +25,11 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepoDB;
+import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.SingleBid;
+import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
@@ -51,12 +55,13 @@ public class StockService {
     private IUserSuspensionRepo susRepo;
     private INotificationRepo notificationRepo;
     private IStockRepoDB stockJpaRepo;
-    public IStoreRepoDB storeJpaRepo;
+    private IStoreRepoDB storeJpaRepo;
+    private IStoreStockRepo storeStockRepo;
 
     @Autowired
     public StockService(IStockRepo stockRepo, IStoreRepo storeRepo, IAuthRepo authRepo, UserJpaRepository userRepo,
             ISUConnectionRepo cons, IUserSuspensionRepo susRepo, INotificationRepo notificationRepo,
-            IStockRepoDB stockJpaRepo, IStoreRepoDB storeJpaRepo) {
+            IStockRepoDB stockJpaRepo, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStock) {
         this.stockRepo = stockRepo;
         this.authRepo = authRepo;
         this.storeRepo = storeRepo;
@@ -66,6 +71,7 @@ public class StockService {
         this.notificationRepo = notificationRepo;
         this.stockJpaRepo = stockJpaRepo;
         this.storeJpaRepo = storeJpaRepo;
+        this.storeStockRepo = storeStock;
     }
 
     private UIException storeNotFound() {
@@ -117,7 +123,8 @@ public class StockService {
 
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
 
-        ProductDTO dto = stockRepo.GetProductInfo(productId);
+        ProductDTO dto = stockJpaRepo.findById(productId)
+                .orElseThrow(() -> new UIException("product not found!", ErrorCodes.PRODUCT_NOT_FOUND)).getDTO();
         if (dto == null) {
             logger.error("Product not found for ID {}", productId);
             throw new UIException("Product not found.", ErrorCodes.PRODUCT_NOT_FOUND);
@@ -354,9 +361,20 @@ public class StockService {
     public ItemStoreDTO[] getProductsInStore(int storeId) throws UIException, DevException {
         logger.info("Fetching all products in store: {}", storeId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        ItemStoreDTO[] products = stockRepo.getProductsInStore(storeId);
-        logger.info("fetched {} products from store: {}", products.length, storeId);
-        return products;
+        // ItemStoreDTO[] products = stockRepo.getProductsInStore(storeId);
+        StoreStock store4sstock = storeStockRepo.findById(store.getstoreId())
+                .orElseThrow(() -> new DevException("there is no stock for store in db!"));
+        List<item> itemsOnStore = store4sstock.getAllItemsInStock();
+        ItemStoreDTO[] res = new ItemStoreDTO[itemsOnStore.size()];
+        for (int i = 0; i < res.length; i++) {
+            item item = itemsOnStore.get(i);
+            String productName = stockJpaRepo.findById(item.getProductId())
+                    .orElseThrow(() -> new DevException("Db has no product!")).getName();
+            res[i] = new ItemStoreDTO(item.getProductId(), item.getQuantity(), item.getPrice(), item.getCategory(),
+                    item.getFinalRank(), store.getstoreId(), productName, store.getStoreName());
+        }
+        logger.info("fetched {} products from store: {}", res.length, storeId);
+        return res;
     }
 
     public int addItem(int storeId, String token, int productId, int quantity, int price, Category category)
@@ -378,7 +396,11 @@ public class StockService {
         stockJpaRepo.findById(productId)
                 .orElseThrow(() -> new UIException("product not found!", ErrorCodes.PRODUCT_NOT_FOUND));
 
-        item toAdd = stockRepo.addItem(storeId, productId, quantity, price, category);
+        StoreStock stock4store = storeStockRepo.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("store stock not found on db!"));
+        item toAdd = new item(productId, quantity, price, category);
+        stock4store.addItem(toAdd);
+        storeStockRepo.save(stock4store);
         logger.info("Item added successfully to store {}: {}", storeId, toAdd);
         return toAdd.getProductId();
     }
@@ -460,7 +482,9 @@ public class StockService {
     public ProductDTO[] getAllProducts(String token) throws Exception {
         logger.info("fetching all the products in the system");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        return stockRepo.getAllProducts();
+        List<ProductDTO> products = new ArrayList<>();
+        stockJpaRepo.findAll().forEach((product) -> products.add(product.getDTO()));
+        return products.toArray(new ProductDTO[0]);
     }
 
     // public ParticipationInRandomDTO participateInRandom(String token, int

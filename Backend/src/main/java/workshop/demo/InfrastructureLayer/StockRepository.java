@@ -79,7 +79,7 @@ public class StockRepository implements IStockRepo {
     //     return id;
     // }
 
-    @Override
+    // @Override
     public Product findByIdInSystem_throwException(int productId) throws UIException {
         for (List<Product> productList : allProducts.values()) {
             for (Product product : productList) {
@@ -112,7 +112,7 @@ public class StockRepository implements IStockRepo {
     // }
     // fix it -> bhaa must ckeck it I did not understand it well so I tried this:
     // why do we need that? if it's for review it to user -> it's wrong
-    @Override
+    // @Override
     public ProductDTO GetProductInfo(int productId) throws UIException {
         Product product = findByIdInSystem_throwException(productId);
         if (product == null) {
@@ -132,7 +132,7 @@ public class StockRepository implements IStockRepo {
     public int addAuctionToStore(int StoreId, int productId, int quantity, long tome, double startPrice)
             throws UIException, DevException {
         checkQuantity(productId, quantity, StoreId);
-        int res = getActivePurchases(StoreId).addProductToAuction(productId, quantity, tome);
+        int res = getActivePurchases(StoreId).addProductToAuction(productId, quantity, tome,startPrice);
         if (res != -1) {
             timer.schedule(new TimerTask() {
                 @Override
@@ -581,7 +581,7 @@ public class StockRepository implements IStockRepo {
         return matchesCategoryProduct;
     }
 
-    @Override
+    // @Override
     public ProductDTO[] getAllProducts() {
         List<ProductDTO> allProductDTOs = new ArrayList<>();
         for (List<Product> productList : allProducts.values()) {

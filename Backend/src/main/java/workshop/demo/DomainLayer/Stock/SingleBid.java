@@ -35,6 +35,10 @@ public class SingleBid {
         }
     }
 
+    public SingleBid(){
+        
+    }
+
     public SingleBidDTO convertToDTO() {
         return new SingleBidDTO(
                 this.id,

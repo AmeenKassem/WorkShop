@@ -47,14 +47,28 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         this.presenter = new StoreDetailsPresenter();
         add(new H1("Store Details "));
         add(resultsContainer);
-        //add search bar 
+     
         add(createSearchBar());
-        // Store-level buttons
         HorizontalLayout storeActions = new HorizontalLayout();
         storeActions.setSpacing(true);
 
         Button showReviewsBtn = new Button("📖 Show Store Reviews", e -> showStoreReviewsDialog());
         Button addReviewBtn = new Button("📝 Add Review to Store", e -> openStoreReviewDialog());
+
+        showReviewsBtn.getStyle()
+        .set("background-color", "#ff9900")
+        .set("color", "white")
+        .set("font-weight", "bold")
+        .set("border-radius", "12px")
+        .set("padding", "8px 18px");
+
+    addReviewBtn.getStyle()
+        .set("background-color", "#ff9900")
+        .set("color", "white")
+        .set("font-weight", "bold")
+        .set("border-radius", "12px")
+        .set("padding", "8px 18px");
+
 
         storeActions.add(showReviewsBtn, addReviewBtn);
         add(storeActions);
@@ -475,46 +489,54 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
     }
 
     //------------------------------- for search:
-    private VerticalLayout createSearchBar() {
+   private VerticalLayout createSearchBar() {
         VerticalLayout layout = new VerticalLayout();
-        String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
-        boolean isUser = "user".equals(userType);
         layout.setSpacing(false);
         layout.setPadding(true);
-        layout.getStyle().set("background-color", "#f5f6ff").set("border-radius", "12px").set("padding", "20px");
+        layout.getStyle()
+            .set("background-color", "#f5f6ff")
+            .set("border-radius", "12px")
+            .set("padding", "20px")
+            .set("box-shadow", "0 2px 10px rgba(0, 0, 0, 0.05)")
+            .set("margin-bottom", "1.5rem");
+
+        String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
+        boolean isUser = "user".equals(userType);
 
         TextField searchField = new TextField("Search");
         searchField.setPlaceholder("Enter keyword or product name");
-        searchField.setWidth("280px");
+        searchField.setWidth("200px");
 
         ComboBox<Category> categoryCombo = new ComboBox<>("Category");
         categoryCombo.setItems(Category.values());
         categoryCombo.setPlaceholder("Select Category");
-        categoryCombo.setWidth("200px");
+        categoryCombo.setWidth("160px");
 
         ComboBox<String> typeSelector = new ComboBox<>("Product Type");
         typeSelector.setItems("Normal", "Bid", "Auction", "Random Draw");
         typeSelector.setPlaceholder("Select Type");
         typeSelector.setRequired(true);
-        typeSelector.setWidth("180px");
+        typeSelector.setWidth("150px");
 
         ComboBox<String> searchBySelector = new ComboBox<>("Search By");
         searchBySelector.setItems("Keyword", "Product Name");
         searchBySelector.setPlaceholder("Search By");
         searchBySelector.setRequired(true);
-        searchBySelector.setWidth("180px");
+        searchBySelector.setWidth("150px");
 
         TextField minPriceField = new TextField("Min Price");
-        minPriceField.setPlaceholder("Insert minimum price");
-        minPriceField.setWidth("150px");
+        minPriceField.setPlaceholder("Min");
+        minPriceField.setWidth("100px");
 
         TextField maxPriceField = new TextField("Max Price");
-        maxPriceField.setPlaceholder("Insert maximum price");
-        maxPriceField.setWidth("150px");
+        maxPriceField.setPlaceholder("Max");
+        maxPriceField.setWidth("100px");
+
         ComboBox<Integer> productRateCombo = new ComboBox<>("Product Rate");
         productRateCombo.setItems(1, 2, 3, 4, 5);
-        productRateCombo.setPlaceholder("Product rate (1-5)");
-        productRateCombo.setWidth("160px");
+        productRateCombo.setPlaceholder("1-5");
+        productRateCombo.setWidth("120px");
+
         Button searchBtn = new Button("Search", event -> {
             String selectedType = typeSelector.getValue();
             String searchBy = searchBySelector.getValue();
@@ -581,29 +603,33 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 }
             }
         });
-
         searchBtn.getStyle()
-                .set("background-color", "#2E2E2E")
-                .set("color", "white")
-                .set("font-weight", "bold")
-                .set("border-radius", "12px")
-                .set("padding", "6px 16px");
+        .set("background-color", "#ff9900") 
+        .set("color", "white")
+        .set("font-weight", "bold")
+        .set("border-radius", "12px")
+        .set("padding", "6px 16px")
+        .set("font-size", "1rem");
 
-        HorizontalLayout row1;
+
+        HorizontalLayout row = new HorizontalLayout();
+        row.setSpacing(true);
+        row.getStyle()
+            .set("flex-wrap", "wrap")
+            .set("align-items", "end")
+            .set("gap", "10px");
+
         if (isUser) {
-            row1 = new HorizontalLayout(searchField, categoryCombo, typeSelector, searchBySelector);
+            row.add(searchField, categoryCombo, typeSelector, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
         } else {
-            row1 = new HorizontalLayout(searchField, categoryCombo, searchBySelector);
+            row.add(searchField, categoryCombo, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
         }
-        HorizontalLayout row2 = new HorizontalLayout(minPriceField, maxPriceField, productRateCombo, searchBtn);
-        row1.setSpacing(true);
-        row2.setSpacing(true);
-        row2.setDefaultVerticalComponentAlignment(Alignment.END);
 
-        layout.add(row1, row2);
+        layout.add(row);
         return layout;
-    }
 
+
+}
     private Double parseDouble(String value) {
         try {
             return value != null && !value.isBlank() ? Double.parseDouble(value) : null;
@@ -642,6 +668,9 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Paragraph store = new Paragraph("Store: " + auction.storeName);
         Paragraph max = new Paragraph("Max Bid: $" + auction.maxBid);
 
+        String formattedTime = formatEndTime(auction.endTimeMillis);
+        Paragraph endsAt = new Paragraph("⏰ Ends at: " + formattedTime);
+
         Button makeAuction = new Button("Make Auction", e -> showAuctionBidDialog(auction));
         makeAuction.getStyle()
                 .set("background-color", "#2E2E2E")
@@ -650,7 +679,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 .set("border-radius", "8px")
                 .set("padding", "6px 16px");
 
-        card.add(name, store, max, makeAuction);
+        card.add(name, store, max,endsAt, makeAuction);
         return card;
     }
 
@@ -667,12 +696,23 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Paragraph amountLeft = new Paragraph("Left Amount: " + random.amountLeft);
         Paragraph price = new Paragraph("Price: $" + random.productPrice);
 
+        String formattedEndTime = formatEndTime(random.endTimeMillis);
+        Paragraph endTime = new Paragraph("🕒 Ends at: " + formattedEndTime);
+
+
+
         Button participate = new Button("Join Random Draw", e -> showRandomParticipationDialog(random));
         participate.getStyle().set("background-color", "#9c27b0").set("color", "white");
 
-        card.add(name, store, amountLeft, price, participate);
+        card.add(name, store, amountLeft, price, endTime,participate);
         return card;
     }
+    private String formatEndTime(long endMillis) {
+        return java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy - hh:mm a", java.util.Locale.ENGLISH)
+                .withZone(java.time.ZoneId.systemDefault())
+                .format(java.time.Instant.ofEpochMilli(endMillis));
+    }
+
 
     private Div createItemCard(ItemStoreDTO item) {
         Div card = new Div();

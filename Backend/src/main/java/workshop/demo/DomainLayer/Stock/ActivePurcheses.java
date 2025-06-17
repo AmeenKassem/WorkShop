@@ -43,7 +43,7 @@ public class ActivePurcheses {
 
     // ========== Auction ==========
 
-    public int addProductToAuction(int productId, int quantity, long time) throws UIException {
+    public int addProductToAuction(int productId, int quantity, long time, double min) throws UIException {
         logger.debug("addProductToAuction called with productId={}, quantity={}, time={}", productId, quantity, time);
 
         if (quantity <= 0 || time <= 0) {
@@ -51,7 +51,7 @@ public class ActivePurcheses {
             throw new UIException("Quantity and time must be positive!", ErrorCodes.INVALID_AUCTION_PARAMETERS);
         }
         int id = auctionIdGen.incrementAndGet();
-        Auction auction = new Auction(productId, quantity, time, id, storeId);
+        Auction auction = new Auction(productId, quantity, time, id, storeId,min);
         activeAuction.put(id, auction);
         productIdToAuctions.computeIfAbsent(productId, k -> new ArrayList<>()).add(auction);
         logger.debug("Auction created with id={}", id);

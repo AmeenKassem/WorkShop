@@ -13,6 +13,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.ItemStoreDTO;
@@ -34,6 +35,7 @@ import workshop.demo.DomainLayer.Purchase.IPaymentService;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.ISupplyService;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Stock.IStockRepoDB;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
@@ -66,6 +68,7 @@ public class PurchaseService {
     private UserJpaRepository regRepo;
     private GuestJpaRepository guestRepo;
     private IStoreRepoDB storeJpaRepo;
+    private IStockRepoDB stockJpaRepo;
     private static final Logger logger = LoggerFactory.getLogger(PurchaseService.class);
 
     @Autowired
@@ -305,13 +308,13 @@ public class PurchaseService {
 
         // Handle Auction & Accepted Bids
         for (SingleBid bid : winningBids) {
-            Product product = stockRepo.findByIdInSystem_throwException(bid.productId());
+            Product product = stockJpaRepo.findById(bid.productId()).orElseThrow(()->new UIException("product not found!", ErrorCodes.PRODUCT_NOT_FOUND));
             if (product == null) {
                 logger.warn("Product not found in finalizeSpecialCart for productId={}", bid.getId());
                 throw new UIException("Product not available", ErrorCodes.PRODUCT_NOT_FOUND);
             }
 
-            String storeName = storeRepo.getStoreNameById(bid.getStoreId());
+            String storeName = storeJpaRepo.findById(bid.getStoreId()).orElseThrow(()->new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
             price += bid.getBidPrice();
 
             ReceiptProduct receiptProduct = new ReceiptProduct(
@@ -334,8 +337,8 @@ public class PurchaseService {
             List<ParticipationInRandomDTO> pars) throws Exception {
         for (ParticipationInRandomDTO card : pars) {
             // stockRepo.validateAndDecreaseStock(card.storeId, card.productId, 1);
-            Product product = stockRepo.findByIdInSystem_throwException(card.productId);
-            String storeName = storeRepo.getStoreNameById(card.storeId);
+            Product product = stockJpaRepo.findById(card.productId).orElseThrow(()->new UIException("product not found!", ErrorCodes.PRODUCT_NOT_FOUND));
+            String storeName = storeJpaRepo.findById(card.storeId).orElseThrow(()->new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
 
             ReceiptProduct receiptProduct = new ReceiptProduct(
                     product.getName(),
@@ -357,7 +360,7 @@ public class PurchaseService {
         List<ReceiptDTO> receipts = new ArrayList<>();
         for (Map.Entry<Integer, List<ReceiptProduct>> entry : storeToProducts.entrySet()) {
             int storeId = entry.getKey();
-            String storeName = storeRepo.getStoreNameById(storeId);
+            String storeName = storeJpaRepo.findById(storeId).orElseThrow(()->new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
             List<ReceiptProduct> items = entry.getValue();
             double total = items.stream()
                     .mapToDouble(item -> item.getPrice() * item.getQuantity())
@@ -380,7 +383,7 @@ public class PurchaseService {
         List<ReceiptDTO> receipts = new ArrayList<>();
         for (Map.Entry<Integer, Pair<List<ReceiptProduct>, Double>> entry : storeToProducts.entrySet()) {
             int storeId = entry.getKey();
-            String storeName = storeRepo.getStoreNameById(storeId);
+            String storeName = storeJpaRepo.findById(storeId).orElseThrow(()->new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
             List<ReceiptProduct> items = entry.getValue().getLeft();
             double discountedTotal = entry.getValue().getRight();
             double total = items.stream()

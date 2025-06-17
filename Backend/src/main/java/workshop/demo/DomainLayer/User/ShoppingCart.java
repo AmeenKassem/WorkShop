@@ -64,6 +64,7 @@ public class ShoppingCart {
         logger.debug("Item added to basket: storeId={}.", storeId);
 
         cartItems.add(item);
+        item.setCart(this);
     }
 
     public List<CartItem> getAllCart() {
@@ -75,10 +76,13 @@ public class ShoppingCart {
     public void ModifyCartAddQToBuy(int cartItemId, int quantity) {
         logger.debug("ModifyCartAddQToBuy called: cartItemId={}, quantity={}", cartItemId, quantity);
         for (CartItem cartItem : cartItems) {
-            if (cartItem.getId() == cartItemId) {
-                cartItem.quantity = quantity;
+            if (cartItem.getProductId() == cartItemId) {
+                // cartItem.setCart(this);
+                System.out.println("curr quantity :"+cartItem.quantity);
+                cartItem.setQuantity(quantity);
                 if (quantity == 0)
                     removeItem(cartItemId);
+                System.out.println("-------------------------------------------------------------"+(cartItem.getShoppingCart()==this));
             }
         }
 
