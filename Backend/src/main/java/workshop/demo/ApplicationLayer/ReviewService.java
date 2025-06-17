@@ -26,7 +26,6 @@ public class ReviewService {
 
     private IReviewRepo reviewRepo;
     private IAuthRepo authRepo;
-    // private IUserRepo userRepo;
     private IStoreRepo storeRepo;
     private IStockRepo stockRepo;
     private IStoreRepoDB storeJpaRepo;
