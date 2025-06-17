@@ -4,7 +4,6 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
@@ -26,6 +25,7 @@ public class LoginView extends VerticalLayout {
 
     public LoginView() {
         addClassName("login-view");
+        addClassName("login-container");
 
         presenter = new LoginPresenter(this);
         // Title
