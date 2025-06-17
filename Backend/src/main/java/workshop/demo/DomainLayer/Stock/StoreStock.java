@@ -256,4 +256,8 @@ public class StoreStock {
         return true;
     }
 
+    public void setStoreId(int storeId2) {
+        this.storeID=storeId2;
+    }
+
 }
