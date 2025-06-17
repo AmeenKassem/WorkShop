@@ -165,7 +165,7 @@ public class SUConnectionRepository implements ISUConnectionRepo {
     @Override
     public void makeOffer(int storeId, int senderId, int reciverId, boolean toBeOwner, List<Permission> per,
             String Message) throws Exception {
-        Offer offer = new Offer(senderId, reciverId, toBeOwner, per, Message);
+        Offer offer = new Offer(storeId, senderId, reciverId, toBeOwner, per, Message);
         this.data.makeOffer(offer, storeId);
     }
 

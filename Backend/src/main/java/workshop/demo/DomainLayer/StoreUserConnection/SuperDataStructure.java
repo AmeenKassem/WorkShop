@@ -11,6 +11,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import jakarta.transaction.Transactional;
+import workshop.demo.DataAccessLayer.NodeJPARepository;
+import workshop.demo.DataAccessLayer.OfferJpaRepository;
 import workshop.demo.DataAccessLayer.StoreTreeJPARepository;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -21,6 +24,10 @@ public class SuperDataStructure {
 
     @Autowired
     private StoreTreeJPARepository storeTreeJPARepo;
+    @Autowired
+    private OfferJpaRepository offerJPARepo;
+    @Autowired
+    private NodeJPARepository nodeJPARepo;
 
     private Map<Integer, Tree> employees;
     private final Map<Integer, List<Offer>> offers;//storeId, list of offers
@@ -120,7 +127,10 @@ public class SuperDataStructure {
             if (child != null && !child.getIsManager()) {
                 throw new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION);
             }
-            this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(storeID, newOnwerId, false, this.employees.get(storeID).getNodeById(ownerId)));
+            Node newOwner = new Node(storeID, newOnwerId, false, this.employees.get(storeID).getNodeById(ownerId));
+            this.employees.get(storeID).getNodeById(ownerId).addChild(newOwner);
+            nodeJPARepo.save(newOwner);
+            //storeTreeJPARepo.save(new StoreTreeEntity(storeID, employees.get(storeID).getAllNodes()));
         } finally {
             lock.unlock();
         }
@@ -144,6 +154,9 @@ public class SuperDataStructure {
                 throw new UIException("You do not own this ownership", ErrorCodes.NO_PERMISSION);
             }
             this.employees.get(storeID).deleteNode(OwnerToDelete);
+            NodeKey key = new NodeKey(storeID, OwnerToDelete);
+            nodeJPARepo.deleteById(key);
+
         } finally {
             lock.unlock();
         }
@@ -165,7 +178,9 @@ public class SuperDataStructure {
             if (child != null && child.getIsManager()) {
                 throw new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION);
             }
-            this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(storeID, newManagerId, true, this.employees.get(storeID).getNodeById(ownerId)));
+            Node newManager = new Node(storeID, newManagerId, true, this.employees.get(storeID).getNodeById(ownerId));
+            this.employees.get(storeID).getNodeById(ownerId).addChild(newManager);
+            nodeJPARepo.save(newManager);
         } finally {
             lock.unlock();
         }
@@ -189,6 +204,8 @@ public class SuperDataStructure {
                 throw new UIException("Owner does not have permission to change this manager", ErrorCodes.NO_PERMISSION);
             }
             toChange.updateAuthorization(per, ownerID);
+            nodeJPARepo.save(toChange);
+
         } finally {
             lock.unlock();
         }
@@ -212,6 +229,8 @@ public class SuperDataStructure {
                 throw new UIException("Owner does not have permission to delete this manager", ErrorCodes.NO_PERMISSION);
             }
             this.employees.get(storeID).deleteNode(managerId);
+            NodeKey key = new NodeKey(storeID, managerId);
+            nodeJPARepo.deleteById(key);
         } finally {
             lock.unlock();
         }
@@ -288,6 +307,10 @@ public class SuperDataStructure {
                 throw new Exception("store does not exist in superDS");
             }
             this.employees.remove(storeID);
+            this.offers.remove(storeID);
+            storeTreeJPARepo.deleteById(storeID);
+            storeTreeJPARepo.deleteById(storeID);
+            offerJPARepo.deleteByIdStoreId(storeID);
         } finally {
             lock.unlock();
         }
@@ -302,12 +325,20 @@ public class SuperDataStructure {
     }
 
     //make offer delete offer
-    public void makeOffer(Offer offer, int storeId) {
+    public void makeOffer(Offer offer, int storeId) throws Exception {
+        // Check in DB for existing offer
+        if (offerJPARepo.existsByIdSenderIdAndIdReceiverId(
+                offer.getSenderId(), offer.getReceiverId())) {
+            throw new Exception("Duplicate offer already exists");
+        }
+
         synchronized (offers) {
             offers.computeIfAbsent(storeId, k -> new ArrayList<>()).add(offer);
+            offerJPARepo.save(offer);
         }
     }
 
+    @Transactional
     public List<Permission> deleteOffer(int storeId, int senderId, int reciverId) throws Exception {
         synchronized (offers) {
             List<Offer> Offer = offers.get(storeId);
@@ -321,6 +352,7 @@ public class SuperDataStructure {
                 if (offer.getSenderId() == senderId && offer.getReceiverId() == reciverId) {
                     List<Permission> permissions = offer.getPermissions();
                     iterator.remove();
+                    offerJPARepo.delete(offer);
 
                     // Clean up empty list
                     if (Offer.isEmpty()) {
