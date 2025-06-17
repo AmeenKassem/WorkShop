@@ -447,7 +447,11 @@ public class StockService {
         if (!suConnectionRepo.manipulateItem(changerUserId, storeId, Permission.UpdateQuantity)) {
             throw new UIException("This worker is not authorized!", ErrorCodes.NO_PERMISSION);
         }
-        stockRepo.updateQuantity(storeId, productId, newQuantity);
+        // stockRepo.updateQuantity(storeId, productId, newQuantity);
+        StoreStock stock = storeStockRepo.findById(storeId)
+                .orElseThrow(() -> new DevException("store stock not found on db!!"));
+        stock.changeQuantity(productId, newQuantity);
+        storeStockRepo.saveAndFlush(stock);
         logger.info("Quantity updated successfully for product {} in store {}", productId, storeId);
         return productId;
     }
@@ -462,7 +466,11 @@ public class StockService {
         if (!suConnectionRepo.manipulateItem(changerUserId, storeId, Permission.UpdatePrice)) {
             throw new UIException("This worker is not authorized!", ErrorCodes.NO_PERMISSION);
         }
-        stockRepo.updatePrice(storeId, productId, newPrice);
+        // stockRepo.updatePrice(storeId, productId, newPrice);
+        StoreStock stock = storeStockRepo.findById(storeId)
+                .orElseThrow(() -> new DevException("store stock not found on db!!"));
+        stock.updatePrice(productId, newPrice);
+        storeStockRepo.saveAndFlush(stock);
         logger.info("Price updated successfully for product {} in store {}", productId, storeId);
         return productId;
     }

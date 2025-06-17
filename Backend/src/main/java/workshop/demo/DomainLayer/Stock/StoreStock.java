@@ -49,6 +49,7 @@ public class StoreStock {
 
     @PostLoad
     private void populateStockMap() {
+        System.out.println("load the stock!!");
         if (items != null) {
             for (item item : items) {
                 stock.put(item.getProductId(), item);
@@ -56,10 +57,11 @@ public class StoreStock {
         }
     }
 
-     // Fill items list before saving to DB
+    // Fill items list before saving to DB
     @PrePersist
     @PreUpdate
     private void populateItemsFromStock() {
+        items = new ArrayList<>();
         items.clear();
         items.addAll(stock.values());
     }
@@ -95,11 +97,14 @@ public class StoreStock {
 
     // update quantity
     public void changeQuantity(int itemId, int quantity) throws UIException {
+        System.out.println("updating quantity!");
         item foundItem = getItemByProductId(itemId);
         if (foundItem == null) {
             throw new UIException("Item not found with ID " + itemId, ErrorCodes.PRODUCT_NOT_FOUND);
         }
         foundItem.changeQuantity(quantity);
+        System.out.println("updated quantity!");
+
     }
 
     // decrase quantity to buy: -> check if I need synchronized the item???
@@ -257,7 +262,7 @@ public class StoreStock {
     }
 
     public void setStoreId(int storeId2) {
-        this.storeID=storeId2;
+        this.storeID = storeId2;
     }
 
 }
