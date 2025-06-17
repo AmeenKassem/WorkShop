@@ -19,19 +19,14 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Review.Review;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.Store.Store;
 
 @Service
 public class ReviewService {
 
-    // @Autowired
-    // private IReviewRepo reviewRepo;
     @Autowired
     private IAuthRepo authRepo;
-    @Autowired
-    private IStoreRepo storeRepo;
     @Autowired
     private IStockRepo stockRepo;
     @Autowired
@@ -41,17 +36,6 @@ public class ReviewService {
 
     private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
 
-    // @Autowired
-    // public ReviewService(IReviewRepo reviewRepo, IAuthRepo authRepo, IStoreRepo storeRepo, IStockRepo stockRepo,
-    //         IStoreRepoDB storeJpaRepo) {
-    //     this.authRepo = authRepo;
-    //     this.reviewRepo = reviewRepo;
-    //     this.storeRepo = storeRepo;
-    //     // this.userRepo = userRepo;
-    //     this.stockRepo = stockRepo;
-    //     this.storeJpaRepo = storeJpaRepo;
-    //     logger.info("created review service");
-    // }
     private UIException storeNotFound() {
         return new UIException(" store does not exist.", ErrorCodes.STORE_NOT_FOUND);
     }

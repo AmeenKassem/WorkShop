@@ -24,9 +24,6 @@ public class ReviewController {
     @Autowired
     private ReviewService reviewService;
 
-    // public ReviewController(IReviewRepo reviewRepo, IAuthRepo auth, IStoreRepo userRepo, IStockRepo storeRepo, IStoreRepoDB storeJpaRepo) {
-    //     this.reviewService = new ReviewService(reviewRepo, auth, userRepo, storeRepo, storeJpaRepo);
-    // }
     @PostMapping("/addToProduct")
     public ResponseEntity<?> addReviewToProduct(@RequestParam String token,
             @RequestParam int storeId,
