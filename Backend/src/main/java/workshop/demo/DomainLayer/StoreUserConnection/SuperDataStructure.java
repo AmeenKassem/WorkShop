@@ -393,7 +393,8 @@ public class SuperDataStructure {
                 result.add(storeId);
             }
         }
-
+        System.out.println("llllllllllll");
+        System.out.println(result.size());
         return result;
     }
 

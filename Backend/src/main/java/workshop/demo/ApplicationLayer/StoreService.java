@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import jakarta.transaction.Transactional;
+import jakarta.annotation.PostConstruct;
 import workshop.demo.DTOs.CreateDiscountDTO;
 import workshop.demo.DTOs.NotificationDTO;
 import workshop.demo.DTOs.OrderDTO;
@@ -86,14 +86,18 @@ public class StoreService {
     //     logger.info("created the StoreService");
     // }
     //----------loading data------------
-    @Transactional
+    // @Transactional
+    @PostConstruct
     public void loadStoreTreesIntoMemory() {
-        for (StoreTreeEntity entity : storeTreeJPARepo.findAll()) {
+        System.out.println("innnn load");
+        for (StoreTreeEntity entity : storeTreeJPARepo.findAllWithNodes()) {
             try {
                 Tree tree = new Tree(entity);
+                logger.debug("Loading storeId=" + entity.getStoreId() + ", nodes=" + entity.getAllNodes().size());
+
                 this.suConnectionRepo.getData().getEmployees().put(entity.getStoreId(), tree);
             } catch (DevException e) {
-                System.err.println("Failed to load store tree for storeId=" + entity.getStoreId());
+                logger.debug("Failed to load store tree for storeId=" + entity.getStoreId());
                 e.printStackTrace();
             }
         }

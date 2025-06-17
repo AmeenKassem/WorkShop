@@ -16,8 +16,10 @@ public class StoreTreeEntity {
     @Id
     private int storeId; // same as key in map
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "store_id") // FOREIGN KEY stored in Node table
+    // @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    // @JoinColumn(name = "store_id") // FOREIGN KEY stored in Node table
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "store_id") // matches foreign key in Node
     private List<Node> allNodes = new ArrayList<>();
 
     public StoreTreeEntity(int storeId, List<Node> allNodes) {

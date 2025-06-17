@@ -44,9 +44,7 @@ public class Node {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Node> children = Collections.synchronizedList(new ArrayList<>());
 
-    @Transient
-    private int parentId; // -1 if I'm the boss
-
+    //private int parentId; // -1 if I'm the boss
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
         @JoinColumn(name = "store_id", referencedColumnName = "store_id", insertable = false, updatable = false),
@@ -65,11 +63,11 @@ public class Node {
         this.isManager = isManager;
         this.children = Collections.synchronizedList(new ArrayList<>());
         this.parent = parent;
-        if (parent != null) {
-            this.parentId = parent.getMyId();
-        } else {
-            this.parentId = -1;
-        }
+        // if (parent != null) {
+        //     this.parentId = parent.getMyId();
+        // } else {
+        //     this.parentId = -1;
+        // }
     }
 
     public Node() {
@@ -79,7 +77,7 @@ public class Node {
     public void addChild(Node child) {
         synchronized (this) {
             this.children.add(child);
-            child.parentId = this.key.getMyId();
+            child.parent = this;
             logger.debug("Child node {} added to parent {}", child.getMyId(), this.key.getMyId());
         }
     }
@@ -110,8 +108,8 @@ public class Node {
                 throw new UIException("Owner is fully authorized; cannot manipulate authorization",
                         ErrorCodes.NO_PERMISSION);
             }
-            if (this.parentId != parentId) {
-                logger.error("addAuthrization failed: parent mismatch (expected {}, found {})", parentId, this.parentId);
+            if (this.parent.getMyId() != parentId) {
+                logger.error("addAuthrization failed: parent mismatch (expected {}, found {})", parentId, this.parent.getMyId());
                 throw new UIException("This owner cannot manipulate authorization for this manager",
                         ErrorCodes.NO_PERMISSION);
             }
@@ -127,8 +125,8 @@ public class Node {
                 throw new UIException("Owner is fully authorized; cannot manipulate authorization",
                         ErrorCodes.NO_PERMISSION);
             }
-            if (this.parentId != parentId) {
-                logger.error("updateAuthorization failed: parent mismatch (expected {}, found {})", parentId, this.parentId);
+            if (this.parent.getMyId() != parentId) {
+                logger.error("updateAuthorization failed: parent mismatch (expected {}, found {})", parentId, this.parent.getMyId());
                 throw new UIException("This owner cannot manipulate authorization for this manager",
                         ErrorCodes.NO_PERMISSION);
             }
@@ -175,7 +173,7 @@ public class Node {
     }
 
     public int getParentId() {
-        return this.parentId;
+        return this.parent != null ? parent.getMyId() : -1;
     }
 
     public synchronized List<Node> getChildren() {

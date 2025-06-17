@@ -1,6 +1,7 @@
 package workshop.demo.DomainLayer.StoreUserConnection;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -33,13 +34,17 @@ public class Tree implements Iterable<Node> {
         try {
             // Step 1: Build a map from NodeKey → Node
             Map<NodeKey, Node> keyToNode = new HashMap<>();
-            for (Node node : entity.getAllNodes()) {
+
+            List<Node> nodes = new ArrayList<>(entity.getAllNodes());
+            //parent nodes are processed before children
+            nodes.sort(Comparator.comparingInt(Node::getParentId));
+            for (Node node : nodes) {
                 node.getChildren().clear(); // reset children list
-                keyToNode.put(node.getKey(), node); // ✅ use full composite key
+                keyToNode.put(node.getKey(), node); // use full composite key
             }
 
             // Step 2: Re-link children to parents
-            for (Node node : entity.getAllNodes()) {
+            for (Node node : nodes) {
                 int parentId = node.getParentId();
                 if (parentId == -1) {
                     this.root = node;
