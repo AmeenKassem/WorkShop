@@ -3,6 +3,8 @@ package workshop.demo.PresentationLayer.View;
 import java.util.ArrayList;
 import java.util.Map;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -36,6 +38,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
     private String token;
     private int storeId;
     private final ManageStoreDiscountsPresenter discPresenter = new ManageStoreDiscountsPresenter();
+    private Map<ItemStoreDTO, ProductDTO> currentProducts = Map.of();
 
 
     public ManageStoreProductsView() {
@@ -68,7 +71,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         this.token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         this.storeId = storeId;
         if (token == null) {
-            Notification.show("⚠️ You must be logged in.");
+            NotificationView.showError("⚠️ You must be logged in.");
             return;
         }
         presenter.loadProducts(storeId, token);
@@ -87,7 +90,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         Button addBtn = new Button(" Add", e -> {
             ProductDTO selected = productSelect.getValue();
             if (selected == null || priceField.isEmpty() || quantityField.isEmpty()) {
-                Notification.show("Please fill in all fields.");
+                NotificationView.showInfo("Please fill in all fields.");
                 return;
             }
 
@@ -120,6 +123,8 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
     }
 
     public void showProducts(Map<ItemStoreDTO, ProductDTO> products) {
+        this.currentProducts = (products == null ? Map.of() : products);
+
         productList.removeAll();
         errorMessage.setVisible(false);
 
@@ -193,7 +198,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         Button add = new Button("Add to Store", e -> {
             if (name.isEmpty() || description.isEmpty() || category.isEmpty()
                     || price.isEmpty() || quantity.isEmpty()) {
-                Notification.show("Please fill in all fields");
+                NotificationView.showInfo("Please fill in all fields");
                 return;
             }
 
@@ -309,34 +314,28 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         dialog.getFooter().add(new HorizontalLayout(confirm, cancel));
         dialog.open();
     }
+    /* ---------------------------------------------------------
+     *  Add / Combine Discounts dialog – revised implementation
+     * --------------------------------------------------------- */
+    /* ---------------------------------------------------------
+     *  Add / Combine Discounts dialog – final implementation
+     * --------------------------------------------------------- */
+    /* ------------------------------------------------------------------
+     *  Add / Combine Discounts dialog  –  backend-compatible version
+     * ------------------------------------------------------------------ */
+    /* --------------------------------------------------------------
+     *  Add / Combine Discounts dialog – hardened numeric handling
+     * -------------------------------------------------------------- */
     private void openDiscountDialog() {
+
         Dialog dlg = new Dialog();
         dlg.setHeaderTitle("Add / Combine Discounts");
 
-        // form fields
+        /* ── generic fields ─────────────────────────────────────── */
         TextField nameField = new TextField("Name");
+
         NumberField percent = new NumberField("Percent (0-100)");
         percent.setMin(0); percent.setMax(100); percent.setValue(0.0);
-        //TextField condition = new TextField("Condition");
-        ComboBox<String> predBox = new ComboBox<>("Predicate");
-        predBox.setItems("TOTAL", "QUANTITY", "CATEGORY", "PRODUCT");
-        predBox.setValue("TOTAL");
-
-        ComboBox<String> opBox   = new ComboBox<>("Op");
-        opBox.setItems(">", "<", ">=", "==", ":");
-        opBox.setValue(">");
-
-        TextField valueField     = new TextField("Value");
-        predBox.addValueChangeListener(e ->
-                valueField.setPlaceholder(
-                        switch (e.getValue()) {
-                            case "TOTAL"     -> "₪ (number)";
-                            case "QUANTITY"  -> "amount";
-                            case "CATEGORY"  -> "name";
-                            case "PRODUCT"   -> "id";
-                            default -> "";
-                        }));
-
 
         ComboBox<String> typeBox  = new ComboBox<>("Type", "VISIBLE", "INVISIBLE");
         typeBox.setValue("VISIBLE");
@@ -345,50 +344,146 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                 "SINGLE","AND","OR","XOR","MAX","MULTIPLY");
         logicBox.setValue("SINGLE");
 
+        /* ── predicate section ─────────────────────────────────── */
+        ComboBox<String> predBox = new ComboBox<>("Predicate");
+        predBox.setItems("TOTAL", "QUANTITY", "CATEGORY", "PRODUCT");
+        predBox.setPlaceholder("Predicate (optional)");
+        predBox.setClearButtonVisible(true);
+
+        ComboBox<String> opBox = new ComboBox<>("Op");   // visible but never enabled now
+        opBox.setEnabled(false);
+
+        Div valueWrapper = new Div();
+
+        /* refresh helper */
+        Runnable refreshUI = () -> {
+            String p = predBox.getValue();
+
+            // operator (always ">")
+            if ("TOTAL".equals(p) || "QUANTITY".equals(p)) {
+                opBox.setItems(">"); opBox.setValue(">"); opBox.setEnabled(false);
+            } else { opBox.clear(); opBox.setItems(); opBox.setEnabled(false); }
+
+            // value editor
+            valueWrapper.removeAll();
+            switch (p == null ? "" : p) {
+                case "TOTAL", "QUANTITY" -> {
+                    NumberField n = new NumberField("Value");
+                    n.setMin(0);
+                    valueWrapper.add(n);
+                }
+                case "CATEGORY" -> {
+                    ComboBox<Category> c = new ComboBox<>("Value");
+                    c.setItems(Category.values());
+                    c.setItemLabelGenerator(Category::name);
+                    valueWrapper.add(c);
+                }
+                case "PRODUCT" -> {
+                    ComboBox<ItemStoreDTO> prod = new ComboBox<>("Value");
+                    prod.setItems(currentProducts.keySet());
+                    prod.setItemLabelGenerator(ItemStoreDTO::getProductName);
+                    prod.setPlaceholder("Choose product");
+                    prod.setPageSize(20);
+                    valueWrapper.add(prod);
+                }
+                default -> valueWrapper.add(new Span());
+            }
+        };
+        predBox.addValueChangeListener(e -> refreshUI.run());
+        refreshUI.run();
+
+        /* ── sub-discount list / delete unchanged … ───────────────── */
+
         CheckboxGroup<String> subs = new CheckboxGroup<>();
         subs.setLabel("Sub-discounts");
-        try {
-            subs.setItems(discPresenter.fetchDiscountNames(storeId, token));
-        } catch (Exception ex) {
-            ExceptionHandlers.handleException(ex);
-        }
+        try { subs.setItems(discPresenter.fetchDiscountNames(storeId, token)); }
+        catch (Exception ex) { ExceptionHandlers.handleException(ex); }
 
+        Button deleteBtn = new Button("🗑 Delete selected", ev -> {
+            var toDelete = new ArrayList<>(subs.getSelectedItems());
+            if (toDelete.isEmpty()) { NotificationView.showError("Select a discount first"); return; }
+            toDelete.forEach(name -> {
+                try { discPresenter.deleteDiscount(storeId, token, name); }
+                catch (Exception ex) { ExceptionHandlers.handleException(ex); }
+            });
+            try { subs.setItems(discPresenter.fetchDiscountNames(storeId, token)); }
+            catch (Exception ex) { ExceptionHandlers.handleException(ex); }
+        });
+
+        /* ── SAVE ───────────────────────────────────────────────── */
         Button save = new Button("Save", e -> {
             try {
-                if (!valueField.isEmpty() && valueField.getValue().contains(" ")) {
-                    Notification.show("Value must not contain spaces");
-                    return;
+                /* 1 extract value */
+                String valuePart = "";
+                if (valueWrapper.getElement().getChildCount() > 0) {
+                    Component editor = valueWrapper.getChildren().findFirst().get();
+                    if (editor instanceof ComboBox<?> cb &&
+                            cb.getValue() instanceof ItemStoreDTO dto) {
+                        valuePart = String.valueOf(dto.getProductId());  // PRODUCT → id
+                    } else if (editor instanceof HasValue<?,?> hv &&
+                            hv.getValue() != null) {
+                        valuePart = hv.getValue().toString();
+                    }
                 }
 
+                /* 2 normalize numeric (trim, strip .0) */
+                valuePart = valuePart.trim();
+                String predicate = predBox.getValue();
+                if (("TOTAL".equals(predicate) || "QUANTITY".equals(predicate)) &&
+                        valuePart.isBlank()) {
+                    NotificationView.showError("Enter a numeric value for " + predicate);
+                    return;
+                }
+                if (valuePart.endsWith(".0")) valuePart = valuePart.substring(0, valuePart.length() - 2);
+
+                /* 3 build condition */
+                String condition;
+                switch (predicate == null ? "" : predicate) {
+                    case ""         -> condition = "";
+                    case "CATEGORY" -> condition = "CATEGORY:" + valuePart;
+                    case "TOTAL"    -> condition = "TOTAL>"    + valuePart;
+                    case "QUANTITY" -> condition = "QUANTITY>" + valuePart;
+                    case "PRODUCT"  -> condition = "ITEM:"     + valuePart;
+                    default         -> condition = "";
+                }
+
+                System.out.println("DEBUG addDiscount condition = [" + condition + "]");
+
+                /* 4 send */
                 discPresenter.addDiscount(
                         storeId, token,
                         nameField.getValue(),
-                        percent.getValue(),
+                        percent.getValue() / 100.0,
                         typeBox.getValue(),
-                        (valueField.isEmpty() ? "" :
-                                predBox.getValue() + opBox.getValue() + valueField.getValue()),
-
+                        condition,
                         logicBox.getValue(),
                         new ArrayList<>(subs.getSelectedItems())
                 );
                 NotificationView.showSuccess("Discount added!");
                 dlg.close();
+
             } catch (Exception ex) {
                 ExceptionHandlers.handleException(ex);
             }
         });
+
         Button cancel = new Button("Cancel", e -> dlg.close());
 
+        /* ── assemble dialog ───────────────────────────────────── */
         dlg.add(new VerticalLayout(
                 nameField, percent,
-                new HorizontalLayout(predBox, opBox, valueField),
-
+                new HorizontalLayout(predBox, opBox, valueWrapper),
                 new HorizontalLayout(typeBox, logicBox),
                 subs,
+                deleteBtn,
                 new HorizontalLayout(save, cancel)
         ));
         dlg.open();
     }
+
+
+
+
 
 
 }

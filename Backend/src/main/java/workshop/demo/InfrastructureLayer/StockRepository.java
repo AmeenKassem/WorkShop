@@ -132,7 +132,7 @@ public class StockRepository implements IStockRepo {
     public int addAuctionToStore(int StoreId, int productId, int quantity, long tome, double startPrice)
             throws UIException, DevException {
         checkQuantity(productId, quantity, StoreId);
-        int res = getActivePurchases(StoreId).addProductToAuction(productId, quantity, tome);
+        int res = getActivePurchases(StoreId).addProductToAuction(productId, quantity, tome,startPrice);
         if (res != -1) {
             timer.schedule(new TimerTask() {
                 @Override
