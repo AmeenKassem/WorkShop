@@ -47,7 +47,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         this.presenter = new StoreDetailsPresenter();
         add(new H1("Store Details "));
         add(resultsContainer);
-     
+
         add(createSearchBar());
         HorizontalLayout storeActions = new HorizontalLayout();
         storeActions.setSpacing(true);
@@ -56,19 +56,18 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Button addReviewBtn = new Button("📝 Add Review to Store", e -> openStoreReviewDialog());
 
         showReviewsBtn.getStyle()
-        .set("background-color", "#ff9900")
-        .set("color", "white")
-        .set("font-weight", "bold")
-        .set("border-radius", "12px")
-        .set("padding", "8px 18px");
+                .set("background-color", "#ff9900")
+                .set("color", "white")
+                .set("font-weight", "bold")
+                .set("border-radius", "12px")
+                .set("padding", "8px 18px");
 
-    addReviewBtn.getStyle()
-        .set("background-color", "#ff9900")
-        .set("color", "white")
-        .set("font-weight", "bold")
-        .set("border-radius", "12px")
-        .set("padding", "8px 18px");
-
+        addReviewBtn.getStyle()
+                .set("background-color", "#ff9900")
+                .set("color", "white")
+                .set("font-weight", "bold")
+                .set("border-radius", "12px")
+                .set("padding", "8px 18px");
 
         storeActions.add(showReviewsBtn, addReviewBtn);
         add(storeActions);
@@ -489,16 +488,16 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
     }
 
     //------------------------------- for search:
-   private VerticalLayout createSearchBar() {
+    private VerticalLayout createSearchBar() {
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(true);
         layout.getStyle()
-            .set("background-color", "#f5f6ff")
-            .set("border-radius", "12px")
-            .set("padding", "20px")
-            .set("box-shadow", "0 2px 10px rgba(0, 0, 0, 0.05)")
-            .set("margin-bottom", "1.5rem");
+                .set("background-color", "#f5f6ff")
+                .set("border-radius", "12px")
+                .set("padding", "20px")
+                .set("box-shadow", "0 2px 10px rgba(0, 0, 0, 0.05)")
+                .set("margin-bottom", "1.5rem");
 
         String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
         boolean isUser = "user".equals(userType);
@@ -604,20 +603,19 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
             }
         });
         searchBtn.getStyle()
-        .set("background-color", "#ff9900") 
-        .set("color", "white")
-        .set("font-weight", "bold")
-        .set("border-radius", "12px")
-        .set("padding", "6px 16px")
-        .set("font-size", "1rem");
-
+                .set("background-color", "#ff9900")
+                .set("color", "white")
+                .set("font-weight", "bold")
+                .set("border-radius", "12px")
+                .set("padding", "6px 16px")
+                .set("font-size", "1rem");
 
         HorizontalLayout row = new HorizontalLayout();
         row.setSpacing(true);
         row.getStyle()
-            .set("flex-wrap", "wrap")
-            .set("align-items", "end")
-            .set("gap", "10px");
+                .set("flex-wrap", "wrap")
+                .set("align-items", "end")
+                .set("gap", "10px");
 
         if (isUser) {
             row.add(searchField, categoryCombo, typeSelector, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
@@ -628,8 +626,8 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         layout.add(row);
         return layout;
 
+    }
 
-}
     private Double parseDouble(String value) {
         try {
             return value != null && !value.isBlank() ? Double.parseDouble(value) : null;
@@ -679,7 +677,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 .set("border-radius", "8px")
                 .set("padding", "6px 16px");
 
-        card.add(name, store, max,endsAt, makeAuction);
+        card.add(name, store, max, endsAt, makeAuction);
         return card;
     }
 
@@ -699,20 +697,18 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         String formattedEndTime = formatEndTime(random.endTimeMillis);
         Paragraph endTime = new Paragraph("🕒 Ends at: " + formattedEndTime);
 
-
-
         Button participate = new Button("Join Random Draw", e -> showRandomParticipationDialog(random));
         participate.getStyle().set("background-color", "#9c27b0").set("color", "white");
 
-        card.add(name, store, amountLeft, price, endTime,participate);
+        card.add(name, store, amountLeft, price, endTime, participate);
         return card;
     }
+
     private String formatEndTime(long endMillis) {
         return java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy - hh:mm a", java.util.Locale.ENGLISH)
                 .withZone(java.time.ZoneId.systemDefault())
                 .format(java.time.Instant.ofEpochMilli(endMillis));
     }
-
 
     private Div createItemCard(ItemStoreDTO item) {
         Div card = new Div();

@@ -4,6 +4,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,23 +15,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import workshop.demo.ApplicationLayer.ReviewService;
 import workshop.demo.DTOs.ReviewDTO;
-import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Review.IReviewRepo;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 
 @RestController
 @RequestMapping("/api/Review")
 public class ReviewController {
 
-    private final ReviewService reviewService;
+    @Autowired
+    private ReviewService reviewService;
 
-    public ReviewController(IReviewRepo reviewRepo, IAuthRepo auth, IStoreRepo userRepo, IStockRepo storeRepo, IStoreRepoDB storeJpaRepo) {
-        this.reviewService = new ReviewService(reviewRepo, auth, userRepo, storeRepo,storeJpaRepo);
-    }
-
+    // public ReviewController(IReviewRepo reviewRepo, IAuthRepo auth, IStoreRepo userRepo, IStockRepo storeRepo, IStoreRepoDB storeJpaRepo) {
+    //     this.reviewService = new ReviewService(reviewRepo, auth, userRepo, storeRepo, storeJpaRepo);
+    // }
     @PostMapping("/addToProduct")
     public ResponseEntity<?> addReviewToProduct(@RequestParam String token,
             @RequestParam int storeId,
