@@ -17,6 +17,7 @@ import workshop.demo.DTOs.NotificationDTO;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
+import workshop.demo.DataAccessLayer.OfferJpaRepository;
 import workshop.demo.DataAccessLayer.StoreTreeJPARepository;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
@@ -37,6 +38,8 @@ import workshop.demo.DomainLayer.Store.PurchasePolicy;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
+import workshop.demo.DomainLayer.StoreUserConnection.Offer;
+import workshop.demo.DomainLayer.StoreUserConnection.OfferKey;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.StoreTreeEntity;
 import workshop.demo.DomainLayer.StoreUserConnection.Tree;
@@ -71,6 +74,8 @@ public class StoreService {
     private IStoreStockRepo storeStock;
     @Autowired
     private StoreTreeJPARepository storeTreeJPARepo;
+    @Autowired
+    private OfferJpaRepository offerJPARepo;
 
     // @Autowired
     // public StoreService(UserService userService, IStoreRepo storeRepository, INotificationRepo notiRepo,
@@ -91,7 +96,6 @@ public class StoreService {
     //     logger.info("created the StoreService");
     // }
     @PostConstruct
-
     public void loadStoreTreesIntoMemory() {
         System.out.println("innnn load");
         for (StoreTreeEntity entity : storeTreeJPARepo.findAllWithNodes()) {
@@ -100,8 +104,42 @@ public class StoreService {
                 logger.debug("Loading storeId=" + entity.getStoreId() + ", nodes=" + entity.getAllNodes().size());
 
                 this.suConnectionRepo.getData().getEmployees().put(entity.getStoreId(), tree);
+                //for offers:
+                logger.info(">> Loading offers...");
+
+                List<Offer> allOffers = offerJPARepo.findAll();
+
+                for (Offer offer : allOffers) {
+                    OfferKey key = offer.getId();
+                    int storeId = key.getStoreId();
+
+                    suConnectionRepo.getData().getOffers()
+                            .computeIfAbsent(storeId, k -> new ArrayList<>())
+                            .add(offer);
+                }
+                logger.info(">> Loaded " + allOffers.size() + " offers");
+                //-----------will be deleted: just for testing-----------
+                // Detailed breakdown
+                // for (Map.Entry<Integer, List<Offer>> entry : suConnectionRepo.getData().getOffers().entrySet()) {
+                //     int storeId = entry.getKey();
+                //     List<Offer> offers = entry.getValue();
+                //     logger.info("Store ID {} has {} offers:", storeId, offers.size());
+
+                //     for (Offer offer : offers) {
+                //         OfferKey key = offer.getId();
+                //         String permissionsStr = offer.getPermissions() != null && !offer.getPermissions().isEmpty()
+                //                 ? offer.getPermissions().toString()
+                //                 : "[]";
+                //         logger.info("  → sender={} | receiver={} | toBeOwner={} | permissions={}",
+                //                 key.getSenderId(),
+                //                 key.getReceiverId(),
+                //                 offer.isToBeOwner(),
+                //                 permissionsStr
+                //         );
+                //     }
+                // }
             } catch (DevException e) {
-                logger.debug("Failed to load store tree for storeId=" + entity.getStoreId());
+                logger.debug("Failed to load store tree and offers for storeId=" + entity.getStoreId());
                 e.printStackTrace();
             }
         }

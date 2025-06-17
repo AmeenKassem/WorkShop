@@ -466,4 +466,8 @@ public class SuperDataStructure {
         }
     }
 
+    public Map<Integer, List<Offer>> getOffers() {
+        return this.offers;
+    }
+
 }
