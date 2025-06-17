@@ -9,7 +9,6 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -163,12 +162,11 @@ public class MainLayout extends AppLayout {
         H1 logo = new H1("🛒 Click Market");
         logo.addClassName("market-title");
 
-        Paragraph subtitle = new Paragraph(
-                "Welcome to our market. We bring the best stores and products to your fingertips.\n"
-                + "Join us and be an owner of your own store in a few clicks.");
-        subtitle.addClassName("market-subtitle");
-
-        VerticalLayout titleLayout = new VerticalLayout(logo, subtitle);
+        // Paragraph subtitle = new Paragraph(
+        //         "Welcome to our market. We bring the best stores and products to your fingertips.\n"
+        //         + "Join us and be an owner of your own store in a few clicks.");
+        // subtitle.addClassName("market-subtitle");
+        VerticalLayout titleLayout = new VerticalLayout(logo);
         titleLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         titleLayout.addClassName("header-title");
 
