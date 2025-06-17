@@ -162,7 +162,10 @@ public class StoreService {
         int storeId = newStore.getstoreId();
         suConnectionRepo.addNewStoreOwner(storeId, bossId);
         // stockRepo.addStore(storeId);
-        storeStock.save(new StoreStock(storeId));
+        StoreStock stock4Store = new StoreStock();
+        stock4Store.setStoreId(storeId); 
+
+        storeStock.save(stock4Store);
         // add store to history
         this.orderRepo.addStoreTohistory(storeId);
         logger.info("Store '{}' added successfully with ID {} by boss {}", storeName, storeId, bossId);

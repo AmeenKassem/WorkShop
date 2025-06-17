@@ -24,7 +24,6 @@ public class LoginView extends VerticalLayout {
     private int failedAttempts = 0;
 
     public LoginView() {
-        addClassName("login-view");
         addClassName("login-container");
 
         presenter = new LoginPresenter(this);
