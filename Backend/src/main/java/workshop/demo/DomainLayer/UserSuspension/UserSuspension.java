@@ -1,12 +1,20 @@
-package workshop.demo.DomainLayer.UserSuspension;
 
+package workshop.demo.DomainLayer.UserSuspension;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "user_suspensions")
 public class UserSuspension {
 
-    private final Integer userId;
-    private final Duration totalDuration;
+    @Id
+    private Integer userId;
+
+    private Duration totalDuration;
     private Duration remainingDuration;
     private LocalDateTime lastStartTime;
     private boolean paused;
@@ -18,6 +26,8 @@ public class UserSuspension {
         this.lastStartTime = LocalDateTime.now();
         this.paused = false;
     }
+
+    public UserSuspension() {}
 
     public Integer getUserId() {
         return userId;
@@ -69,3 +79,4 @@ public class UserSuspension {
         return paused;
     }
 }
+

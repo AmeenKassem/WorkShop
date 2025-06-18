@@ -28,6 +28,7 @@ import workshop.demo.DTOs.SystemAnalyticsDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DataAccessLayer.GuestJpaRepository;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
+import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
@@ -52,7 +53,7 @@ public class UserController {
             IAuthRepo auth,                      // the JWT token provider
             IStockRepo stockrepo,
             AdminInitilizer adminInitializer,
-            IUserSuspensionRepo userSuspensionRepo,
+            UserSuspensionJpaRepository userSuspensionRepo,
             UserJpaRepository regRepo,
             GuestJpaRepository guest, UserJpaRepository userRepo
     ) throws Exception {
