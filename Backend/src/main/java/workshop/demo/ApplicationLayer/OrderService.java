@@ -1,5 +1,6 @@
 package workshop.demo.ApplicationLayer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,11 +11,12 @@ import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DataAccessLayer.OrderJpaRepository;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Order.IOrderRepo;
+import workshop.demo.DomainLayer.Order.Order;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.Store.Store;
@@ -22,23 +24,22 @@ import workshop.demo.DomainLayer.Store.Store;
 
 @Service
 public class OrderService {
-
-    private IOrderRepo orderRepo;
     private IStoreRepo storeRepo;
     private IAuthRepo authRepo;
     private UserJpaRepository userRepo;
     private IStoreRepoDB storeJpaRepo;
+    private final OrderJpaRepository orderJpaRepo;
 
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     @Autowired
-    public OrderService(IOrderRepo orderRepo, IStoreRepo storeRepo, IAuthRepo authoRepo, UserJpaRepository userRepo,IStoreRepoDB storeJpaRepo) {
-        this.orderRepo = orderRepo;
+    public OrderService(IStoreRepo storeRepo, IAuthRepo authoRepo, UserJpaRepository userRepo, IStoreRepoDB storeJpaRepo, OrderJpaRepository orderJpaRepo) {
         this.storeRepo = storeRepo;
         this.authRepo = authoRepo;
         this.userRepo = userRepo;
         this.storeJpaRepo = storeJpaRepo;
         logger.info("created Order/history service");
+        this.orderJpaRepo = orderJpaRepo;
     }
 
 
@@ -51,7 +52,17 @@ public class OrderService {
             throw new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND);
         }
         logger.info("about to get all the orders succsesfully!");
-        return this.orderRepo.getAllOrderByStore(storeId);
+        List<Order> orders = orderJpaRepo.findOrdersByStoreName(store.get().getStoreName());
+        return convertToDTOs(orders, storeId);
+    }
+
+
+    private List<OrderDTO> convertToDTOs(List<Order> orders, int storeId) {
+        List<OrderDTO> dtos = new ArrayList<>();
+        for (Order o : orders) {
+            dtos.add(new OrderDTO(o.getUserId(), storeId, o.getDate(), o.getProductsList(), o.getFinalPrice()));
+        }
+        return dtos;
     }
 
     public List<ReceiptDTO> getReceiptDTOsByUser(String token) throws Exception {
@@ -64,6 +75,12 @@ public class OrderService {
         //     throw new UIException(String.format("The user:%d is not registered to the system!", userId), ErrorCodes.USER_NOT_FOUND);
         // }
         userRepo.findById(userId).orElseThrow(()->new UIException(String.format("The user:%d is not registered to the system!", userId), ErrorCodes.USER_NOT_FOUND));
-        return this.orderRepo.getReceiptDTOsByUser(userId);
+         List<Order> orders = orderJpaRepo.findOrdersByUserId(userId);
+
+        List<ReceiptDTO> result = new ArrayList<>();
+        for (Order order : orders) {
+            result.add(new ReceiptDTO(order.getStoreName(), order.getDate(), order.getProductsList(), order.getFinalPrice()));
+        }
+        return result;
     }
 }
