@@ -90,9 +90,9 @@ public interface IStockRepo {
         ParticipationInRandomDTO validatedParticipation(int userId, int randomId, int storeId, double amountPaid)
                         throws UIException, DevException;
 
-        List<ReceiptProduct> processCartItemsForStore(int storeId, List<CartItem> cartItems, boolean isGuest,
-                        String StoreName)
-                        throws Exception;
+        // List<ReceiptProduct> processCartItemsForStore(int storeId, List<CartItem> cartItems, boolean isGuest,
+        //                 String StoreName)
+        //                 throws Exception;
 
         // ItemStoreDTO[] getMatchesItems(ProductSearchCriteria criteria, ProductDTO[]
         // matchesProducts) throws Exception;

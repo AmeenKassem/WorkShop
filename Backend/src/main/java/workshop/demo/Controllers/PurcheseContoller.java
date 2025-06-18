@@ -34,6 +34,7 @@ import workshop.demo.DomainLayer.Purchase.IPaymentService;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.ISupplyService;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
 import workshop.demo.DomainLayer.Store.CouponContext;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
@@ -50,10 +51,10 @@ public class PurcheseContoller {
     public PurcheseContoller(IAuthRepo auth, IStockRepo stockrepo, IStoreRepo storeRepo, 
             IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
             ISupplyService supplyService, IUserSuspensionRepo UserSuspensionRepo, UserJpaRepository userJpaRepo,
-            GuestJpaRepository guestJpaRepository, IStoreRepoDB storeJpaRepo) {
+            GuestJpaRepository guestJpaRepository, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStockRepo) {
         this.purchaseService = new PurchaseService(auth, stockrepo, storeRepo, 
                 purchaseRepo, orderRepo, paymentService, supplyService, UserSuspensionRepo, userJpaRepo,
-                guestJpaRepository,storeJpaRepo);
+                guestJpaRepository,storeJpaRepo,storeStockRepo);
     }
 
     @ModelAttribute

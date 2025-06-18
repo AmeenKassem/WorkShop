@@ -33,6 +33,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 import workshop.demo.PresentationLayer.Requests.AddToCartRequest;
@@ -47,7 +48,7 @@ public class UserController {
 
     @Autowired
     public UserController(
-            IStoreRepo storeRepo,
+            IStoreRepoDB storeRepo,
             IOrderRepo orderRepo,
             IAuthRepo auth,                      // the JWT token provider
             IStockRepo stockrepo,
@@ -58,7 +59,7 @@ public class UserController {
     ) throws Exception {
         // this.adminHandler = new AdminHandler(orderRepo, storeRepo, userRepo, auth);
         this.userSuspensionService = new UserSuspensionService(userSuspensionRepo, userRepo, auth);
-        this.userService = new UserService(regRepo,auth, stockrepo, adminInitializer,guest);
+        this.userService = new UserService(regRepo,auth, stockrepo, adminInitializer,guest,storeRepo);
     }
     // @ModelAttribute
     // public void beforeEveryRequest(HttpServletRequest request) {

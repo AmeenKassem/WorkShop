@@ -79,10 +79,10 @@ public class Guest {
         return new UserDTO(this.id);
     }
 
-    public void ModifyCartAddQToBuy(int productId, int quantity) {
-        logger.debug("ModifyCartAddQToBuy called for guestId={}, productId={}, quantity={}", id, productId, quantity);
+    public void ModifyCartAddQToBuy(int itemCartId, int quantity) {
+        logger.debug("ModifyCartAddQToBuy called for guestId={}, productId={}, quantity={}", id, itemCartId, quantity);
 
-        cart.ModifyCartAddQToBuy(productId, quantity);
+        cart.ModifyCartAddQToBuy(itemCartId, quantity);
         cart.setGuest(this);
     }
 
@@ -102,6 +102,12 @@ public class Guest {
 
     public Collection<ShoppingBasket> getBaskets() {
         return cart.getBaskets();
+    }
+
+    public void removeItemAll(List<CartItem> itemsSuccess) {
+        for (CartItem cartItem : itemsSuccess) {
+            removeItem(cartItem.getId());
+        }
     }
 
     

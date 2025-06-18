@@ -363,7 +363,8 @@ public class StockService {
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         // ItemStoreDTO[] products = stockRepo.getProductsInStore(storeId);
         StoreStock store4sstock = storeStockRepo.findById(store.getstoreId())
-                .orElseThrow(() -> new DevException("there is no stock for store in db!"));
+                .orElse(newStock(storeId));
+        
         List<item> itemsOnStore = store4sstock.getAllItemsInStock();
         ItemStoreDTO[] res = new ItemStoreDTO[itemsOnStore.size()];
         for (int i = 0; i < res.length; i++) {
@@ -375,6 +376,12 @@ public class StockService {
         }
         logger.info("fetched {} products from store: {}", res.length, storeId);
         return res;
+    }
+
+    private StoreStock newStock(int storeId) {
+        StoreStock stock = new StoreStock(storeId);
+        storeStockRepo.save(stock);
+        return stock;
     }
 
     public int addItem(int storeId, String token, int productId, int quantity, int price, Category category)

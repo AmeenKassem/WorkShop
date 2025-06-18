@@ -76,7 +76,7 @@ public class ShoppingCart {
     public void ModifyCartAddQToBuy(int cartItemId, int quantity) {
         logger.debug("ModifyCartAddQToBuy called: cartItemId={}, quantity={}", cartItemId, quantity);
         for (CartItem cartItem : cartItems) {
-            if (cartItem.getProductId() == cartItemId) {
+            if (cartItem.getId() == cartItemId) {
                 // cartItem.setCart(this);
                 System.out.println("curr quantity :"+cartItem.quantity);
                 cartItem.setQuantity(quantity);

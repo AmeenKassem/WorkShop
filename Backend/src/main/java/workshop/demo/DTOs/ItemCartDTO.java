@@ -11,6 +11,7 @@ public class ItemCartDTO {
     public String name;
     public String storeName;
     public Category category;
+    public int itemCartId;
 
     public ItemCartDTO(int storeId, int productId, int quantity, int price, String name, String storeName,Category category) {
         this.storeId = storeId;
@@ -88,5 +89,9 @@ public class ItemCartDTO {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public int getId() {
+        return itemCartId;
     }
 }

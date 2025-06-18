@@ -9,15 +9,17 @@ public class ReceiptProduct {
     private int quantity;
     private int price;
     private int productId;
+    private int storeId;
 
     public ReceiptProduct(String productName, String storename, int quantity, int price, int productId,
-            Category category) {
+            Category category, int storeId) {
         this.productName = productName;
         this.storename = storename;
         this.quantity = quantity;
         this.price = price;
         this.productId = productId;
         this.category = category;
+        this.storeId=storeId;
     }
 
     public ReceiptProduct() {
@@ -69,5 +71,9 @@ public class ReceiptProduct {
 
     public void setProductId(int productId) {
         this.productId = productId;
+    }
+
+    public Integer getStoreId() {
+        return storeId;
     }
 }

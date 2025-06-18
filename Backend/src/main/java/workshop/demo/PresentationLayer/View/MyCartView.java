@@ -126,7 +126,7 @@ public class MyCartView extends VerticalLayout {
         VerticalLayout card = new VerticalLayout();
         card.addClassName("item-card");
 
-        card.add(createStyledLabel("🏪 Store: " + item.storeId));
+        card.add(createStyledLabel("🏪 Store: " + item.storeName));
         card.add(createStyledLabel("📦 Product: " + item.name));
         card.add(createStyledLabel("💰 Price: ₪" + item.price));
         card.add(createStyledLabel("📦 Quantity: " + item.quantity));
@@ -141,7 +141,7 @@ public class MyCartView extends VerticalLayout {
             confirmBtn.addClickListener(ev -> {
                 try {
                     int newQuantity = Integer.parseInt(quantityField.getValue());
-                    presenter.updateQuantity(item.productId, newQuantity);
+                    presenter.updateQuantity(item.getId(), newQuantity);
                     dialog.close();
                 } catch (NumberFormatException ex) {
                     NotificationView.showError("Please enter a valid number");
@@ -153,7 +153,7 @@ public class MyCartView extends VerticalLayout {
 
         Button removeBtn = new Button("Remove", new Icon(VaadinIcon.TRASH));
         removeBtn.getStyle().set("color", "red");
-        removeBtn.addClickListener(e -> presenter.removeFromCart(item.productId));
+        removeBtn.addClickListener(e -> presenter.removeFromCart(item.getId()));
 
         HorizontalLayout buttonLayout = new HorizontalLayout(changeQtyBtn, removeBtn);
         card.add(buttonLayout);

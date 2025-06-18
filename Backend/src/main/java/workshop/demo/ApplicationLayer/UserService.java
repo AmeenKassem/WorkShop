@@ -42,7 +42,7 @@ public class UserService {
     // private IUserRepo userRepo;
     private IAuthRepo authRepo;
     private IStockRepo stockRepo;
-    // private IStoreRepoDB storeRepo;
+    private IStoreRepoDB storeRepo;
     private final AdminInitilizer adminInitilizer;
     // private final AdminHandler adminHandler;
     // @Autowired
@@ -55,11 +55,11 @@ public class UserService {
     @Autowired
     public UserService(UserJpaRepository regJpaRepo,  IAuthRepo authRepo, IStockRepo stockRepo,
             AdminInitilizer adminInitilizer,
-             GuestJpaRepository guestRepo) {
+             GuestJpaRepository guestRepo, IStoreRepoDB storeRepo) {
         // this.userRepo = userRepo;
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
-        // this.storeRepo = storeRepo;
+        this.storeRepo = storeRepo;
         this.adminInitilizer = adminInitilizer;
         // this.adminHandler = adminHandler;
         this.regJpaRepo = regJpaRepo;
@@ -214,28 +214,28 @@ public class UserService {
     }
 
     @Transactional
-    public boolean ModifyCartAddQToBuy(String token, int productId, int quantity) throws UIException {
+    public boolean ModifyCartAddQToBuy(String token, int itemCartId, int quantity) throws UIException {
         logger.info("ModifyCartAddQToBuy called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         Guest user = getUser(userId);
-        user.ModifyCartAddQToBuy(productId, quantity);
+        user.ModifyCartAddQToBuy(itemCartId, quantity);
         // System.out.println(user.geCart().getAllCart().get(0).quantity+"<-quantity");
         guestJpaRepository.saveAndFlush(user);
         // user.geCart().getAllCart().get(0).setQuantity(quantity);
         // userRepo.ModifyCartAddQToBuy(, productId, quantity);
 
-        logger.info("Cart modified for productId={}", productId);
+        logger.info("Cart modified for productId={}", itemCartId);
         return true;
     }
 
-    public boolean removeItemFromCart(String token, int productId) throws UIException {
+    public boolean removeItemFromCart(String token, int itemCartId) throws UIException {
         logger.info("removeItemFromCart called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         Guest user = getUser(authRepo.getUserId(token));
-        user.removeItem(productId);
+        user.removeItem(itemCartId);
         guestJpaRepository.saveAndFlush(user);
-        logger.info("Item removed from cart for productId={}", productId);
+        logger.info("Item removed from cart for productId={}", itemCartId);
         return true;
     }
 
@@ -263,6 +263,7 @@ public class UserService {
         return result.toArray(new SpecialCartItemDTO[0]);
     }
 
+    @Transactional
     public ItemCartDTO[] getRegularCart(String token) throws UIException {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
@@ -278,8 +279,9 @@ public class UserService {
             dto.quantity = item.quantity;
             dto.price = item.price;
             dto.name = item.name;
-            // dto.storeName = this.storeRepo.getStoreNameById(item.storeId); //TODO return
+            dto.storeName = storeRepo.findById(item.storeId).orElseThrow().getStoreName(); 
             // this back
+            dto.itemCartId = item.getId();
             dtos[i] = dto;
         }
 
