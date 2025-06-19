@@ -37,6 +37,7 @@ import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 import workshop.demo.PresentationLayer.Requests.AddToCartRequest;
+import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 
 @RestController
 @RequestMapping("/api/users")
@@ -54,11 +55,12 @@ public class UserController {
             IStockRepo stockrepo,
             AdminInitilizer adminInitializer,
             IUserSuspensionRepo userSuspensionRepo,
+            UserSuspensionJpaRepository userSuspensionJpaRepository,
             UserJpaRepository regRepo,
             GuestJpaRepository guest, UserJpaRepository userRepo
     ) throws Exception {
         // this.adminHandler = new AdminHandler(orderRepo, storeRepo, userRepo, auth);
-        this.userSuspensionService = new UserSuspensionService(userSuspensionRepo, userRepo, auth);
+        this.userSuspensionService = new UserSuspensionService(userSuspensionJpaRepository, userRepo, auth);
         this.userService = new UserService(regRepo,auth, stockrepo, adminInitializer,guest,storeRepo);
     }
     // @ModelAttribute

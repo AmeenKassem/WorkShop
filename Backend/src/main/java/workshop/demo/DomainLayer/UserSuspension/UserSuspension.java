@@ -1,67 +1,64 @@
 package workshop.demo.DomainLayer.UserSuspension;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "user_suspensions")
 public class UserSuspension {
 
-    private final Integer userId;
-    private final Duration totalDuration;
-    private Duration remainingDuration;
-    private LocalDateTime lastStartTime;
+    @Id
+    private Integer userId;
+    private long totalDurationMinutes;   
+    private long suspensionEndMinutes;      
+    private long remainingAtPauseMinutes;   
+    private LocalDateTime lastStartTime; 
     private boolean paused;
 
-    public UserSuspension(Integer userId, Duration duration) {
+    public UserSuspension(Integer userId, long durationMinutes) {
         this.userId = userId;
-        this.totalDuration = duration;
-        this.remainingDuration = duration;
-        this.lastStartTime = LocalDateTime.now();
+        this.totalDurationMinutes = durationMinutes;
+        this.suspensionEndMinutes = (System.currentTimeMillis() / 60000) + durationMinutes;
         this.paused = false;
+        this.lastStartTime = LocalDateTime.now();
     }
+
+    public UserSuspension() {}
 
     public Integer getUserId() {
         return userId;
     }
 
-    public LocalDateTime getExpectedEndTime() {
-        if (paused) {
-            return LocalDateTime.now().plus(remainingDuration);
-        } else {
-            Duration elapsed = Duration.between(lastStartTime, LocalDateTime.now());
-            return LocalDateTime.now().plus(remainingDuration.minus(elapsed));
-        }
+    public long getSuspensionEndMinutes() {
+        return suspensionEndMinutes;
     }
 
     public boolean isExpired() {
-        if (paused) return false;
-
-        Duration elapsed = Duration.between(lastStartTime, LocalDateTime.now());
-        remainingDuration = remainingDuration.minus(elapsed);
-        lastStartTime = LocalDateTime.now();
-        return remainingDuration.isZero() || remainingDuration.isNegative();
+        return !paused && (System.currentTimeMillis() / 60000) >= suspensionEndMinutes;
     }
 
     public void pause() {
         if (!paused) {
-            Duration elapsed = Duration.between(lastStartTime, LocalDateTime.now());
-            remainingDuration = remainingDuration.minus(elapsed);
+            remainingAtPauseMinutes = suspensionEndMinutes - (System.currentTimeMillis() / 60000);
             paused = true;
         }
     }
 
     public void resume() {
         if (paused) {
-            lastStartTime = LocalDateTime.now();
+            suspensionEndMinutes = (System.currentTimeMillis() / 60000) + remainingAtPauseMinutes;
             paused = false;
         }
     }
 
-    public Duration getRemainingDuration() {
+    public long getRemainingMinutes() {
         if (paused) {
-            return remainingDuration;
+            return remainingAtPauseMinutes;
         } else {
-            Duration elapsed = Duration.between(lastStartTime, LocalDateTime.now());
-            return remainingDuration.minus(elapsed);
+            return Math.max(suspensionEndMinutes - (System.currentTimeMillis() / 60000), 0);
         }
     }
 
