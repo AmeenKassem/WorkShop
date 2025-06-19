@@ -12,7 +12,7 @@ public class UserSuspension {
 
     @Id
     private Integer userId;
-    private long totalDurationMinutes;   
+    // private long totalDurationMinutes;   
     private long suspensionEndMinutes;      
     private long remainingAtPauseMinutes;   
     private LocalDateTime lastStartTime; 
@@ -20,7 +20,7 @@ public class UserSuspension {
 
     public UserSuspension(Integer userId, long durationMinutes) {
         this.userId = userId;
-        this.totalDurationMinutes = durationMinutes;
+        // this.totalDurationMinutes = durationMinutes;
         this.suspensionEndMinutes = (System.currentTimeMillis() / 60000) + durationMinutes;
         this.paused = false;
         this.lastStartTime = LocalDateTime.now();
@@ -67,9 +67,9 @@ public class UserSuspension {
     }
 
     public static void main(String[] args){
-        UserSuspension sus = new UserSuspension(1, Duration.ofSeconds(10));
-        sus.pause();
+        // UserSuspension sus = new UserSuspension(1, Duration.ofSeconds(10));
+        // sus.pause();
         // System.out.println("hii");
         // sus.remainingDuration.
-    }
+    }l
 }
