@@ -68,4 +68,11 @@ public class UserSuspension {
     public boolean isPaused() {
         return paused;
     }
+
+    public static void main(String[] args){
+        UserSuspension sus = new UserSuspension(1, Duration.ofSeconds(10));
+        sus.pause();
+        // System.out.println("hii");
+        // sus.remainingDuration.
+    }
 }

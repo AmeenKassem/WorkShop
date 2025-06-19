@@ -363,8 +363,8 @@ public class StockService {
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         // ItemStoreDTO[] products = stockRepo.getProductsInStore(storeId);
         StoreStock store4sstock = storeStockRepo.findById(store.getstoreId())
-                .orElse(newStock(storeId));
-        
+                .orElseThrow(() -> new UIException("store stock not found!", ErrorCodes.STOCK_NOT_FOUND));
+
         List<item> itemsOnStore = store4sstock.getAllItemsInStock();
         ItemStoreDTO[] res = new ItemStoreDTO[itemsOnStore.size()];
         for (int i = 0; i < res.length; i++) {

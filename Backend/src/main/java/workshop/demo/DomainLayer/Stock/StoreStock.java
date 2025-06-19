@@ -32,7 +32,7 @@ public class StoreStock {
     private final Map<Integer, item> stock = new ConcurrentHashMap<>();// productId, item
 
     @ElementCollection
-    private List<item> items;
+    private List<item> items=new ArrayList<>();
 
     @Id
     private int storeID;
@@ -55,6 +55,8 @@ public class StoreStock {
                 stock.put(item.getProductId(), item);
             }
         }
+        System.out.println("loaded stock!!");
+
     }
 
     // Fill items list before saving to DB
@@ -79,6 +81,7 @@ public class StoreStock {
             if (existingItem != null) {
                 existingItem.AddQuantity();
             } else {
+                System.out.println("-----------------helo ");
                 stock.put(newItem.getProductId(), newItem);
                 items.add(newItem);
             }
@@ -111,6 +114,7 @@ public class StoreStock {
     public boolean decreaseQuantitytoBuy(int itemId, int quantity) throws UIException {
         item foundItem = getItemByProductId(itemId);
         if (foundItem == null) {
+            System.out.println("product " + itemId + " not found!");
             throw new UIException("Item not found with ID " + itemId, ErrorCodes.PRODUCT_NOT_FOUND);
         }
         synchronized (foundItem) {
@@ -179,29 +183,31 @@ public class StoreStock {
     // return itemStoreDTOList;
     // }
     // may be changed later:
-    // public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems, boolean isGuest, String storeName)
-    //         throws UIException {
-    //     List<ReceiptProduct> boughtItems = new ArrayList<>();
-    //     for (ItemCartDTO dto : cartItems) {
-    //         CartItem item = new CartItem(dto);
-    //         item storeItem = getItemByProductId(item.getProductId());
+    // public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems,
+    // boolean isGuest, String storeName)
+    // throws UIException {
+    // List<ReceiptProduct> boughtItems = new ArrayList<>();
+    // for (ItemCartDTO dto : cartItems) {
+    // CartItem item = new CartItem(dto);
+    // item storeItem = getItemByProductId(item.getProductId());
 
-    //         if (storeItem == null || storeItem.getQuantity() < item.getQuantity()) {
-    //             if (isGuest) {
-    //                 throw new UIException("Insufficient stock during guest purchase.", ErrorCodes.INSUFFICIENT_STOCK);
-    //             } else {
-    //                 continue;
-    //             }
-    //         }
-    //         boughtItems.add(new ReceiptProduct(
-    //                 item.getName(),
-    //                 storeName,
-    //                 item.getQuantity(),
-    //                 item.getPrice(),
-    //                 item.productId,
-    //                 item.category));
-    //     }
-    //     return boughtItems;
+    // if (storeItem == null || storeItem.getQuantity() < item.getQuantity()) {
+    // if (isGuest) {
+    // throw new UIException("Insufficient stock during guest purchase.",
+    // ErrorCodes.INSUFFICIENT_STOCK);
+    // } else {
+    // continue;
+    // }
+    // }
+    // boughtItems.add(new ReceiptProduct(
+    // item.getName(),
+    // storeName,
+    // item.getQuantity(),
+    // item.getPrice(),
+    // item.productId,
+    // item.category));
+    // }
+    // return boughtItems;
     // }
 
     public void changequantity(List<ItemCartDTO> cartItems, boolean isGuest, String storeName) throws UIException {
@@ -247,9 +253,7 @@ public class StoreStock {
             throw new UIException("Item not found with ID " + productId, ErrorCodes.PRODUCT_NOT_FOUND);
         }
         synchronized (foundItem) {
-            if (foundItem.getQuantity() < quantity) {
-                throw new UIException("Insufficient stock", ErrorCodes.INSUFFICIENT_STOCK);
-            }
+
             foundItem.changeQuantity(foundItem.getQuantity() + quantity);
         }
     }

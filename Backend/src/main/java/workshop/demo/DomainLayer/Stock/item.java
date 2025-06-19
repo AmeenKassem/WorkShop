@@ -41,6 +41,7 @@ public class item {
     // discounts ...
 
     public item(){
+        productId=1;
         rank=new AtomicInteger[5];
         for (int i = 0; i < 5; i++) {
             rank[i] = new AtomicInteger(0);
@@ -51,7 +52,7 @@ public class item {
         this.productId = produtId;
         this.price = price;
         this.quantity = quantity;
-        ;
+        
         this.rank = new AtomicInteger[5];
         for (int i = 0; i < 5; i++) {
             rank[i] = new AtomicInteger(0);
@@ -135,4 +136,5 @@ public class item {
         this.rank = rank;
     }
 
+    
 }
