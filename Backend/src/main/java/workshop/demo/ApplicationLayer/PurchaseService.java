@@ -164,7 +164,7 @@ public class PurchaseService {
                     totalForStore += price;
                 } else if (isGuest) {
                     releaseStock(boughtItems, storeToProducts);
-                    throw new UIException("guest insufficnasdasd stock!", ErrorCodes.INSUFFICIENT_STOCK);
+                    throw new UIException(store.getStoreName(), ErrorCodes.INSUFFICIENT_STOCK);
                 }
             }
             storeStockRepo.saveAndFlush(stock);
