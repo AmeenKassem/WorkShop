@@ -171,7 +171,7 @@ public class PurchasePresenter {
 
             Object userType = VaadinSession.getCurrent().getAttribute("user-type");
             String url;
-            if ("user".equals(userType)) {
+            if ("user".equals(userType)||userType.equals("admin")) {
                 System.out.println("User type is registered, using registered purchase endpoint.");
                 url = String.format(Base.url+"/purchase/registered?token=%s&paymentJson=%s&supplyJson=%s",
                         UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8), encodedPaymentJson, encodedSupplyJson);
