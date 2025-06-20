@@ -37,20 +37,20 @@ public class UserSuspensionRepo implements IUserSuspensionRepo {
 
     @Override
     public void suspendRegisteredUser(Integer userId, int seconds) throws UIException {
-        // if (Suspensions.containsKey(userId)) {
-        //     throw new UIException("User " + userId + " is already suspended.", ErrorCodes.SUSPENSION_ALREADY_EXISTS);
-        // }
-        // Duration duration = Duration.ofSeconds(seconds);
-        // Suspensions.put(userId, new UserSuspension(userId, duration));
+        if (Suspensions.containsKey(userId)) {
+            throw new UIException("User " + userId + " is already suspended.", ErrorCodes.SUSPENSION_ALREADY_EXISTS);
+        }
+        Duration duration = Duration.ofSeconds(seconds);
+        Suspensions.put(userId, new UserSuspension(userId, seconds));
     }
 
     @Override
     public void suspendGuestUser(int userId, int seconds) throws UIException {
-        // if (Suspensions.containsKey(userId)) {
-        //     throw new UIException("Guest " + userId + " is already suspended.", ErrorCodes.SUSPENSION_ALREADY_EXISTS);
-        // }
-        // Duration duration = Duration.ofSeconds(seconds);
-        // Suspensions.put(userId, new UserSuspension(userId, duration));
+        if (Suspensions.containsKey(userId)) {
+            throw new UIException("Guest " + userId + " is already suspended.", ErrorCodes.SUSPENSION_ALREADY_EXISTS);
+        }
+        Duration duration = Duration.ofSeconds(seconds);
+        Suspensions.put(userId, new UserSuspension(userId, seconds));
     }
 
     @Override
