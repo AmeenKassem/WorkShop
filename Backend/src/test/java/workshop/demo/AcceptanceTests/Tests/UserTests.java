@@ -111,6 +111,9 @@ public class UserTests extends AcceptanceTests {
 //
 //        assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getNumber());
 //    }
+
+
+
 //
 //    @Test
 //    void testUser_LogOut_Failure() {
