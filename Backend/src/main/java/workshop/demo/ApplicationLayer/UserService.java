@@ -185,22 +185,23 @@ public class UserService {
         return false;
     }
 
-    public boolean addToUserCart(String token, ItemStoreDTO itemToAdd, int quantity) throws UIException {
-        logger.info("addToUserCart called");
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        // String storeName =storeRepo.findById(itemToAdd.);
-        ItemCartDTO item = new ItemCartDTO(itemToAdd.getStoreId(), itemToAdd.getProductId(), quantity,
-                itemToAdd.getPrice(), itemToAdd.getProductName(), itemToAdd.getStoreName(), itemToAdd.getCategory());
-        CartItem itemCart = new CartItem(item);
-        Guest user = getUser(userId);
-        // itemCart.setGuest(user);
-        
-        user.addToCart(itemCart);
-        guestJpaRepository.save(user);
-        logger.info("Item added to user cart");
-        return true;
-    }
+    @Transactional
+public boolean addToUserCart(String token, ItemStoreDTO itemToAdd, int quantity) throws UIException {
+    logger.info("addToUserCart called");
+    authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    int userId = authRepo.getUserId(token);
+
+    ItemCartDTO item = new ItemCartDTO(itemToAdd.getStoreId(), itemToAdd.getProductId(), quantity,
+            itemToAdd.getPrice(), itemToAdd.getProductName(), itemToAdd.getStoreName(), itemToAdd.getCategory());
+    CartItem itemCart = new CartItem(item);
+
+    Guest user = getUser(userId); // Hibernate loads the Guest entity with lazy cart
+
+    user.addToCart(itemCart); // ✅ cart is lazy, but safe because @Transactional keeps session open
+    guestJpaRepository.save(user);
+    logger.info("Item added to user cart");
+    return true;
+}
 
     private Guest getUser(int userId) throws UIException {
         Optional<Registered> reg = regJpaRepo.findById(userId);
@@ -228,7 +229,7 @@ public class UserService {
         logger.info("Cart modified for productId={}", itemCartId);
         return true;
     }
-
+@Transactional
     public boolean removeItemFromCart(String token, int itemCartId) throws UIException {
         logger.info("removeItemFromCart called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);

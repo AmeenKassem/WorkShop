@@ -96,6 +96,7 @@ public class PurchaseService {
         this.storeStockRepo = storeStockRepo;
     }
 
+    @Transactional
     public ReceiptDTO[] buyGuestCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
             throws Exception {
         logger.info("buyGuestCart called with token");
@@ -154,7 +155,7 @@ public class PurchaseService {
                     if (!isGuest)
                         itemsSuccess.add(itemOnUserCart);
                     // ADD DISSCOUNT HERE ... HMODE
-                    double price = itemOnUserCart.price*itemOnUserCart.quantity;
+                    double price = itemOnUserCart.price * itemOnUserCart.quantity;
                     // ADD DISSCOUNT HERE ... HMODE
                     ReceiptProduct boughtItem = new ReceiptProduct(itemOnUserCart.name, storeName,
                             itemOnUserCart.quantity, itemOnUserCart.price, itemOnUserCart.productId,
@@ -163,7 +164,7 @@ public class PurchaseService {
 
                     totalForStore += price;
                 } else if (isGuest) {
-                    logger.info("user guest tring to buy items with not enough stock on the store ... "+ userId);
+                    logger.info("user guest tring to buy items with not enough stock on the store ... " + userId);
                     releaseStock(boughtItems, storeToProducts);
                     throw new UIException(store.getStoreName(), ErrorCodes.INSUFFICIENT_STOCK);
                 }
@@ -172,9 +173,9 @@ public class PurchaseService {
 
             // List<ItemStoreDTO> itemStoreDTOS = new ArrayList<>();
             // for (ReceiptProduct p : boughtItems) {
-            //     itemStoreDTOS.add(new ItemStoreDTO(
-            //             p.getProductId(), p.getQuantity(), p.getPrice(), p.getCategory(),
-            //             0, storeId, p.getProductName(), storeName));
+            // itemStoreDTOS.add(new ItemStoreDTO(
+            // p.getProductId(), p.getQuantity(), p.getPrice(), p.getCategory(),
+            // 0, storeId, p.getProductName(), storeName));
             // }
 
             // DiscountScope scope = new DiscountScope(itemStoreDTOS);
@@ -189,10 +190,15 @@ public class PurchaseService {
             finalTotal += totalForStore;
             storeToProducts.put(storeId, Pair.of(boughtItems, totalForStore));
         }
+        releaseStock(new ArrayList<>(), storeToProducts);
 
-        if (!paymentService.processPayment(payment, finalTotal) || !supplyService.processSupply(supply)) {
+        try {
+            if (!paymentService.processPayment(payment, finalTotal) || !supplyService.processSupply(supply)) {
+            }
+        } catch (Exception e) {
             releaseStock(new ArrayList<>(), storeToProducts);
-            throw new UIException("payment not successeded!!!", ErrorCodes.PAYMENT_ERROR);
+            throw new UIException("Unexpected exception during payment/supply: " + e.getMessage(),
+                    ErrorCodes.PAYMENT_ERROR);
         }
 
         if (isGuest)
@@ -220,7 +226,6 @@ public class PurchaseService {
             storeStockRepo.saveAndFlush(stock);
         }
     }
-
 
     private Guest getUser(boolean isGuest, int userId) throws UIException {
         if (isGuest) {
@@ -357,7 +362,7 @@ public class PurchaseService {
                     bid.getAmount(),
                     (int) bid.getBidPrice(),
                     bid.productId(),
-                    product.getCategory(),bid.getStoreId());
+                    product.getCategory(), bid.getStoreId());
 
             res.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
             // paymentService.processPayment(payment, (int) bid.getBidPrice());
@@ -383,7 +388,7 @@ public class PurchaseService {
                     1,
                     0,
                     product.getProductId(),
-                    product.getCategory(),card.storeId);
+                    product.getCategory(), card.storeId);
 
             storeToProducts.computeIfAbsent(card.storeId, k -> new ArrayList<>()).add(receiptProduct);
             // supplyService.processSupply(supply);
