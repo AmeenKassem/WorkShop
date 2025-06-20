@@ -127,6 +127,8 @@
 //         when(real.mockUserRepo.isRegistered(userId)).thenReturn(true);
 //         when(real.mockAuthRepo.isRegistered(userToken)).thenReturn(true);
 
+
+
 //         String guestToken = real.userService.generateGuest();
 //         assertEquals(userGuestToken, guestToken);
 
