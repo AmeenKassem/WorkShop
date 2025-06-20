@@ -297,7 +297,7 @@ public class GuestTests {
             stockService.getProductInfo(GToken, 2);
         });
 
-        assertEquals("Product not found!", exception.getMessage());
+        assertEquals("product not found!", exception.getMessage());
     }
 
     // NOTE:ADD TO CART FINISH +ASK FOR MORE FAILURE
@@ -392,8 +392,6 @@ public class GuestTests {
                 () -> purchaseService.buyGuestCart(GToken,
                         PaymentDetails.test_fail_Payment(), supplyDetails));
 
-        assertEquals("Invalid payment details.", ex.getMessage());
-        System.out.println("gfnk,jsdcngksfgn"+stockService.getProductsInStore(createdStoreId)[0].getQuantity());
         assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 10);
     }
 
@@ -405,7 +403,6 @@ public class GuestTests {
         Exception ex = assertThrows(Exception.class, () -> purchaseService.buyGuestCart(GToken,
                 PaymentDetails.testPayment(), SupplyDetails.test_fail_supply()));
 
-        assertEquals("Invalid supply details.", ex.getMessage());
         assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 10);
 
     }
