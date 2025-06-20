@@ -1,6 +1,7 @@
 package workshop.demo.DataAccessLayer;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,7 +20,23 @@ public interface UserJpaRepository extends JpaRepository<Registered, Integer> {
     @Query("SELECT r FROM Registered r WHERE r.username = :username")
     List<Registered> findRegisteredUsersByUsername(@Param("username") String username);
 
-    // @Query("SELECT COUNT(u) > 0 FROM Registered u WHERE u.id = :id AND u.systemRole = 'Admin'")
-    // int isAdmin(@Param("id") int id);
+    @Query("SELECT r FROM Registered r WHERE r.username = :username")
+    Optional<Registered> findByUsername(@Param("username") String username);
 
+
+    @Query("SELECT r FROM Registered r WHERE r.id = :id AND r.username = :username")
+    Optional<Registered> findByIdAndUsername(@Param("id") int id, @Param("username") String username);
+
+    List<Registered> findAllBySystemRole(RoleOnSystem role);
+
+    @Query("SELECT COUNT(r) FROM Registered r WHERE r.isOnline = true")
+    long countOnlineUsers();
+
+    void deleteByUsername(String username);
+
+    List<Registered> findByIsOnlineTrue();
+
+    // ✅ Explicit find by ID (optional, already exists by default)
+    @Query("SELECT r FROM Registered r WHERE r.id = :id")
+    Optional<Registered> findByIdExplicit(@Param("id") int id);
 }

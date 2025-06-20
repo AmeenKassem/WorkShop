@@ -69,7 +69,7 @@ public class UserService {
     public String generateGuest() throws UIException, Exception {
         logger.info("generateGuest called");
         Guest guest = new Guest();
-        guest = guestJpaRepository.save(guest);
+        guestJpaRepository.save(guest);
 
         logger.info("Generated guest with ID={}", guest.getId());
         return authRepo.generateGuestToken(guest.getId());

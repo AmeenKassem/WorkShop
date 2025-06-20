@@ -12,4 +12,8 @@ import workshop.demo.DomainLayer.User.Guest;
 @Repository
 public interface GuestJpaRepository extends JpaRepository<Guest, Integer> {
 
+    @Query("SELECT COUNT(g) > 0 FROM Guest g WHERE g.id = :id")
+    boolean guestExists(@Param("id") int id);
 }
+
+
