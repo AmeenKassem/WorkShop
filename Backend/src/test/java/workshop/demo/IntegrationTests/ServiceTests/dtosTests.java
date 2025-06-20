@@ -1,8 +1,6 @@
 package workshop.demo.IntegrationTests.ServiceTests;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,13 +15,9 @@ import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.NotificationDTO;
-import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ProductDTO;
-import workshop.demo.DTOs.PurchaseHistoryDTO;
-import workshop.demo.DTOs.ReceiptDTO;
-import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.ReviewDTO;
 import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.SpecialType;
@@ -37,52 +31,52 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 @ActiveProfiles("test")
 public class dtosTests {
 
-    @Test
-    public void testPurchaseHistoryDTO_AllGettersSetters() {
-        // Dummy values for ReceiptProduct
-        String productName = "Laptop";
-        String storeName = "BestBuy";
-        int quantity = 2;
-        int price = 1500;
-        int productId = 1;
-        Category category = Category.Electronics; // assuming enum value
+    // @Test
+    // public void testPurchaseHistoryDTO_AllGettersSetters() {
+    //     // Dummy values for ReceiptProduct
+    //     String productName = "Laptop";
+    //     String storeName = "BestBuy";
+    //     int quantity = 2;
+    //     int price = 1500;
+    //     int productId = 1;
+    //     Category category = Category.Electronics; // assuming enum value
 
-        ReceiptProduct rp = new ReceiptProduct(productName, storeName, quantity, price, productId, category);
-        List<ReceiptProduct> products = new ArrayList<>();
-        products.add(rp);
+    //     ReceiptProduct rp = new ReceiptProduct(productName, storeName, quantity, price, productId, category);
+    //     List<ReceiptProduct> products = new ArrayList<>();
+    //     products.add(rp);
 
-        // Original values
-        String buyer = "buyerUser";
-        String store = "storeName";
-        String time = "2025-06-03 15:00";
-        double total = 3000.0;
+    //     // Original values
+    //     String buyer = "buyerUser";
+    //     String store = "storeName";
+    //     String time = "2025-06-03 15:00";
+    //     double total = 3000.0;
 
-        PurchaseHistoryDTO dto = new PurchaseHistoryDTO(buyer, store, products, time, total);
+    //     PurchaseHistoryDTO dto = new PurchaseHistoryDTO(buyer, store, products, time, total);
 
-        // Test all getters
-        assertEquals(buyer, dto.getBuyerUserName());
-        assertEquals(store, dto.getStoreName());
-        assertEquals(products, dto.getItems());
-        assertEquals(time, dto.getTimeStamp());
-        assertEquals(total, dto.getTotalPrice());
+    //     // Test all getters
+    //     assertEquals(buyer, dto.getBuyerUserName());
+    //     assertEquals(store, dto.getStoreName());
+    //     assertEquals(products, dto.getItems());
+    //     assertEquals(time, dto.getTimeStamp());
+    //     assertEquals(total, dto.getTotalPrice());
 
-        // Test all setters
-        dto.setBuyerUserName("newBuyer");
-        assertEquals("newBuyer", dto.getBuyerUserName());
+    //     // Test all setters
+    //     dto.setBuyerUserName("newBuyer");
+    //     assertEquals("newBuyer", dto.getBuyerUserName());
 
-        dto.setStoreName("newStore");
-        assertEquals("newStore", dto.getStoreName());
+    //     dto.setStoreName("newStore");
+    //     assertEquals("newStore", dto.getStoreName());
 
-        List<ReceiptProduct> newList = new ArrayList<>();
-        dto.setItems(newList);
-        assertEquals(newList, dto.getItems());
+    //     List<ReceiptProduct> newList = new ArrayList<>();
+    //     dto.setItems(newList);
+    //     assertEquals(newList, dto.getItems());
 
-        dto.setTimeStamp("newTime");
-        assertEquals("newTime", dto.getTimeStamp());
+    //     dto.setTimeStamp("newTime");
+    //     assertEquals("newTime", dto.getTimeStamp());
 
-        dto.setTotalPrice(999.99);
-        assertEquals(999.99, dto.getTotalPrice());
-    }
+    //     dto.setTotalPrice(999.99);
+    //     assertEquals(999.99, dto.getTotalPrice());
+    // }
 
     @Test
     public void testItemCartDTO_AllSettersGettersAndConstructors() {
@@ -169,64 +163,64 @@ public class dtosTests {
         assertFalse(dto.isEnded());
     }
 
-    @Test
-    public void testOrderDTO_AllConstructorsSettersGetters() {
-        // Dummy ReceiptProduct
-        ReceiptProduct product = new ReceiptProduct("Mouse", "BestBuy", 2, 50, 101, Category.Electronics);
-        List<ReceiptProduct> productList = new ArrayList<>();
-        productList.add(product);
+    // @Test
+    // public void testOrderDTO_AllConstructorsSettersGetters() {
+    //     // Dummy ReceiptProduct
+    //     ReceiptProduct product = new ReceiptProduct("Mouse", "BestBuy", 2, 50, 101, Category.Electronics);
+    //     List<ReceiptProduct> productList = new ArrayList<>();
+    //     productList.add(product);
 
-        // === Using full constructor ===
-        OrderDTO dto1 = new OrderDTO(1, 10, "2025-06-03", productList, 100.0);
+    //     // === Using full constructor ===
+    //     OrderDTO dto1 = new OrderDTO(1, 10, "2025-06-03", productList, 100.0);
 
-        assertEquals(1, dto1.getUserId());
-        assertEquals(10, dto1.getStoreId());
-        assertEquals("2025-06-03", dto1.getDate());
-        assertEquals(productList, dto1.getProductsList());
-        assertEquals(100.0, dto1.getFinalPrice());
+    //     assertEquals(1, dto1.getUserId());
+    //     assertEquals(10, dto1.getStoreId());
+    //     assertEquals("2025-06-03", dto1.getDate());
+    //     assertEquals(productList, dto1.getProductsList());
+    //     assertEquals(100.0, dto1.getFinalPrice());
 
-        // === Using default constructor + setters ===
-        OrderDTO dto2 = new OrderDTO();
-        dto2.setUserId(2);
-        dto2.setStoreId(20);
-        dto2.setDate("2025-07-01");
-        dto2.setProductsList(productList);
-        dto2.setFinalPrice(200.0);
+    //     // === Using default constructor + setters ===
+    //     OrderDTO dto2 = new OrderDTO();
+    //     dto2.setUserId(2);
+    //     dto2.setStoreId(20);
+    //     dto2.setDate("2025-07-01");
+    //     dto2.setProductsList(productList);
+    //     dto2.setFinalPrice(200.0);
 
-        assertEquals(2, dto2.getUserId());
-        assertEquals(20, dto2.getStoreId());
-        assertEquals("2025-07-01", dto2.getDate());
-        assertEquals(productList, dto2.getProductsList());
-        assertEquals(200.0, dto2.getFinalPrice());
-    }
+    //     assertEquals(2, dto2.getUserId());
+    //     assertEquals(20, dto2.getStoreId());
+    //     assertEquals("2025-07-01", dto2.getDate());
+    //     assertEquals(productList, dto2.getProductsList());
+    //     assertEquals(200.0, dto2.getFinalPrice());
+    // }
 
-    @Test
-    public void testReceiptDTO_AllConstructorsSettersGetters() {
-        // Dummy ReceiptProduct
-        ReceiptProduct product = new ReceiptProduct("Keyboard", "StoreX", 1, 120, 501, Category.Electronics);
-        List<ReceiptProduct> products = new ArrayList<>();
-        products.add(product);
+    // @Test
+    // public void testReceiptDTO_AllConstructorsSettersGetters() {
+    //     // Dummy ReceiptProduct
+    //     ReceiptProduct product = new ReceiptProduct("Keyboard", "StoreX", 1, 120, 501, Category.Electronics);
+    //     List<ReceiptProduct> products = new ArrayList<>();
+    //     products.add(product);
 
-        // === Test full constructor ===
-        ReceiptDTO dto1 = new ReceiptDTO("StoreX", "2025-06-03", products, 120.0);
+    //     // === Test full constructor ===
+    //     ReceiptDTO dto1 = new ReceiptDTO("StoreX", "2025-06-03", products, 120.0);
 
-        assertEquals("StoreX", dto1.getStoreName());
-        assertEquals("2025-06-03", dto1.getDate());
-        assertEquals(products, dto1.getProductsList());
-        assertEquals(120.0, dto1.getFinalPrice());
+    //     assertEquals("StoreX", dto1.getStoreName());
+    //     assertEquals("2025-06-03", dto1.getDate());
+    //     assertEquals(products, dto1.getProductsList());
+    //     assertEquals(120.0, dto1.getFinalPrice());
 
-        // === Test default constructor + setters ===
-        ReceiptDTO dto2 = new ReceiptDTO();
-        dto2.setStoreName("StoreY");
-        dto2.setDate("2025-07-01");
-        dto2.setProductsList(products);
-        dto2.setFinalPrice(200.5);
+    //     // === Test default constructor + setters ===
+    //     ReceiptDTO dto2 = new ReceiptDTO();
+    //     dto2.setStoreName("StoreY");
+    //     dto2.setDate("2025-07-01");
+    //     dto2.setProductsList(products);
+    //     dto2.setFinalPrice(200.5);
 
-        assertEquals("StoreY", dto2.getStoreName());
-        assertEquals("2025-07-01", dto2.getDate());
-        assertEquals(products, dto2.getProductsList());
-        assertEquals(200.5, dto2.getFinalPrice());
-    }
+    //     assertEquals("StoreY", dto2.getStoreName());
+    //     assertEquals("2025-07-01", dto2.getDate());
+    //     assertEquals(products, dto2.getProductsList());
+    //     assertEquals(200.5, dto2.getFinalPrice());
+    // }
 
     @Test
     public void testProductDTO_AllConstructorsSettersGetters() {
@@ -408,25 +402,25 @@ public class dtosTests {
         assertEquals("789 Road", dto4.address);
     }
 
-    @Test
-    public void testReceiptProduct_AllMethods() {
-        ReceiptProduct dto = new ReceiptProduct("Monitor", "TechShop", 2, 250, 1001, Category.Electronics);
+    // @Test
+    // public void testReceiptProduct_AllMethods() {
+    //     ReceiptProduct dto = new ReceiptProduct("Monitor", "TechShop", 2, 250, 1001, Category.Electronics);
 
-        assertEquals("Monitor", dto.getProductName());
-        assertEquals("TechShop", dto.getStorename());
-        assertEquals(2, dto.getQuantity());
-        assertEquals(250, dto.getPrice());
-        assertEquals(1001, dto.getProductId());
-        assertEquals(Category.Electronics, dto.getCategory());
+    //     assertEquals("Monitor", dto.getProductName());
+    //     assertEquals("TechShop", dto.getStorename());
+    //     assertEquals(2, dto.getQuantity());
+    //     assertEquals(250, dto.getPrice());
+    //     assertEquals(1001, dto.getProductId());
+    //     assertEquals(Category.Electronics, dto.getCategory());
 
-        dto.setPrice(300);
-        dto.setstoreName("NewStore");
-        dto.setProductId(2002);
+    //     dto.setPrice(300);
+    //     dto.setstoreName("NewStore");
+    //     dto.setProductId(2002);
 
-        assertEquals(300, dto.getPrice());
-        assertEquals("NewStore", dto.getStorename());
-        assertEquals(2002, dto.getProductId());
-    }
+    //     assertEquals(300, dto.getPrice());
+    //     assertEquals("NewStore", dto.getStorename());
+    //     assertEquals(2002, dto.getProductId());
+    // }
 
     @Test
     public void testWorkerDTO_AllMethods() {

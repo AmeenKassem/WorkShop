@@ -69,10 +69,10 @@ public class UserService {
     public String generateGuest() throws UIException, Exception {
         logger.info("generateGuest called");
         Guest guest = new Guest();
-        guest = guestJpaRepository.save(guest);
+        Guest savedGuest = guestJpaRepository.save(guest);
+        logger.info("Generated guest with ID={}", savedGuest.getId());
+        return authRepo.generateGuestToken(savedGuest.getId());
 
-        logger.info("Generated guest with ID={}", guest.getId());
-        return authRepo.generateGuestToken(guest.getId());
     }
 
     public boolean register(String token, String username, String password, int age) throws UIException {
@@ -90,7 +90,7 @@ public class UserService {
         }
         String encPass = encoder.encodePassword(password);
         Registered userToAdd = new Registered(username, encPass, age);
-        userToAdd = regJpaRepo.save(userToAdd); // ID will be auto-generated
+        regJpaRepo.save(userToAdd); // ID will be auto-generated
         logger.info("User {0} registered successfully,and persisted!", username);
         return userToAdd.getId();
     }
