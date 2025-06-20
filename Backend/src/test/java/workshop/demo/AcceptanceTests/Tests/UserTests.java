@@ -100,17 +100,18 @@ public class UserTests extends AcceptanceTests {
     void testUser_LogOut_Success() throws Exception {
     }
 
-//    @Test
-//    void testUser_LogIn_Failure() {
-//        when(mockUserRepo.findRegisteredUsersByUsername("notfound"))
-//                .thenReturn(List.of());
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            userService.login("guest-token", "notfound", "1234");
-//        });
-//
-//        assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getNumber());
-//    }
+    @Test
+    void testUser_LogIn_Failure_Invalid_UserName() {
+        when(mockAuthRepo.validToken("guest-token")).thenReturn(true);
+        when(mockUserRepo.findRegisteredUsersByUsername("notfound"))
+                .thenReturn(List.of());
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            userService.login("guest-token", "notfound", "1234");
+        });
+
+        assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getNumber());
+    }
 //
 //    @Test
 //    void testUser_LogOut_Failure() {
@@ -123,7 +124,7 @@ public class UserTests extends AcceptanceTests {
 //
 //        assertTrue(ex.getMessage().contains("logout error"));
 //    }
-//
+
 //    @Test
 //    void testUserLogin_Failure_InvalidToken() throws UIException {
 //        mockValidTokenFailure("bad-token");
@@ -494,7 +495,7 @@ public class UserTests extends AcceptanceTests {
 //         verify(real.mockSupply).processSupply(any());
 //         verify(real.mockOrderRepo).setOrderToStore(eq(storeId), eq(userId), any(), eq("TestStore"));
 //     }
-//
+
 //     @Test
 //     void testUserBuyCart_InvalidToken() throws Exception {
 //         String userToken = "user-token-2";

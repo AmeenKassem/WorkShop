@@ -37,7 +37,7 @@ public class AcceptanceTests {
     protected Registered registered;
 
     // Mocked repositories
-    @Autowired protected AuthenticationRepo mockAuthRepo ;
+    protected AuthenticationRepo mockAuthRepo =Mockito.mock(AuthenticationRepo.class);
     protected UserJpaRepository mockUserRepo = Mockito.mock(UserJpaRepository.class);
     protected GuestJpaRepository mockGuestRepo = Mockito.mock(GuestJpaRepository.class);
     protected IStoreRepoDB mockStoreRepo = Mockito.mock(IStoreRepoDB.class);
