@@ -437,7 +437,12 @@ public class StockService {
         if (!this.suConnectionRepo.manipulateItem(removerId, storeId, Permission.DeleteFromStock)) {
             throw new UIException("this worker is not authorized!", ErrorCodes.NO_PERMISSION);
         }
-        stockRepo.removeItem(storeId, productId);
+
+        StoreStock stock = storeStockRepo.findById(storeId).orElse(null);
+
+        stock.removeItem(productId);
+
+        storeStockRepo.saveAndFlush(stock);
         logger.info("Item {} successfully removed from store {}", productId, storeId);
         return productId;
     }

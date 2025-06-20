@@ -163,6 +163,7 @@ public class PurchaseService {
 
                     totalForStore += price;
                 } else if (isGuest) {
+                    logger.info("user guest tring to buy items with not enough stock on the store ... "+ userId);
                     releaseStock(boughtItems, storeToProducts);
                     throw new UIException(store.getStoreName(), ErrorCodes.INSUFFICIENT_STOCK);
                 }
@@ -205,6 +206,7 @@ public class PurchaseService {
 
     private void releaseStock(List<ReceiptProduct> boughtItems,
             Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts) throws UIException {
+        logger.info("releasing back the stock of bougth items (cancel purchase for user)");
         for (ReceiptProduct receiptProduct : boughtItems) {
             StoreStock stock = storeStockRepo.findById(receiptProduct.getStoreId()).orElseThrow();
             stock.IncreaseQuantitytoBuy(receiptProduct.getProductId(), receiptProduct.getQuantity());
