@@ -16,7 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 
-import jakarta.transaction.Transactional;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+// import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
@@ -28,6 +30,7 @@ import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DataAccessLayer.GuestJpaRepository;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
+import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -54,7 +57,9 @@ import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
-import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
+import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PurchaseService {
@@ -67,7 +72,7 @@ public class PurchaseService {
     private IOrderRepo orderRepo;
     private final IPaymentService paymentService;
     private final ISupplyService supplyService;
-    private IUserSuspensionRepo susRepo;
+    private UserSuspensionJpaRepository suspensionJpaRepo;
     private UserJpaRepository regRepo;
     private GuestJpaRepository guestRepo;
     private IStoreRepoDB storeJpaRepo;
@@ -79,7 +84,7 @@ public class PurchaseService {
     @Autowired
     public PurchaseService(IAuthRepo authRepo, IStockRepo stockRepo, IStoreRepo storeRepo,
             IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
-            ISupplyService supplyService, IUserSuspensionRepo susRepo, UserJpaRepository regsRepo,
+            ISupplyService supplyService, UserSuspensionJpaRepository usersuspentionjpa, UserJpaRepository regsRepo,
             GuestJpaRepository guestRepo, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStockRepo) {
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
@@ -89,48 +94,54 @@ public class PurchaseService {
         this.orderRepo = orderRepo;
         this.paymentService = paymentService;
         this.supplyService = supplyService;
-        this.susRepo = susRepo;
+        this.suspensionJpaRepo = usersuspentionjpa;
         this.guestRepo = guestRepo;
         this.regRepo = regsRepo;
         this.storeJpaRepo = storeJpaRepo;
         this.storeStockRepo = storeStockRepo;
     }
 
+    @Transactional(rollbackFor = UIException.class)
     public ReceiptDTO[] buyGuestCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
             throws Exception {
         logger.info("buyGuestCart called with token");
 
         if (!authRepo.validToken(token)) {
             logger.error("Invalid token in buyGuestCart");
-
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
         int userId = authRepo.getUserId(token);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
+
         return processCart(userId, true, paymentdetails, supplydetails);
     }
 
+    @Transactional(rollbackFor = UIException.class)
     public ReceiptDTO[] buyRegisteredCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
             throws Exception {
         logger.info("buyRegisteredCart called with token");
 
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
+
         return processCart(userId, false, paymentdetails, supplydetails);
     }
 
-    @Transactional
-    private ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails payment, SupplyDetails supply)
+    @Transactional(rollbackFor = UIException.class)
+    public ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails payment, SupplyDetails supply)
             throws Exception {
         logger.info("processCart called for userId={}, isGuest={}", userId, isGuest);
-
         Guest user = getUser(isGuest, userId);
-
         if (user.emptyCart())
             throw new UIException("Shopping cart is empty or not found", ErrorCodes.CART_NOT_FOUND);
         Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts = new HashMap<>();
-        List<CartItem> itemsSuccess = new ArrayList<>();
         double finalTotal = 0;
         for (ShoppingBasket basket : user.getBaskets()) {
             double totalForStore = 0;
@@ -151,10 +162,9 @@ public class PurchaseService {
             StoreStock stock = storeStockRepo.findById(storeId).orElseThrow();
             for (CartItem itemOnUserCart : basket.getItems()) {
                 if (stock.decreaseQuantitytoBuy(itemOnUserCart.productId, itemOnUserCart.quantity)) {
-                    if (!isGuest)
-                        itemsSuccess.add(itemOnUserCart);
+                    user.removeItem(itemOnUserCart.getId());
                     // ADD DISSCOUNT HERE ... HMODE
-                    double price = itemOnUserCart.price*itemOnUserCart.quantity;
+                    double price = itemOnUserCart.price * itemOnUserCart.quantity;
                     // ADD DISSCOUNT HERE ... HMODE
                     ReceiptProduct boughtItem = new ReceiptProduct(itemOnUserCart.name, storeName,
                             itemOnUserCart.quantity, itemOnUserCart.price, itemOnUserCart.productId,
@@ -163,77 +173,38 @@ public class PurchaseService {
 
                     totalForStore += price;
                 } else if (isGuest) {
-                    logger.info("user guest tring to buy items with not enough stock on the store ... "+ userId);
-                    releaseStock(boughtItems, storeToProducts);
+                    logger.info("user guest tring to buy items with not enough stock on the store ... " + userId);
                     throw new UIException(store.getStoreName(), ErrorCodes.INSUFFICIENT_STOCK);
                 }
             }
-            storeStockRepo.saveAndFlush(stock);
-
-            // List<ItemStoreDTO> itemStoreDTOS = new ArrayList<>();
-            // for (ReceiptProduct p : boughtItems) {
-            //     itemStoreDTOS.add(new ItemStoreDTO(
-            //             p.getProductId(), p.getQuantity(), p.getPrice(), p.getCategory(),
-            //             0, storeId, p.getProductName(), storeName));
-            // }
-
-            // DiscountScope scope = new DiscountScope(itemStoreDTOS);
-            // // Hmode
-            // store.assertPurchasePolicies(user.getUserDTO(), itemStoreDTOS);
-            // // Hmode
-            // Discount discount = store.getDiscount();
-            // double discountAmount = (discount != null) ? discount.apply(scope) : 0.0;
-            // double total = stockRepo.calculateTotalPrice(boughtItems);
-            // finalTotal = total - discountAmount;
-
             finalTotal += totalForStore;
             storeToProducts.put(storeId, Pair.of(boughtItems, totalForStore));
         }
-
         if (!paymentService.processPayment(payment, finalTotal) || !supplyService.processSupply(supply)) {
-            releaseStock(new ArrayList<>(), storeToProducts);
             throw new UIException("payment not successeded!!!", ErrorCodes.PAYMENT_ERROR);
         }
-
-        if (isGuest)
-            user.clearCart();
-        else
-            user.removeItemAll(itemsSuccess);
-        guestRepo.save(user);
-
+        storeStockRepo.flush();
         return saveReceiptsWithDiscount(userId, storeToProducts);
     }
 
-    private void releaseStock(List<ReceiptProduct> boughtItems,
-            Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts) throws UIException {
-        logger.info("releasing back the stock of bougth items (cancel purchase for user)");
-        for (ReceiptProduct receiptProduct : boughtItems) {
-            StoreStock stock = storeStockRepo.findById(receiptProduct.getStoreId()).orElseThrow();
-            stock.IncreaseQuantitytoBuy(receiptProduct.getProductId(), receiptProduct.getQuantity());
-            storeStockRepo.saveAndFlush(stock);
-        }
-        for (Integer storeId : storeToProducts.keySet()) {
-            StoreStock stock = storeStockRepo.findById(storeId).orElseThrow();
-            for (ReceiptProduct receiptProduct : storeToProducts.get(storeId).getLeft()) {
-                stock.IncreaseQuantitytoBuy(receiptProduct.getProductId(), receiptProduct.getQuantity());
-            }
-            storeStockRepo.saveAndFlush(stock);
-        }
-    }
-
-
-    private Guest getUser(boolean isGuest, int userId) throws UIException {
+    @Transactional
+    public Guest getUser(boolean isGuest, int userId) throws UIException {
         if (isGuest) {
             Optional<Guest> guset = guestRepo.findById(userId);
-            if (guset.isPresent())
+
+            if (guset.isPresent()) {
+
                 return guset.get();
+            }
+
             else
                 throw new UIException("there is no guest with given id", ErrorCodes.USER_NOT_FOUND);
         } else {
             Optional<Registered> user = regRepo.findById(userId);
-            if (user.isPresent())
+            if (user.isPresent()) {
+
                 return user.get();
-            else
+            } else
                 throw new UIException("there is no guest with given id", ErrorCodes.USER_NOT_FOUND);
         }
     }
@@ -245,7 +216,11 @@ public class PurchaseService {
         int userId = authRepo.getUserId(token);
         Registered user = regRepo.findById(userId)
                 .orElseThrow(() -> new UIException("user not logged in!", ErrorCodes.USER_NOT_LOGGED_IN));
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
+
         ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
         UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random);
         user.addSpecialItemToCart(item);
@@ -266,7 +241,11 @@ public class PurchaseService {
             throws Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
+
         logger.info("The user " + userId + " finalizing the special cart.");
         Registered user = regRepo.findById(userId).orElseThrow(() -> notLoggedInException());
         List<SingleBid> winningBids = new ArrayList<>();
@@ -357,7 +336,7 @@ public class PurchaseService {
                     bid.getAmount(),
                     (int) bid.getBidPrice(),
                     bid.productId(),
-                    product.getCategory(),bid.getStoreId());
+                    product.getCategory(), bid.getStoreId());
 
             res.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
             // paymentService.processPayment(payment, (int) bid.getBidPrice());
@@ -383,7 +362,7 @@ public class PurchaseService {
                     1,
                     0,
                     product.getProductId(),
-                    product.getCategory(),card.storeId);
+                    product.getCategory(), card.storeId);
 
             storeToProducts.computeIfAbsent(card.storeId, k -> new ArrayList<>()).add(receiptProduct);
             // supplyService.processSupply(supply);
@@ -414,6 +393,7 @@ public class PurchaseService {
         return receipts.toArray(new ReceiptDTO[0]);
     }
 
+    @Transactional
     private ReceiptDTO[] saveReceiptsWithDiscount(int userId,
             Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts)
             throws UIException {

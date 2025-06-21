@@ -26,6 +26,7 @@ import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.SystemAnalyticsDTO;
 import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DTOs.UserSuspensionDTO;
 import workshop.demo.DataAccessLayer.GuestJpaRepository;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
@@ -35,7 +36,7 @@ import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
-import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
+import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 import workshop.demo.PresentationLayer.Requests.AddToCartRequest;
 import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 
@@ -54,7 +55,6 @@ public class UserController {
             IAuthRepo auth,                      // the JWT token provider
             IStockRepo stockrepo,
             AdminInitilizer adminInitializer,
-            IUserSuspensionRepo userSuspensionRepo,
             UserSuspensionJpaRepository userSuspensionJpaRepository,
             UserJpaRepository regRepo,
             GuestJpaRepository guest, UserJpaRepository userRepo
@@ -399,6 +399,36 @@ public class UserController {
         } catch (Exception e) {
             res = new ApiResponse<>(null, e.getMessage(), -1);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+        }
+    }
+
+    @PostMapping("/cancelSuspension")
+    public ResponseEntity<ApiResponse<Boolean>> cancelSuspension(@RequestParam Integer userId,
+                                                                @RequestParam String token) {
+        ApiResponse<Boolean> res;
+        try {
+            userSuspensionService.cancelSuspension(userId, token);
+            res = new ApiResponse<>(true, null);
+            return ResponseEntity.ok(res);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+        }
+    }
+
+   @GetMapping("/viewSuspensions")
+    public ResponseEntity<?> viewSuspensions(@RequestParam String token) {
+        try {
+            List<UserSuspensionDTO> suspensions = userSuspensionService.viewAllSuspensions(token);
+            return ResponseEntity.ok(new ApiResponse<>(suspensions, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
     }
 

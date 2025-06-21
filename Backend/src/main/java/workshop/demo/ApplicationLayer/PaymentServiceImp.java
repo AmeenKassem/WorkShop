@@ -20,13 +20,13 @@ public class PaymentServiceImp implements IPaymentService {
         if (paymentDetails.cardNumber == null || paymentDetails.cvv == null) {
             logger.error("Payment failed: card number or CVV is missing.");
 
-            throw new UIException("Invalid payment details.", ErrorCodes.PAYMENT_ERROR);
+            return false;
         }
         // changed this beacuse random price is 0
         if (totalPrice < 0) {
             logger.error("Payment failed: invalid amount {}", totalPrice);
 
-            throw new UIException("Invalid payment amount.", ErrorCodes.PAYMENT_ERROR);
+            return false;
         }
         logger.info("Payment processed successfully for card ending with {}");
         return true;

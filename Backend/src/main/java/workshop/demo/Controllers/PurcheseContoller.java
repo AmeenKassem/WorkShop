@@ -39,7 +39,7 @@ import workshop.demo.DomainLayer.Store.CouponContext;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 // import workshop.demo.DomainLayer.User.IUserRepo;
-import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
+import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 
 @RestController
 @RequestMapping("/purchase")
@@ -50,10 +50,10 @@ public class PurcheseContoller {
     @Autowired
     public PurcheseContoller(IAuthRepo auth, IStockRepo stockrepo, IStoreRepo storeRepo, 
             IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
-            ISupplyService supplyService, IUserSuspensionRepo UserSuspensionRepo, UserJpaRepository userJpaRepo,
+            ISupplyService supplyService, UserSuspensionJpaRepository usersuspentionjpa, UserJpaRepository userJpaRepo,
             GuestJpaRepository guestJpaRepository, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStockRepo) {
         this.purchaseService = new PurchaseService(auth, stockrepo, storeRepo, 
-                purchaseRepo, orderRepo, paymentService, supplyService, UserSuspensionRepo, userJpaRepo,
+                purchaseRepo, orderRepo, paymentService, supplyService, usersuspentionjpa, userJpaRepo,
                 guestJpaRepository,storeJpaRepo,storeStockRepo);
     }
 
