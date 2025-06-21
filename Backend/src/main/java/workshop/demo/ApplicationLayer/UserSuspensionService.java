@@ -30,9 +30,11 @@ public class UserSuspensionService {
     @Autowired
     private UserSuspensionJpaRepository suspensionJpaRepo;
     private static final Logger logger = LoggerFactory.getLogger(UserSuspensionService.class);
+    private final ConcurrentHashMap<Integer, Object> userLocks = new ConcurrentHashMap<>();
 
     @Autowired
-    public UserSuspensionService(UserSuspensionJpaRepository userSuspensionJpaRepository, UserJpaRepository userRepo, IAuthRepo authRepo) {
+    public UserSuspensionService(UserSuspensionJpaRepository userSuspensionJpaRepository, UserJpaRepository userRepo,
+            IAuthRepo authRepo) {
         this.suspensionJpaRepo = userSuspensionJpaRepository;
         this.userRepo = userRepo;
         this.authRepo = authRepo;
@@ -40,31 +42,41 @@ public class UserSuspensionService {
 
     public boolean isUserSuspended(int userId) {
         return suspensionJpaRepo.findById(userId)
-            .map(suspension -> !suspension.isExpired() && !suspension.isPaused())
-            .orElse(false);
+                .map(suspension -> !suspension.isExpired() && !suspension.isPaused())
+                .orElse(false);
     }
 
     public void suspendRegisteredUser(int userId, int minutes, String adminToken) throws UIException {
-        System.out.println("Calling suspendRegisteredUser: userId=" + userId + ", minutes=" + minutes + ", token=" + adminToken);
+        System.out.println(
+                "Calling suspendRegisteredUser: userId=" + userId + ", minutes=" + minutes + ", token=" + adminToken);
         validateAdmin(adminToken);
-        if (isUserSuspended(userId)) {
-            throw new UIException("User is already suspended", ErrorCodes.USER_SUSPENDED);
+
+        Object lock = userLocks.computeIfAbsent(userId, k -> new Object());
+        synchronized (lock) {
+            if (isUserSuspended(userId)) {
+                throw new UIException("User is already suspended", ErrorCodes.USER_SUSPENDED);
+            }
+            UserSuspension suspension = new UserSuspension(userId, minutes);
+            suspensionJpaRepo.save(suspension);
+            logger.info("User " + userId + " suspended for " + minutes + " minutes.");
         }
-        UserSuspension suspension = new UserSuspension(userId, minutes);
-        suspensionJpaRepo.save(suspension);
-        logger.info("User " + userId + " suspended for " + minutes + " minutes.");
     }
 
     public void suspendGuestUser(int userId, int seconds, String adminToken) throws UIException {
-        System.out.println("Calling suspendGuestUser: userId=" + userId + ", seconds=" + seconds + ", token=" + adminToken);
+        System.out.println(
+                "Calling suspendGuestUser: userId=" + userId + ", seconds=" + seconds + ", token=" + adminToken);
         validateAdmin(adminToken);
-        if (isUserSuspended(userId)) {
-            throw new UIException("Guest is already suspended", ErrorCodes.USER_SUSPENDED);
+
+        Object lock = userLocks.computeIfAbsent(userId, k -> new Object());
+        synchronized (lock) {
+            if (isUserSuspended(userId)) {
+                throw new UIException("Guest is already suspended", ErrorCodes.USER_SUSPENDED);
+            }
+            long durationMinutes = Math.max(1, seconds / 60L); // Ensure at least one minute
+            UserSuspension suspension = new UserSuspension(userId, durationMinutes);
+            suspensionJpaRepo.save(suspension);
+            logger.info("Guest " + userId + " suspended for " + durationMinutes + " minutes.");
         }
-        long durationMinutes = Math.max(1, seconds / 60L); // להבטיח לפחות דקה אחת
-        UserSuspension suspension = new UserSuspension(userId, durationMinutes);
-        suspensionJpaRepo.save(suspension);
-        logger.info("Guest " + userId + " suspended for " + durationMinutes + " minutes.");
     }
 
     private void validateAdmin(String token) throws UIException {
@@ -122,8 +134,7 @@ public class UserSuspensionService {
                         s.getUserId(),
                         s.isPaused(),
                         s.getSuspensionEndTime(),
-                        s.getRemainingWhenPaused()
-                ))
+                        s.getRemainingWhenPaused()))
                 .collect(Collectors.toList());
     }
 }

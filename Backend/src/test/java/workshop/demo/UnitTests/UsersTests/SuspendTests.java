@@ -30,7 +30,7 @@ import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
-import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
+import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 
 @Service
 @SpringBootTest
@@ -48,7 +48,7 @@ public class SuspendTests {
     @Autowired
     private PurchaseRepository purchaseRepository;
     @Autowired
-    private UserSuspensionRepo suspensionRepo;
+    private UserSuspensionJpaRepository suspensionRepo;
     @Autowired
     private AuthenticationRepo authRepo;
 
