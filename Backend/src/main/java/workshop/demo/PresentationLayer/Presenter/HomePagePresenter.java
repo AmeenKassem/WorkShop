@@ -1,6 +1,7 @@
 package workshop.demo.PresentationLayer.Presenter;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashMap;
@@ -292,6 +293,31 @@ public class HomePagePresenter {
             ExceptionHandlers.handleException(e);
         }
         return Collections.emptyList();
+    }
+
+    public LocalDateTime fetchSuspensionEndTime(String token) {
+        try {
+            String url = String.format(
+                    Base.url + "/api/users/mySuspensionStatus?token=%s",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
+            );
+
+            ResponseEntity<ApiResponse<java.time.LocalDateTime>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    new HttpEntity<>(buildHeaders()),
+                    new ParameterizedTypeReference<>() {}
+            );
+
+            ApiResponse<java.time.LocalDateTime> body = response.getBody();
+            if (body != null && body.getErrNumber() == -1) {
+                return body.getData();
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private String buildUrl(String path, String token, String name, String keyword, Category category,

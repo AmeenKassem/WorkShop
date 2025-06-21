@@ -83,7 +83,6 @@ import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
-import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 import workshop.demo.SocketCommunication.SocketHandler;
 
 @SpringBootTest
@@ -111,8 +110,7 @@ public class StoreSTests {
     private OrderRepository orderRepository;
     @Autowired
     private PurchaseRepository purchaseRepository;
-    @Autowired
-    private UserSuspensionRepo suspensionRepo;
+    
     @Autowired
     private AuthenticationRepo authRepo;
 

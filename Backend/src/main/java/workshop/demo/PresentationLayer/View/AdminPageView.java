@@ -108,7 +108,7 @@ public class AdminPageView extends VerticalLayout {
 
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("Suspended Users");
-        dialog.setWidth("600px");
+        dialog.setWidth("700px");
         dialog.setHeight("400px");
 
         if (suspensions.isEmpty()) {
@@ -123,10 +123,14 @@ public class AdminPageView extends VerticalLayout {
                 .setHeader("Paused");
 
             grid.addColumn(s -> s.getSuspensionEndTime() != null ? s.getSuspensionEndTime().toString() : "N/A")
-                .setHeader("End Time");
+                .setHeader("End Time")
+                .setAutoWidth(true)  
+                .setFlexGrow(0);    
 
             grid.addColumn(UserSuspensionDTO::getRemainingWhenPaused)
-                .setHeader("Remaining (min)");
+                .setHeader("Remaining Time ")
+                .setAutoWidth(true)
+                .setFlexGrow(0);
 
             grid.setItems(suspensions);
             grid.setWidthFull();

@@ -1,5 +1,6 @@
 package workshop.demo.PresentationLayer.View;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.vaadin.flow.component.Tag;
@@ -41,6 +42,15 @@ public class HomePage extends VerticalLayout {
 
     public HomePage() {
         this.homePagePresenter = new HomePagePresenter(this);
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        LocalDateTime suspensionEnd = this.homePagePresenter.fetchSuspensionEndTime(token);
+
+        if (suspensionEnd != null) {
+            String formatted = suspensionEnd.format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy - HH:mm"));
+            Paragraph suspensionMsg = new Paragraph("🚫 You are suspended until: " + formatted);
+            suspensionMsg.getStyle().set("color", "red").set("font-weight", "bold").set("font-size", "18px");
+            add(suspensionMsg);
+        }
 
         addClassName("home-view");
         setSizeFull();

@@ -1,5 +1,6 @@
 package workshop.demo.Controllers;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -474,7 +475,22 @@ public class UserController {
             res = new ApiResponse<>(null, e.getMessage(), -1);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
         }
+    }
 
+    @GetMapping("/mySuspensionStatus")
+    public ResponseEntity<ApiResponse<LocalDateTime>> mySuspensionStatus(@RequestParam String token) {
+        try {
+            LocalDateTime suspensionEndTime = userSuspensionService.getSuspensionEndTimeIfAny(token);
+            return ResponseEntity.ok(new ApiResponse<>(suspensionEndTime, null));
+        } catch (UIException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
     }
 
 }
