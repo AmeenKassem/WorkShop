@@ -78,7 +78,7 @@ public class StockService {
         return new UIException(" store does not exist.", ErrorCodes.STORE_NOT_FOUND);
     }
 
-    public ItemStoreDTO[] searchProducts(String token, ProductSearchCriteria criteria) throws Exception {
+    public ItemStoreDTO[] searchProductsOnAllSystem(String token, ProductSearchCriteria criteria) throws Exception {
 
         logger.info("Starting searchProducts with criteria: {}", criteria);
 

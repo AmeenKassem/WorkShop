@@ -449,7 +449,7 @@ public class GuestTests {
                 0, 5 // no rating range
         );
 
-        ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(GToken, criteria);
 
         assertNotNull(result);
         assertEquals(1, result.length);
@@ -468,7 +468,7 @@ public class GuestTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop",
                 Category.Electronics, null, createdStoreId, 0, 3000, 0,
                 5);
-        ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(GToken, criteria);
 
         assertNotNull(result);
         assertEquals(1, result.length);
@@ -490,7 +490,7 @@ public class GuestTests {
         // 1. Throw on auth check
         // 3. Run the test
         UIException exception = assertThrows(UIException.class, () -> {
-            stockService.searchProducts("invalid token", criteria);
+            stockService.searchProductsOnAllSystem("invalid token", criteria);
         });
 
         // 4. Verify
@@ -505,7 +505,7 @@ public class GuestTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria("aa",
                 Category.Electronics, keywords[0], createdStoreId, 0, 5000,
                 0, 5);
-        ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(GToken, criteria);
         assertNotNull(result);
         assertEquals(0, result.length);
     }
@@ -516,7 +516,7 @@ public class GuestTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 "toy", Category.Electronics, null, createdStoreId,
                 0, 0, 0, 0);
-        ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(GToken, criteria);
 
         assertNotNull(result);
         assertEquals(0, result.length); // Product not sold in this store
@@ -529,7 +529,7 @@ public class GuestTests {
                 "Laptop", Category.Electronics, null, createdStoreId,
                 5000, 10000, 0, 5 // Price filter too high
         );
-        ItemStoreDTO[] result = stockService.searchProducts(GToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(GToken, criteria);
 
         assertNotNull(result);
         assertEquals(0, result.length);

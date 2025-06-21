@@ -585,7 +585,7 @@ public class UserTests {
                 0, 5 // no rating range
         );
 
-        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
 
         assertNotNull(result);
         assertEquals(1, result.length);
@@ -605,7 +605,7 @@ public class UserTests {
         // 1. Throw on auth check
         // 3. Run the test
         UIException exception = assertThrows(UIException.class, () -> {
-            stockService.searchProducts("invalid token", criteria);
+            stockService.searchProductsOnAllSystem("invalid token", criteria);
         });
         assertEquals("Invalid token!", exception.getMessage());
         assertEquals(ErrorCodes.INVALID_TOKEN, exception.getNumber());
@@ -617,7 +617,7 @@ public class UserTests {
         String[] keywords = { "Laptop", "Lap", "top" };
         ProductSearchCriteria criteria = new ProductSearchCriteria("aa", Category.Electronics, keywords[0], 1, 0, 5000,
                 0, 5);
-        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertNotNull(result);
         assertEquals(0, result.length);
     }
@@ -632,7 +632,7 @@ public class UserTests {
         // 1. Throw on auth check
         // 3. Run the test
         UIException exception = assertThrows(UIException.class, () -> {
-            stockService.searchProducts("invalid token", criteria);
+            stockService.searchProductsOnAllSystem("invalid token", criteria);
         });
 
         // 4. Verify
@@ -645,7 +645,7 @@ public class UserTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 "toy", Category.Electronics, null, 1,
                 0, 0, 0, 0);
-        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
 
         assertNotNull(result);
         assertEquals(0, result.length); // Product not sold in this store
@@ -947,7 +947,7 @@ public class UserTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 "laptop", null, null, null,
                 -1.0, -1.0, -1.0, -1.0);
-        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(1, result.length);
     }
 
@@ -956,7 +956,7 @@ public class UserTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 "phone", null, null, null,
                 -1.0, -1.0, -1.0, -1.0);
-        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(0, result.length);
     }
 
@@ -965,7 +965,7 @@ public class UserTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, Category.Electronics, null, null,
                 -1.0, -1.0, -1.0, -1.0);
-        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(1, result.length);
     }
 
@@ -974,7 +974,7 @@ public class UserTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, Category.Books, null, null,
                 -1.0, -1.0, -1.0, -1.0);
-        Exception ex = assertThrows(Exception.class, () -> stockService.searchProducts(NGToken, criteria));
+        Exception ex = assertThrows(Exception.class, () -> stockService.searchProductsOnAllSystem(NGToken, criteria));
     }
 
     @Test
@@ -982,7 +982,7 @@ public class UserTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, null, "top", null,
                 -1.0, -1.0, -1.0, -1.0);
-        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(1, result.length);
     }
 
@@ -991,7 +991,7 @@ public class UserTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, null, "banana", null,
                 -1.0, -1.0, -1.0, 1);
-        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(0, result.length);
     }
 
@@ -1000,7 +1000,7 @@ public class UserTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, null, null, null,
                 1500.0, -1.0, -1.0, -1.0);
-        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(1, result.length);
     }
 
@@ -1009,7 +1009,7 @@ public class UserTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, null, null, null,
                 3000.0, -1.0, -1.0, -1.0);
-        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(0, result.length);
     }
 
@@ -1018,7 +1018,7 @@ public class UserTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, null, null, null,
                 -1.0, 3000.0, -1.0, -1.0);
-        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(1, result.length);
     }
 
@@ -1027,7 +1027,7 @@ public class UserTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, null, null, null,
                 -1.0, 1000.0, -1.0, -1.0);
-        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(0, result.length);
     }
 
@@ -1036,7 +1036,7 @@ public class UserTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, null, null, null,
                 -1.0, -1.0, 0.0, 5.0);
-        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(1, result.length);
     }
 
@@ -1045,7 +1045,7 @@ public class UserTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, null, null, null,
                 -1.0, -1.0, 4.9, -1.0);
-        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(0, result.length);
     }
 
@@ -1054,7 +1054,7 @@ public class UserTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, null, null, null,
                 -1.0, -1.0, -1.0, 0.0);
-        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(0, result.length);
     }
 
@@ -1063,7 +1063,7 @@ public class UserTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, null, null, 1,
                 -1.0, -1.0, -1.0, -1);
-        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(1, result.length);
     }
 
@@ -1072,7 +1072,7 @@ public class UserTests {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, null, null, 99,
                 -1.0, -1.0, -1.0, -1);
-        assertThrows(Exception.class, () -> stockService.searchProducts(NGToken, criteria));
+        assertThrows(Exception.class, () -> stockService.searchProductsOnAllSystem(NGToken, criteria));
     }
 
 }

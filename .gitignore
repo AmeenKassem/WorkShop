@@ -42,3 +42,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+### Python Virtual Environment ###
+venv/
+.venv/
+.env/
+env/
