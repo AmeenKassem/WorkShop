@@ -18,6 +18,7 @@ import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Transient;
+import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ReceiptProduct;
@@ -32,7 +33,7 @@ public class StoreStock {
     private final Map<Integer, item> stock = new ConcurrentHashMap<>();// productId, item
 
     @ElementCollection
-    private List<item> items=new ArrayList<>();
+    private List<item> items = new ArrayList<>();
 
     @Id
     private int storeID;
@@ -247,6 +248,7 @@ public class StoreStock {
         return this.storeID;
     }
 
+    @Transactional
     public void IncreaseQuantitytoBuy(int productId, int quantity) throws UIException {
         item foundItem = getItemByProductId(productId);
         if (foundItem == null) {

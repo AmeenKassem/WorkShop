@@ -16,7 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 
-import jakarta.transaction.Transactional;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+// import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
@@ -55,6 +57,7 @@ import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PurchaseService {
@@ -96,20 +99,20 @@ public class PurchaseService {
         this.storeStockRepo = storeStockRepo;
     }
 
+    @Transactional(rollbackFor = UIException.class)
     public ReceiptDTO[] buyGuestCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
             throws Exception {
         logger.info("buyGuestCart called with token");
 
         if (!authRepo.validToken(token)) {
             logger.error("Invalid token in buyGuestCart");
-
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
         int userId = authRepo.getUserId(token);
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         return processCart(userId, true, paymentdetails, supplydetails);
     }
-
+@Transactional(rollbackFor = UIException.class)
     public ReceiptDTO[] buyRegisteredCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
             throws Exception {
         logger.info("buyRegisteredCart called with token");
@@ -120,17 +123,14 @@ public class PurchaseService {
         return processCart(userId, false, paymentdetails, supplydetails);
     }
 
-    @Transactional
-    private ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails payment, SupplyDetails supply)
+    @Transactional(rollbackFor = UIException.class)
+    public ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails payment, SupplyDetails supply)
             throws Exception {
         logger.info("processCart called for userId={}, isGuest={}", userId, isGuest);
-
         Guest user = getUser(isGuest, userId);
-
         if (user.emptyCart())
             throw new UIException("Shopping cart is empty or not found", ErrorCodes.CART_NOT_FOUND);
         Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts = new HashMap<>();
-        List<CartItem> itemsSuccess = new ArrayList<>();
         double finalTotal = 0;
         for (ShoppingBasket basket : user.getBaskets()) {
             double totalForStore = 0;
@@ -151,10 +151,9 @@ public class PurchaseService {
             StoreStock stock = storeStockRepo.findById(storeId).orElseThrow();
             for (CartItem itemOnUserCart : basket.getItems()) {
                 if (stock.decreaseQuantitytoBuy(itemOnUserCart.productId, itemOnUserCart.quantity)) {
-                    if (!isGuest)
-                        itemsSuccess.add(itemOnUserCart);
+                    user.removeItem(itemOnUserCart.getId());
                     // ADD DISSCOUNT HERE ... HMODE
-                    double price = itemOnUserCart.price*itemOnUserCart.quantity;
+                    double price = itemOnUserCart.price * itemOnUserCart.quantity;
                     // ADD DISSCOUNT HERE ... HMODE
                     ReceiptProduct boughtItem = new ReceiptProduct(itemOnUserCart.name, storeName,
                             itemOnUserCart.quantity, itemOnUserCart.price, itemOnUserCart.productId,
@@ -163,77 +162,38 @@ public class PurchaseService {
 
                     totalForStore += price;
                 } else if (isGuest) {
-                    logger.info("user guest tring to buy items with not enough stock on the store ... "+ userId);
-                    releaseStock(boughtItems, storeToProducts);
+                    logger.info("user guest tring to buy items with not enough stock on the store ... " + userId);
                     throw new UIException(store.getStoreName(), ErrorCodes.INSUFFICIENT_STOCK);
                 }
             }
-            storeStockRepo.saveAndFlush(stock);
-
-            // List<ItemStoreDTO> itemStoreDTOS = new ArrayList<>();
-            // for (ReceiptProduct p : boughtItems) {
-            //     itemStoreDTOS.add(new ItemStoreDTO(
-            //             p.getProductId(), p.getQuantity(), p.getPrice(), p.getCategory(),
-            //             0, storeId, p.getProductName(), storeName));
-            // }
-
-            // DiscountScope scope = new DiscountScope(itemStoreDTOS);
-            // // Hmode
-            // store.assertPurchasePolicies(user.getUserDTO(), itemStoreDTOS);
-            // // Hmode
-            // Discount discount = store.getDiscount();
-            // double discountAmount = (discount != null) ? discount.apply(scope) : 0.0;
-            // double total = stockRepo.calculateTotalPrice(boughtItems);
-            // finalTotal = total - discountAmount;
-
             finalTotal += totalForStore;
             storeToProducts.put(storeId, Pair.of(boughtItems, totalForStore));
         }
-
         if (!paymentService.processPayment(payment, finalTotal) || !supplyService.processSupply(supply)) {
-            releaseStock(new ArrayList<>(), storeToProducts);
             throw new UIException("payment not successeded!!!", ErrorCodes.PAYMENT_ERROR);
         }
-
-        if (isGuest)
-            user.clearCart();
-        else
-            user.removeItemAll(itemsSuccess);
-        guestRepo.save(user);
-
         return saveReceiptsWithDiscount(userId, storeToProducts);
     }
 
-    private void releaseStock(List<ReceiptProduct> boughtItems,
-            Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts) throws UIException {
-        logger.info("releasing back the stock of bougth items (cancel purchase for user)");
-        for (ReceiptProduct receiptProduct : boughtItems) {
-            StoreStock stock = storeStockRepo.findById(receiptProduct.getStoreId()).orElseThrow();
-            stock.IncreaseQuantitytoBuy(receiptProduct.getProductId(), receiptProduct.getQuantity());
-            storeStockRepo.saveAndFlush(stock);
-        }
-        for (Integer storeId : storeToProducts.keySet()) {
-            StoreStock stock = storeStockRepo.findById(storeId).orElseThrow();
-            for (ReceiptProduct receiptProduct : storeToProducts.get(storeId).getLeft()) {
-                stock.IncreaseQuantitytoBuy(receiptProduct.getProductId(), receiptProduct.getQuantity());
-            }
-            storeStockRepo.saveAndFlush(stock);
-        }
-    }
 
-
-    private Guest getUser(boolean isGuest, int userId) throws UIException {
+    @Transactional
+    public Guest getUser(boolean isGuest, int userId) throws UIException {
         if (isGuest) {
             Optional<Guest> guset = guestRepo.findById(userId);
-            if (guset.isPresent())
+
+            if (guset.isPresent()) {
+               
                 return guset.get();
+            }
+
             else
                 throw new UIException("there is no guest with given id", ErrorCodes.USER_NOT_FOUND);
         } else {
             Optional<Registered> user = regRepo.findById(userId);
-            if (user.isPresent())
+            if (user.isPresent()) {
+               
                 return user.get();
-            else
+            } else
                 throw new UIException("there is no guest with given id", ErrorCodes.USER_NOT_FOUND);
         }
     }
@@ -357,7 +317,7 @@ public class PurchaseService {
                     bid.getAmount(),
                     (int) bid.getBidPrice(),
                     bid.productId(),
-                    product.getCategory(),bid.getStoreId());
+                    product.getCategory(), bid.getStoreId());
 
             res.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
             // paymentService.processPayment(payment, (int) bid.getBidPrice());
@@ -383,7 +343,7 @@ public class PurchaseService {
                     1,
                     0,
                     product.getProductId(),
-                    product.getCategory(),card.storeId);
+                    product.getCategory(), card.storeId);
 
             storeToProducts.computeIfAbsent(card.storeId, k -> new ArrayList<>()).add(receiptProduct);
             // supplyService.processSupply(supply);
