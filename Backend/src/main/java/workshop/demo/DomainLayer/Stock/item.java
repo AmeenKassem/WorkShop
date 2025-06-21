@@ -30,6 +30,11 @@ public class item {
     private int quantity;
     private int price;
     private Category category;
+    private int storeId;
+
+    public void setStoreId(int id){
+        storeId = id;
+    }
 
     // @ManyToOne
     // @JoinColumn(name = "storeid")
@@ -134,6 +139,10 @@ public class item {
         logger.debug("Overwriting rank array for productId={}", productId);
 
         this.rank = rank;
+    }
+
+    public int getStoreId() {
+       return storeId;
     }
 
     

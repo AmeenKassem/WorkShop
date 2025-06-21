@@ -83,4 +83,8 @@ public class ItemStoreDTO {
         this.storeName = storeName;
 
     }
+
+    public void setName(String name) {
+        productName=name;
+    }
 }
