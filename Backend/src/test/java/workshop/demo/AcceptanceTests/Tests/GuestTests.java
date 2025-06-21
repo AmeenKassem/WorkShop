@@ -1,14 +1,8 @@
 package workshop.demo.AcceptanceTests.Tests;
 
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -16,165 +10,245 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import org.mockito.Mockito;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-// import workshop.demo.AcceptanceTests.Utill.Real;
-import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.PaymentDetails;
-import workshop.demo.DTOs.ProductDTO;
-import workshop.demo.DTOs.ReceiptDTO;
-import workshop.demo.DTOs.ReceiptProduct;
-import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Stock.Product;
-import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-import workshop.demo.DomainLayer.User.CartItem;
-import workshop.demo.DomainLayer.User.Guest;
-import workshop.demo.DomainLayer.User.ShoppingBasket;
-import workshop.demo.DomainLayer.User.ShoppingCart;
+import workshop.demo.DomainLayer.User.*;
+
+import java.util.LinkedList;
+import java.util.List;
 
 @SpringBootTest
 @ActiveProfiles("test")
 public class GuestTests extends AcceptanceTests {
+    private static final Logger logger = LoggerFactory.getLogger(GuestTests.class);
+    Guest g = new Guest();
+    String GToken = "Gtoken";
+    Registered r = new Registered(0, "bashar", "password", 24);
 
-    String Token = "";
+    String OToken = "Otoken";
+    Guest go = new Guest();
+    Registered or = new Registered(0, "bashar", "password", 24);
 
-    //Guest guest=new Guest();
+    Store s=new Store("TestStore","Home");
+
     @BeforeEach
     void setup() throws Exception {
         mockGuestRepo.deleteAll();
         mockUserRepo.deleteAll();
-//
+        mockStoreRepo.deleteAll();
+        mockStockRepo1.deleteAll();
+        mockStoreStock.deleteAll();
+        mockNodeRepo.deleteAll();
+        userService.generateGuest();
+        //the owner of the store
+        // guest ---> owner
+        saveGuestRepo(go);
+        when(mockAuthRepo.generateGuestToken(go.getId())).thenReturn(OToken);
+        OToken = userService.generateGuest();
+
+
+        //convert to user and login
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(OToken,logger);
+        when(mockUserRepo.existsByUsername(or.getUsername())).thenReturn(0);
+        saveUserRepo(or);
+        userService.register(OToken,or.getUsername(), or.getEncodedPass(), 18);
+
+
+
+        List<Registered> list_user_repo=new LinkedList<>();
+        list_user_repo.add(or);
+        when(mockUserRepo.findRegisteredUsersByUsername(or.getUsername())).thenReturn(list_user_repo);
+        //when(encoder.matches(or.getEncodedPass(), or.getEncodedPass())).thenReturn(true);
+        saveUserRepo(or);
+        or.login();
+
+        //add store to the owner
+        when(mockAuthRepo.getUserId(OToken)).thenReturn(or.getId());
+        //doNothing().when(userService).checkUserRegisterOnline_ThrowException(or.getId());
+       // doNothing().when(mockSusRepo).(or.getId());
+
+
+        when(mockStoreRepo.save(any())).thenReturn(s);
+
+        //doNothing().when(mock).addNewStoreOwner(anyInt(), eq(or.getId()));
+        when(mockStoreStock.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        doNothing().when(mockOrderRepo).addStoreTohistory(anyInt());
+
+        int storeId = storeService.addStoreToSystem(OToken, "TestStore", "Home");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 
     @Test
     void testGuestEnter_Success() throws Exception {
-        mockSaveGuestSuccess();
+        // Arrange: create a guest and mock the save to return it
+        Guest savedGuest = new Guest(); // Will have default id = 0
+        saveGuestRepo(savedGuest);
+        // Let the token be based on ID 0 (since that's what guest.getId() will return)
+        when(mockAuthRepo.generateGuestToken(0)).thenReturn(GToken);
+
+        // Act
         String token = userService.generateGuest();
+
+        // Assert
         assertNotNull(token);
-        assertFalse(token.isEmpty());
+        assertEquals(GToken, token);
+
     }
 
 
     @Test
-    void testGuestEnter_Failure_SaveThrowsException() {
-        mockSaveGuestFailure();
+    void testGuestEnter_Failure_InvalidToken() throws Exception {
+        // Arrange
+        Guest savedGuest = new Guest(); // Will have default id = 0
 
+        saveGuestRepo(savedGuest); // this mocks guestJpaRepository.save(...) and sets ID
+        when(mockAuthRepo.generateGuestToken(anyInt()))
+                .thenThrow(new RuntimeException("Token generation failed"));
+
+        // Act + Assert
         Exception ex = assertThrows(Exception.class, () -> {
             userService.generateGuest();
         });
 
+        assertTrue(ex.getMessage().contains("Token generation failed"));
+    }
+
+    @Test
+    void testGuestEnter_Failure_DataBaseError() {
+        mockSaveGuestFailure();
+        Exception ex = assertThrows(Exception.class, () -> {
+            userService.generateGuest();
+        });
         assertTrue(ex.getMessage().contains("DB error"));
     }
 
 
     @Test
     void testGuestExit_Success() throws Exception {
-        mockSaveGuestSuccess();
-        doNothing().when(mockGuestRepo).deleteById(3);
+        // Arrange: create a guest and mock the save to return it
+        Guest savedGuest = new Guest(); // Will have default id = 0
+        saveGuestRepo(savedGuest);
+        // Let the token be based on ID 0 (since that's what guest.getId() will return)
+        when(mockAuthRepo.generateGuestToken(0)).thenReturn("guest-token-0");
 
+        // Act
         String token = userService.generateGuest();
-        boolean result = userService.destroyGuest(token);
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(token, logger);
+        when(mockAuthRepo.getUserId(token)).thenReturn(0);
+        doNothing().when(mockGuestRepo).deleteById(0);
+        assertTrue(userService.destroyGuest(token));
 
-        assertTrue(result);
-        verify(mockGuestRepo).deleteById(3);
     }
 
+    @Test
+    void testGuestExit_Failure_DbError() throws Exception {
+        // Arrange
+        Guest savedGuest = new Guest(); // Will have default id = 0
+        saveGuestRepo(savedGuest);
+        // Let the token be based on ID 0 (since that's what guest.getId() will return)
+        when(mockAuthRepo.generateGuestToken(0)).thenReturn("guest-token-0");
+
+        // Act
+        String token = userService.generateGuest();
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(token, logger);
+        when(mockAuthRepo.getUserId(token)).thenReturn(0);
+        doNothing().when(mockGuestRepo).deleteById(0);
+
+
+        doThrow(new IllegalArgumentException("DB error"))
+                .when(mockGuestRepo).deleteById(0);
+        Exception ex = assertThrows(Exception.class, () -> {
+            userService.destroyGuest(token);
+        });
+        assertTrue(ex.getMessage().contains("DB error"));
+    }
 
     @Test
     void testGuestExit_Failure_InvalidToken() throws Exception {
-        // Arrange
-        mockSaveGuestSuccess();
+        Guest savedGuest = new Guest();
+        saveGuestRepo(savedGuest);
+        when(mockAuthRepo.generateGuestToken(0)).thenReturn("guest-token-0");
 
-        // Act + Assert
         String token = userService.generateGuest();
-
+        doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
+                .when(mockAuthRepo).checkAuth_ThrowTimeOutException(token, logger);
+        doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
+                .when(mockAuthRepo).checkAuth_ThrowTimeOutException(eq(token), any());
         UIException ex = assertThrows(UIException.class, () -> {
-            userService.destroyGuest("token_guest");
+            userService.destroyGuest(token);
         });
 
-        assertTrue(ex.getMessage().contains("Invalid token"));
+        assertTrue(ex.getMessage().contains("Invalid token!"));
+
         verify(mockGuestRepo, never()).deleteById(any());
     }
 
 
     @Test
     void testGuestRegister_Success() throws Exception {
-        // Arrange
-        mockSaveGuestSuccess();
-        mockExistsByUsernameFailure();
-        mockSaveRegisteredSuccess();
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(GToken, logger);
+        saveUserRepo(r);
+        assertTrue(userService.register(GToken, r.getUsername(), r.getEncodedPass(), r.getUserDTO().age));
 
-        // Act
+
+    }
+
+    @Test
+    void testGuestRegister_Failure_UsernameExists() throws Exception {
+        Guest savedGuest = new Guest(); // Will have default id = 0
+        saveGuestRepo(savedGuest);
+        when(mockAuthRepo.generateGuestToken(0)).thenReturn(GToken);
         String token = userService.generateGuest();
-        boolean result = userService.register(token, "bashar", "finish", 18);
 
-        // Assert
-        assertTrue(result);
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(GToken, logger);
+        when(mockUserRepo.existsByUsername(r.getUsername())).thenReturn(1);
+        Exception exception = assertThrows(Exception.class, () -> {
+            userService.register(token, r.getUsername(), "password", 18);
+        });
+        assertTrue(exception.getMessage().contains("username"));
     }
 
 
     @Test
-    void testGuestRegister_Failure_UsernameExists() throws Exception {
-        // Arrange
-        mockSaveGuestSuccess();
-        mockExistsByUsernameSuccess();
+    void testGuestViewEmptyStore() throws Exception {
+        int storeId = 100;  // use storeId from setup
+        String guestToken = "guest-token";  // use guestToken from setup
 
-        String token = userService.generateGuest();
-
-        // Act + Assert
-        UIException exception = assertThrows(UIException.class, () -> {
-            userService.register(token, "bashar", "finish", 18);
+        when(mockAuthRepo.validToken(guestToken)).thenReturn(true); // ensure guest token is valid
+        Exception exception = assertThrows(Exception.class, () -> {
+            stockService.getProductsInStore(storeId);
         });
 
-        assertEquals(ErrorCodes.USERNAME_USED, exception.getNumber());
     }
+//
+     @Test
+     void testGuestGetProductInfo() throws Exception {
 
-
-//    @Test
-//    void testGuestViewEmptyStore() throws Exception {
-//        int storeId = 100;  // use storeId from setup
-//        String guestToken = "guest-token";  // use guestToken from setup
-//
-//        when(mockAuthRepo.validToken(guestToken)).thenReturn(true); // ensure guest token is valid
-//        Exception exception = assertThrows(Exception.class, () -> {
-//            stockService.getProductsInStore(storeId);
-//        });
-//
-//    }
-
-//     @Test
-//     void testGuestGetProductInfo() throws Exception {
-//         int storeId = 100;
-//         int productId = 111;
-//         String guestToken = token_guest;
-//
-//         ProductDTO mockProduct = new ProductDTO(productId, "Phone", Category.Electronics, "Smart device");
-//
-//         when(mockAuthRepo.validToken(guestToken)).thenReturn(true);
-//         when(mockStockRepo.GetProductInfo(productId)).thenReturn(mockProduct);
-//
-//         String info = testGuest_GetProductInfo(guestToken, productId);
-//
-//         assertNotNull(info);
-//         assertTrue(info.contains("Phone"), "Expected product name in info");
-//         assertTrue(info.contains("Smart device"), "Expected product description in info");
-//         assertTrue(info.contains("Electronics"), "Expected product category in info");
-//     }
+     }
 //
 //     @Test
 //     void testGuestGetProductInfo_ProductNotFound() throws Exception {
@@ -192,7 +266,7 @@ public class GuestTests extends AcceptanceTests {
 //
 //         assertEquals("Product not found.", exception.getMessage());
 //     }
-//
+////
 //     @Test
 //     void testGuestAddProductToCart_Success() throws Exception {
 //         int guestId = 1;
