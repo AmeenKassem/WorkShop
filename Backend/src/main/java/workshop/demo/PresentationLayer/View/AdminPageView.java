@@ -15,6 +15,7 @@ import com.vaadin.flow.router.Route;
 
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DTOs.UserSuspensionDTO;
 import workshop.demo.PresentationLayer.Presenter.AdminPagePresenter;
 
 @Route(value = "admin", layout = MainLayout.class)
@@ -43,6 +44,9 @@ public class AdminPageView extends VerticalLayout {
         removeAll(); // Clear current content
 
         add(new H2("User Suspension Management!"));
+
+        Button viewSuspensionsBtn = new Button("👁️ View Suspensions", e -> showSuspensionsDialog());
+        add(viewSuspensionsBtn);
 
         Grid<UserDTO> userGrid = new Grid<>(UserDTO.class, false);
 
@@ -77,11 +81,12 @@ public class AdminPageView extends VerticalLayout {
             });
             Button pause = new Button("Pause", click -> presenter.onPauseSuspension(user.getId()));
             Button resume = new Button("Resume", click -> presenter.onResumeSuspension(user.getId()));
-            Button remove = new Button("Remove", click -> presenter.onRemoveUser(user));
-
-            actions.add(suspend, pause, resume, remove);
+            Button cancel = new Button("Cancel", click -> presenter.onCancelSuspension(user.getId()));
+            actions.add(suspend,cancel, pause, resume);
             return actions;
-        }).setHeader("Actions");
+        }).setHeader("Actions")
+        .setAutoWidth(true)
+        .setFlexGrow(0);setFlexGrow(0);
 
         try {
             List<UserDTO> users = presenter.getAllUsers();
@@ -97,6 +102,45 @@ public class AdminPageView extends VerticalLayout {
 
         add(userGrid);
     }
+
+    private void showSuspensionsDialog() {
+        List<UserSuspensionDTO> suspensions = presenter.onViewSuspensions();
+
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Suspended Users");
+        dialog.setWidth("600px");
+        dialog.setHeight("400px");
+
+        if (suspensions.isEmpty()) {
+            dialog.add(new Paragraph("No suspended users."));
+        } else {
+            Grid<UserSuspensionDTO> grid = new Grid<>(UserSuspensionDTO.class, false);
+
+            grid.addColumn(UserSuspensionDTO::getUserId)
+                .setHeader("User ID");
+
+            grid.addColumn(s -> s.isPaused() ? "Yes" : "No")
+                .setHeader("Paused");
+
+            grid.addColumn(s -> s.getSuspensionEndTime() != null ? s.getSuspensionEndTime().toString() : "N/A")
+                .setHeader("End Time");
+
+            grid.addColumn(UserSuspensionDTO::getRemainingWhenPaused)
+                .setHeader("Remaining (min)");
+
+            grid.setItems(suspensions);
+            grid.setWidthFull();
+            grid.setHeight("300px");
+
+            dialog.add(grid);
+        }
+
+        Button close = new Button("Close", e -> dialog.close());
+        dialog.getFooter().add(close);
+
+        dialog.open();
+    }
+
 
     private void showManageStores() {
         removeAll(); // Clear current content
@@ -122,5 +166,7 @@ public class AdminPageView extends VerticalLayout {
         add(storeGrid);
 
     }
+
+    
 
 }

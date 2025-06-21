@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import workshop.demo.DTOs.UserSuspensionDTO;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
@@ -18,6 +19,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 import workshop.demo.DataAccessLayer.UserJpaRepository;
 
 @Service
@@ -110,8 +113,17 @@ public class UserSuspensionService {
         logger.info("Suspension for " + userId + " cancelled.");
     }
 
-    public List<UserSuspension> viewAllSuspensions(String adminToken) throws UIException {
+    public List<UserSuspensionDTO> viewAllSuspensions(String adminToken) throws UIException {
         validateAdmin(adminToken);
-        return suspensionJpaRepo.findAll();
+
+        return suspensionJpaRepo.findAll()
+                .stream()
+                .map(s -> new UserSuspensionDTO(
+                        s.getUserId(),
+                        s.isPaused(),
+                        s.getSuspensionEndTime(),
+                        s.getRemainingWhenPaused()
+                ))
+                .collect(Collectors.toList());
     }
 }

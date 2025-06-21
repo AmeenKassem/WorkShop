@@ -30,6 +30,7 @@ import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DataAccessLayer.GuestJpaRepository;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
+import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -56,7 +57,8 @@ import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
-import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
+import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -70,7 +72,7 @@ public class PurchaseService {
     private IOrderRepo orderRepo;
     private final IPaymentService paymentService;
     private final ISupplyService supplyService;
-    private IUserSuspensionRepo susRepo;
+    private UserSuspensionJpaRepository suspensionJpaRepo;
     private UserJpaRepository regRepo;
     private GuestJpaRepository guestRepo;
     private IStoreRepoDB storeJpaRepo;
@@ -82,7 +84,7 @@ public class PurchaseService {
     @Autowired
     public PurchaseService(IAuthRepo authRepo, IStockRepo stockRepo, IStoreRepo storeRepo,
             IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
-            ISupplyService supplyService, IUserSuspensionRepo susRepo, UserJpaRepository regsRepo,
+            ISupplyService supplyService, UserSuspensionJpaRepository usersuspentionjpa, UserJpaRepository regsRepo,
             GuestJpaRepository guestRepo, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStockRepo) {
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
@@ -92,7 +94,7 @@ public class PurchaseService {
         this.orderRepo = orderRepo;
         this.paymentService = paymentService;
         this.supplyService = supplyService;
-        this.susRepo = susRepo;
+        this.suspensionJpaRepo = usersuspentionjpa;
         this.guestRepo = guestRepo;
         this.regRepo = regsRepo;
         this.storeJpaRepo = storeJpaRepo;
@@ -109,7 +111,11 @@ public class PurchaseService {
             throw new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN);
         }
         int userId = authRepo.getUserId(token);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
+
         return processCart(userId, true, paymentdetails, supplydetails);
     }
 @Transactional(rollbackFor = UIException.class)
@@ -119,7 +125,11 @@ public class PurchaseService {
 
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
+
         return processCart(userId, false, paymentdetails, supplydetails);
     }
 
@@ -205,7 +215,11 @@ public class PurchaseService {
         int userId = authRepo.getUserId(token);
         Registered user = regRepo.findById(userId)
                 .orElseThrow(() -> new UIException("user not logged in!", ErrorCodes.USER_NOT_LOGGED_IN));
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
+
         ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
         UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random);
         user.addSpecialItemToCart(item);
@@ -226,7 +240,11 @@ public class PurchaseService {
             throws Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
+
         logger.info("The user " + userId + " finalizing the special cart.");
         Registered user = regRepo.findById(userId).orElseThrow(() -> notLoggedInException());
         List<SingleBid> winningBids = new ArrayList<>();
