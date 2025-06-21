@@ -62,7 +62,12 @@ public class ShoppingCart {
         // storeBaskets.put(storeId, new ShoppingBasket(storeId));
         // }
         logger.debug("Item added to basket: storeId={}.", storeId);
-
+        for (CartItem cartItem : cartItems) {
+            if(cartItem.productId==item.productId && cartItem.storeId == item.storeId){
+                cartItem.quantity+=item.quantity;
+                return;
+            }
+        }
         cartItems.add(item);
         item.setCart(this);
     }

@@ -50,12 +50,11 @@ public class UserService {
 
     private UserJpaRepository regJpaRepo;
     private GuestJpaRepository guestJpaRepository;
-    
 
     @Autowired
-    public UserService(UserJpaRepository regJpaRepo,  IAuthRepo authRepo, IStockRepo stockRepo,
+    public UserService(UserJpaRepository regJpaRepo, IAuthRepo authRepo, IStockRepo stockRepo,
             AdminInitilizer adminInitilizer,
-             GuestJpaRepository guestRepo, IStoreRepoDB storeRepo) {
+            GuestJpaRepository guestRepo, IStoreRepoDB storeRepo) {
         // this.userRepo = userRepo;
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
@@ -186,22 +185,22 @@ public class UserService {
     }
 
     @Transactional
-public boolean addToUserCart(String token, ItemStoreDTO itemToAdd, int quantity) throws UIException {
-    logger.info("addToUserCart called");
-    authRepo.checkAuth_ThrowTimeOutException(token, logger);
-    int userId = authRepo.getUserId(token);
+    public boolean addToUserCart(String token, ItemStoreDTO itemToAdd, int quantity) throws UIException {
+        logger.info("addToUserCart called");
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
 
-    ItemCartDTO item = new ItemCartDTO(itemToAdd.getStoreId(), itemToAdd.getProductId(), quantity,
-            itemToAdd.getPrice(), itemToAdd.getProductName(), itemToAdd.getStoreName(), itemToAdd.getCategory());
-    CartItem itemCart = new CartItem(item);
+        ItemCartDTO item = new ItemCartDTO(itemToAdd.getStoreId(), itemToAdd.getProductId(), quantity,
+                itemToAdd.getPrice(), itemToAdd.getProductName(), itemToAdd.getStoreName(), itemToAdd.getCategory());
+        CartItem itemCart = new CartItem(item);
 
-    Guest user = getUser(userId); // Hibernate loads the Guest entity with lazy cart
+        Guest user = getUser(userId); // Hibernate loads the Guest entity with lazy cart
 
-    user.addToCart(itemCart); // ✅ cart is lazy, but safe because @Transactional keeps session open
-    guestJpaRepository.save(user);
-    logger.info("Item added to user cart");
-    return true;
-}
+        user.addToCart(itemCart); // ✅ cart is lazy, but safe because @Transactional keeps session open
+        guestJpaRepository.save(user);
+        logger.info("Item added to user cart");
+        return true;
+    }
 
     private Guest getUser(int userId) throws UIException {
         Optional<Registered> reg = regJpaRepo.findById(userId);
@@ -229,7 +228,8 @@ public boolean addToUserCart(String token, ItemStoreDTO itemToAdd, int quantity)
         logger.info("Cart modified for productId={}", itemCartId);
         return true;
     }
-@Transactional
+
+    @Transactional
     public boolean removeItemFromCart(String token, int itemCartId) throws UIException {
         logger.info("removeItemFromCart called");
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -244,7 +244,8 @@ public boolean addToUserCart(String token, ItemStoreDTO itemToAdd, int quantity)
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(userId);
-        Registered user = regJpaRepo.findById(userId).orElseThrow(()-> new UIException("user not dound in reg db!", ErrorCodes.USER_NOT_FOUND));
+        Registered user = regJpaRepo.findById(userId)
+                .orElseThrow(() -> new UIException("user not dound in reg db!", ErrorCodes.USER_NOT_FOUND));
         List<UserSpecialItemCart> specialIds = user.getSpecialCart();
         List<SpecialCartItemDTO> result = new ArrayList<>();
         for (UserSpecialItemCart item : specialIds) {
@@ -280,7 +281,7 @@ public boolean addToUserCart(String token, ItemStoreDTO itemToAdd, int quantity)
             dto.quantity = item.quantity;
             dto.price = item.price;
             dto.name = item.name;
-            dto.storeName = storeRepo.findById(item.storeId).orElseThrow().getStoreName(); 
+            dto.storeName = storeRepo.findById(item.storeId).orElseThrow().getStoreName();
             // this back
             dto.itemCartId = item.getId();
             dtos[i] = dto;

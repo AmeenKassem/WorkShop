@@ -2,6 +2,7 @@ package workshop.demo.DomainLayer.UserSuspension;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -15,6 +16,7 @@ public class UserSuspension {
     // private long totalDurationMinutes;   
     private long suspensionEndMinutes;      
     private long remainingAtPauseMinutes;   
+    @Column(nullable = true)
     private LocalDateTime lastStartTime; 
     private boolean paused;
 

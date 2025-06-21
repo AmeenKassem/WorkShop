@@ -390,7 +390,8 @@ public class StoreService {
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
         List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
-        this.storeRepo.closeStore(storeId);
+        // this.storeRepo.closeStore(storeId);
+        store.setActive(false);
         this.suConnectionRepo.closeStore(storeId);
         logger.info("store removed successfully!");
         logger.info("About to notify all employees");

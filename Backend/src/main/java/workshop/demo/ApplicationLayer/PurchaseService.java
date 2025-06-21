@@ -112,7 +112,8 @@ public class PurchaseService {
         susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
         return processCart(userId, true, paymentdetails, supplydetails);
     }
-@Transactional(rollbackFor = UIException.class)
+
+    @Transactional(rollbackFor = UIException.class)
     public ReceiptDTO[] buyRegisteredCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
             throws Exception {
         logger.info("buyRegisteredCart called with token");
@@ -172,9 +173,9 @@ public class PurchaseService {
         if (!paymentService.processPayment(payment, finalTotal) || !supplyService.processSupply(supply)) {
             throw new UIException("payment not successeded!!!", ErrorCodes.PAYMENT_ERROR);
         }
+        storeStockRepo.flush();
         return saveReceiptsWithDiscount(userId, storeToProducts);
     }
-
 
     @Transactional
     public Guest getUser(boolean isGuest, int userId) throws UIException {
@@ -182,7 +183,7 @@ public class PurchaseService {
             Optional<Guest> guset = guestRepo.findById(userId);
 
             if (guset.isPresent()) {
-               
+
                 return guset.get();
             }
 
@@ -191,7 +192,7 @@ public class PurchaseService {
         } else {
             Optional<Registered> user = regRepo.findById(userId);
             if (user.isPresent()) {
-               
+
                 return user.get();
             } else
                 throw new UIException("there is no guest with given id", ErrorCodes.USER_NOT_FOUND);
@@ -374,6 +375,7 @@ public class PurchaseService {
         return receipts.toArray(new ReceiptDTO[0]);
     }
 
+    @Transactional
     private ReceiptDTO[] saveReceiptsWithDiscount(int userId,
             Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts)
             throws UIException {
