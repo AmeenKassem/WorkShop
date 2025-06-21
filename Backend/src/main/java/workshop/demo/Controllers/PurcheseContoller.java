@@ -29,7 +29,7 @@ import workshop.demo.DataAccessLayer.GuestJpaRepository;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Order.IOrderRepo;
+import workshop.demo.DomainLayer.Order.IOrderRepoDB;
 import workshop.demo.DomainLayer.Purchase.IPaymentService;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.ISupplyService;
@@ -49,11 +49,11 @@ public class PurcheseContoller {
 
     @Autowired
     public PurcheseContoller(IAuthRepo auth, IStockRepo stockrepo, IStoreRepo storeRepo, 
-            IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
+            IPurchaseRepo purchaseRepo, IOrderRepoDB orderJpaRepo, IPaymentService paymentService,
             ISupplyService supplyService, UserSuspensionJpaRepository usersuspentionjpa, UserJpaRepository userJpaRepo,
             GuestJpaRepository guestJpaRepository, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStockRepo) {
         this.purchaseService = new PurchaseService(auth, stockrepo, storeRepo, 
-                purchaseRepo, orderRepo, paymentService, supplyService, usersuspentionjpa, userJpaRepo,
+                purchaseRepo, orderJpaRepo, paymentService, supplyService, usersuspentionjpa, userJpaRepo,
                 guestJpaRepository,storeJpaRepo,storeStockRepo);
     }
 

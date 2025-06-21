@@ -26,7 +26,8 @@ import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
-import workshop.demo.DomainLayer.Order.IOrderRepo;
+import workshop.demo.DomainLayer.Order.IOrderRepoDB;
+import workshop.demo.DomainLayer.Order.IOrderRepoDB;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
 import workshop.demo.DomainLayer.Stock.StoreStock;
@@ -59,7 +60,7 @@ public class StoreService {
     @Autowired
     private UserJpaRepository userRepo;
     @Autowired
-    private IOrderRepo orderRepo;
+    private IOrderRepoDB orderRepo;
     @Autowired
     private ISUConnectionRepo suConnectionRepo;
     @Autowired
@@ -170,8 +171,7 @@ public class StoreService {
         stock4Store.setStoreId(storeId); 
 
         storeStock.save(stock4Store);
-        // add store to history
-        this.orderRepo.addStoreTohistory(storeId);
+
         logger.info("Store '{}' added successfully with ID {} by boss {}", storeName, storeId, bossId);
         return storeId;
     }
@@ -353,10 +353,12 @@ public class StoreService {
         logger.info("manager {} successfully deleted from store {} by owner {}", managerId, storeId, ownerId);
     }
 
-    // MUST CHECK WHO CAN DO IT???
+    // MUST CHECK WHO CAN DO IT??
+    /* 
     public List<OrderDTO> veiwStoreHistory(int storeId) throws Exception {
         return this.orderRepo.getAllOrderByStore(storeId);
     }
+    */
 
     public void rankStore(String token, int storeId, int newRank) throws Exception {
         logger.info("about to rank store: {}", storeId);

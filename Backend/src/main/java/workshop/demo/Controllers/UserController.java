@@ -32,7 +32,7 @@ import workshop.demo.DataAccessLayer.GuestJpaRepository;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Order.IOrderRepo;
+import workshop.demo.DomainLayer.Order.IOrderRepoDB;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
@@ -52,7 +52,7 @@ public class UserController {
     @Autowired
     public UserController(
             IStoreRepoDB storeRepo,
-            IOrderRepo orderRepo,
+            IOrderRepoDB orderJpaRepo,
             IAuthRepo auth,                      // the JWT token provider
             IStockRepo stockrepo,
             AdminInitilizer adminInitializer,
