@@ -8,9 +8,13 @@ import org.junit.jupiter.api.BeforeAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -427,9 +431,51 @@ public class GuestTests {
     }
 
     @Test
-    void test_guest_cart_given_many_items_one_not_avaliable() {
+    void test_guest_cart_given_many_items_one_not_avaliable() throws Exception {
         // TODO abu el3asi make one with many items .
         // cart must not change + quantity for all stores must not change
+        // Product 2 - Smartphone
+String[] keywords2 = { "Phone", "Smartphone", "Mobile" };
+int PID2 = stockService.addProduct(NOToken, "Smartphone", Category.Electronics, "Latest smartphone model", keywords2);
+
+stockService.addItem(createdStoreId, NOToken, PID2, 15, 1000, Category.Electronics);
+ItemStoreDTO itemStoreDTO2 = new ItemStoreDTO(PID2, 15, 1000, Category.Electronics, 0,
+        createdStoreId, "Smartphone", "TestStore");
+
+// Product 3 - Headphones
+String[] keywords3 = { "Headphones", "Audio", "Music" };
+int PID3 = stockService.addProduct(NOToken, "Headphones", Category.Electronics, "Wireless over-ear headphones", keywords3);
+
+stockService.addItem(createdStoreId, NOToken, PID3, 20, 300, Category.Electronics);
+ItemStoreDTO itemStoreDTO3 = new ItemStoreDTO(PID3, 20, 300, Category.Electronics, 0,
+        createdStoreId, "Headphones", "TestStore");
+
+
+        userService.addToUserCart(GToken, itemStoreDTO3, 100);
+        userService.addToUserCart(GToken, itemStoreDTO2, 1);
+  PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+UIException ex =assertThrows(UIException.class, () -> {
+    purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
+});
+       assertEquals(1023, ex.getErrorCode());
+            var items = stockService.getProductsInStore(createdStoreId);
+
+// You know the product IDs and expected quantities:
+Map<Integer, Integer> expectedQuantities = Map.of(
+    PID, 10,
+    PID2, 15,
+    PID3, 20
+);
+
+// Verify each product quantity hasn't changed
+for (ItemStoreDTO item : items) {
+    int expectedQty = expectedQuantities.getOrDefault(item.getProductId(), -1);
+    assertNotEquals(-1, expectedQty, "Unexpected product in store: " + item.getProductId());
+    assertEquals(expectedQty, item.getQuantity(), "Product ID " + item.getProductId() + " has wrong quantity");
+}
+
+
     }
 
     @Test
