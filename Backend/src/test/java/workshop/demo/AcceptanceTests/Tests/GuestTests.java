@@ -80,7 +80,7 @@ public class GuestTests extends AcceptanceTests {
 
         when(mockStoreRepo.save(any())).thenReturn(s);
 
-        doNothing().when(mock).addNewStoreOwner(anyInt(), eq(or.getId()));
+        //doNothing().when(mock).addNewStoreOwner(anyInt(), eq(or.getId()));
         when(mockStoreStock.save(any())).thenAnswer(inv -> inv.getArgument(0));
         doNothing().when(mockOrderRepo).addStoreTohistory(anyInt());
 
