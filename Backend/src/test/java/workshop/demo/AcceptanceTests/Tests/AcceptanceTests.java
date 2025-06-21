@@ -32,23 +32,28 @@ import static org.mockito.Mockito.*;
 @ActiveProfiles("test")
 public class AcceptanceTests {
 
-    // Global test data
-    protected Guest guest;
-    protected Registered registered;
+
+
 
     // Mocked repositories
     protected AuthenticationRepo mockAuthRepo =Mockito.mock(AuthenticationRepo.class);
     protected UserJpaRepository mockUserRepo = Mockito.mock(UserJpaRepository.class);
     protected GuestJpaRepository mockGuestRepo = Mockito.mock(GuestJpaRepository.class);
     protected IStoreRepoDB mockStoreRepo = Mockito.mock(IStoreRepoDB.class);
-    protected StockRepository mockStockRepo = Mockito.mock(StockRepository.class);
+    protected IStockRepoDB mockStockRepo1 = Mockito.mock(IStockRepoDB.class);
+    protected IStoreStockRepo mockStoreStock=Mockito.mock(IStoreStockRepo.class);
+    protected NodeJPARepository mockNodeRepo=Mockito.mock(NodeJPARepository.class);
+    protected IStockRepo mockStockRepo = Mockito.mock(IStockRepo.class);
+
+
+
     protected PurchaseRepository mockPurchaseRepo = Mockito.mock(PurchaseRepository.class);
     protected OrderRepository mockOrderRepo = Mockito.mock(OrderRepository.class);
     protected NotificationRepository mockNotiRepo = Mockito.mock(NotificationRepository.class);
     protected ReviewRepository mockReviewRepo = Mockito.mock(ReviewRepository.class);
     protected UserSuspensionJpaRepository mockSusRepo = Mockito.mock(UserSuspensionJpaRepository.class);
     protected ISUConnectionRepo mockIOSrepo = Mockito.mock(ISUConnectionRepo.class);
-    protected Encoder encoder=Mockito.mock(Encoder.class);
+    protected Encoder encoder=new Encoder();
     // Services
     protected UserService userService;
     protected StoreService storeService;
@@ -75,17 +80,13 @@ public class AcceptanceTests {
     protected void saveGuestRepo(Guest R){
         when(mockGuestRepo.save(R)).thenReturn(R);
     }
-
-
-
-
-
-
-    protected void mockSaveRegisteredSuccess() {
-        registered = new Registered("bashar", "finish", 18);
-        setId(registered, 3);
-        when(mockUserRepo.save(any(Registered.class))).thenReturn(registered);
+    protected void mockSaveGuestFailure() {
+        when(mockGuestRepo.save(any(Guest.class))).thenThrow(new RuntimeException("DB error saving guest"));
     }
+
+
+
+
 
     protected void mockSaveRegisteredFailure() {
         when(mockUserRepo.save(any(Registered.class))).thenThrow(new RuntimeException("DB error saving registered"));
@@ -99,37 +100,7 @@ public class AcceptanceTests {
         when(mockUserRepo.existsByUsername(any())).thenReturn(0);
     }
 
-    protected void mockSaveGuestSuccess() {
-        guest = new Guest();
-        setId(guest, 3);
-        when(mockGuestRepo.save(any(Guest.class))).thenReturn(guest);
-    }
 
-    protected void mockSaveGuestFailure() {
-        when(mockGuestRepo.save(any(Guest.class))).thenThrow(new RuntimeException("DB error saving guest"));
-    }
-
-    protected void setId(Object entity, int id) {
-        try {
-            Field idField = findFieldInHierarchy(entity.getClass(), "id");
-            idField.set(entity, id);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to set ID for " + entity.getClass().getSimpleName(), e);
-        }
-    }
-
-    protected Field findFieldInHierarchy(Class<?> clazz, String fieldName) {
-        while (clazz != null) {
-            try {
-                Field field = clazz.getDeclaredField(fieldName);
-                field.setAccessible(true);
-                return field;
-            } catch (NoSuchFieldException ignored) {
-                clazz = clazz.getSuperclass();
-            }
-        }
-        throw new RuntimeException("Field '" + fieldName + "' not found in class hierarchy.");
-    }
 
 
 

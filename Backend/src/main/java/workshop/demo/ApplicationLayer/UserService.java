@@ -90,7 +90,7 @@ public class UserService {
         }
         String encPass = encoder.encodePassword(password);
         Registered userToAdd = new Registered(username, encPass, age);
-        userToAdd = regJpaRepo.save(userToAdd); // ID will be auto-generated
+        regJpaRepo.save(userToAdd);
         logger.info("User {0} registered successfully,and persisted!", username);
         return userToAdd.getId();
     }

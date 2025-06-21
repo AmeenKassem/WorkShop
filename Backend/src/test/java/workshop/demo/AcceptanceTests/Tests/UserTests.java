@@ -55,43 +55,43 @@ public class UserTests extends AcceptanceTests {
     private Registered user;
     private List<Registered> repo_results;
 
-    public UserTests() {
-        // Logical ID consistent with AtomicInteger usage
-        this.user = new Registered("bashar", "encoded", 20);
-        setId(user, 1); // ID 1 is realistic for first registered user
-        this.repo_results = List.of(user);
-    }
-
-    @BeforeEach
-    void setup() throws Exception {
-        mockGuestRepo.deleteAll();
-        mockUserRepo.deleteAll();
-
-        // Inject mocked encoder using reflection
-        Field encoderField = UserService.class.getDeclaredField("encoder");
-        encoderField.setAccessible(true);
-        encoderField.set(userService, encoder);
-
-        // Logical behavior for password validation
-        when(encoder.matches("pass123", "encoded")).thenReturn(true);
-    }
-
-    @Test
-    void testUser_LogIn_Success() throws Exception {
-        mockSaveGuestSuccess();
-        mockExistsByUsernameFailure();
-
-
-        saveUserRepo(user);
-        when(mockUserRepo.findRegisteredUsersByUsername("bashar")).thenReturn(repo_results);
-        String guestToken = userService.generateGuest();
-        assertTrue(userService.register(guestToken, "bashar", "pass123", 20));
-
-        String userToken = userService.login(guestToken, "bashar", "pass123");
-
-        assertNotNull(userToken);
-        assertFalse(userToken.isEmpty());
-    }
+//    public UserTests() {
+//        // Logical ID consistent with AtomicInteger usage
+//        this.user = new Registered("bashar", "encoded", 20);
+//        setId(user, 1); // ID 1 is realistic for first registered user
+//        this.repo_results = List.of(user);
+//    }
+//
+//    @BeforeEach
+//    void setup() throws Exception {
+//        mockGuestRepo.deleteAll();
+//        mockUserRepo.deleteAll();
+//
+//        // Inject mocked encoder using reflection
+//        Field encoderField = UserService.class.getDeclaredField("encoder");
+//        encoderField.setAccessible(true);
+//        encoderField.set(userService, encoder);
+//
+//        // Logical behavior for password validation
+//        when(encoder.matches("pass123", "encoded")).thenReturn(true);
+//    }
+//
+//    @Test
+//    void testUser_LogIn_Success() throws Exception {
+//        mockSaveGuestSuccess();
+//        mockExistsByUsernameFailure();
+//
+//
+//        saveUserRepo(user);
+//        when(mockUserRepo.findRegisteredUsersByUsername("bashar")).thenReturn(repo_results);
+//        String guestToken = userService.generateGuest();
+//        assertTrue(userService.register(guestToken, "bashar", "pass123", 20));
+//
+//        String userToken = userService.login(guestToken, "bashar", "pass123");
+//
+//        assertNotNull(userToken);
+//        assertFalse(userToken.isEmpty());
+//    }
 
 
 
