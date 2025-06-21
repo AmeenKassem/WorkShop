@@ -36,6 +36,7 @@ import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
+import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 import workshop.demo.PresentationLayer.Requests.AddToCartRequest;
 import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 
@@ -392,6 +393,39 @@ public class UserController {
         try {
             userSuspensionService.resumeSuspension(userId, token);
             res = new ApiResponse<>(true, null);
+            return ResponseEntity.ok(res);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+        }
+    }
+
+    @PostMapping("/cancelSuspension")
+    public ResponseEntity<ApiResponse<Boolean>> cancelSuspension(@RequestParam Integer userId,
+                                                                @RequestParam String token) {
+        ApiResponse<Boolean> res;
+        try {
+            userSuspensionService.cancelSuspension(userId, token);
+            res = new ApiResponse<>(true, null);
+            return ResponseEntity.ok(res);
+        } catch (UIException ex) {
+            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
+        } catch (Exception e) {
+            res = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+        }
+    }
+
+    @GetMapping("/viewSuspensions")
+    public ResponseEntity<ApiResponse<List<UserSuspension>>> viewSuspensions(@RequestParam String token) {
+        ApiResponse<List<UserSuspension>> res;
+        try {
+            List<UserSuspension> suspensions = userSuspensionService.viewAllSuspensions(token);
+            res = new ApiResponse<>(suspensions, null);
             return ResponseEntity.ok(res);
         } catch (UIException ex) {
             res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
