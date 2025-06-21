@@ -43,13 +43,11 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 // import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
-<<<<<<< HEAD
+// <<<<<<< HEAD
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
-=======
-import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 import workshop.demo.InfrastructureLayer.AISearch;
->>>>>>> search-after-persist
+// >>>>>>> search-after-persist
 
 @Service
 public class StockService {
