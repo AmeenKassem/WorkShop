@@ -53,6 +53,7 @@ public class StoreStock {
         System.out.println("load the stock!!");
         if (items != null) {
             for (item item : items) {
+                item.setStoreId(storeID);
                 stock.put(item.getProductId(), item);
             }
         }
@@ -82,6 +83,7 @@ public class StoreStock {
             if (existingItem != null) {
                 existingItem.AddQuantity();
             } else {
+                newItem.setStoreId(storeID);
                 System.out.println("-----------------helo ");
                 stock.put(newItem.getProductId(), newItem);
                 items.add(newItem);

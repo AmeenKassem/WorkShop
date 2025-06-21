@@ -137,4 +137,19 @@ public class ProductSearchCriteria {
 
     }
 
+    public boolean keywordSearch() {
+        return keywordFilter!=null;
+    }
+
+    public String getKeyword(){
+        return keywordFilter;
+    }
+
+    public boolean nameSearch() {
+        return productNameFilter!=null;
+    }
+
+    public String getName(){
+        return productNameFilter;
+    }
 }

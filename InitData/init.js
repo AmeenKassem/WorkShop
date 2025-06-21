@@ -1,6 +1,6 @@
 const axios = require("axios");
 const qs = require("qs");
-const api = "http://132.73.233.229:8080";
+const api = "http://localhost:8080";
 const users = [
   { username: "user1", password: "pass1" },
   { username: "user2", password: "pass2" },
@@ -372,10 +372,10 @@ const products = [
 async function runScript() {
   try {
     // loginUsers();
-    const tokenUSer = await loginUsers({ username: "bhaa3", password: "a123" });
+    const tokenUSer = await loginUsers({ username: "bhaa123", password: "a123" });
     console.log(tokenUSer);
     // "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ7XCJ1c2VyTmFtZVwiOlwidXNlcjFcIixcImlkXCI6NX0iLCJpYXQiOjE3NDk3MTc2ODEsImV4cCI6MTc0OTcyMTI4MX0.nucufLfOKNLCxG3p-O3VHj-kXx5TYlMfzuUZsWQEtdQ";
-    const storeData = await addStore(tokenUSer, "masho masho");
+    const storeData = await addStore(tokenUSer, "elrosi");
     // // console.log(storeData);
     products.forEach(([name, category, description, keyword]) => {
       addProductAndItem(

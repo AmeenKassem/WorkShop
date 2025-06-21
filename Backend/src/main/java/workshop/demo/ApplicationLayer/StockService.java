@@ -1,5 +1,6 @@
 package workshop.demo.ApplicationLayer;
 
+import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
@@ -41,6 +43,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
+import workshop.demo.InfrastructureLayer.AISearch;
 
 @Service
 public class StockService {
@@ -57,6 +60,8 @@ public class StockService {
     private IStockRepoDB stockJpaRepo;
     private IStoreRepoDB storeJpaRepo;
     private IStoreStockRepo storeStockRepo;
+
+    private AISearch aiSearch= new AISearch();
 
     @Autowired
     public StockService(IStockRepo stockRepo, IStoreRepo storeRepo, IAuthRepo authRepo, UserJpaRepository userRepo,
@@ -78,17 +83,42 @@ public class StockService {
         return new UIException(" store does not exist.", ErrorCodes.STORE_NOT_FOUND);
     }
 
+    @Transactional
     public ItemStoreDTO[] searchProductsOnAllSystem(String token, ProductSearchCriteria criteria) throws Exception {
 
         logger.info("Starting searchProducts with criteria: {}", criteria);
 
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-
+        List<Product> products = null ;
+        if(criteria.keywordSearch() && aiSearch.isActive()){
+            List<Integer> ids = aiSearch.getSameProduct(criteria.getKeyword(), criteria.specificCategory()?criteria.getCategory().hashCode():-1, 0.35);
+            products =  stockJpaRepo.findAllById(ids);
+        }else if(criteria.nameSearch()){
+            products = stockJpaRepo.findByNameContainingIgnoreCase(criteria.getName());
+        }else {
+            throw new UIException("++",ErrorCodes.AI_NOT_WORK);
+        }
         logger.info("Returning matched items to client ");
-        // String storeName= this.storeRepo.getStoreNameById(criteria.getStoreId());
-        ItemStoreDTO[] items = stockRepo.search(criteria);
-        storeRepo.fillWithStoreName(items);
-        return items;
+        List<ItemStoreDTO> res=new ArrayList<>() ;
+        for (Product product : products) {
+            logger.info ("product match found: "+product.getName());
+            List<item> items = storeStockRepo.findItemsByProductId(product.getProductId());
+            for (item item : items) {
+                if(criteria.matchesForStore(item)){
+                    logger.info("found item in store "+item.getStoreId());
+                    ItemStoreDTO toAdd = new ItemStoreDTO();
+                    toAdd.setProductId(product.getProductId());
+                    toAdd.setName(product.getName());
+                    toAdd.setPrice(item.getPrice());
+                    toAdd.setCategory(item.getCategory());
+                    toAdd.setRank(item.getFinalRank());
+                    toAdd.setStoreId(item.getStoreId());
+                    toAdd.setStoreName(storeJpaRepo.findById(item.getStoreId()).orElseThrow().getStoreName());
+                    res.add(toAdd);
+                }
+            }
+        }
+        return res.toArray(new ItemStoreDTO[0]);
     }
 
     public RandomDTO[] searchActiveRandoms(String token, ProductSearchCriteria criteria) throws Exception {
