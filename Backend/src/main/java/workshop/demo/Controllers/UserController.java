@@ -26,6 +26,7 @@ import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.SystemAnalyticsDTO;
 import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DTOs.UserSuspensionDTO;
 import workshop.demo.DataAccessLayer.GuestJpaRepository;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
@@ -35,7 +36,6 @@ import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
-import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 import workshop.demo.PresentationLayer.Requests.AddToCartRequest;
 import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
@@ -55,7 +55,6 @@ public class UserController {
             IAuthRepo auth,                      // the JWT token provider
             IStockRepo stockrepo,
             AdminInitilizer adminInitializer,
-            IUserSuspensionRepo userSuspensionRepo,
             UserSuspensionJpaRepository userSuspensionJpaRepository,
             UserJpaRepository regRepo,
             GuestJpaRepository guest, UserJpaRepository userRepo
@@ -420,19 +419,16 @@ public class UserController {
         }
     }
 
-    @GetMapping("/viewSuspensions")
-    public ResponseEntity<ApiResponse<List<UserSuspension>>> viewSuspensions(@RequestParam String token) {
-        ApiResponse<List<UserSuspension>> res;
+   @GetMapping("/viewSuspensions")
+    public ResponseEntity<?> viewSuspensions(@RequestParam String token) {
         try {
-            List<UserSuspension> suspensions = userSuspensionService.viewAllSuspensions(token);
-            res = new ApiResponse<>(suspensions, null);
-            return ResponseEntity.ok(res);
+            List<UserSuspensionDTO> suspensions = userSuspensionService.viewAllSuspensions(token);
+            return ResponseEntity.ok(new ApiResponse<>(suspensions, null));
         } catch (UIException ex) {
-            res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
-            res = new ApiResponse<>(null, e.getMessage(), -1);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
     }
 

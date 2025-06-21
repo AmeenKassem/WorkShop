@@ -12,8 +12,7 @@ import jakarta.persistence.Table;
 public class UserSuspension {
 
     @Id
-    private Integer userId;
-    // private long totalDurationMinutes;   
+    private Integer userId;  
     private LocalDateTime suspensionEndTime;  
     private long remainingWhenPaused;   
     private LocalDateTime lastStartTime; 
@@ -48,6 +47,7 @@ public class UserSuspension {
         if (paused) {
             suspensionEndTime = LocalDateTime.now().plusMinutes(remainingWhenPaused);
             paused = false;
+            remainingWhenPaused = 0; 
         }
     }
 
@@ -69,4 +69,13 @@ public class UserSuspension {
         // System.out.println("hii");
         // sus.remainingDuration.
     }
+
+    public LocalDateTime getSuspensionEndTime() {
+        return suspensionEndTime;
+    }
+
+    public long getRemainingWhenPaused() {
+        return remainingWhenPaused;
+    }
+
 }

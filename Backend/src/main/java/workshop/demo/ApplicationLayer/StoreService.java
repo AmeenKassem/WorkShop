@@ -20,6 +20,7 @@ import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DataAccessLayer.OfferJpaRepository;
 import workshop.demo.DataAccessLayer.StoreTreeJPARepository;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
+import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -43,7 +44,8 @@ import workshop.demo.DomainLayer.StoreUserConnection.OfferKey;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.StoreTreeEntity;
 import workshop.demo.DomainLayer.StoreUserConnection.Tree;
-import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
+import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import workshop.demo.DataAccessLayer.UserJpaRepository;
 
 @Service
 public class StoreService {
@@ -63,8 +65,7 @@ public class StoreService {
     @Autowired
     private IStockRepo stockRepo;
     @Autowired
-    private IUserSuspensionRepo susRepo;
-
+    private UserSuspensionJpaRepository suspensionJpaRepo;
     private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
     @Autowired
     private UserService userService;
@@ -151,7 +152,10 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int bossId = authRepo.getUserId(token);
         userService.checkUserRegisterOnline_ThrowException(bossId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(bossId);
+        UserSuspension suspension = suspensionJpaRepo.findById(bossId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
 
         // persisting new store:
         Store newStore = new Store();
@@ -197,7 +201,10 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
         userService.checkUserRegisterOnline_ThrowException(ownerId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
+        UserSuspension suspension = suspensionJpaRepo.findById(ownerId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         int newOwnerId = userRepo.findRegisteredUsersByUsername(newOwnerName).get(0).getId();
         userService.checkUserRegisterOnline_ThrowException(newOwnerId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
@@ -257,7 +264,10 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
         userService.checkUserRegisterOnline_ThrowException(ownerId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
+        UserSuspension suspension = suspensionJpaRepo.findById(ownerId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         userService.checkUserRegisterOnline_ThrowException(ownerToDelete);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);
@@ -273,7 +283,10 @@ public class StoreService {
         int ownerId = authRepo.getUserId(token);
         logger.info("User {} attempting to add manager {} to store {}", ownerId, managerName, storeId);
         userService.checkUserRegisterOnline_ThrowException(ownerId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
+        UserSuspension suspension = suspensionJpaRepo.findById(ownerId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         int managerId = userRepo.findRegisteredUsersByUsername(managerName).get(0).getId();
         userService.checkUserRegisterOnline_ThrowException(managerId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
@@ -329,7 +342,10 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int ownerId = authRepo.getUserId(token);
         userService.checkUserRegisterOnline_ThrowException(ownerId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(ownerId);
+        UserSuspension suspension = suspensionJpaRepo.findById(ownerId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         userService.checkUserRegisterOnline_ThrowException(managerId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);
@@ -347,7 +363,10 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userService.checkUserRegisterOnline_ThrowException(userId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         this.storeRepo.rankStore(storeId, newRank);
         logger.info("store ranked sucessfully!");
@@ -477,7 +496,10 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userService.checkUserRegisterOnline_ThrowException(userId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
 
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);
@@ -520,7 +542,10 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userService.checkUserRegisterOnline_ThrowException(userId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
 
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);
@@ -543,7 +568,10 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userService.checkUserRegisterOnline_ThrowException(userId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
 
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);
@@ -566,7 +594,11 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userService.checkUserRegisterOnline_ThrowException(userId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
+        
 
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);

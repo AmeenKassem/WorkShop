@@ -13,7 +13,6 @@ import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
-import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 
 @Component
@@ -69,6 +68,5 @@ public class Repos {
     @Autowired
     public ISUConnectionRepo sUConnectionRepo;
 
-    @Autowired
-    public IUserSuspensionRepo UserSuspensionRepo;
+
 }
