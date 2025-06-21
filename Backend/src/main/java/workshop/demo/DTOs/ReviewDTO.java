@@ -1,5 +1,7 @@
 package workshop.demo.DTOs;
 
+import workshop.demo.DomainLayer.Review.Review;
+
 public class ReviewDTO {
 
     private int reviewerId;
@@ -10,6 +12,12 @@ public class ReviewDTO {
         this.reviewerId = reviewerId;
         this.name = name;
         this.reviewMsg = reviewMsg;
+    }
+
+    public ReviewDTO(Review review) {
+        this.reviewerId = review.getReviewerId();
+        this.name = review.getName();
+        this.reviewMsg = review.getReviewMsg();
     }
 
     public ReviewDTO() {
