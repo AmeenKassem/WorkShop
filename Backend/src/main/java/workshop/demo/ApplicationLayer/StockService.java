@@ -18,6 +18,7 @@ import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
+import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -40,7 +41,8 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 // import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
-import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
+import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 
 @Service
 public class StockService {
@@ -52,7 +54,7 @@ public class StockService {
     private IStoreRepo storeRepo;
     private ISUConnectionRepo suConnectionRepo;
     private UserJpaRepository userRepo;
-    private IUserSuspensionRepo susRepo;
+    private UserSuspensionJpaRepository suspensionJpaRepo;
     private INotificationRepo notificationRepo;
     private IStockRepoDB stockJpaRepo;
     private IStoreRepoDB storeJpaRepo;
@@ -60,14 +62,14 @@ public class StockService {
 
     @Autowired
     public StockService(IStockRepo stockRepo, IStoreRepo storeRepo, IAuthRepo authRepo, UserJpaRepository userRepo,
-            ISUConnectionRepo cons, IUserSuspensionRepo susRepo, INotificationRepo notificationRepo,
+            ISUConnectionRepo cons, UserSuspensionJpaRepository suspensionJpaRepo, INotificationRepo notificationRepo,
             IStockRepoDB stockJpaRepo, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStock) {
         this.stockRepo = stockRepo;
         this.authRepo = authRepo;
         this.storeRepo = storeRepo;
         this.userRepo = userRepo;
         this.suConnectionRepo = cons;
-        this.susRepo = susRepo;
+        this.suspensionJpaRepo = suspensionJpaRepo;
         this.notificationRepo = notificationRepo;
         this.stockJpaRepo = stockJpaRepo;
         this.storeJpaRepo = storeJpaRepo;
@@ -139,7 +141,11 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(userId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
+
         SingleBid bid = stockRepo.bidOnAuction(storeId, userId, auctionId, price);
         UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, bid.getSpecialId(), bid.getId(),
                 SpecialType.Auction);
@@ -160,7 +166,11 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(userId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
+
         SingleBid bid = stockRepo.bidOnBid(bitId, price, userId, storeId);
         bid.ownersNum = suConnectionRepo.getOwnersInStore(storeId).size();
         UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, bid.getSpecialId(), bid.getId(),
@@ -206,7 +216,11 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(userId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
+
         // must add the exceptions here:
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
@@ -225,7 +239,10 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(userId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         Store store = storeJpaRepo.findById(storeid).orElseThrow(() -> storeNotFound());
         // Node Worker= this.
         if (!this.suConnectionRepo.manipulateItem(userId, storeid, Permission.SpecialType)) {
@@ -270,7 +287,10 @@ public class StockService {
         int userId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(userId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
         }
@@ -294,7 +314,10 @@ public class StockService {
         int userId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(userId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
         }
@@ -307,7 +330,10 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(userId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
             String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
             notificationRepo.sendDelayedMessageToUser(ownerName, "Owner "
@@ -322,7 +348,10 @@ public class StockService {
         int userId = authRepo.getUserId(token);
 
         checkUserRegisterOnline_ThrowException(userId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         return stockRepo.endRandom(storeId, randomId);
     }
 
@@ -393,7 +422,10 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(userId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         logger.info("HmodeID is:{}", storeId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         if (!suConnectionRepo.manipulateItem(userId, storeId, Permission.AddToStock)) {
@@ -419,7 +451,10 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(userId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         Product product = new Product(name, category, description, keywords);
         product = stockJpaRepo.save(product);
         logger.info("Product added successfully: {} with id ={}", name, product.getProductId());
@@ -431,7 +466,10 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int removerId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(removerId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(removerId);
+        UserSuspension suspension = suspensionJpaRepo.findById(removerId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
 
         if (!this.suConnectionRepo.manipulateItem(removerId, storeId, Permission.DeleteFromStock)) {
@@ -454,7 +492,10 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int changerUserId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(changerUserId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(changerUserId);
+        UserSuspension suspension = suspensionJpaRepo.findById(changerUserId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         if (!suConnectionRepo.manipulateItem(changerUserId, storeId, Permission.UpdateQuantity)) {
             throw new UIException("This worker is not authorized!", ErrorCodes.NO_PERMISSION);
@@ -473,7 +514,10 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int changerUserId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(changerUserId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(changerUserId);
+        UserSuspension suspension = suspensionJpaRepo.findById(changerUserId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         if (!suConnectionRepo.manipulateItem(changerUserId, storeId, Permission.UpdatePrice)) {
             throw new UIException("This worker is not authorized!", ErrorCodes.NO_PERMISSION);
@@ -492,7 +536,10 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int updaterUserId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(updaterUserId);
-        susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(updaterUserId);
+        UserSuspension suspension = suspensionJpaRepo.findById(updaterUserId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         this.stockRepo.rankProduct(storeId, productId, newRank);
         logger.info("the rank updated successfully for product {} in store {}", productId, storeId);

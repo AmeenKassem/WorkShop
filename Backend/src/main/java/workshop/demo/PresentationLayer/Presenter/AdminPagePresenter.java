@@ -20,6 +20,7 @@ import com.vaadin.flow.server.VaadinSession;
 import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DTOs.UserSuspensionDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.AdminPageView;
@@ -151,6 +152,34 @@ public class AdminPagePresenter {
         }
     }
 
+    public void onCancelSuspension(int userId) {
+        Object token = VaadinSession.getCurrent().getAttribute("auth-token");
+        String url = String.format(Base.url + "/api/users/cancelSuspension?userId=%d&token=%s",
+                userId, token);
+
+        try {
+            ResponseEntity<ApiResponse<Boolean>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    null,
+                    new ParameterizedTypeReference<ApiResponse<Boolean>>() {
+                    }
+            );
+
+            ApiResponse<Boolean> res = response.getBody();
+
+            if (res != null && res.getErrorMsg() == null) {
+                NotificationView.showSuccess("Suspension cancelled successfully.");
+            } else if (res != null) {
+                NotificationView.showError("Error: " + res.getErrorMsg());
+            }
+
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+    }
+
+
     public void onRemoveUser(UserDTO user) {
         Object token = VaadinSession.getCurrent().getAttribute("auth-token");
         NotificationView.showError("coming soon!");
@@ -213,5 +242,33 @@ public class AdminPagePresenter {
             ExceptionHandlers.handleException(e);
         }
     }
+
+    public List<UserSuspensionDTO> onViewSuspensions() {
+        Object token = VaadinSession.getCurrent().getAttribute("auth-token");
+        String url = String.format(Base.url + "/api/users/viewSuspensions?token=%s", token);
+
+        try {
+            ResponseEntity<ApiResponse<List<UserSuspensionDTO>>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ApiResponse<List<UserSuspensionDTO>>>() {}
+            );
+
+            ApiResponse<List<UserSuspensionDTO>> res = response.getBody();
+
+            if (res != null && res.getErrorMsg() == null) {
+                return res.getData();
+            } else if (res != null) {
+                NotificationView.showError("Error: " + res.getErrorMsg());
+            }
+
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+
+        return Collections.emptyList();
+    }
+
 
 }

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import workshop.demo.DTOs.UserSuspensionDTO;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
@@ -15,8 +16,11 @@ import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 import workshop.demo.DataAccessLayer.UserJpaRepository;
 
 @Service
@@ -98,5 +102,28 @@ public class UserSuspensionService {
         suspension.resume();
         suspensionJpaRepo.save(suspension);
         logger.info("Suspension for " + userId + " resumed.");
+    }
+
+    public void cancelSuspension(Integer userId, String adminToken) throws UIException {
+        System.out.println("Calling cancelSuspension: userId=" + userId + ", token=" + adminToken);
+        validateAdmin(adminToken);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId)
+                .orElseThrow(() -> new UIException("Suspension not found.", ErrorCodes.SUSPENSION_NOT_FOUND));
+        suspensionJpaRepo.delete(suspension);
+        logger.info("Suspension for " + userId + " cancelled.");
+    }
+
+    public List<UserSuspensionDTO> viewAllSuspensions(String adminToken) throws UIException {
+        validateAdmin(adminToken);
+
+        return suspensionJpaRepo.findAll()
+                .stream()
+                .map(s -> new UserSuspensionDTO(
+                        s.getUserId(),
+                        s.isPaused(),
+                        s.getSuspensionEndTime(),
+                        s.getRemainingWhenPaused()
+                ))
+                .collect(Collectors.toList());
     }
 }

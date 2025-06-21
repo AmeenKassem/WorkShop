@@ -347,26 +347,31 @@ public class GuestTests {
 
     // //NOTE :BUY CART FINISH +ASK FOR MORE FAILURE
     @Test
-    void testGuestBuyCart_Success() throws Exception {
+    void testGuestBuyCart_Success()  {
 
-        userService.addToUserCart(GToken, itemStoreDTO, 1);
-        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if
-        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if
+        try{
+            userService.addToUserCart(GToken, itemStoreDTO, 1);
+            PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if
+            SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if
+    
+            ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails,
+                    supplyDetails);
+    
+            assertNotNull(receipts);
+            assertEquals(1, receipts.length);
+            assertEquals("TestStore", receipts[0].getStoreName());
+            assertEquals(2000.0,
+                    receipts[0].getProductsList().size() *
+                            receipts[0].getProductsList().get(0).getPrice());
+    
+            int guestId = authRepo.getUserId(GToken);
+            assertTrue(userService.getRegularCart(GToken).length == 0);
+    
+            assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 9);
 
-        ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails,
-                supplyDetails);
-
-        assertNotNull(receipts);
-        assertEquals(1, receipts.length);
-        assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(2000.0,
-                receipts[0].getProductsList().size() *
-                        receipts[0].getProductsList().get(0).getPrice());
-
-        int guestId = authRepo.getUserId(GToken);
-        assertTrue(userService.getRegularCart(GToken).length == 0);
-
-        assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 9);
+        }catch(Exception ex ){
+            assertEquals("", ex.getMessage());
+        }
 
     }
 

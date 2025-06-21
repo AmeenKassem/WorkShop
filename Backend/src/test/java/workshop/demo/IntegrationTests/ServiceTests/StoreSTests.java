@@ -327,7 +327,7 @@ public class StoreSTests {
         // === Act ===
         storeService.AddOwnershipToStore(createdStoreId, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, createdStoreId).size() == 2);
-       
+
     }
 
     @Test
@@ -566,7 +566,7 @@ public class StoreSTests {
     @Test
     void testDeleteManager_Failure_StoreExist() throws Exception {
         String token = userService.generateGuest();
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         userService.register(token, "token", "token", 0);
         String token1 = userService.login(token, "token", "token");
@@ -575,7 +575,8 @@ public class StoreSTests {
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(createdStoreId, NOToken, "token", a);
 
-        int result = storeService.AddManagerToStore(createdStoreId, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
+        int result = storeService.AddManagerToStore(createdStoreId, authRepo.getUserId(NOToken),
+                authRepo.getUserId(token1), true);
         // dunno why it doesnt work with true ????
         // when decide true some list is null (i think its permissions list)
 
@@ -619,7 +620,7 @@ public class StoreSTests {
     // }
     @Test
     void testOwner_DeactivateStore() throws Exception {
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         int result = storeService.deactivateteStore(createdStoreId, NOToken);
         DevException ex = assertThrows(DevException.class, () -> {
@@ -632,7 +633,7 @@ public class StoreSTests {
 
     @Test
     void testOwner_DeactivateStore_Failure_AlreadyInactive() throws Exception {
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         int result = storeService.deactivateteStore(createdStoreId, NOToken);
         DevException ex = assertThrows(DevException.class, () -> {
@@ -680,7 +681,7 @@ public class StoreSTests {
 
     @Test
     void testOwner_RequestStoreRolesInfoAndPermission_sucess() throws Exception {
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         List<WorkerDTO> workers = storeService.ViewRolesAndPermissions(NOToken, createdStoreId);
         assertTrue(workers.size() == 1);
@@ -701,7 +702,7 @@ public class StoreSTests {
     void testOwner_DeleteProductFromStock_Failure_ProductNotFound() throws Exception {
 
         // === Act & Assert
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         UIException ex = assertThrows(UIException.class, () -> stockService.removeItem(createdStoreId, NOToken, 3));
 
@@ -711,8 +712,7 @@ public class StoreSTests {
 
     @Test
     void testOwner_AddToAuction_Success() throws Exception {
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
-
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         stockService.setProductToAuction(NOToken, createdStoreId, PID, 1, 5000, 2);
         assertTrue(stockService.getAllAuctions(NOToken, createdStoreId).length == 1);
@@ -732,8 +732,7 @@ public class StoreSTests {
 
     @Test
     void testOwner_AddToRandom_Success() throws Exception {
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
-
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         stockService.setProductToRandom(NOToken, PID, 1, 100, createdStoreId, 5000);
 
@@ -822,7 +821,7 @@ public class StoreSTests {
 
     @Test
     void testOwner_reviewstore_Success() throws Exception {
-          createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         assertTrue(reviewService.getReviewsForStore(createdStoreId).size() == 0);
 
@@ -843,12 +842,13 @@ public class StoreSTests {
 
     @Test
     void testOwner_reviewitem_Success() throws Exception {
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
-PID=stockRepositoryjpa.findAll().get(0).getProductId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        PID = stockRepositoryjpa.findAll().get(0).getProductId();
 
         reviewService.AddReviewToProduct(NGToken, createdStoreId, PID, "first review");
 
-        assertTrue(reviewService.getReviewsForProduct(createdStoreId, PID).get(0).getReviewMsg().equals("first review"));
+        assertTrue(
+                reviewService.getReviewsForProduct(createdStoreId, PID).get(0).getReviewMsg().equals("first review"));
 
     }
 
@@ -871,7 +871,7 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
     @Test
     void testCloseStore_Success() throws Exception {
         // ACT
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         String token = userService.generateGuest();
         userService.register(token, "adminUser2", "adminPass2", 22);
@@ -887,7 +887,7 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
 
     @Test
     void testCloseStore_Fail_NotAdmin() {
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         Exception ex = assertThrows(Exception.class, () -> {
             storeService.closeStore(createdStoreId, NGToken); // NGToken is not admin
@@ -919,7 +919,7 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
 
     @Test
     void testGetStoreDTO_Success() throws Exception {
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         StoreDTO dto = storeService.getStoreDTO(NOToken, createdStoreId);
         assertEquals("TestStore", dto.getStoreName());
@@ -978,7 +978,7 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
 
     @Test
     void testChangePermissions_Success() throws Exception {
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         // Register and login new user (manager)
         String token = userService.generateGuest();
@@ -1031,7 +1031,7 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
 
     @Test
     void testChangePermissions_Fail_StoreInactive() throws Exception {
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         storeService.deactivateteStore(createdStoreId, NOToken); // store 1 is now inactive
 
@@ -1044,7 +1044,7 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
     @Test
     void testAddItem_ManagerNoPermission_Fail() throws Exception {
         // Step 1: Register and login manager
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         String token = userService.generateGuest();
         userService.register(token, "noAddPerm", "noAddPerm", 30);
@@ -1057,7 +1057,8 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
 
         // Step 3: Attempt to add item — should fail
         UIException ex = assertThrows(UIException.class, () -> {
-            stockService.addItem(createdStoreId, managerToken, itemStoreDTO.getProductId(), 1, 1000, Category.Electronics);
+            stockService.addItem(createdStoreId, managerToken, itemStoreDTO.getProductId(), 1, 1000,
+                    Category.Electronics);
         });
 
         // Step 4: Assert exception
@@ -1066,7 +1067,7 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
 
     @Test
     void testRemoveItem_ManagerNoPermission_Fail() throws Exception {
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         String token = userService.generateGuest();
         userService.register(token, "noDeletePerm", "noDeletePerm", 30);
@@ -1087,7 +1088,7 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
     @Test
     void testUpdateQuantity_ManagerNoPermission_Fail() throws Exception {
         String token = userService.generateGuest();
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         userService.register(token, "noUpdatePerm", "noUpdatePerm", 30);
         String managerToken = userService.login(token, "noUpdatePerm", "noUpdatePerm");
@@ -1108,7 +1109,7 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
     void testUpdatePrice_ManagerNoPermission_Fail() throws Exception {
         // Step 1: Register and login manager
         String token = userService.generateGuest();
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         userService.register(token, "noUpdatePerm", "noUpdatePerm", 30);
         String managerToken = userService.login(token, "noUpdatePerm", "noUpdatePerm");
@@ -1169,11 +1170,12 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
     // Bashar ..........
     // @Test
     // void testAddtwostoresamename() throws UIException, DevException {
-    //     storeService.addStoreToSystem(NOToken, "AA", "ELECTRONICS");
-    //     // assertThrows(storeService.addStoreToSystem(NGToken,"AA","ELECTRONICS"));
-    //     UIException ex = assertThrows(UIException.class, () -> {
-    //         storeService.addStoreToSystem(NGToken, "AA", "ELECTRONICS"); // store doesn't exist
-    //     });
+    // storeService.addStoreToSystem(NOToken, "AA", "ELECTRONICS");
+    // // assertThrows(storeService.addStoreToSystem(NGToken,"AA","ELECTRONICS"));
+    // UIException ex = assertThrows(UIException.class, () -> {
+    // storeService.addStoreToSystem(NGToken, "AA", "ELECTRONICS"); // store doesn't
+    // exist
+    // });
 
     // }
 
@@ -1227,7 +1229,7 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
         storeRepository.getStores().stream()
                 .filter(s -> s.getstoreId() == storeId)
                 .findFirst()
-                .ifPresent(store -> store.setActive(false)); 
+                .ifPresent(store -> store.setActive(false));
 
         DevException exception = assertThrows(DevException.class, () -> {
             storeRepository.checkStoreIsActive(storeId);
@@ -1432,9 +1434,6 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
         assertEquals("store does not exist in superDS", ex.getMessage());
     }
 
-
-
-
     @Test
     void testCheckDeactivateStore_StoreNotExists() {
         SuperDataStructure superDS = new SuperDataStructure();
@@ -1470,12 +1469,10 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
         assertEquals(-1, result);
     }
 
- 
-
     @Test
     void testAddPolicy_InvalidPermission_Fails() throws Exception {
         // user NGToken is not the store owner
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         UIException ex = assertThrows(UIException.class,
                 () -> storeService.addPurchasePolicy(NGToken, createdStoreId, "NO_ALCOHOL", null));
@@ -1484,7 +1481,7 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
 
     @Test
     void testRemovePolicy_UnknownPolicyKey_Fails() throws Exception {
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         UIException ex = assertThrows(UIException.class,
                 () -> storeService.removePurchasePolicy(NOToken, createdStoreId, "UNKNOWN", null));
@@ -1493,7 +1490,7 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
 
     @Test
     void testRemovePolicy_MinQtyMissingParam_Fails() throws Exception {
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         Exception ex = assertThrows(Exception.class,
                 () -> storeService.removePurchasePolicy(NOToken, createdStoreId, "MIN_QTY", null));
@@ -1502,13 +1499,14 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
 
     @Test
     void testAddAndRemove_NoAlcoholPolicy_Success_sucessbuy() throws Exception {
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         // Add NO_ALCOHOL policy
         storeService.addPurchasePolicy(NOToken, createdStoreId, "NO_ALCOHOL", null);
-       int aa= stockService.addProduct(NOToken, "Red Wine", Category.ALCOHOL, "1948 vintage alcohol", null);
+        int aa = stockService.addProduct(NOToken, "Red Wine", Category.ALCOHOL, "1948 vintage alcohol", null);
         stockService.addItem(createdStoreId, NOToken, aa, 10, 2000, Category.ALCOHOL);
-        var itemStoreDTO1 = new ItemStoreDTO(aa, 10, 2000, Category.ALCOHOL, 0, createdStoreId, "Red Wine", "TestStore");
+        var itemStoreDTO1 = new ItemStoreDTO(aa, 10, 2000, Category.ALCOHOL, 0, createdStoreId, "Red Wine",
+                "TestStore");
 
         Store store = storeRepositoryjpa.findAll().get(0);
         assertEquals(1, store.getPurchasePolicies().size());
@@ -1543,12 +1541,13 @@ PID=stockRepositoryjpa.findAll().get(0).getProductId();
     @Test
     void testAddAndRemove_NoAlcoholPolicy_Success_failed() throws Exception {
         // Add NO_ALCOHOL policy
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         storeService.addPurchasePolicy(NOToken, createdStoreId, "NO_ALCOHOL", null);
-       int aa= stockService.addProduct(NOToken, "Red Wine", Category.ALCOHOL, "1948 vintage alcohol", null);
-        stockService.addItem(createdStoreId, NOToken,aa , 10, 1000, Category.ALCOHOL);
-        var itemStoreDTO1 = new ItemStoreDTO(aa, 10, 2000, Category.ALCOHOL, 0, createdStoreId, "Red Wine", "TestStore");
+        int aa = stockService.addProduct(NOToken, "Red Wine", Category.ALCOHOL, "1948 vintage alcohol", null);
+        stockService.addItem(createdStoreId, NOToken, aa, 10, 1000, Category.ALCOHOL);
+        var itemStoreDTO1 = new ItemStoreDTO(aa, 10, 2000, Category.ALCOHOL, 0, createdStoreId, "Red Wine",
+                "TestStore");
 
         Store store = storeRepositoryjpa.findAll().get(0);
         assertEquals(1, store.getPurchasePolicies().size());
