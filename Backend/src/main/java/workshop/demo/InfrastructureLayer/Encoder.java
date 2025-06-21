@@ -13,7 +13,9 @@ public class Encoder {
         return encoder.encode(password);
     }
 
-    public boolean matches(String pass1, String pass2) {
-        return encoder.matches(pass1, pass2);
+    public boolean matches(String passInput, String encodedPass) {
+        return encoder.matches(passInput, encodedPass);
     }
+
+
 }

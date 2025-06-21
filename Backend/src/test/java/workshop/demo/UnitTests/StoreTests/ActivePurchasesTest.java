@@ -5,6 +5,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
@@ -13,14 +14,15 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 
-@SpringBootTest
+//@SpringBootTest
+@ActiveProfiles("test")
 public class ActivePurchasesTest {
 
     private ActivePurcheses active = new ActivePurcheses(0); // or @Autowired if it's a Spring bean
 
     public int setAuction() throws Exception {
         active = new ActivePurcheses(0);
-        return active.addProductToAuction(0, 1, 1000);
+        return active.addProductToAuction(0, 1, 1000,0);
     }
 
     public int setRandom() throws Exception {
@@ -114,9 +116,7 @@ public class ActivePurchasesTest {
     //             Assertions.assertTrue(false);
     //         } catch (UIException ex) {
     //             Assertions.assertTrue(true);
-
     //         }
-
     //     } catch (Exception e) {
     //         // TODO Auto-generated catch block
     //         e.printStackTrace();
@@ -124,7 +124,6 @@ public class ActivePurchasesTest {
     //         Assertions.assertTrue(false);
     //     }
     // }
-
     @Test
     public void TestAddRandom() {
         try {
@@ -144,14 +143,14 @@ public class ActivePurchasesTest {
     @Test
     public void TestAddRandomFail() {
         Assertions.assertThrows(UIException.class, () -> {
-            active.addProductToAuction(0, 0, 10000);
+            active.addProductToAuction(0, 0, 10000,0);
         }, "Expected participateInRandom to throw, but it didn't");
     }
 
     @Test
     public void TestAddRandomFail2() {
         Assertions.assertThrows(UIException.class, () -> {
-            active.addProductToAuction(0, 20, 0);
+            active.addProductToAuction(0, 20, 0,0);
         }, "Expected participateInRandom to throw, but it didn't");
     }
 
@@ -231,6 +230,7 @@ public class ActivePurchasesTest {
             Assertions.fail("Exception thrown: " + e.getMessage());
         }
     }
+
     //Needs Fixing!
 //    @Test
 //    public void concurrencyTest1() {

@@ -41,7 +41,7 @@ public class UserSuspensionRepo implements IUserSuspensionRepo {
             throw new UIException("User " + userId + " is already suspended.", ErrorCodes.SUSPENSION_ALREADY_EXISTS);
         }
         Duration duration = Duration.ofSeconds(seconds);
-        Suspensions.put(userId, new UserSuspension(userId, duration));
+        Suspensions.put(userId, new UserSuspension(userId, seconds));
     }
 
     @Override
@@ -50,7 +50,7 @@ public class UserSuspensionRepo implements IUserSuspensionRepo {
             throw new UIException("Guest " + userId + " is already suspended.", ErrorCodes.SUSPENSION_ALREADY_EXISTS);
         }
         Duration duration = Duration.ofSeconds(seconds);
-        Suspensions.put(userId, new UserSuspension(userId, duration));
+        Suspensions.put(userId, new UserSuspension(userId, seconds));
     }
 
     @Override

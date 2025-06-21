@@ -22,7 +22,7 @@ import java.util.List;
 public class ManageStoreSpecialPurchasesPresenter {
     private final ManageStoreSpecialPurchasesView view;
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String baseUrl = "http://localhost:8080/stock";
+    private final String baseUrl = Base.url+"/stock";
     private int storeId = -1;
 
     public ManageStoreSpecialPurchasesPresenter(ManageStoreSpecialPurchasesView view) {

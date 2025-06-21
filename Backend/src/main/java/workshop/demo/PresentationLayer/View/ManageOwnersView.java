@@ -8,7 +8,6 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -88,9 +87,11 @@ public class ManageOwnersView extends VerticalLayout implements HasUrlParameter<
     private void showDeleteDialog(WorkerDTO owner) {
         Dialog dialog = new Dialog();
         dialog.add(new Paragraph("Are you sure you want to delete owner: " + owner.getUsername() + "?"));
-
+        System.out.println("id to delete");
+        System.out.println(owner.getWorkerId());
         Button confirm = new Button("Delete", e -> {
             presenter.deleteOwner(storeId, owner.getWorkerId());
+
             dialog.close();
         });
 
@@ -116,7 +117,7 @@ public class ManageOwnersView extends VerticalLayout implements HasUrlParameter<
                 presenter.offerToAddOwner(storeId, newOwnerUsername);
                 dialog.close();
             } else {
-                Notification.show("Username cannot be empty.");
+                NotificationView.showError("Username cannot be empty.");
             }
         });
 

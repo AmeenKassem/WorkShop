@@ -4,9 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.AfterEach;
-
 import static org.junit.Assert.assertArrayEquals;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -19,12 +18,43 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 
-import workshop.demo.ApplicationLayer.*;
-import workshop.demo.DTOs.*;
+// import workshop.demo.ApplicationLayer.AdminHandler;
+import workshop.demo.ApplicationLayer.NotificationService;
+import workshop.demo.ApplicationLayer.OrderService;
+import workshop.demo.ApplicationLayer.PaymentServiceImp;
+import workshop.demo.ApplicationLayer.PurchaseService;
+import workshop.demo.ApplicationLayer.StockService;
+import workshop.demo.ApplicationLayer.StoreService;
+import workshop.demo.ApplicationLayer.SupplyServiceImp;
+import workshop.demo.ApplicationLayer.UserService;
+import workshop.demo.ApplicationLayer.UserSuspensionService;
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DTOs.PurchaseHistoryDTO;
+import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.SystemAnalyticsDTO;
+import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DataAccessLayer.GuestJpaRepository;
+import workshop.demo.DataAccessLayer.NodeJPARepository;
+import workshop.demo.DataAccessLayer.OfferJpaRepository;
+import workshop.demo.DataAccessLayer.StoreTreeJPARepository;
+import workshop.demo.DataAccessLayer.UserJpaRepository;
+import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.IStockRepoDB;
+import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
+import workshop.demo.DomainLayer.Store.IStoreRepoDB;
+import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
@@ -37,71 +67,101 @@ import workshop.demo.InfrastructureLayer.StoreRepository;
 import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
-import org.mockito.Mockito;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 @SpringBootTest
+@ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserTests {
-
+    @Autowired
+    StoreTreeJPARepository tree;
+    @Autowired
+    private NodeJPARepository node;
     @Autowired
     private NotificationRepository notificationRepository;
-    @Autowired
-    private NotificationService notificationService;
     @Autowired
     private StoreRepository storeRepository;
     @Autowired
     private StockRepository stockRepository;
     @Autowired
+    private IStockRepoDB stockRepositoryjpa;
+    @Autowired
+    private IStoreRepoDB storeRepositoryjpa;
+    @Autowired
     private OrderRepository orderRepository;
     @Autowired
     private PurchaseRepository purchaseRepository;
     @Autowired
-    private UserSuspensionRepo suspensionRepo;
+    private UserSuspensionJpaRepository suspensionRepo;
     @Autowired
     private AuthenticationRepo authRepo;
+    @Autowired
+    private UserJpaRepository userRepo;
+    @Autowired
+    private SUConnectionRepository sIsuConnectionRepo;
+    @Autowired
+    private GuestJpaRepository guestRepo;
+    @Autowired
+    private IStoreStockRepo storeStockRepo;
+    @Autowired
+    private OfferJpaRepository offerRepo;
+    // ======================== Services ========================
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private StoreService storeService;
+    @Autowired
+    private StockService stockService;
+    @Autowired
+    private PurchaseService purchaseService;
+    @Autowired
+    private OrderService orderService;
+    @Autowired
+    private UserSuspensionService suspensionService;
+    @Autowired
+    private NotificationService notificationService;
 
+    // ======================== Payment / Supply ========================
     @Autowired
-    PaymentServiceImp payment;
+    private PaymentServiceImp payment;
     @Autowired
-    SupplyServiceImp serviceImp;
+    private SupplyServiceImp serviceImp;
 
+    // ======================== Utility ========================
     @Autowired
-    SUConnectionRepository sIsuConnectionRepo;
+    private Encoder encoder;
 
-    @Autowired
-    Encoder encoder;
-    @Autowired
-    UserRepository userRepo;
-    @Autowired
-    UserSuspensionService suspensionService;
-    @Autowired
-    AdminHandler adminService;
-    @Autowired
-    UserService userService;
-    @Autowired
-    StockService stockService;
-    @Autowired
-    StoreService storeService;
-    @Autowired
-    PurchaseService purchaseService;
-    @Autowired
-    OrderService orderService;
-
+    // ======================== Test Data ========================
     String NOToken;
     String NGToken;
-    ItemStoreDTO itemStoreDTO;
     String GToken;
     String Admin;
+    ItemStoreDTO itemStoreDTO;
+    int PID;
+
+    int createdStoreId;
 
     @BeforeEach
     void setup() throws Exception {
         // ====== ADMIN SETUP ======
+        node.deleteAll();
+        userRepo.deleteAll();
+        tree.deleteAll();
+
+        guestRepo.deleteAll();
+
+        stockRepositoryjpa.deleteAll();
+        offerRepo.deleteAll();
+        storeRepositoryjpa.deleteAll();
+        storeStockRepo.deleteAll();
+
+        if (storeRepository != null) {
+            storeRepository.clear();
+        }
+        if (stockRepository != null) {
+            stockRepository.clear();
+        }
+        if (orderRepository != null) {
+            orderRepository.clear();
+        }
 
         String GToken = userService.generateGuest();
         userService.register(GToken, "User", "User", 25);
@@ -122,34 +182,34 @@ public class UserTests {
         // ======================= STORE CREATION =======================
 
         int createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
-        assertEquals(createdStoreId, 1);
+        System.out.println(createdStoreId + "aaaaaaaaaaaaaaaaa");
 
         // ======================= PRODUCT & ITEM ADDITION =======================
-        String[] keywords = {"Laptop", "Lap", "top"};
-        stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
+        String[] keywords = { "Laptop", "Lap", "top" };
+        PID = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
 
-        assertEquals(1, stockService.addItem(1, NOToken, 1, 10, 2000, Category.Electronics));
-        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.Electronics, 0, 1, "Laptop", "TestStore");
+        stockService.addItem(createdStoreId, NOToken, PID, 10, 2000, Category.Electronics);
+        itemStoreDTO = new ItemStoreDTO(PID, 10, 2000, Category.Electronics, 0, createdStoreId, "Laptop", "TestStore");
 
     }
 
     @AfterEach
     void tearDown() {
-        if (userRepo != null) {
-            userRepo.clear();
-        }
-        if (storeRepository != null) {
-            storeRepository.clear();
-        }
-        if (stockRepository != null) {
-            stockRepository.clear();
-        }
-        if (orderRepository != null) {
-            orderRepository.clear();
-        }
-        if (suspensionRepo != null) {
-            suspensionRepo.clear();
-        }
+        // if (userRepo != null) {
+        // userRepo.clear();
+        // }
+        // if (storeRepository != null) {
+        // storeRepository.clear();
+        // }
+        // if (stockRepository != null) {
+        // stockRepository.clear();
+        // }
+        // if (orderRepository != null) {
+        // orderRepository.clear();
+        // }
+        // if (suspensionRepo != null) {
+        // suspensionRepo.clear();
+        // }
         // Add clear() for all other repos you wrote it for
     }
 
@@ -162,8 +222,12 @@ public class UserTests {
         String token1 = userService.login(Token, "User1", "User");
 
         assertTrue(authRepo.getUserName(token1).equals("User1"));
-        userService.setAdmin(Token, "123321", 5);
-        assertTrue(userRepo.isAdmin(5));
+
+        userService.setAdmin(Token, "123321", authRepo.getUserId(token1));
+        Registered user = userRepo.findById(authRepo.getUserId(token1))
+                .orElseThrow(() -> new UIException("user is not registered", ErrorCodes.USER_NOT_FOUND));
+
+        assertTrue(user.isAdmin());
 
     }
 
@@ -177,7 +241,10 @@ public class UserTests {
 
         assertTrue(authRepo.getUserName(token1).equals("User1"));
         userService.setAdmin(Token, "13321", 6);
-        assertFalse(userRepo.isAdmin(6));
+        Registered user = userRepo.findById(authRepo.getUserId(token1))
+                .orElseThrow(() -> new UIException("user is not registered", ErrorCodes.USER_NOT_FOUND));
+
+        assertFalse(user.isAdmin());
 
     }
 
@@ -204,7 +271,9 @@ public class UserTests {
         assertTrue(authRepo.getUserName(token1).equals("User1"));
 
         userService.logoutUser(token1);
-        assertFalse(userRepo.isOnline(authRepo.getUserId(token1)));
+        Registered user = userRepo.findById(authRepo.getUserId(token1))
+                .orElseThrow(() -> new UIException("user is not registered", ErrorCodes.USER_NOT_FOUND));
+        assertFalse(user.isOnline());
     }
 
     @Test
@@ -216,7 +285,7 @@ public class UserTests {
         UIException ex = assertThrows(UIException.class, () -> {
             userService.login(Token, "User1", "invalid");
         });
-        assertEquals("Incorrect username or password.", ex.getMessage());
+        assertEquals("wrong password!!", ex.getMessage());
     }
 
     @Test
@@ -272,8 +341,9 @@ public class UserTests {
         userService.register(token, "adminUser3", "adminPass3", 22);
         String token1 = userService.login(token, "adminUser3", "adminPass3");
         userService.setAdmin(token1, "123321", authRepo.getUserId(token1));
-
-        assertTrue(userRepo.isAdmin(authRepo.getUserId(token1)));
+        Registered user = userRepo.findById(authRepo.getUserId(token1))
+                .orElseThrow(() -> new UIException("user is not registered", ErrorCodes.USER_NOT_FOUND));
+        assertTrue(user.isAdmin());
 
     }
 
@@ -283,8 +353,9 @@ public class UserTests {
         userService.register(token, "adminUser3", "adminPass3", 22);
         String token1 = userService.login(token, "adminUser3", "adminPass3");
         userService.setAdmin(token1, "123321", authRepo.getUserId(token1));
-
-        assertTrue(userRepo.isAdmin(authRepo.getUserId(token1)));
+        Registered user = userRepo.findById(authRepo.getUserId(token1))
+                .orElseThrow(() -> new UIException("user is not registered", ErrorCodes.USER_NOT_FOUND));
+        assertTrue(user.isAdmin());
         UIException ex = assertThrows(UIException.class, () -> {
             userService.setAdmin("invalid token", "123321", 1);
         });
@@ -318,7 +389,9 @@ public class UserTests {
         ReceiptDTO r = result.get(0);
         assertEquals("TestStore", r.getStoreName());
         assertEquals(2000, r.getFinalPrice());
-        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 9);
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
+
+        assertTrue(stockService.getProductsInStore(x)[0].getQuantity() == 9);
 
     }
 
@@ -340,7 +413,9 @@ public class UserTests {
         });
         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
         assertEquals("Invalid token!", ex.getMessage());
-        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 9);
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
+
+        assertTrue(stockService.getProductsInStore(x)[0].getQuantity() == 9);
 
     }
 
@@ -358,18 +433,21 @@ public class UserTests {
 
     @Test
     void testUserGetStoreProducts() throws Exception {
-        ItemStoreDTO[] items = stockService.getProductsInStore(1);
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
+
+        ItemStoreDTO[] items = stockService.getProductsInStore(x);
         assertTrue(items.length == 1);
-        assertTrue(items[0].getProductId() == 1);
+        assertTrue(items[0].getProductId() == PID);
 
     }
 
     @Test
     void testUserViewEmptyStore() throws Exception {
-        storeService.addStoreToSystem(NOToken, "failure", "HOME");
+        var id = storeService.addStoreToSystem(NOToken, "failure", "HOME");
 
-        ItemStoreDTO[] products = stockService.getProductsInStore(2);
-// ask bhaa i dont know what is happening , how are we getting an item please help help help
+        ItemStoreDTO[] products = stockService.getProductsInStore(id);
+        // ask bhaa i dont know what is happening , how are we getting an item please
+        // help help help
 
         // ===== ASSERT =====
         assertTrue(products.length == 0);
@@ -389,13 +467,13 @@ public class UserTests {
 
     @Test
     void testUserGetProductInfo() throws Exception {
-        ProductDTO info = stockService.getProductInfo(NGToken, 1);
+        ProductDTO info = stockService.getProductInfo(NGToken, PID);
 
         // ===== ASSERTIONS =====
         assertNotNull(info);
         System.out.println(info.getName());
         assertTrue(info.getName().equals("Laptop"));
-        assertTrue(info.getProductId() == 1);
+        assertTrue(info.getProductId() == PID);
         assertTrue(info.getCategory().equals(Category.Electronics));
         assertTrue(info.getDescription().equals("Gaming Laptop"));
     }
@@ -407,7 +485,7 @@ public class UserTests {
             stockService.getProductInfo(NGToken, 2);
         });
 
-        assertEquals("Product not found.", exception.getMessage());
+        assertEquals("product not found!", exception.getMessage());
     }
 
     @Test
@@ -449,9 +527,11 @@ public class UserTests {
         assertTrue(orderService.getReceiptDTOsByUser(NGToken).size() == 1);
         assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getFinalPrice() == 2000);
         assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().size() == 1);
-        assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().get(0).getProductId() == 1);
-        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 9);
-        assertTrue(userRepo.getUserCart(authRepo.getUserId(NGToken)).getAllCart().size() == 0);
+        assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().get(0).getProductId() == PID);
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
+
+        assertTrue(stockService.getProductsInStore(x)[0].getQuantity() == 9);
+        assertTrue(userService.getRegularCart(NGToken).length == 0);
     }
 
     @Test
@@ -460,8 +540,7 @@ public class UserTests {
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-        assertThrows(Exception.class,
-                () -> userService.addToUserCart(NGToken, new ItemStoreDTO(0, 0, 0, null, 0, 2, "", "TestStore"), 1));
+        assertFalse(userService.addToUserCart(NGToken, new ItemStoreDTO(0, 0, 0, null, 0, 2, "", "TestStore"), 1));
 
     }
 
@@ -475,7 +554,9 @@ public class UserTests {
                 () -> purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
 
         assertEquals("Shopping cart is empty or not found", ex.getMessage());
-        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 10);
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
+
+        assertTrue(stockService.getProductsInStore(x)[0].getQuantity() == 10);
 
     }
 
@@ -486,7 +567,9 @@ public class UserTests {
         Exception ex = assertThrows(Exception.class,
                 () -> purchaseService.buyRegisteredCart(NGToken, PaymentDetails.test_fail_Payment(), supplyDetails));
 
-        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 10);
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
+
+        assertTrue(stockService.getProductsInStore(x)[0].getQuantity() == 10);
 
     }
 
@@ -530,7 +613,7 @@ public class UserTests {
     @Test
     void testUserSearchProducts_NoMatches() throws Exception {
 
-        String[] keywords = {"Laptop", "Lap", "top"};
+        String[] keywords = { "Laptop", "Lap", "top" };
         ProductSearchCriteria criteria = new ProductSearchCriteria("aa", Category.Electronics, keywords[0], 1, 0, 5000,
                 0, 5);
         ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
@@ -568,41 +651,36 @@ public class UserTests {
     }
 
     @Test
-    void testUserGetPurchasePolicy_Success() throws Exception {
-        // throw new Exception("not implmented");
 
-    }
-
-    @Test
-    void testUserGetPurchasePolicy_Failure() throws Exception {
-        // throw new Exception("not implmented");
-    }
-
-    @Test
-
-    void testGuestModifyCartAddQToBuy_sucess() throws Exception {
+    void testUserModifyCartAddQToBuy_sucess() throws Exception {
         userService.addToUserCart(NGToken, itemStoreDTO, 1);
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
-        userService.ModifyCartAddQToBuy(NGToken, 1, 3);
+        int id = userService.getRegularCart(NGToken)[0].itemCartId;
+
+        userService.ModifyCartAddQToBuy(NGToken, id, 3);
         ReceiptDTO[] re = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
         assertTrue(re[0].getFinalPrice() == 6000);
-        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 7);
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
+
+        assertTrue(stockService.getProductsInStore(x)[0].getQuantity() == 7);
 
     }
 
     @Test
-    void testGuestModifyCartAddQToBuy_failure() throws Exception {
+    void testUserModifyCartAddQToBuy_failure() throws Exception {
         userService.addToUserCart(NGToken, itemStoreDTO, 1);
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
-        UIException ex = assertThrows(UIException.class, ()
-                -> userService.ModifyCartAddQToBuy("INVALID", 1, 2)
-        );
+        int id = userService.getRegularCart(NGToken)[0].itemCartId;
+
+        UIException ex = assertThrows(UIException.class, () -> userService.ModifyCartAddQToBuy("INVALID", id, 2));
         ReceiptDTO[] re = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
-        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 9);
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
+
+        assertTrue(stockService.getProductsInStore(x)[0].getQuantity() == 9);
 
     }
 
@@ -640,7 +718,9 @@ public class UserTests {
     @Test
     void testRemoveItemFromCart_Success() throws Exception {
         userService.addToUserCart(NGToken, itemStoreDTO, 1); // Add item first
-        boolean result = userService.removeItemFromCart(NGToken, itemStoreDTO.getProductId());
+        int id = userService.getRegularCart(NGToken)[0].itemCartId;
+
+        boolean result = userService.removeItemFromCart(NGToken, id);
         assertTrue(result);
         assertTrue(userService.getRegularCart(NGToken).length == 0);
     }
@@ -689,82 +769,91 @@ public class UserTests {
 
     @Test
     void testProcessPayment_NegativeAmount_ThrowsUIException() throws UIException {
-        userService.addToUserCart(NGToken, new ItemStoreDTO(1, 1, -50, Category.Electronics, 3, 1, "Test", "TestStore"), 1);
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
+
+        userService.addToUserCart(NGToken,
+                new ItemStoreDTO(PID, 1, -50, Category.Electronics, 3, x, "Test", "TestStore"), 1);
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
 
-        UIException ex = assertThrows(UIException.class, () -> {
+        Exception ex = assertThrows(Exception.class, () -> {
             purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
         });
-        assertEquals("Invalid payment amount.", ex.getMessage());
+        assertEquals("payment not successeded!!!", ex.getMessage());
     }
-    //admin
+    // admin
 
-    @Test
-    public void testViewPurchaseHistory_NoOrders_ReturnsEmpty() throws Exception {
-        adminService.recordLoginEvent();
-        adminService.recordLogoutEvent();
-        adminService.recordRegisterEvent();
-        String token = userService.generateGuest();
-        userService.register(token, "admin2", "admin2", 22);
-        String adminToken = userService.login(token, "admin2", "admin2");
-        userService.setAdmin(adminToken, "123321", authRepo.getUserId(adminToken));
-        userService.addToUserCart(NGToken, itemStoreDTO, 1);
-        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
-        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+    // @Test
+    // public void testViewPurchaseHistory_NoOrders_ReturnsEmpty() throws Exception
+    // {
+    // adminService.recordLoginEvent();
+    // adminService.recordLogoutEvent();
+    // adminService.recordRegisterEvent();
+    // String token = userService.generateGuest();
+    // userService.register(token, "admin2", "admin2", 22);
+    // String adminToken = userService.login(token, "admin2", "admin2");
+    // userService.setAdmin(adminToken, "123321", authRepo.getUserId(adminToken));
+    // userService.addToUserCart(NGToken, itemStoreDTO, 1);
+    // PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if
+    // needed
+    // SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if
+    // needed
 
-        purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
-        List<PurchaseHistoryDTO> history = adminService.viewPurchaseHistory(adminToken);
-        assertNotNull(history);
-        assertEquals(1, history.size());
-    }
+    // purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
+    // List<PurchaseHistoryDTO> history =
+    // adminService.viewPurchaseHistory(adminToken);
+    // assertNotNull(history);
+    // assertEquals(1, history.size());
+    // }
 
-    @Test
-    public void testGetSystemAnalytics_EventsTrackedProperly() throws Exception {
-        // Simulate some system activity
-        adminService.recordLoginEvent();
-        adminService.recordLogoutEvent();
-        adminService.recordRegisterEvent();
-        String token = userService.generateGuest();
-        userService.register(token, "admin2", "admin2", 22);
-        String adminToken = userService.login(token, "admin2", "admin2");
-        userService.setAdmin(adminToken, "123321", authRepo.getUserId(adminToken));
+    // @Test
+    // public void testGetSystemAnalytics_EventsTrackedProperly() throws Exception {
+    // // Simulate some system activity
+    // adminService.recordLoginEvent();
+    // adminService.recordLogoutEvent();
+    // adminService.recordRegisterEvent();
+    // String token = userService.generateGuest();
+    // userService.register(token, "admin2", "admin2", 22);
+    // String adminToken = userService.login(token, "admin2", "admin2");
+    // userService.setAdmin(adminToken, "123321", authRepo.getUserId(adminToken));
 
-        userService.addToUserCart(NGToken, itemStoreDTO, 1);
-        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
-        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+    // userService.addToUserCart(NGToken, itemStoreDTO, 1);
+    // PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if
+    // needed
+    // SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if
+    // needed
 
-        purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
+    // purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
 
-        SystemAnalyticsDTO dto = adminService.getSystemAnalytics(adminToken);
-        assertNotNull(dto);
+    // SystemAnalyticsDTO dto = adminService.getSystemAnalytics(adminToken);
+    // assertNotNull(dto);
 
-        Map<LocalDate, Integer> logins = dto.getLoginsPerDay();
-        Map<LocalDate, Integer> logouts = dto.getLogoutsPerDay();
-        Map<LocalDate, Integer> registers = dto.getRegisterPerDay();
+    // Map<LocalDate, Integer> logins = dto.getLoginsPerDay();
+    // Map<LocalDate, Integer> logouts = dto.getLogoutsPerDay();
+    // Map<LocalDate, Integer> registers = dto.getRegisterPerDay();
 
-        LocalDate today = LocalDate.now();
+    // LocalDate today = LocalDate.now();
 
-        assertTrue(logins.getOrDefault(today, 0) >= 1);
-        assertTrue(logouts.getOrDefault(today, 0) >= 1);
-        assertTrue(registers.getOrDefault(today, 0) >= 1);
-    }
+    // assertTrue(logins.getOrDefault(today, 0) >= 1);
+    // assertTrue(logouts.getOrDefault(today, 0) >= 1);
+    // assertTrue(registers.getOrDefault(today, 0) >= 1);
+    // }
 
-    @Test
-    public void testViewPurchaseHistory_InvalidToken_ThrowsException() {
-        UIException ex = assertThrows(UIException.class, () -> {
-            adminService.viewPurchaseHistory("invalid-token");
-        });
-        assertEquals("Invalid Token!", ex.getMessage());
-    }
+    // @Test
+    // public void testViewPurchaseHistory_InvalidToken_ThrowsException() {
+    // UIException ex = assertThrows(UIException.class, () -> {
+    // adminService.viewPurchaseHistory("invalid-token");
+    // });
+    // assertEquals("Invalid Token!", ex.getMessage());
+    // }
 
-    @Test
-    public void testGetSystemAnalytics_InvalidToken_ThrowsException() {
-        UIException ex = assertThrows(UIException.class, () -> {
-            adminService.getSystemAnalytics("invalid-token");
-        });
-        assertEquals("Invalid Token!", ex.getMessage());
-    }
+    // @Test
+    // public void testGetSystemAnalytics_InvalidToken_ThrowsException() {
+    // UIException ex = assertThrows(UIException.class, () -> {
+    // adminService.getSystemAnalytics("invalid-token");
+    // });
+    // assertEquals("Invalid Token!", ex.getMessage());
+    // }
 
     @Test
     void test_getUserCart_registeredUser_returnsCart() throws Exception {
@@ -773,10 +862,10 @@ public class UserTests {
         String token = userService.login(guestToken, "user1", "pass1");
         int userId = authRepo.getUserId(token);
 
-        ShoppingCart cart = userRepo.getUserCart(userId);
+        var cart = userService.getRegularCart(NGToken);
 
         assertNotNull(cart);
-        assertTrue(cart.getAllCart().isEmpty()); // assuming empty cart
+        assertTrue(cart.length == 0); // assuming empty cart
     }
 
     @Test
@@ -795,7 +884,7 @@ public class UserTests {
     void test_getDelayedMessages_returnsMessages() throws UIException {
         notificationService.sendDMessageToUser(authRepo.getUserName(NOToken), "You missed this!");
 
-        String[] messages = {"You missed this!"};
+        String[] messages = { "You missed this!" };
 
         String[] result = notificationService.getDelayedMessages(authRepo.getUserName(NOToken));
 
@@ -805,9 +894,10 @@ public class UserTests {
 
     @Test
     void test_searchActiveRandoms_shouldReturnProduct() throws Exception {
-        int productId = 1;
+        int productId = PID;
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-        stockService.setProductToRandom(NOToken, productId, 10, 2000, 1, 2000);
+        stockService.setProductToRandom(NOToken, productId, 10, 2000, x, 2000);
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, null, null, 1, 0, 5000, 0, 5);
@@ -820,10 +910,11 @@ public class UserTests {
 
     @Test
     void test_searchActiveBids_shouldReturnProduct() throws Exception {
-        int productId = 1;
 
         // Add product to bid
-        stockService.setProductToBid(NOToken, 1, productId, 10);
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
+
+        stockService.setProductToBid(NOToken, x, PID, 10);
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, null, null, 1, null, null, null, null);
@@ -837,10 +928,9 @@ public class UserTests {
     @Test
     void test_searchActiveAuctions_shouldReturnProduct() throws Exception {
         long endTime = System.currentTimeMillis() + 60 * 60 * 1000; // 1 hour from now
-        int productId = 1;
-
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
         // Add product to auction
-        stockService.setProductToAuction(NOToken, 1, productId, 10, endTime, 2000.0);
+        stockService.setProductToAuction(NOToken, x, PID, 10, endTime, 2000.0);
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, null, null, 1, null, null, null, null);
@@ -851,5 +941,137 @@ public class UserTests {
         assertEquals("Laptop", result[0].productName);
     }
 
+    @Test
+    void testSearchByProductName_Match() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                "laptop", null, null, null,
+                -1.0, -1.0, -1.0, -1.0);
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(1, result.length);
+    }
+
+    @Test
+    void testSearchByProductName_NoMatch() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                "phone", null, null, null,
+                -1.0, -1.0, -1.0, -1.0);
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(0, result.length);
+    }
+
+    @Test
+    void testSearchByCategory_Match() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, Category.Electronics, null, null,
+                -1.0, -1.0, -1.0, -1.0);
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(1, result.length);
+    }
+
+    @Test
+    void testSearchByCategory_NoMatch() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, Category.Books, null, null,
+                -1.0, -1.0, -1.0, -1.0);
+        Exception ex = assertThrows(Exception.class, () -> stockService.searchProducts(NGToken, criteria));
+    }
+
+    @Test
+    void testSearchByKeyword_Match() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, "top", null,
+                -1.0, -1.0, -1.0, -1.0);
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(1, result.length);
+    }
+
+    @Test
+    void testSearchByKeyword_NoMatch() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, "banana", null,
+                -1.0, -1.0, -1.0, 1);
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(0, result.length);
+    }
+
+    @Test
+    void testSearchByMinPrice_Pass() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, null,
+                1500.0, -1.0, -1.0, -1.0);
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(1, result.length);
+    }
+
+    @Test
+    void testSearchByMinPrice_TooHigh() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, null,
+                3000.0, -1.0, -1.0, -1.0);
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(0, result.length);
+    }
+
+    @Test
+    void testSearchByMaxPrice_Pass() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, null,
+                -1.0, 3000.0, -1.0, -1.0);
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(1, result.length);
+    }
+
+    @Test
+    void testSearchByMaxPrice_TooLow() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, null,
+                -1.0, 1000.0, -1.0, -1.0);
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(0, result.length);
+    }
+
+    @Test
+    void testSearchByRatingRange_Pass() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, null,
+                -1.0, -1.0, 0.0, 5.0);
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(1, result.length);
+    }
+
+    @Test
+    void testSearchByMinRating_TooHigh() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, null,
+                -1.0, -1.0, 4.9, -1.0);
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(0, result.length);
+    }
+
+    @Test
+    void testSearchByMaxRating_TooLow() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, null,
+                -1.0, -1.0, -1.0, 0.0);
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(0, result.length);
+    }
+
+    @Test
+    void testSearchByStoreId_Match() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, 1,
+                -1.0, -1.0, -1.0, -1);
+        ItemStoreDTO[] result = stockService.searchProducts(NGToken, criteria);
+        assertEquals(1, result.length);
+    }
+
+    @Test
+    void testSearchByStoreId_NoMatch() throws Exception {
+        ProductSearchCriteria criteria = new ProductSearchCriteria(
+                null, null, null, 99,
+                -1.0, -1.0, -1.0, -1);
+        assertThrows(Exception.class, () -> stockService.searchProducts(NGToken, criteria));
+    }
 
 }

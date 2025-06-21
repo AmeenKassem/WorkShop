@@ -21,7 +21,7 @@ public class SupplyServiceImp implements ISupplyService {
                 || supplyDetails.zipCode == null) {
             logger.error("Supply failed due to missing fields: {}", supplyDetails);
 
-            throw new UIException("Invalid supply details.", ErrorCodes.SUPPLY_ERROR);
+            return false;
         }
         logger.info("Supply processed successfully for: {}", supplyDetails.address);
 

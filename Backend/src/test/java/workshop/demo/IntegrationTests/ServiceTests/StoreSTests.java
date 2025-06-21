@@ -5,14 +5,31 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
-import workshop.demo.ApplicationLayer.AdminHandler;
+import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+//import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
@@ -22,17 +39,37 @@ import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.OrderDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.WorkerDTO;
+import workshop.demo.DataAccessLayer.GuestJpaRepository;
+import workshop.demo.DataAccessLayer.NodeJPARepository;
+import workshop.demo.DataAccessLayer.OfferJpaRepository;
+import workshop.demo.DataAccessLayer.StoreTreeJPARepository;
+import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.BaseNotifier;
 import workshop.demo.DomainLayer.Notification.DelayedNotificationDecorator;
 import workshop.demo.DomainLayer.Notification.RealTimeNotificationDecorator;
+import workshop.demo.DomainLayer.Stock.IStockRepoDB;
+import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
 import workshop.demo.DomainLayer.Stock.SingleBid;
+import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.Store.PurchasePolicy;
 import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Offer;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
@@ -48,19 +85,27 @@ import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 import workshop.demo.SocketCommunication.SocketHandler;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 @SpringBootTest
+@ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class StoreSTests {
-
+    @Autowired
+    StoreTreeJPARepository tree;
+    @Autowired
+    private NodeJPARepository node;
     @Autowired
     private NotificationRepository notificationRepository;
     @Autowired
     private StoreRepository storeRepository;
     @Autowired
     private StockRepository stockRepository;
+    @Autowired
+    private IStockRepoDB stockRepositoryjpa;
+    @Autowired
+    private IStoreRepoDB storeRepositoryjpa;
+    @Autowired
+    private GuestJpaRepository guestRepo;
+
     @Autowired
     private OrderRepository orderRepository;
     @Autowired
@@ -74,18 +119,21 @@ public class StoreSTests {
     PaymentServiceImp payment;
     @Autowired
     SupplyServiceImp serviceImp;
-
+    @Autowired
+    private IStoreStockRepo storeStockRepo;
+    @Autowired
+    private OfferJpaRepository offerRepo;
     @Autowired
     SUConnectionRepository sIsuConnectionRepo;
-
+    @Autowired
+    private UserJpaRepository userRepo;
     @Autowired
     Encoder encoder;
-    @Autowired
-    UserRepository userRepo;
+
     @Autowired
     UserSuspensionService suspensionService;
-    @Autowired
-    AdminHandler adminService;
+    // @Autowired
+    // AdminHandler adminService;
     @Autowired
     UserService userService;
     @Autowired
@@ -99,18 +147,41 @@ public class StoreSTests {
     @Autowired
     ReviewService reviewService;
 
+    // ======================== Test Data ========================
     String NOToken;
     String NGToken;
-    ItemStoreDTO itemStoreDTO;
     String GToken;
     String Admin;
+    ItemStoreDTO itemStoreDTO;
+    int PID;
+
+    int createdStoreId;
 
     @BeforeEach
     void setup() throws Exception {
+        node.deleteAll();
+        userRepo.deleteAll();
+        tree.deleteAll();
 
-            GToken = userService.generateGuest();
-            userService.register(GToken, "User", "User", 16);
-            NGToken = userService.login(GToken, "User", "User");
+        guestRepo.deleteAll();
+
+        stockRepositoryjpa.deleteAll();
+        offerRepo.deleteAll();
+        storeRepositoryjpa.deleteAll();
+        storeStockRepo.deleteAll();
+
+        if (storeRepository != null) {
+            storeRepository.clear();
+        }
+        if (stockRepository != null) {
+            stockRepository.clear();
+        }
+        if (orderRepository != null) {
+            orderRepository.clear();
+        }
+        GToken = userService.generateGuest();
+        userService.register(GToken, "User", "User", 16);
+        NGToken = userService.login(GToken, "User", "User");
 
         assertTrue(authRepo.getUserName(NGToken).equals("User"));
 
@@ -124,94 +195,92 @@ public class StoreSTests {
         assertTrue(authRepo.getUserName(NOToken).equals("owner"));
         // ======================= STORE CREATION =======================
 
-        int created1 = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
+        createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
 
-        assertEquals(created1, 1);
+        // ======================= PRODUCT & ITEM ADDITION =======================
+        String[] keywords = { "Laptop", "Lap", "top" };
+        PID = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
+        itemStoreDTO = new ItemStoreDTO(PID, 10, 2000, Category.Electronics, 0, createdStoreId, "Laptop", "TestStore");
 
-            // ======================= PRODUCT & ITEM ADDITION =======================
-            String[] keywords = {"Laptop", "Lap", "top"};
-            stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
-        itemStoreDTO = new ItemStoreDTO(1, 10, 2000, Category.Electronics, 0, 1, "Laptop","TestStore");
-
-            assertEquals(1, stockService.addItem(1, NOToken, 1, 10, 2000, Category.Electronics));
+        stockService.addItem(createdStoreId, NOToken, PID, 10, 2000, Category.Electronics);
 
         // ======================= SECOND GUEST SETUP =======================
     }
 
-    @AfterEach
+    // @AfterEach
 
-    void tearDown() {
-        if (userRepo != null) {
-            userRepo.clear();
-        }
-        if (storeRepository != null) {
-            storeRepository.clear();
-        }
-        if (stockRepository != null) {
-            stockRepository.clear();
-        }
-        if (orderRepository != null) {
-            orderRepository.clear();
-        }
-        if (suspensionRepo != null) {
-            suspensionRepo.clear();
-        }
-        // Add clear() for all other repos you wrote it for
-    }
+    // void tearDown() {
+    // if (userRepo != null) {
+    // userRepo.clear();
+    // }
+    // if (storeRepository != null) {
+    // storeRepository.clear();
+    // }
+    // if (stockRepository != null) {
+    // stockRepository.clear();
+    // }
+    // if (orderRepository != null) {
+    // orderRepository.clear();
+    // }
+    // if (suspensionRepo != null) {
+    // suspensionRepo.clear();
+    // }
+    // // Add clear() for all other repos you wrote it for
+    // }
 
     // ========== Store Owner Use Cases ==========
     @Test
     void testOwner_AddProductToStock() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-        String[] keywords = {"Tablet", "Touchscreen"};
+        String[] keywords = { "Tablet", "Touchscreen" };
 
-        stockService.addProduct(NOToken, "Tablet", Category.Electronics, "10-inch Tablet", keywords);
+        var PID2 = stockService.addProduct(NOToken, "Tablet", Category.Electronics, "10-inch Tablet", keywords);
 
-        int itemAdded = stockService.addItem(1, NOToken, 2, 10, 100, Category.Electronics);
-        assertEquals(2, itemAdded);
-        assertTrue(stockService.getProductInfo(NOToken, 2).getProductId() == 2);
+        int itemAdded = stockService.addItem(createdStoreId, NOToken, PID2, 10, 100, Category.Electronics);
+        assertTrue(stockService.getProductInfo(NOToken, PID2).getProductId() == PID2);
 
     }
 
     @Test
     void testOwner_AddProductToStock_Failure_InvalidProductData() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         // === Act & Assert ===
-        UIException ex = assertThrows(UIException.class, ()
-                -> stockService.addItem(1, NOToken, 2, 5, 999, Category.Electronics)
-        );
+        UIException ex = assertThrows(UIException.class,
+                () -> stockService.addItem(createdStoreId, NOToken, 2, 5, 999, Category.Electronics));
 
-        assertEquals("Product not found", ex.getMessage());
+        assertEquals("product not found!", ex.getMessage());
         assertEquals(1006, ex.getNumber());
     }
 
     @Test
     void testOwner_AddProductToStock_Failure_Invalidqunatity() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         // === Act & Assert ===
-        UIException ex = assertThrows(UIException.class, ()
-                -> stockService.addItem(1, NOToken, 2, -10, 999, Category.Electronics)
-        );
+        UIException ex = assertThrows(UIException.class,
+                () -> stockService.addItem(createdStoreId, NOToken, 2, -10, 999, Category.Electronics));
 
     }
 
     @Test
     void testOwner_AddProductToStock_Failure_StoreNotFound() throws Exception {
 
-        UIException ex = assertThrows(UIException.class, ()
-                -> stockService.addItem(22, NOToken, 1, 10, 100, Category.Electronics)
-        );
+        UIException ex = assertThrows(UIException.class,
+                () -> stockService.addItem(22, NOToken, 1, 10, 100, Category.Electronics));
 
-//         // Optional: verify the details of the exception
+        // // Optional: verify the details of the exception
         assertEquals(" store does not exist.", ex.getMessage());
         assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getNumber());
     }
 
     @Test
     void testOwner_DeleteProductFromStock() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         // Act
-        stockService.removeItem(1, NOToken, 1);
+        stockService.removeItem(createdStoreId, NOToken, PID);
 
         // Assert
         assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 0);
@@ -219,29 +288,27 @@ public class StoreSTests {
 
     @Test
     void testOwner_UpdatePriceProductInStock() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-        assertDoesNotThrow(()
-                -> stockService.updatePrice(1, NOToken, 1, 10)
-        );
-        assertTrue(stockService.getProductsInStore(1)[0].getPrice() == 10);
+        assertDoesNotThrow(() -> stockService.updatePrice(createdStoreId, NOToken, PID, 10));
+        assertTrue(stockService.getProductsInStore(createdStoreId)[0].getPrice() == 10);
     }
 
     @Test
     void testOwner_UpdateQuantityProductInStock() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-        assertDoesNotThrow(()
-                -> stockService.updateQuantity(1, NOToken, 1, 1)
-        );
-        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 1);
+        assertDoesNotThrow(() -> stockService.updateQuantity(1, NOToken, 1, 1));
+        assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 1);
 
     }
 
     @Test
     void testOwner_UpdateProductInStock_Failure_InvalidData() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-        UIException ex = assertThrows(UIException.class, ()
-                -> stockService.updateQuantity(1, NOToken, 10, 10)
-        );
+        UIException ex = assertThrows(UIException.class,
+                () -> stockService.updateQuantity(createdStoreId, NOToken, 10, 10));
         assertEquals(ex.getMessage(), "Item not found with ID 10");
         assertEquals(ex.getNumber(), 1006);
 
@@ -249,16 +316,17 @@ public class StoreSTests {
 
     @Test
     void testOwner_AddStoreOwner_Success() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         String token = userService.generateGuest();
         userService.register(token, "token", "token", 0);
         String token1 = userService.login(token, "token", "token");
-        storeService.MakeofferToAddOwnershipToStore(1, NOToken, authRepo.getUserName(token1));
+        storeService.MakeofferToAddOwnershipToStore(createdStoreId, NOToken, authRepo.getUserName(token1));
 
         // === Act ===
-        storeService.AddOwnershipToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
+        storeService.AddOwnershipToStore(createdStoreId, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
-        // ask bhaa i dont know what is happening ,  help help help
+        // ask bhaa i dont know what is happening , help help help
 
         // === Assert ===
         // assertEquals(sotre);
@@ -266,16 +334,17 @@ public class StoreSTests {
 
     @Test
     void testOwner_AddStoreOwner_fail() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         String token = userService.generateGuest();
         userService.register(token, "token", "token", 0);
         String token1 = userService.login(token, "token", "token");
 
         // === Act ===
-        //must make an offer before:
+        // must make an offer before:
         storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
-        storeService.reciveAnswerToOffer(1, "owner", "token", true, true);
-        // ask bhaa i dont know what is happening ,  help help help
+        storeService.reciveAnswerToOffer(createdStoreId, "owner", "token", true, true);
+        // ask bhaa i dont know what is happening , help help help
 
         // shouldnt work without offer
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
@@ -289,28 +358,30 @@ public class StoreSTests {
         String token = userService.generateGuest();
         userService.register(token, "token", "token", 0);
         String token1 = userService.login(token, "token", "token");
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         // === Act ===
-        storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
-        storeService.AddOwnershipToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
+        storeService.MakeofferToAddOwnershipToStore(createdStoreId, NOToken, "token");
+        storeService.AddOwnershipToStore(createdStoreId, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
 
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
-        Exception ex = assertThrows(Exception.class, ()
-                -> storeService.reciveAnswerToOffer(1, "owner", "token", true, true)
-        );
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, createdStoreId).size() == 2);
+        Exception ex = assertThrows(Exception.class,
+                () -> storeService.reciveAnswerToOffer(createdStoreId, "owner", "token", true, true));
 
     }
 
     @Test
     void testOwner_AddStoreOwner_Failure_TargetNotFound() throws Exception {
         String token = userService.generateGuest();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         // === Act ===
         // storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
-// this function need to take id to use this test guest doesnt have a username
+        // this function need to take id to use this test guest doesnt have a username
         // === Act + Assert
-        UIException ex = assertThrows(UIException.class, ()
-                -> storeService.AddOwnershipToStore(1, 3, authRepo.getUserId(token), true)
+        UIException ex = assertThrows(UIException.class,
+                () -> storeService.AddOwnershipToStore(createdStoreId, authRepo.getUserId(token),
+                        authRepo.getUserId(token), true)
         // shouldnt be able to add a guest
         );
 
@@ -318,53 +389,62 @@ public class StoreSTests {
         assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ex.getNumber());
     }
 
-    //todo:: send approval to user
+    // todo:: send approval to user
     @Test
     void testOwner_AddStoreOwner_Rejected() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+
         String token = userService.generateGuest();
         userService.register(token, "token", "token", 0);
         String token1 = userService.login(token, "token", "token");
 
         // === Act ===
-        storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
+        storeService.MakeofferToAddOwnershipToStore(createdStoreId, NOToken, "token");
 
-        storeService.AddOwnershipToStore(1, authRepo.getUserId(NGToken), authRepo.getUserId(token1), false);
-        assertTrue(storeService.ViewRolesAndPermissions(token1, 1).size() == 1);
+        storeService.AddOwnershipToStore(createdStoreId, authRepo.getUserId(NGToken), authRepo.getUserId(token1),
+                false);
+        assertTrue(storeService.ViewRolesAndPermissions(token1, createdStoreId).size() == 1);
 
     }
 
     @Test
     void testOwner_DeleteStoreOwner() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+
         String token = userService.generateGuest();
         userService.register(token, "token", "token", 0);
         String token1 = userService.login(token, "token", "token");
 
         // === Act ===
-        storeService.MakeofferToAddOwnershipToStore(1, NOToken, "token");
+        storeService.MakeofferToAddOwnershipToStore(createdStoreId, NOToken, "token");
 
-        storeService.AddOwnershipToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
+        storeService.AddOwnershipToStore(createdStoreId, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
 
-        assertDoesNotThrow(() -> storeService.DeleteOwnershipFromStore(1, NOToken, authRepo.getUserId(token1)));
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 1);
+        assertDoesNotThrow(
+                () -> storeService.DeleteOwnershipFromStore(createdStoreId, NOToken, authRepo.getUserId(token1)));
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, createdStoreId).size() == 1);
 
     }
 
     @Test
     void testOwner_DeleteStoreOwner_Failure_NotFound() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         String token = userService.generateGuest();
         userService.register(token, "token", "token", 0);
         String token1 = userService.login(token, "token", "token");
 
         Exception ex = assertThrows(Exception.class, () -> {
-            storeService.DeleteOwnershipFromStore(1, NOToken, authRepo.getUserId(token1));
+            storeService.DeleteOwnershipFromStore(createdStoreId, NOToken, authRepo.getUserId(token1));
         });
         assertEquals("Cannot delete: user is not an owner", ex.getMessage());
     }
 
     @Test
     void testOwner_AddStoreManager_Success() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+
         String token = userService.generateGuest();
         userService.register(token, "token", "token", 0);
         String token1 = userService.login(token, "token", "token");
@@ -372,15 +452,21 @@ public class StoreSTests {
         List<Permission> a = new LinkedList<>();
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
-        storeService.MakeOfferToAddManagerToStore(1, NOToken, authRepo.getUserName(token1), a);
-        storeService.reciveAnswerToOffer(1, authRepo.getUserName(NOToken), "token", true, false); // false = toBeOwner → false = manager
+        storeService.MakeOfferToAddManagerToStore(createdStoreId, NOToken, authRepo.getUserName(token1), a);
+        storeService.reciveAnswerToOffer(createdStoreId, authRepo.getUserName(NOToken), "token", true, false); // false
+                                                                                                               // =
+                                                                                                               // toBeOwner
+                                                                                                               // →
+        // false = manager
         // when decide equals true some list is null (i think its permissions list)
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 2);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, createdStoreId).size() == 2);
 
     }
 
     @Test
     void testOwner_AddStoreManager_Rejected() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+
         String token = userService.generateGuest();
         userService.register(token, "token", "token", 0);
         String token1 = userService.login(token, "token", "token");
@@ -388,24 +474,25 @@ public class StoreSTests {
         List<Permission> a = new LinkedList<>();
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
-        storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
-        storeService.AddManagerToStore(1, authRepo.getUserId(NGToken), authRepo.getUserId(token1), false);
-        assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 1);
+        storeService.MakeOfferToAddManagerToStore(createdStoreId, NOToken, "token", a);
+        storeService.AddManagerToStore(createdStoreId, authRepo.getUserId(NGToken), authRepo.getUserId(token1), false);
+        assertTrue(storeService.ViewRolesAndPermissions(NOToken, createdStoreId).size() == 1);
 
     }
 
     @Test
     void testOwner_AddStoreManager_Failure_UserNotExist() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         List<Permission> a = new LinkedList<>();
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
 
         Exception ex = assertThrows(Exception.class, () -> {
-            storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
+            storeService.MakeOfferToAddManagerToStore(createdStoreId, NOToken, "token", a);
         });
         assertEquals("No user found with username: token", ex.getMessage());
-        //assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ex.getNumber());
+        // assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ex.getNumber());
     }
 
     @Test
@@ -414,17 +501,18 @@ public class StoreSTests {
         String token = userService.generateGuest();
         userService.register(token, "token", "token", 0);
         String token1 = userService.login(token, "token", "token");
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         List<Permission> a = new LinkedList<>();
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
-        storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
-        storeService.AddManagerToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
+        storeService.MakeOfferToAddManagerToStore(createdStoreId, NOToken, "token", a);
+        storeService.AddManagerToStore(createdStoreId, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
 
         UIException ex = assertThrows(UIException.class, () -> {
-            storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
+            storeService.MakeOfferToAddManagerToStore(createdStoreId, NOToken, "token", a);
             // already a manager need to throw error
-            //he can make an offer but can't add it, come on GUYS
+            // he can make an offer but can't add it, come on GUYS
 
         });
 
@@ -439,7 +527,7 @@ public class StoreSTests {
         permissions.add(Permission.DeleteFromStock);
 
         Exception ex = assertThrows(Exception.class, () -> {
-            storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", permissions);
+            storeService.MakeOfferToAddManagerToStore(createdStoreId, NOToken, "token", permissions);
         });
 
         assertEquals("No user found with username: token", ex.getMessage());
@@ -467,14 +555,15 @@ public class StoreSTests {
         String token = userService.generateGuest();
         userService.register(token, "token", "token", 0);
         String token1 = userService.login(token, "token", "token");
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         List<Permission> a = new LinkedList<>();
         a.add(Permission.AddToStock);
         a.add(Permission.DeleteFromStock);
-        storeService.MakeOfferToAddManagerToStore(1, NOToken, "token", a);
-        storeService.AddManagerToStore(1, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
+        storeService.MakeOfferToAddManagerToStore(createdStoreId, NOToken, "token", a);
+        storeService.AddManagerToStore(createdStoreId, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
 
-        storeService.deleteManager(1, NOToken, authRepo.getUserId(token1));
+        storeService.deleteManager(createdStoreId, NOToken, authRepo.getUserId(token1));
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, 1).size() == 1);
     }
 
@@ -520,22 +609,22 @@ public class StoreSTests {
         assertEquals(ex.getMessage(), " store is not active");
     }
 
-    //    @Test
-//    void testOwner_ManageStoreManagerPermissions() throws Exception {
-//        throw new Exception("need to impl view roles and permissons");
-//    }
-//
-//    @Test
-//    void testOwner_ManageStoreManagerPermissions_Failure_NotAManagerFlag() throws Exception {
-//        throw new Exception("need to impl view roles and permissons");
-//    }
+    // @Test
+    // void testOwner_ManageStoreManagerPermissions() throws Exception {
+    // throw new Exception("need to impl view roles and permissons");
+    // }
+    //
+    // @Test
+    // void testOwner_ManageStoreManagerPermissions_Failure_NotAManagerFlag() throws
+    // Exception {
+    // throw new Exception("need to impl view roles and permissons");
+    // }
     @Test
     void testOwner_DeactivateStore() throws Exception {
         int result = storeService.deactivateteStore(1, NOToken);
         DevException ex = assertThrows(DevException.class, () -> {
             storeRepository.checkStoreIsActive(1);
         });
-
 
         assertEquals(ex.getMessage(), " store is not active");
 
@@ -561,8 +650,8 @@ public class StoreSTests {
     @Test
     void testOwner_ViewStorePurchaseHistory() throws Exception {
         userService.addToUserCart(GToken, itemStoreDTO, 1);
-        PaymentDetails paymentDetails = PaymentDetails.testPayment();  // fill if needed
-        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();    // fill if needed
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
         ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
 
         List<OrderDTO> history = storeService.veiwStoreHistory(1);
@@ -597,28 +686,16 @@ public class StoreSTests {
 
     @Test
     void testOwner_RequestStoreRolesInfoAndPermission_failure() throws Exception {
-        UIException ex = assertThrows(UIException.class, ()
-                -> storeService.ViewRolesAndPermissions("ivalid", 1)
-        );
-        Exception ex1 = assertThrows(Exception.class, ()
-                -> storeService.ViewRolesAndPermissions(NOToken, 2)
-        );
+        UIException ex = assertThrows(UIException.class, () -> storeService.ViewRolesAndPermissions("ivalid", 1));
+        Exception ex1 = assertThrows(Exception.class, () -> storeService.ViewRolesAndPermissions(NOToken, 2));
 
     }
-
-
-
-
-
-
 
     @Test
     void testOwner_DeleteProductFromStock_Failure_ProductNotFound() throws Exception {
 
         // === Act & Assert
-        UIException ex = assertThrows(UIException.class, ()
-                -> stockService.removeItem(1, NOToken, 3)
-        );
+        UIException ex = assertThrows(UIException.class, () -> stockService.removeItem(1, NOToken, 3));
 
         assertEquals("Item not found with ID 3", ex.getMessage());
         assertEquals(ErrorCodes.PRODUCT_NOT_FOUND, ex.getNumber());
@@ -668,29 +745,23 @@ public class StoreSTests {
         storeService.rankStore(NGToken, 1, 0);
         assertTrue(storeService.getFinalRateInStore(1) == 3);
 
-    
-
-    /// 3 is deafult
-
-
-
+        /// 3 is deafult
 
     }
+
     @Test
     void testOwner_rankstore_Invalidstore() throws Exception {
 
-        UIException ex = assertThrows(UIException.class, ()
-                -> storeService.rankStore(NGToken, 2, authRepo.getUserId(NGToken))
-        );
+        UIException ex = assertThrows(UIException.class,
+                () -> storeService.rankStore(NGToken, 2, authRepo.getUserId(NGToken)));
 
     }
 
     @Test
     void testOwner_rankstore_Invalidtoken() throws Exception {
 
-        UIException ex = assertThrows(UIException.class, ()
-                -> storeService.rankStore(GToken, 1, authRepo.getUserId(NGToken))
-        );
+        UIException ex = assertThrows(UIException.class,
+                () -> storeService.rankStore(GToken, 1, authRepo.getUserId(NGToken)));
     }
 
     @Test
@@ -699,7 +770,8 @@ public class StoreSTests {
         assertTrue(stockService.getProductsInStore(1)[0].getRank() == 3);
 
         stockService.rankProduct(1, NGToken, 1, 1);
-        //System.out.println("afhwlsdfkjEGn  " + stockService.getProductsInStore(1)[0].rank);
+        // System.out.println("afhwlsdfkjEGn " +
+        // stockService.getProductsInStore(1)[0].rank);
         assertTrue(stockService.getProductsInStore(1)[0].getRank() == 1);
 
     }
@@ -708,35 +780,27 @@ public class StoreSTests {
     void testOwner_rankitem_Invalidrating() throws Exception {
 
         assertTrue(stockService.getProductsInStore(1)[0].getRank() == 3);
-        UIException ex = assertThrows(UIException.class, ()
-                -> stockService.rankProduct(1, NGToken, 1, -1)
-        );
+        UIException ex = assertThrows(UIException.class, () -> stockService.rankProduct(1, NGToken, 1, -1));
 
     }
 
     @Test
     void testOwner_rankitem_Invalidstore() throws Exception {
 
-        UIException ex = assertThrows(UIException.class, ()
-                -> stockService.rankProduct(2, NGToken, 1, 1)
-        );
+        UIException ex = assertThrows(UIException.class, () -> stockService.rankProduct(2, NGToken, 1, 1));
     }
 
     @Test
     void testOwner_rankitem_Invaliditem() throws Exception {
 
-        UIException ex = assertThrows(UIException.class, ()
-                -> stockService.rankProduct(1, NGToken, 2, 1)
-        );
+        UIException ex = assertThrows(UIException.class, () -> stockService.rankProduct(1, NGToken, 2, 1));
 
     }
 
     @Test
     void testOwner_rankitem_Invalidtoken() throws Exception {
 
-        UIException ex = assertThrows(UIException.class, ()
-                -> stockService.rankProduct(1, GToken, 1, 1)
-        );
+        UIException ex = assertThrows(UIException.class, () -> stockService.rankProduct(1, GToken, 1, 1));
 
     }
 
@@ -754,9 +818,8 @@ public class StoreSTests {
     @Test
     void testOwner_reviewstore_Invalidstore() throws Exception {
 
-        UIException ex = assertThrows(UIException.class, ()
-                -> reviewService.AddReviewToStore(NGToken, 2, "first review")
-        );
+        UIException ex = assertThrows(UIException.class,
+                () -> reviewService.AddReviewToStore(NGToken, 2, "first review"));
 
     }
 
@@ -772,18 +835,16 @@ public class StoreSTests {
     @Test
     void testOwner_reviewitem_Invalidstore() throws Exception {
 
-        UIException ex = assertThrows(UIException.class, ()
-                -> reviewService.AddReviewToProduct(NGToken, 2, 1, "first review")
-        );
+        UIException ex = assertThrows(UIException.class,
+                () -> reviewService.AddReviewToProduct(NGToken, 2, 1, "first review"));
 
     }
 
     @Test
     void testOwner_reviewitem_Invaliditem() throws Exception {
 
-        UIException ex = assertThrows(UIException.class, ()
-                -> reviewService.AddReviewToProduct(NGToken, 1, 5, "first review")
-        );
+        UIException ex = assertThrows(UIException.class,
+                () -> reviewService.AddReviewToProduct(NGToken, 1, 5, "first review"));
 
     }
 
@@ -799,7 +860,7 @@ public class StoreSTests {
 
         assertEquals(1, result);
         assertTrue(storeService.getAllStores().isEmpty());
-//   assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getCode());
+        // assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getCode());
     }
 
     @Test
@@ -808,7 +869,7 @@ public class StoreSTests {
             storeService.closeStore(1, NGToken); // NGToken is not admin
         });
 
-        //  assertEquals(ErrorCodes., ((UIException) ex).getCode());
+        // assertEquals(ErrorCodes., ((UIException) ex).getCode());
     }
 
     @Test
@@ -1065,16 +1126,18 @@ public class StoreSTests {
         assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getErrorCode());
         assertEquals("Store not found", ex.getMessage());
     }
-    //Bashar ..........
+
+    // Bashar ..........
     @Test
     void testAddtwostoresamename() throws UIException, DevException {
-        storeService.addStoreToSystem(NOToken,"AA","ELECTRONICS");
-        //assertThrows(storeService.addStoreToSystem(NGToken,"AA","ELECTRONICS"));
+        storeService.addStoreToSystem(NOToken, "AA", "ELECTRONICS");
+        // assertThrows(storeService.addStoreToSystem(NGToken,"AA","ELECTRONICS"));
         UIException ex = assertThrows(UIException.class, () -> {
-            storeService.addStoreToSystem(NGToken,"AA","ELECTRONICS"); // store doesn't exist
+            storeService.addStoreToSystem(NGToken, "AA", "ELECTRONICS"); // store doesn't exist
         });
 
     }
+
     @Test
     void test_closeStore_storeDoesNotExist_shouldNotRemoveOtherStores() throws Exception {
         int before = storeRepository.getStores().size();
@@ -1082,25 +1145,21 @@ public class StoreSTests {
         int after = storeRepository.getStores().size();
         assertEquals(before, after); // size should stay the same
     }
+
     @Test
     void test_closeStore_storeDoesNotExist_shouldNotThrow() {
         assertDoesNotThrow(() -> storeRepository.closeStore(999)); // storeId 999 does not exist
     }
 
-
     @Test
     void test_rankStore_storeDoesNotExist_throwsException() {
-        UIException exception = assertThrows(UIException.class, () ->
-                storeRepository.rankStore(999, 5)
-        );
+        UIException exception = assertThrows(UIException.class, () -> storeRepository.rankStore(999, 5));
         assertEquals(ErrorCodes.STORE_NOT_FOUND, exception.getErrorCode());
     }
 
     @Test
     void test_getFinalRateInStore_storeDoesNotExist_throwsException() {
-        UIException exception = assertThrows(UIException.class, () ->
-                storeRepository.getFinalRateInStore(999)
-        );
+        UIException exception = assertThrows(UIException.class, () -> storeRepository.getFinalRateInStore(999));
         assertEquals(ErrorCodes.STORE_NOT_FOUND, exception.getErrorCode());
     }
 
@@ -1119,13 +1178,15 @@ public class StoreSTests {
         });
         assertEquals(ErrorCodes.STORE_NOT_FOUND, exception.getErrorCode());
     }
+
     @Test
     void test_checkStoreIsActive_storeExistsButNotActive_throwsDevException() throws Exception {
         int storeId = storeService.addStoreToSystem(NOToken, "InactiveStore", "ELECTRONICS");
 
-        // simulate the store being inactive (you may need a method or reflection if not public)
+        // simulate the store being inactive (you may need a method or reflection if not
+        // public)
         storeRepository.getStores().stream()
-                .filter(s -> s.getStoreID() == storeId)
+                .filter(s -> s.getstoreId() == storeId)
                 .findFirst()
                 .ifPresent(store -> store.setActive(false)); // assuming such setter exists
 
@@ -1135,7 +1196,6 @@ public class StoreSTests {
 
         assertTrue(exception.getMessage().contains("not active"));
     }
-
 
     @Test
     void test_fillWithStoreName_randomDTO_storeNotFound() {
@@ -1172,18 +1232,15 @@ public class StoreSTests {
 
     @Test
     void test_validatedParticipation_storeNotInitialized_throwsDevException() {
-        DevException ex = assertThrows(DevException.class, () ->
-                stockRepository.validatedParticipation(10, 1, 999, 200.0) // storeId 999 doesn't exist
+        DevException ex = assertThrows(DevException.class,
+                () -> stockRepository.validatedParticipation(10, 1, 999, 200.0) // storeId 999 doesn't exist
         );
         assertTrue(ex.getMessage().contains("Store stock not initialized"));
     }
 
-
-
-
     @Test
     void test_getRandomCardIfWinner_exception_returnsNull() {
-        ParticipationInRandomDTO result = stockRepository.getRandomCardIfWinner(999, 1, 10); // storeId 999 not set up
+        ParticipationInRandomDTO result = stockRepository.getRandomCardforuser(999, 1, 10); // storeId 999 not set up
         assertNull(result);
     }
 
@@ -1192,6 +1249,7 @@ public class StoreSTests {
         SingleBid result = stockRepository.getBidIfWinner(999, 1, 1, SpecialType.BID); // storeId 999 not set up
         assertNull(result);
     }
+
     @Test
     void test_getOrderDTOsByUserId_shouldReturnOrderForUser() throws Exception {
         int userId = authRepo.getUserId(NGToken);
@@ -1217,8 +1275,6 @@ public class StoreSTests {
         assertEquals(1, order.getProductsList().size());
         assertTrue(order.getFinalPrice() > 0);
     }
-
-
 
     @Test
     void testSendDelayedMessage_UserOnline() {
@@ -1252,7 +1308,7 @@ public class StoreSTests {
         decorator.sendDelayedMessageToUser("user", "msg2");
 
         String[] messages = decorator.getDelayedMessages("user");
-        assertArrayEquals(new String[]{"msg1", "msg2"}, messages);
+        assertArrayEquals(new String[] { "msg1", "msg2" }, messages);
     }
 
     @Test
@@ -1262,6 +1318,7 @@ public class StoreSTests {
 
         assertNull(decorator.getDelayedMessages("unknown"));
     }
+
     @Test
     void testSendRTMessageToUser_Online() {
         BaseNotifier mockBase = mock(BaseNotifier.class);
@@ -1284,6 +1341,7 @@ public class StoreSTests {
         // No send call expected
         verify(mockBase, never()).send(any(), any());
     }
+
     @Test
     void testBaseNotifierSend_Success() throws Exception {
         SocketHandler handler = mock(SocketHandler.class);
@@ -1294,17 +1352,16 @@ public class StoreSTests {
         verify(handler).sendMessage("user", "msg");
     }
 
-//    @Test
-//    void testBaseNotifierSend_ExceptionThrown() throws Exception {
-//        SocketHandler handler = mock(SocketHandler.class);
-//        doThrow(new Exception("fail")).when(handler).sendMessage(any(), any());
-//
-//        BaseNotifier notifier = new BaseNotifier();
-//        ReflectionTestUtils.setField(notifier, "socketHandler", handler);
-//
-//        assertThrows(RuntimeException.class, () -> notifier.send("user", "msg"));
-//    }
-
+    // @Test
+    // void testBaseNotifierSend_ExceptionThrown() throws Exception {
+    // SocketHandler handler = mock(SocketHandler.class);
+    // doThrow(new Exception("fail")).when(handler).sendMessage(any(), any());
+    //
+    // BaseNotifier notifier = new BaseNotifier();
+    // ReflectionTestUtils.setField(notifier, "socketHandler", handler);
+    //
+    // assertThrows(RuntimeException.class, () -> notifier.send("user", "msg"));
+    // }
     @Test
     void testBaseNotifierIsUserOnline() {
         SocketHandler handler = mock(SocketHandler.class);
@@ -1315,6 +1372,7 @@ public class StoreSTests {
 
         assertTrue(notifier.isUserOnline("user"));
     }
+
     private SuperDataStructure setupStoreTreeWithOwner(int storeId, int ownerId) {
         SuperDataStructure superDS = new SuperDataStructure();
         superDS.addNewStore(storeId, ownerId);
@@ -1324,27 +1382,21 @@ public class StoreSTests {
     @Test
     void testGetWorkersTreeInStore_StoreNotExists() {
         SuperDataStructure superDS = new SuperDataStructure();
-        Exception ex = assertThrows(Exception.class, () ->
-                superDS.getWorkersTreeInStore(999)
-        );
+        Exception ex = assertThrows(Exception.class, () -> superDS.getWorkersTreeInStore(999));
         assertEquals("store does not exist in superDS", ex.getMessage());
     }
 
     @Test
     void testDeleteManager_StoreNotExists() {
         SuperDataStructure superDS = new SuperDataStructure();
-        DevException ex = assertThrows(DevException.class, () ->
-                superDS.deleteManager(999, 1, 2)
-        );
+        DevException ex = assertThrows(DevException.class, () -> superDS.deleteManager(999, 1, 2));
         assertEquals("store does not exist in superDS", ex.getMessage());
     }
 
     @Test
     void testDeleteManager_ManagerNotFound() throws Exception {
         SuperDataStructure superDS = setupStoreTreeWithOwner(1, 10);
-        UIException ex = assertThrows(UIException.class, () ->
-                superDS.deleteManager(1, 10, 999)
-        );
+        UIException ex = assertThrows(UIException.class, () -> superDS.deleteManager(1, 10, 999));
         assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getErrorCode());
     }
 
@@ -1352,9 +1404,7 @@ public class StoreSTests {
     void testDeleteManager_NotAManager() throws Exception {
         SuperDataStructure superDS = setupStoreTreeWithOwner(1, 10);
         superDS.addNewOwner(1, 10, 11); // not a manager
-        UIException ex = assertThrows(UIException.class, () ->
-                superDS.deleteManager(1, 10, 11)
-        );
+        UIException ex = assertThrows(UIException.class, () -> superDS.deleteManager(1, 10, 11));
         assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
     }
 
@@ -1364,56 +1414,36 @@ public class StoreSTests {
         superDS.addNewOwner(1, 10, 11);
         superDS.addNewManager(1, 10, 12);
         // now 11 is owner, but try deleting 12 using 11 (not the parent)
-        UIException ex = assertThrows(UIException.class, () ->
-                superDS.deleteManager(1, 11, 12)
-        );
+        UIException ex = assertThrows(UIException.class, () -> superDS.deleteManager(1, 11, 12));
         assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
     }
 
     @Test
     void testCheckDeactivateStore_StoreNotExists() {
         SuperDataStructure superDS = new SuperDataStructure();
-        DevException ex = assertThrows(DevException.class, () ->
-                superDS.checkDeactivateStore(999, 1)
-        );
+        DevException ex = assertThrows(DevException.class, () -> superDS.checkDeactivateStore(999, 1));
         assertEquals("store does not exist in superDS", ex.getMessage());
     }
 
     @Test
     void testGetWorkersInStore_StoreNotExists() {
         SuperDataStructure superDS = new SuperDataStructure();
-        Exception ex = assertThrows(Exception.class, () ->
-                superDS.getWorkersInStore(999)
-        );
+        Exception ex = assertThrows(Exception.class, () -> superDS.getWorkersInStore(999));
         assertEquals("store does not exist in superDS", ex.getMessage());
     }
 
     @Test
     void testCloseStore_StoreNotExists() {
         SuperDataStructure superDS = new SuperDataStructure();
-        Exception ex = assertThrows(Exception.class, () ->
-                superDS.closeStore(999)
-        );
+        Exception ex = assertThrows(Exception.class, () -> superDS.closeStore(999));
         assertEquals("store does not exist in superDS", ex.getMessage());
     }
 
     @Test
     void testDeleteOffer_StoreOffersNull() {
         SuperDataStructure superDS = new SuperDataStructure();
-        Exception ex = assertThrows(Exception.class, () ->
-                superDS.deleteOffer(1, 10, 20)
-        );
+        Exception ex = assertThrows(Exception.class, () -> superDS.deleteOffer(1, 10, 20));
         assertEquals("store offers is null", ex.getMessage());
-    }
-
-    @Test
-    void testGetOffer_OfferNotFound() throws Exception {
-        SuperDataStructure superDS = new SuperDataStructure();
-        superDS.makeOffer(new Offer(1, 10, true, List.of(), "sdfsd"),1);
-        Exception ex = assertThrows(Exception.class, () ->
-                superDS.getOffer(1, 99, 88)
-        );
-        assertTrue(ex.getMessage().contains("No offer found"));
     }
 
     @Test
@@ -1421,14 +1451,6 @@ public class StoreSTests {
         SuperDataStructure superDS = new SuperDataStructure();
         int result = superDS.removeUserAccordingly(999);
         assertEquals(-1, result);
-    }
-
-    @Test
-    void testRemoveUserAccordingly_UserExistsInOffer() throws Exception {
-        SuperDataStructure superDS = new SuperDataStructure();
-        superDS.makeOffer(new Offer(1, 10, true, List.of(), "sdfsd"),1);
-        int result = superDS.removeUserAccordingly(10);
-        assertEquals(10, result);
     }
 
     @Test
@@ -1442,42 +1464,40 @@ public class StoreSTests {
     @Test
     void testAddPolicy_InvalidPermission_Fails() throws Exception {
         // user NGToken is not the store owner
-        UIException ex = assertThrows(UIException.class, () ->
-                storeService.addPurchasePolicy(NGToken, 1, "NO_ALCOHOL", null)
-        );
+        UIException ex = assertThrows(UIException.class,
+                () -> storeService.addPurchasePolicy(NGToken, 1, "NO_ALCOHOL", null));
         assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
     }
 
     @Test
     void testRemovePolicy_UnknownPolicyKey_Fails() throws Exception {
-        UIException ex = assertThrows(UIException.class, () ->
-                storeService.removePurchasePolicy(NOToken, 1, "UNKNOWN", null)
-        );
+        UIException ex = assertThrows(UIException.class,
+                () -> storeService.removePurchasePolicy(NOToken, 1, "UNKNOWN", null));
         assertEquals(ErrorCodes.NO_POLICY, ex.getErrorCode());
     }
 
     @Test
     void testRemovePolicy_MinQtyMissingParam_Fails() throws Exception {
-        Exception ex = assertThrows(Exception.class, () ->
-                storeService.removePurchasePolicy(NOToken, 1, "MIN_QTY", null)
-        );
+        Exception ex = assertThrows(Exception.class,
+                () -> storeService.removePurchasePolicy(NOToken, 1, "MIN_QTY", null));
         assertEquals("Param is required!", ex.getMessage());
     }
+
     @Test
     void testAddAndRemove_NoAlcoholPolicy_Success_sucessbuy() throws Exception {
         // Add NO_ALCOHOL policy
         storeService.addPurchasePolicy(NOToken, 1, "NO_ALCOHOL", null);
-        stockService.addProduct(NOToken,"Red Wine",Category.ALCOHOL,"1948 vintage alcohol",null);
-        stockService.addItem(1,NOToken,2,10,2000,Category.ALCOHOL);
-        var itemStoreDTO1 = new ItemStoreDTO(2, 10, 2000, Category.ALCOHOL, 0, 1, "Red Wine","TestStore");
+        stockService.addProduct(NOToken, "Red Wine", Category.ALCOHOL, "1948 vintage alcohol", null);
+        stockService.addItem(1, NOToken, 2, 10, 2000, Category.ALCOHOL);
+        var itemStoreDTO1 = new ItemStoreDTO(2, 10, 2000, Category.ALCOHOL, 0, 1, "Red Wine", "TestStore");
 
         Store store = storeRepository.findStoreByID(1);
         assertEquals(1, store.getPurchasePolicies().size());
-        userService.addToUserCart(NOToken,itemStoreDTO1,1);
+        userService.addToUserCart(NOToken, itemStoreDTO1, 1);
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
 
-        ReceiptDTO[] receipts =purchaseService.buyRegisteredCart(NOToken, paymentDetails, supplyDetails);
+        ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(NOToken, paymentDetails, supplyDetails);
         assertNotNull(receipts);
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
@@ -1490,12 +1510,9 @@ public class StoreSTests {
         ReceiptDTO r = result.get(0);
         assertEquals("TestStore", r.getStoreName());
         assertEquals(2000, r.getFinalPrice());
-        //assertTrue(stockService.getProductsInStore(1)[1].getQuantity() ==9);
+        // assertTrue(stockService.getProductsInStore(1)[1].getQuantity() ==9);
 
-
-
-
-    assertEquals(2, stockService.getProductsInStore(1).length);
+        assertEquals(2, stockService.getProductsInStore(1).length);
 
         // Remove NO_ALCOHOL policy
         PurchasePolicy policy = store.getPurchasePolicies().getFirst();
@@ -1503,24 +1520,24 @@ public class StoreSTests {
 
         assertTrue(store.getPurchasePolicies().isEmpty());
     }
+
     @Test
     void testAddAndRemove_NoAlcoholPolicy_Success_failed() throws Exception {
         // Add NO_ALCOHOL policy
         storeService.addPurchasePolicy(NOToken, 1, "NO_ALCOHOL", null);
-stockService.addProduct(NOToken,"Red Wine",Category.ALCOHOL,"1948 vintage alcohol",null);
-stockService.addItem(1,NOToken,2,10,1000,Category.ALCOHOL);
-       var itemStoreDTO1 = new ItemStoreDTO(2, 10, 2000, Category.ALCOHOL, 0, 1, "Red Wine","TestStore");
+        stockService.addProduct(NOToken, "Red Wine", Category.ALCOHOL, "1948 vintage alcohol", null);
+        stockService.addItem(1, NOToken, 2, 10, 1000, Category.ALCOHOL);
+        var itemStoreDTO1 = new ItemStoreDTO(2, 10, 2000, Category.ALCOHOL, 0, 1, "Red Wine", "TestStore");
 
         Store store = storeRepository.findStoreByID(1);
         assertEquals(1, store.getPurchasePolicies().size());
-        userService.addToUserCart(NGToken,itemStoreDTO1,1);
+        userService.addToUserCart(NGToken, itemStoreDTO1, 1);
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
 
-        Exception ex = assertThrows(Exception.class, () ->
-                purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails)
-        );
-        for (var a:stockService.getProductsInStore(1)){
+        Exception ex = assertThrows(Exception.class,
+                () -> purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
+        for (var a : stockService.getProductsInStore(1)) {
             System.out.println(a.getProductName());
         }
         assertEquals(2, stockService.getProductsInStore(1).length);
@@ -1543,16 +1560,17 @@ stockService.addItem(1,NOToken,2,10,1000,Category.ALCOHOL);
         storeService.addPurchasePolicy(NOToken, 1, "MIN_QTY", minQty);
 
         Store store = storeRepository.findStoreByID(1);
-        assertTrue(store.getPurchasePolicies().size()==1);
-        userService.addToUserCart(NGToken,itemStoreDTO,1);
-        Exception ex = assertThrows(Exception.class, () ->
-                purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails)
-        );        PurchasePolicy policy = store.getPurchasePolicies().get(0);
+        assertTrue(store.getPurchasePolicies().size() == 1);
+        userService.addToUserCart(NGToken, itemStoreDTO, 1);
+        Exception ex = assertThrows(Exception.class,
+                () -> purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
+        PurchasePolicy policy = store.getPurchasePolicies().get(0);
         store.removePurchasePolicy(policy);
 
         assertFalse(store.getPurchasePolicies().stream()
                 .anyMatch(p -> p.toString().contains("MinQuantity")));
     }
+
     @Test
     void testAddAndRemove_MinQtyPolicy_Success_sucessbuy() throws Exception {
         int minQty = 2;
@@ -1560,13 +1578,15 @@ stockService.addItem(1,NOToken,2,10,1000,Category.ALCOHOL);
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
 
         // Add MIN_QTY policy
-        storeService.addPurchasePolicy(NOToken, 1, "MIN_QTY", minQty);
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-        Store store = storeRepository.findStoreByID(1);
-        assertTrue(store.getPurchasePolicies().size()==1);
-        userService.addToUserCart(NGToken,itemStoreDTO,2);
-        ReceiptDTO[] receipts =  purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
-               PurchasePolicy policy = store.getPurchasePolicies().get(0);
+        storeService.addPurchasePolicy(NOToken, createdStoreId, "MIN_QTY", minQty);
+
+        Store store = storeRepository.findStoreByID(createdStoreId);
+        assertTrue(store.getPurchasePolicies().size() == 1);
+        userService.addToUserCart(NGToken, itemStoreDTO, 2);
+        ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
+        PurchasePolicy policy = store.getPurchasePolicies().get(0);
         store.removePurchasePolicy(policy);
 
         assertNotNull(receipts);
@@ -1581,13 +1601,9 @@ stockService.addItem(1,NOToken,2,10,1000,Category.ALCOHOL);
         ReceiptDTO r = result.get(0);
         assertEquals("TestStore", r.getStoreName());
         assertEquals(4000, r.getFinalPrice());
-        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() ==8);
+        assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 8);
 
-
-
-
-        assertEquals(1, stockService.getProductsInStore(1).length);
-
+        assertEquals(1, stockService.getProductsInStore(createdStoreId).length);
 
         assertTrue(store.getPurchasePolicies().isEmpty());
     }

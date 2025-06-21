@@ -14,7 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import workshop.demo.ApplicationLayer.ReviewService;
 import workshop.demo.DTOs.ReviewDTO;
+import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Review.IReviewRepo;
+import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 
 @RestController
 @RequestMapping("/api/Review")
@@ -22,8 +27,8 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    public ReviewController(Repos repo) {
-        this.reviewService = new ReviewService(repo.reviewRepo, repo.auth, repo.userRepo, repo.storeRepo, repo.stockrepo);
+    public ReviewController(IReviewRepo reviewRepo, IAuthRepo auth, IStoreRepo userRepo, IStockRepo storeRepo, IStoreRepoDB storeJpaRepo) {
+        this.reviewService = new ReviewService(reviewRepo, auth, userRepo, storeRepo,storeJpaRepo);
     }
 
     @PostMapping("/addToProduct")

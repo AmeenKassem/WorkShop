@@ -2,29 +2,41 @@ package workshop.demo.DomainLayer.StoreUserConnection;
 
 import java.util.List;
 
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+
+@Entity
 public class Offer {
 
-    private int senderId;
-    private int receiverId;
+    @EmbeddedId
+    private OfferKey id;
+
     private boolean toBeOwner;//false -> to be manager
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
     private List<Permission> permissions;
+
     private String message;
+
     private boolean approve;
 
-    public Offer(int senderId, int receiverId, boolean toBeOwner, List<Permission> permissions, String message) {
-        this.senderId = senderId;
-        this.receiverId = receiverId;
+    public Offer() {
+    } // JPA requires this
+
+    public Offer(int storeId, int senderId, int receiverId, boolean toBeOwner, List<Permission> permissions, String message) {
+        this.id = new OfferKey(storeId, senderId, receiverId);
         this.toBeOwner = toBeOwner;
         this.permissions = permissions;// null if owner
     }
 
     // Getters
-    public int getSenderId() {
-        return senderId;
-    }
-
-    public int getReceiverId() {
-        return receiverId;
+    public OfferKey getId() {
+        return id;
     }
 
     public boolean isToBeOwner() {
@@ -35,7 +47,7 @@ public class Offer {
         return permissions;
     }
 
-    public String message() {
+    public String getMessage() {
         return message;
     }
 
@@ -43,7 +55,20 @@ public class Offer {
         return approve;
     }
 
-    public void SetApprove(boolean app) {
+    public void setApprove(boolean app) {
         this.approve = app;
+    }
+
+    // Convenience methods
+    public int getStoreId() {
+        return id.getStoreId();
+    }
+
+    public int getSenderId() {
+        return id.getSenderId();
+    }
+
+    public int getReceiverId() {
+        return id.getReceiverId();
     }
 }

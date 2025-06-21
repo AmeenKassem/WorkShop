@@ -20,13 +20,13 @@ public class PaymentServiceImp implements IPaymentService {
         if (paymentDetails.cardNumber == null || paymentDetails.cvv == null) {
             logger.error("Payment failed: card number or CVV is missing.");
 
-            throw new UIException("Invalid payment details.", ErrorCodes.PAYMENT_ERROR);
+            return false;
         }
         // changed this beacuse random price is 0
         if (totalPrice < 0) {
             logger.error("Payment failed: invalid amount {}", totalPrice);
 
-            throw new UIException("Invalid payment amount.", ErrorCodes.PAYMENT_ERROR);
+            return false;
         }
         logger.info("Payment processed successfully for card ending with {}");
         return true;
@@ -40,20 +40,21 @@ public class PaymentServiceImp implements IPaymentService {
 
             throw new UIException("Invalid payment details.", ErrorCodes.PAYMENT_ERROR);
         }
-        if (totalPrice <= 0) {
-            logger.error("Refund failed: invalid amount {}", totalPrice);
+        // to pariciapte in random u need to be higher than 0
+//        if (totalPrice <= 0) {
+//            logger.error("Refund failed: invalid amount {}", totalPrice);
 
-            throw new UIException("Invalid refund amount.", ErrorCodes.PAYMENT_ERROR);
-        }
+            //throw new UIException("Invalid refund amount.", ErrorCodes.PAYMENT_ERROR);
+      //  }
         logger.info("Refund processed successfully for card ending with {}");
         return true;
     }
-
-    public int externalPayment(PaymentDetails paymentDetails, double totalPrice) throws UIException {
-        return 1;
-    }
-
-    public int externalRefund(int transactionId) throws UIException {
-        return 1;
-    }
+//
+//    public int externalPayment(PaymentDetails paymentDetails, double totalPrice) throws UIException {
+//        return 1;
+//    }
+//
+//    public int externalRefund(int transactionId) throws UIException {
+//        return 1;
+//    }
 }

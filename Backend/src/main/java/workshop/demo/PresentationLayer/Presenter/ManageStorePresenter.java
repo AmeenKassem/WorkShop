@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,7 +42,7 @@ public class ManageStorePresenter {
 
     public void fetchStore(String token, int storeId) {
         String url = String.format(
-                "http://localhost:8080/api/store/getstoreDTO?token=%s&storeId=%d",
+                Base.url+"/api/store/getstoreDTO?token=%s&storeId=%d",
                 token,
                 storeId
         );
@@ -93,7 +94,7 @@ public class ManageStorePresenter {
             NotificationView.showError("FAILED: store not loaded!");
         }
         String url = String.format(
-                "http://localhost:8080/api/Review/getStoreReviews?storeId=%d",
+                Base.url+"/api/Review/getStoreReviews?storeId=%d",
                 storeId
         );
 
@@ -145,7 +146,7 @@ public class ManageStorePresenter {
     }
 
     public void fetchOrdersByStore(int storeId) {
-        String url = String.format("http://localhost:8080/api/history/getOrdersByStore?storeId=%d", storeId);
+        String url = String.format(Base.url+"/api/history/getOrdersByStore?storeId=%d", storeId);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
@@ -210,7 +211,7 @@ public class ManageStorePresenter {
     public void deactivateStore(int storeId) {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         String url = String.format(
-                "http://localhost:8080/api/store/deactivate?storeId=%d&token=%s",
+                Base.url+"/api/store/deactivate?storeId=%d&token=%s",
                 storeId,
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
         );
@@ -261,7 +262,7 @@ public class ManageStorePresenter {
 
         try {
             String url = String.format(
-                    "http://localhost:8080/api/store/viewRolesAndPermissions?storeId=%d&token=%s",
+                    Base.url+"/api/store/viewRolesAndPermissions?storeId=%d&token=%s",
                     storeId,
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
@@ -305,4 +306,74 @@ public class ManageStorePresenter {
         }
         return null;
     }
+    // ── purchase-policy helpers ─────────────────────────────────────────
+    /*───────────────────────────────────────────────────────────────
+     *  Add a purchase-policy to the store
+     *──────────────────────────────────────────────────────────────*/
+    public void addPurchasePolicy(int storeId, String token,
+                                  String policyKey, Integer param) {
+
+        try {
+            UriComponentsBuilder b = UriComponentsBuilder
+                    .fromHttpUrl(Base.url + "/api/store/addPurchasePolicy")
+                    .queryParam("storeId", storeId)
+                    .queryParam("token",
+                            UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8))
+                    .queryParam("policyKey", policyKey);
+
+            if (param != null) {
+                b.queryParam("param", param);
+            }
+
+            ApiResponse rsp = restTemplate.postForObject(b.toUriString(),
+                    null,
+                    ApiResponse.class);
+
+            if (rsp == null || rsp.getErrNumber() != -1) {
+                throw new RuntimeException(rsp == null
+                        ? "Null response from /addPurchasePolicy"
+                        : rsp.getErrorMsg());
+            }
+
+            /* success → let the caller decide whether to show a toast */
+
+        } catch (Exception ex) {
+            ExceptionHandlers.handleException(ex);        // centralised UX/logging
+        }
+    }
+
+    /*───────────────────────────────────────────────────────────────
+     *  Remove a purchase-policy from the store
+     *──────────────────────────────────────────────────────────────*/
+    public void removePurchasePolicy(int storeId, String token,
+                                     String policyKey, Integer param) {
+
+        try {
+            UriComponentsBuilder b = UriComponentsBuilder
+                    .fromHttpUrl(Base.url + "/api/store/removePurchasePolicy")
+                    .queryParam("storeId", storeId)
+                    .queryParam("token",
+                            UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8))
+                    .queryParam("policyKey", policyKey);
+
+            if (param != null) {
+                b.queryParam("param", param);
+            }
+
+            ApiResponse rsp = restTemplate.postForObject(b.toUriString(),
+                    null,
+                    ApiResponse.class);
+
+            if (rsp == null || rsp.getErrNumber() != -1) {
+                throw new RuntimeException(rsp == null
+                        ? "Null response from /removePurchasePolicy"
+                        : rsp.getErrorMsg());
+            }
+
+        } catch (Exception ex) {
+            ExceptionHandlers.handleException(ex);
+        }
+    }
+
+
 }

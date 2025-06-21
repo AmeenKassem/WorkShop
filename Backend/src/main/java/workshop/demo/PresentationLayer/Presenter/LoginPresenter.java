@@ -44,7 +44,7 @@ public class LoginPresenter {
         }
         // Build the URL with query parameters
         String url = String.format(
-                "http://localhost:8080/api/users/login?token=%s&username=%s&password=%s",
+                Base.url+"/api/users/login?token=%s&username=%s&password=%s",
                 UriUtils.encodeQueryParam(guestToken, StandardCharsets.UTF_8),
                 UriUtils.encodeQueryParam(username, StandardCharsets.UTF_8),
                 UriUtils.encodeQueryParam(password, StandardCharsets.UTF_8));
@@ -119,7 +119,7 @@ public class LoginPresenter {
     private boolean checkIfAdmin(String token) {
         try {
             System.out.println("in check if admin exception");
-            String url = String.format("http://localhost:8080/api/users/getUserDTO?token=%s",
+            String url = String.format(Base.url+"/api/users/getUserDTO?token=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);

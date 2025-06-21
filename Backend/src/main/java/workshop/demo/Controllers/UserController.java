@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
-import workshop.demo.ApplicationLayer.AdminHandler;
+// import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
 import workshop.demo.DTOs.Category;
@@ -26,8 +26,18 @@ import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.SystemAnalyticsDTO;
 import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DataAccessLayer.GuestJpaRepository;
+import workshop.demo.DataAccessLayer.UserJpaRepository;
+import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Order.IOrderRepo;
+import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepoDB;
+import workshop.demo.DomainLayer.User.AdminInitilizer;
+import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 import workshop.demo.PresentationLayer.Requests.AddToCartRequest;
+import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 
 @RestController
 @RequestMapping("/api/users")
@@ -35,18 +45,24 @@ public class UserController {
 
     private final UserService userService;
     private final UserSuspensionService userSuspensionService;
-    private final AdminHandler adminHandler;
+    // private final AdminHandler adminHandler;
 
     @Autowired
-    public UserController(Repos repos) throws Exception {
-        // this.userService = repos.userService;
-        this.adminHandler = new AdminHandler(repos.orderRepo, repos.storeRepo, repos.userRepo, repos.auth);
-        this.userSuspensionService = new UserSuspensionService(repos.UserSuspensionRepo, repos.userRepo, repos.auth);
-        this.userService = new UserService(repos.userRepo, repos.auth, repos.stockrepo, repos.adminInitilizer,
-                adminHandler, repos.storeRepo);
-
+    public UserController(
+            IStoreRepoDB storeRepo,
+            IOrderRepo orderRepo,
+            IAuthRepo auth,                      // the JWT token provider
+            IStockRepo stockrepo,
+            AdminInitilizer adminInitializer,
+            IUserSuspensionRepo userSuspensionRepo,
+            UserSuspensionJpaRepository userSuspensionJpaRepository,
+            UserJpaRepository regRepo,
+            GuestJpaRepository guest, UserJpaRepository userRepo
+    ) throws Exception {
+        // this.adminHandler = new AdminHandler(orderRepo, storeRepo, userRepo, auth);
+        this.userSuspensionService = new UserSuspensionService(userSuspensionJpaRepository, userRepo, auth);
+        this.userService = new UserService(regRepo,auth, stockrepo, adminInitializer,guest,storeRepo);
     }
-
     // @ModelAttribute
     // public void beforeEveryRequest(HttpServletRequest request) {
     // System.out.println("must check if the system get published by admin ...");
@@ -386,33 +402,33 @@ public class UserController {
         }
     }
 
-    // Additional admin methods can be added here...
-    @GetMapping("/purchaseHistory")
-    public ResponseEntity<List<PurchaseHistoryDTO>> getSystemPurchaseHistory(@RequestParam String token) {
-        try {
-            List<PurchaseHistoryDTO> history = adminHandler.viewPurchaseHistory(token);
-            return ResponseEntity.ok(history);
-        } catch (UIException ex) {
-            // Return an error response if token is invalid or user is not admin
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(null);
-        } catch (Exception ex) {
-            // Handle other exceptions as needed
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
+    // // Additional admin methods can be added here...
+    // @GetMapping("/purchaseHistory")
+    // public ResponseEntity<List<PurchaseHistoryDTO>> getSystemPurchaseHistory(@RequestParam String token) {
+    //     try {
+    //         List<PurchaseHistoryDTO> history = adminHandler.viewPurchaseHistory(token);
+    //         return ResponseEntity.ok(history);
+    //     } catch (UIException ex) {
+    //         // Return an error response if token is invalid or user is not admin
+    //         return ResponseEntity.status(HttpStatus.FORBIDDEN)
+    //                 .body(null);
+    //     } catch (Exception ex) {
+    //         // Handle other exceptions as needed
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    //     }
+    // }
 
-    @GetMapping("/analytics")
-    public ResponseEntity<SystemAnalyticsDTO> getSystemAnalytics(@RequestParam String token) {
-        try {
-            SystemAnalyticsDTO analytics = adminHandler.getSystemAnalytics(token);
-            return ResponseEntity.ok(analytics);
-        } catch (UIException ex) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
+    // @GetMapping("/analytics")
+    // public ResponseEntity<SystemAnalyticsDTO> getSystemAnalytics(@RequestParam String token) {
+    //     try {
+    //         SystemAnalyticsDTO analytics = adminHandler.getSystemAnalytics(token);
+    //         return ResponseEntity.ok(analytics);
+    //     } catch (UIException ex) {
+    //         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+    //     } catch (Exception ex) {
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    //     }
+    // }
 
     @GetMapping("/getAllUsers")
     public ResponseEntity<ApiResponse<List<UserDTO>>> getAllUsers(@RequestParam String token) {

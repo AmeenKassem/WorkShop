@@ -40,7 +40,7 @@ public class MyStoresPresenter {
             UI.getCurrent().navigate(""); // navigate to home
             return;
         }
-        String url = String.format("http://localhost:8080/api/store/myStores?token=%s",
+        String url = String.format(Base.url+"/api/store/myStores?token=%s",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
         HttpHeaders headers = new HttpHeaders();

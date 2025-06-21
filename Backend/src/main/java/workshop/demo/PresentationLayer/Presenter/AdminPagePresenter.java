@@ -51,7 +51,7 @@ public class AdminPagePresenter {
     //close store -> just the admin
     public List<UserDTO> getAllUsers() throws UIException {
         Object token = VaadinSession.getCurrent().getAttribute("auth-token");
-        String url = "http://localhost:8080/api/users/getAllUsers?token=" + token;
+        String url = Base.url+"/api/users/getAllUsers?token=" + token;
 
         try {
             ResponseEntity<ApiResponse<List<UserDTO>>> response = restTemplate.exchange(
@@ -78,7 +78,7 @@ public class AdminPagePresenter {
 
     public void onSuspendUser(int userId, int minutes) {
         Object token = VaadinSession.getCurrent().getAttribute("auth-token");
-        String url = String.format("http://localhost:8080/api/users/suspendUser?userId=%d&minutes=%d&token=%s",
+        String url = String.format(Base.url+"/api/users/suspendUser?userId=%d&minutes=%d&token=%s",
                 userId, minutes, token);
 
         try {
@@ -103,7 +103,7 @@ public class AdminPagePresenter {
 
     public void onPauseSuspension(int userId) {
         Object token = VaadinSession.getCurrent().getAttribute("auth-token");
-        String url = String.format("http://localhost:8080/api/users/pauseSuspension?userId=%d&token=%s",
+        String url = String.format(Base.url+"/api/users/pauseSuspension?userId=%d&token=%s",
                 userId, token);
 
         try {
@@ -128,7 +128,7 @@ public class AdminPagePresenter {
 
     public void onResumeSuspension(int userId) {
         Object token = VaadinSession.getCurrent().getAttribute("auth-token");
-        String url = String.format("http://localhost:8080/api/users/resumeSuspension?userId=%d&token=%s",
+        String url = String.format(Base.url+"/api/users/resumeSuspension?userId=%d&token=%s",
                 userId, token);
 
         try {
@@ -161,7 +161,7 @@ public class AdminPagePresenter {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         try {
             String url = String.format(
-                    "http://localhost:8080/api/store/allStores?token=%s",
+                    Base.url+"/api/store/allStores?token=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
             HttpHeaders headers = new HttpHeaders();
@@ -192,7 +192,7 @@ public class AdminPagePresenter {
 
     public void onCloseStore(int storeId) {
         String token = String.valueOf(VaadinSession.getCurrent().getAttribute("auth-token"));
-        String url = String.format("http://localhost:8080/api/store/close?storeId=%d&token=%s", storeId, token);
+        String url = String.format(Base.url+"/api/store/close?storeId=%d&token=%s", storeId, token);
 
         try {
             ResponseEntity<ApiResponse<String>> response = restTemplate.exchange(

@@ -21,8 +21,18 @@ import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DataAccessLayer.UserJpaRepository;
+import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Notification.INotificationRepo;
+import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Stock.IStockRepoDB;
+import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
+import workshop.demo.DomainLayer.Store.IStoreRepo;
+import workshop.demo.DomainLayer.Store.IStoreRepoDB;
+import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
+import workshop.demo.DomainLayer.UserSuspension.IUserSuspensionRepo;
 
 @RestController
 @RequestMapping("/stock")
@@ -30,10 +40,25 @@ public class StockController {
 
     private final StockService stockService;
 
-    @Autowired
-    public StockController(Repos repos) {
-        this.stockService = new StockService(repos.stockrepo, repos.storeRepo, repos.auth, repos.userRepo,
-                repos.sUConnectionRepo, repos.UserSuspensionRepo,repos.notificationRepo);
+     @Autowired
+    public StockController(
+        IStockRepo stockrepo,
+        IStoreRepo storeRepo,
+        IAuthRepo auth,
+        UserJpaRepository userRepo,
+        ISUConnectionRepo sUConnectionRepo,
+        IUserSuspensionRepo userSuspensionRepo,
+        INotificationRepo notificationRepo, IStockRepoDB stockJpaRepo, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStock
+    ) {
+        this.stockService = new StockService(
+            stockrepo,
+            storeRepo,
+            auth,
+            userRepo,
+            sUConnectionRepo,
+            userSuspensionRepo,
+            notificationRepo,stockJpaRepo,storeJpaRepo,storeStock
+        );
     }
 
     @GetMapping("/getProductInfo")
@@ -288,7 +313,7 @@ public class StockController {
     @GetMapping("/getAllAuctions")
     public ResponseEntity<?> getAllAuctions(@RequestParam String token, @RequestParam int storeId) {
         try {
-            AuctionDTO[] auctions = stockService.getAllAuctions(token, storeId);
+            AuctionDTO[] auctions = stockService.getAllAuctions_user(token, storeId);
             return ResponseEntity.ok(new ApiResponse<>(auctions, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
@@ -407,7 +432,7 @@ public class StockController {
     @GetMapping("/getAllRandomInStore")
     public ResponseEntity<?> getAllRandomInStore(@RequestParam String token, @RequestParam int storeId) {
         try {
-            RandomDTO[] randoms = stockService.getAllRandomInStore(token, storeId);
+            RandomDTO[] randoms = stockService.getAllRandomInStoreToUser(token, storeId);
             return ResponseEntity.ok(new ApiResponse<>(randoms, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()

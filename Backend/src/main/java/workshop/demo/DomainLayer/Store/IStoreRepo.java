@@ -15,11 +15,11 @@ public interface IStoreRepo {
 
    // List<StoreDTO> viewAllStores();
 
-    public int addStoreToSystem(int bossID, String storeName, String Category) throws UIException;
+    // public int addStoreToSystem(int bossID, String storeName, String Category) throws UIException;
 
-    Store findStoreByID(int Id);
+    // Store findStoreByID(int Id);
 
-    boolean checkStoreExistance(int ID) throws UIException;
+    // boolean checkStoreExistance(int ID) throws UIException;
 
     void deactivateStore(int storeId, int ownerId) throws Exception;
 
@@ -30,18 +30,18 @@ public interface IStoreRepo {
     public int getFinalRateInStore(int storeId) throws UIException, DevException;
     // public int getFinalRateInStore(int storeId) throws UIException, DevException;
 
-    public List<Store> getStores();
+    // public List<Store> getStores();
 
-    String getStoreNameById(int storeId) throws UIException;
+    // String getStoreNameById(int storeId) throws UIException;
 
     //another: getting info about the owners and manager->4.11
     //public List<WorkerDTO> ViewRolesAndPermissions(int storeId) throws UIException, DevException;
 
     //another: messages to response->4.12
     //another: getting info about the history of purcheses in a specific store -> dpne in order
-    boolean checkStoreIsActive(int storeId) throws DevException;
+    // boolean checkStoreIsActive(int storeId) throws DevException;
 
-    public StoreDTO getStoreDTO(int storeId) throws UIException;
+    // public StoreDTO getStoreDTO(int storeId) throws UIException;
 
     void fillWithStoreName(ItemStoreDTO[] items);
 

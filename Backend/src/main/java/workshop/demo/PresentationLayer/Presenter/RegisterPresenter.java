@@ -49,7 +49,7 @@ public class RegisterPresenter {
         }
 
         String url = String.format(
-                "http://localhost:8080/api/users/register?token=%s&username=%s&password=%s&age=%d",
+                Base.url+"/api/users/register?token=%s&username=%s&password=%s&age=%d",
                 UriUtils.encodeQueryParam(guestToken, StandardCharsets.UTF_8),
                 UriUtils.encodeQueryParam(username, StandardCharsets.UTF_8),
                 UriUtils.encodeQueryParam(password, StandardCharsets.UTF_8),

@@ -1,4 +1,3 @@
-
 package workshop.demo.DomainLayer.StoreUserConnection;
 
 import java.util.HashMap;
@@ -8,13 +7,37 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Authorization {
-    private static final Logger logger = LoggerFactory.getLogger(Authorization.class);
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapKeyEnumerated;
+import jakarta.persistence.Table;
 
-    private Map<Permission, Boolean> myAutho;
+@Entity
+@Table(name = "[authorization]")
+public class Authorization {
+
+    private static final Logger logger = LoggerFactory.getLogger(Authorization.class);
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "authorization_permissions", joinColumns = @JoinColumn(name = "auth_id"))
+    @MapKeyEnumerated(EnumType.STRING)
+    @Column(name = "is_authorized")
+    private Map<Permission, Boolean> myAutho = new HashMap<>();
+
+    ;
 
     public Authorization() {
-        this.myAutho = new HashMap<>();
         fillAuth();
 
     }

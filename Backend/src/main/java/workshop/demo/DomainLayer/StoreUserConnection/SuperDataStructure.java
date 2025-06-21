@@ -8,10 +8,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.vaadin.flow.component.UI;
-
+import jakarta.transaction.Transactional;
+import workshop.demo.DataAccessLayer.NodeJPARepository;
+import workshop.demo.DataAccessLayer.OfferJpaRepository;
+import workshop.demo.DataAccessLayer.StoreTreeJPARepository;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -19,20 +22,46 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 @Component
 public class SuperDataStructure {
 
+    @Autowired
+    private StoreTreeJPARepository storeTreeJPARepo;
+    @Autowired
+    private OfferJpaRepository offerJPARepo;
+    @Autowired
+    private NodeJPARepository nodeJPARepo;
+
     private Map<Integer, Tree> employees;
     private final Map<Integer, List<Offer>> offers;//storeId, list of offers
     private final ConcurrentHashMap<Integer, ReentrantLock> storeLocks = new ConcurrentHashMap<>();
 
+    @Autowired
     public SuperDataStructure() {
         employees = new ConcurrentHashMap<>();
         this.offers = new ConcurrentHashMap<>();
     }
 
+    // //----loading data--------
+    // //@PostConstruct
+    // @Transactional
+    // public void loadFromDB() {
+    //     for (StoreTreeEntity entity : storeTreeJPARepo.findAll()) {
+    //         try {
+    //             Tree tree = new Tree(entity); // Tree constructor handles building from DB
+    //             employees.put(entity.getStoreId(), tree);
+    //         } catch (DevException e) {
+    //             System.err.println("Failed to load store tree for storeId=" + entity.getStoreId());
+    //             e.printStackTrace();
+    //         }
+    //     }
+    // }
     public void addNewStore(int storeID, int bossId) {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeID, k -> new ReentrantLock());
         lock.lock();
         try {
-            this.employees.put(storeID, new Tree(bossId, false, -1));
+            Tree tree = new Tree(storeID, bossId, false);
+            this.employees.put(storeID, tree);
+            StoreTreeEntity entity = new StoreTreeEntity(storeID, tree.getAllNodes());
+            storeTreeJPARepo.save(entity);
+
         } finally {
             lock.unlock();
         }
@@ -98,7 +127,10 @@ public class SuperDataStructure {
             if (child != null && !child.getIsManager()) {
                 throw new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION);
             }
-            this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(newOnwerId, false, ownerId));
+            Node newOwner = new Node(storeID, newOnwerId, false, this.employees.get(storeID).getNodeById(ownerId));
+            this.employees.get(storeID).getNodeById(ownerId).addChild(newOwner);
+            nodeJPARepo.save(newOwner);
+            //storeTreeJPARepo.save(new StoreTreeEntity(storeID, employees.get(storeID).getAllNodes()));
         } finally {
             lock.unlock();
         }
@@ -122,6 +154,9 @@ public class SuperDataStructure {
                 throw new UIException("You do not own this ownership", ErrorCodes.NO_PERMISSION);
             }
             this.employees.get(storeID).deleteNode(OwnerToDelete);
+            NodeKey key = new NodeKey(storeID, OwnerToDelete);
+            nodeJPARepo.deleteById(key);
+
         } finally {
             lock.unlock();
         }
@@ -143,7 +178,9 @@ public class SuperDataStructure {
             if (child != null && child.getIsManager()) {
                 throw new UIException("This worker is already an owner/manager", ErrorCodes.NO_PERMISSION);
             }
-            this.employees.get(storeID).getNodeById(ownerId).addChild(new Node(newManagerId, true, ownerId));
+            Node newManager = new Node(storeID, newManagerId, true, this.employees.get(storeID).getNodeById(ownerId));
+            this.employees.get(storeID).getNodeById(ownerId).addChild(newManager);
+            nodeJPARepo.save(newManager);
         } finally {
             lock.unlock();
         }
@@ -167,6 +204,8 @@ public class SuperDataStructure {
                 throw new UIException("Owner does not have permission to change this manager", ErrorCodes.NO_PERMISSION);
             }
             toChange.updateAuthorization(per, ownerID);
+            nodeJPARepo.save(toChange);
+
         } finally {
             lock.unlock();
         }
@@ -190,6 +229,8 @@ public class SuperDataStructure {
                 throw new UIException("Owner does not have permission to delete this manager", ErrorCodes.NO_PERMISSION);
             }
             this.employees.get(storeID).deleteNode(managerId);
+            NodeKey key = new NodeKey(storeID, managerId);
+            nodeJPARepo.deleteById(key);
         } finally {
             lock.unlock();
         }
@@ -266,6 +307,10 @@ public class SuperDataStructure {
                 throw new Exception("store does not exist in superDS");
             }
             this.employees.remove(storeID);
+            this.offers.remove(storeID);
+            storeTreeJPARepo.deleteById(storeID);
+            storeTreeJPARepo.deleteById(storeID);
+            offerJPARepo.deleteByIdStoreId(storeID);
         } finally {
             lock.unlock();
         }
@@ -280,12 +325,20 @@ public class SuperDataStructure {
     }
 
     //make offer delete offer
-    public void makeOffer(Offer offer, int storeId) {
+    public void makeOffer(Offer offer, int storeId) throws Exception {
+        // Check in DB for existing offer
+        if (offerJPARepo.existsByIdSenderIdAndIdReceiverId(
+                offer.getSenderId(), offer.getReceiverId())) {
+            throw new Exception("Duplicate offer already exists");
+        }
+
         synchronized (offers) {
             offers.computeIfAbsent(storeId, k -> new ArrayList<>()).add(offer);
+            offerJPARepo.save(offer);
         }
     }
 
+    @Transactional
     public List<Permission> deleteOffer(int storeId, int senderId, int reciverId) throws Exception {
         synchronized (offers) {
             List<Offer> Offer = offers.get(storeId);
@@ -299,6 +352,7 @@ public class SuperDataStructure {
                 if (offer.getSenderId() == senderId && offer.getReceiverId() == reciverId) {
                     List<Permission> permissions = offer.getPermissions();
                     iterator.remove();
+                    offerJPARepo.delete(offer);
 
                     // Clean up empty list
                     if (Offer.isEmpty()) {
@@ -339,7 +393,8 @@ public class SuperDataStructure {
                 result.add(storeId);
             }
         }
-
+        System.out.println("llllllllllll");
+        System.out.println(result.size());
         return result;
     }
 
@@ -371,7 +426,7 @@ public class SuperDataStructure {
     }
 
     public void clearData() {
-            employees.clear();
+        employees.clear();
 
         offers.clear();
         storeLocks.clear();
@@ -411,6 +466,8 @@ public class SuperDataStructure {
         }
     }
 
-
+    public Map<Integer, List<Offer>> getOffers() {
+        return this.offers;
+    }
 
 }
