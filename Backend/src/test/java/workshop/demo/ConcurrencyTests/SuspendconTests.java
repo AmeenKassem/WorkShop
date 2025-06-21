@@ -8,7 +8,7 @@
 // import org.springframework.boot.test.context.SpringBootTest;
 // import org.springframework.test.context.ActiveProfiles;
 
-// import workshop.demo.ApplicationLayer.AdminHandler;
+// // import workshop.demo.ApplicationLayer.AdminHandler;
 // import workshop.demo.ApplicationLayer.OrderService;
 // import workshop.demo.ApplicationLayer.PaymentServiceImp;
 // import workshop.demo.ApplicationLayer.PurchaseService;
@@ -62,8 +62,8 @@
 //     UserRepository userRepo;
 //     @Autowired
 //     UserSuspensionService suspensionService;
-//     @Autowired
-//     AdminHandler adminService;
+//     // @Autowired
+//     // AdminHandler adminService;
 //     @Autowired
 //     UserService userService;
 //     @Autowired
@@ -94,14 +94,21 @@
 //         userService.setAdmin(adminTokenB, "123321", authRepo.getUserId(adminTokenB));
 
 //         // Register two users
-//         int userA = userRepo.registerUser("userA", "pass", 30);
-//         int userB = userRepo.registerUser("userB", "pass", 30);
+//     //    int userA = userRepo.registerUser("userA", "pass", 30);
+//      //   int userB = userRepo.registerUser("userB", "pass", 30);
+//         String tokenA1 = userService.generateGuest();
+// userService.register(tokenA, "userA", "pass", 30);
+// String userTokenA = userService.login(tokenA, "userA", "pass");
+
+// String tokenB1 = userService.generateGuest();
+// userService.register(tokenB, "userB", "pass", 30);
+// String userTokenB = userService.login(tokenB, "userB", "pass");
 
 //         AtomicInteger successCount = new AtomicInteger(0);
 
 //         Thread t1 = new Thread(() -> {
 //             try {
-//                 suspensionService.suspendRegisteredUser(userA, 2, adminTokenA);
+//                 suspensionService.suspendRegisteredUser(authRepo.getUserId(userTokenA), 2, adminTokenA);
 //                 successCount.incrementAndGet();
 //                 System.out.println("Admin A suspended User A");
 //             } catch (UIException e) {
@@ -111,7 +118,7 @@
 
 //         Thread t2 = new Thread(() -> {
 //             try {
-//                 suspensionService.suspendRegisteredUser(userB, 2, adminTokenB);
+//                 suspensionService.suspendRegisteredUser(authRepo.getUserId(userTokenB), 2, adminTokenB);
 //                 successCount.incrementAndGet();
 //                 System.out.println("Admin B suspended User B");
 //             } catch (UIException e) {
@@ -125,13 +132,13 @@
 //         t2.join();
 
 //         Assertions.assertEquals(2, successCount.get(), "Both admins should have suspended the users");
-//         Assertions.assertTrue(suspensionService.isUserSuspended(userA), "User A should be suspended");
-//         Assertions.assertTrue(suspensionService.isUserSuspended(userB), "User B should be suspended");
+//         Assertions.assertTrue(suspensionService.isUserSuspended(authRepo.getUserId(userTokenA)), "User A should be suspended");
+//         Assertions.assertTrue(suspensionService.isUserSuspended(authRepo.getUserId(userTokenB)), "User B should be suspended");
 
 //         Thread.sleep(2100); // wait for 2 seconds suspensions to expire
 
-//         Assertions.assertFalse(suspensionService.isUserSuspended(userA), "User A's suspension should expire");
-//         Assertions.assertFalse(suspensionService.isUserSuspended(userB), "User B's suspension should expire");
+//         Assertions.assertFalse(suspensionService.isUserSuspended(authRepo.getUserId(userTokenA)), "User A's suspension should expire");
+//         Assertions.assertFalse(suspensionService.isUserSuspended(authRepo.getUserId(userTokenB)), "User B's suspension should expire");
 //     }
 
 //     @Test
@@ -147,14 +154,15 @@
 //         userService.setAdmin(adminTokenA, "123321", authRepo.getUserId(adminTokenA));
 //         userService.setAdmin(adminTokenB, "123321", authRepo.getUserId(adminTokenB));
 
-//         int user = userRepo.registerUser("sharedUser", "pass", 30);
-
+// String token = userService.generateGuest();
+// userService.register(token, "sharedUser", "pass", 30);
+// String sharedUserToken = userService.login(token, "sharedUser", "pass");
 //         final AtomicInteger successCount = new AtomicInteger(0);
 //         final AtomicInteger failureCount = new AtomicInteger(0);
 
 //         Thread t1 = new Thread(() -> {
 //             try {
-//                 suspensionService.suspendRegisteredUser(user, 2, adminTokenA);
+//                 suspensionService.suspendRegisteredUser(authRepo.getUserId(sharedUserToken), 2, adminTokenA);
 //                 successCount.incrementAndGet();
 //                 System.out.println("Admin A successfully suspended the user.");
 //             } catch (UIException e) {
@@ -165,7 +173,7 @@
 
 //         Thread t2 = new Thread(() -> {
 //             try {
-//                 suspensionService.suspendRegisteredUser(user, 2, adminTokenB);
+//                 suspensionService.suspendRegisteredUser(authRepo.getUserId(sharedUserToken), 2, adminTokenB);
 //                 successCount.incrementAndGet();
 //                 System.out.println("Admin B successfully suspended the user.");
 //             } catch (UIException e) {
@@ -182,10 +190,10 @@
 //         Assertions.assertEquals(1, successCount.get(), "Only one admin should be able to suspend the user");
 //         Assertions.assertEquals(1, failureCount.get(), "One admin should fail due to already suspended");
 
-//         Assertions.assertTrue(suspensionService.isUserSuspended(user), "User should be suspended");
+//         Assertions.assertTrue(suspensionService.isUserSuspended(authRepo.getUserId(sharedUserToken)), "User should be suspended");
 
 //         Thread.sleep(2100); // Wait for 2-second suspension to expire
 
-//         Assertions.assertFalse(suspensionService.isUserSuspended(user), "User suspension should expire");
+//         Assertions.assertFalse(suspensionService.isUserSuspended(authRepo.getUserId(sharedUserToken)), "User suspension should expire");
 //     }
 // }
