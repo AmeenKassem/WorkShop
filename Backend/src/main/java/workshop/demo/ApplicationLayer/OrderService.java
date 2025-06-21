@@ -53,7 +53,8 @@ public class OrderService {
             throw new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND);
         }
         logger.info("about to get all the orders succsesfully!");
-        List<Order> orders = orderJpaRepo.findOrdersByStoreId(storeId);
+        String storeName = store.get().getStoreName();
+        List<Order> orders = orderJpaRepo.findOrdersByStoreName(storeName);
         return convertToDTOs(orders, storeId);
     }
 
