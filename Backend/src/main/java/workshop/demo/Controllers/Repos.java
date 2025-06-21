@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import workshop.demo.DomainLayer.Notification.INotificationRepo;
-import workshop.demo.DomainLayer.Order.IOrderRepo;
 import workshop.demo.DomainLayer.Purchase.IPaymentService;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.ISupplyService;
@@ -46,9 +45,6 @@ public class Repos {
 
     @Autowired
     public INotificationRepo notificationRepo;
-
-    @Autowired
-    public IOrderRepo orderRepo;
 
     @Autowired
     public IStockRepo stockrepo;

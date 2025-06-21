@@ -1,5 +1,6 @@
 package workshop.demo.ApplicationLayer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,7 +15,8 @@ import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Order.IOrderRepo;
+import workshop.demo.DomainLayer.Order.IOrderRepoDB;
+import workshop.demo.DomainLayer.Order.Order;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.Store.Store;
@@ -23,7 +25,7 @@ import workshop.demo.DomainLayer.Store.Store;
 @Service
 public class OrderService {
 
-    private IOrderRepo orderRepo;
+    private IOrderRepoDB orderJpaRepo;
     private IStoreRepo storeRepo;
     private IAuthRepo authRepo;
     private UserJpaRepository userRepo;
@@ -32,8 +34,8 @@ public class OrderService {
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     @Autowired
-    public OrderService(IOrderRepo orderRepo, IStoreRepo storeRepo, IAuthRepo authoRepo, UserJpaRepository userRepo,IStoreRepoDB storeJpaRepo) {
-        this.orderRepo = orderRepo;
+    public OrderService(IOrderRepoDB orderJpaRepo, IStoreRepo storeRepo, IAuthRepo authoRepo, UserJpaRepository userRepo,IStoreRepoDB storeJpaRepo) {
+        this.orderJpaRepo = orderJpaRepo;
         this.storeRepo = storeRepo;
         this.authRepo = authoRepo;
         this.userRepo = userRepo;
@@ -51,7 +53,8 @@ public class OrderService {
             throw new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND);
         }
         logger.info("about to get all the orders succsesfully!");
-        return this.orderRepo.getAllOrderByStore(storeId);
+        List<Order> orders = orderJpaRepo.findOrdersByStoreId(storeId);
+        return convertToDTOs(orders, storeId);
     }
 
     public List<ReceiptDTO> getReceiptDTOsByUser(String token) throws Exception {
@@ -64,6 +67,20 @@ public class OrderService {
         //     throw new UIException(String.format("The user:%d is not registered to the system!", userId), ErrorCodes.USER_NOT_FOUND);
         // }
         userRepo.findById(userId).orElseThrow(()->new UIException(String.format("The user:%d is not registered to the system!", userId), ErrorCodes.USER_NOT_FOUND));
-        return this.orderRepo.getReceiptDTOsByUser(userId);
+        List<Order> orders = orderJpaRepo.findOrdersByUserId(userId);
+        List<ReceiptDTO> result = new ArrayList<>();
+        for (Order order : orders) {
+            result.add(new ReceiptDTO(order.getStoreName(), order.getDate(), order.getProductsList(), order.getFinalPrice()));
+        }
+        return result;
     }
+
+    private List<OrderDTO> convertToDTOs(List<Order> orders, int storeId) {
+        List<OrderDTO> dtos = new ArrayList<>();
+        for (Order o : orders) {
+            dtos.add(new OrderDTO(o.getUserId(), storeId, o.getDate(), o.getProductsList(), o.getFinalPrice()));
+        }
+        return dtos;
+    }
+
 }
