@@ -110,8 +110,8 @@ public class StoreSTests {
     private OrderRepository orderRepository;
     @Autowired
     private PurchaseRepository purchaseRepository;
+
     @Autowired
-    
     private AuthenticationRepo authRepo;
 
     @Autowired

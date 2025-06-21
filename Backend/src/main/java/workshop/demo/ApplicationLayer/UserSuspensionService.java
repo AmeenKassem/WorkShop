@@ -16,6 +16,7 @@ import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -116,6 +117,7 @@ public class UserSuspensionService {
         logger.info("Suspension for " + userId + " resumed.");
     }
 
+
     public void cancelSuspension(Integer userId, String adminToken) throws UIException {
         System.out.println("Calling cancelSuspension: userId=" + userId + ", token=" + adminToken);
         validateAdmin(adminToken);
@@ -123,6 +125,15 @@ public class UserSuspensionService {
                 .orElseThrow(() -> new UIException("Suspension not found.", ErrorCodes.SUSPENSION_NOT_FOUND));
         suspensionJpaRepo.delete(suspension);
         logger.info("Suspension for " + userId + " cancelled.");
+    }
+
+
+    public LocalDateTime getSuspensionEndTimeIfAny(String token) throws UIException {
+        int userId = authRepo.getUserId(token);
+        return suspensionJpaRepo.findById(userId)
+                .filter(s -> !s.isExpired() && !s.isPaused())
+                .map(UserSuspension::getSuspensionEndTime)
+                .orElse(null);
     }
 
     public List<UserSuspensionDTO> viewAllSuspensions(String adminToken) throws UIException {

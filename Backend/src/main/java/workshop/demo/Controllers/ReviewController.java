@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import workshop.demo.ApplicationLayer.ReviewService;
 import workshop.demo.DTOs.ReviewDTO;
+import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Review.IReviewRepo;
@@ -27,8 +28,8 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    public ReviewController(IReviewRepo reviewRepo, IAuthRepo auth, IStoreRepo userRepo, IStockRepo storeRepo, IStoreRepoDB storeJpaRepo) {
-        this.reviewService = new ReviewService(reviewRepo, auth, userRepo, storeRepo,storeJpaRepo);
+    public ReviewController(IReviewRepo reviewRepo, IAuthRepo auth, IStoreRepo userRepo, IStockRepo storeRepo, IStoreRepoDB storeJpaRepo , UserSuspensionJpaRepository suspensionJpaRepo) {
+        this.reviewService = new ReviewService(reviewRepo, auth, userRepo, storeRepo,storeJpaRepo , suspensionJpaRepo);
     }
 
     @PostMapping("/addToProduct")

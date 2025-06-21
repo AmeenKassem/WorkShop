@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ReviewDTO;
+import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -20,6 +21,7 @@ import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 // import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 
 @Service
 public class ReviewService {
@@ -29,18 +31,20 @@ public class ReviewService {
     private IStoreRepo storeRepo;
     private IStockRepo stockRepo;
     private IStoreRepoDB storeJpaRepo;
+    private UserSuspensionJpaRepository suspensionJpaRepo;
 
     private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
 
     @Autowired
     public ReviewService(IReviewRepo reviewRepo, IAuthRepo authRepo, IStoreRepo storeRepo, IStockRepo stockRepo,
-            IStoreRepoDB storeJpaRepo) {
+            IStoreRepoDB storeJpaRepo , UserSuspensionJpaRepository suspensionJpaRepo) {
         this.authRepo = authRepo;
         this.reviewRepo = reviewRepo;
         this.storeRepo = storeRepo;
         // this.userRepo = userRepo;
         this.stockRepo = stockRepo;
         this.storeJpaRepo = storeJpaRepo;
+        this.suspensionJpaRepo = suspensionJpaRepo;
         logger.info("created review service");
     }
 
@@ -55,7 +59,11 @@ public class ReviewService {
         // Check user and store
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-
+        int userId = authRepo.getUserId(token);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         ItemStoreDTO[] items = stockRepo.getProductsInStore(storeId);
         boolean found = Arrays.stream(items)
                 .anyMatch(item -> item.getProductId() == productId);
@@ -64,8 +72,6 @@ public class ReviewService {
             throw new UIException("Product with ID " + productId + " not found in store " + storeId,
                     ErrorCodes.PRODUCT_NOT_FOUND);
         }
-
-        int userId = authRepo.getUserId(token);
         String username = authRepo.getUserName(token);
         reviewRepo.AddReviewToProduct(storeId, productId, userId, username, review);
 
@@ -77,6 +83,11 @@ public class ReviewService {
         logger.info("about to add review to store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+        int userId = authRepo.getUserId(token);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
         reviewRepo.AddReviewToStore(storeId, authRepo.getUserId(token), authRepo.getUserName(token), review);
         logger.info("added review successfully!");
         return true;

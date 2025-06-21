@@ -4,10 +4,14 @@ import workshop.demo.DTOs.Category;
 
 public class ProductSearchCriteria {
 
+    //by product:
     private String productNameFilter;
     private Category categoryFilter;
     private String keywordFilter;
+
+
     private int storeId;
+    
     private double minPrice;
     private double maxPrice;
     private double minProductRating;
@@ -133,4 +137,19 @@ public class ProductSearchCriteria {
 
     }
 
+    public boolean keywordSearch() {
+        return keywordFilter!=null;
+    }
+
+    public String getKeyword(){
+        return keywordFilter;
+    }
+
+    public boolean nameSearch() {
+        return productNameFilter!=null;
+    }
+
+    public String getName(){
+        return productNameFilter;
+    }
 }

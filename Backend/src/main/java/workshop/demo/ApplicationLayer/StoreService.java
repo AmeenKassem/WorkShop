@@ -572,7 +572,6 @@ public class StoreService {
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
-
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);
         if (!suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_PURCHASE_POLICY)) {

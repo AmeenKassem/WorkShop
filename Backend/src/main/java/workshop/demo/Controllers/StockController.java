@@ -217,7 +217,7 @@ public class StockController {
             @RequestParam(required = false) Double minProductRating,
             @RequestParam(required = false) Double maxProductRating) {
         try {
-            ItemStoreDTO[] items = stockService.searchProducts(token, new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter, storeId, minPrice, maxPrice, minProductRating, maxProductRating));
+            ItemStoreDTO[] items = stockService.searchProductsOnAllSystem(token, new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter, storeId, minPrice, maxPrice, minProductRating, maxProductRating));
             return ResponseEntity.ok(new ApiResponse<>(items, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
