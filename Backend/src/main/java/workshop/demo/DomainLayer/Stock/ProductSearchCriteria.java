@@ -4,10 +4,14 @@ import workshop.demo.DTOs.Category;
 
 public class ProductSearchCriteria {
 
+    //by product:
     private String productNameFilter;
     private Category categoryFilter;
     private String keywordFilter;
+
+
     private int storeId;
+    
     private double minPrice;
     private double maxPrice;
     private double minProductRating;
