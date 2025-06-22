@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ReceiptDTO;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -21,6 +20,7 @@ import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.Store.Store;
 // import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
 
 @Service
 public class OrderService {

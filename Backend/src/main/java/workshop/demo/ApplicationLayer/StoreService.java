@@ -17,10 +17,6 @@ import workshop.demo.DTOs.CreateDiscountDTO;
 import workshop.demo.DTOs.NotificationDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
-import workshop.demo.DataAccessLayer.OfferJpaRepository;
-import workshop.demo.DataAccessLayer.StoreTreeJPARepository;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -44,6 +40,10 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.StoreTreeEntity;
 import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import workshop.demo.InfrastructureLayer.OfferJpaRepository;
+import workshop.demo.InfrastructureLayer.StoreTreeJPARepository;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
+import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 
 @Service
 public class StoreService {

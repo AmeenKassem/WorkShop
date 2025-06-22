@@ -25,8 +25,6 @@ import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SupplyDetails;
-import workshop.demo.DataAccessLayer.GuestJpaRepository;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Order.IOrderRepoDB;
@@ -38,8 +36,9 @@ import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
 import workshop.demo.DomainLayer.Store.CouponContext;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
-// import workshop.demo.DomainLayer.User.IUserRepo;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
+import workshop.demo.InfrastructureLayer.GuestJpaRepository;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
+import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 
 @RestController
 @RequestMapping("/purchase")

@@ -18,8 +18,6 @@ import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SpecialType;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -43,6 +41,8 @@ import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 import workshop.demo.InfrastructureLayer.AISearch;
 // >>>>>>> search-after-persist
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
+import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 
 @Service
 public class StockService {

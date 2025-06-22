@@ -8,10 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
-import workshop.demo.DataAccessLayer.DelayedNotificationRepository;
 import workshop.demo.DomainLayer.Notification.BaseNotifier;
 import workshop.demo.DomainLayer.Notification.DelayedNotification;
 // import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.InfrastructureLayer.DelayedNotificationRepository;
 
 @Service
 public class NotificationService {

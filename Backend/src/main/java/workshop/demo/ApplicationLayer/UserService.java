@@ -17,8 +17,6 @@ import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.UserDTO;
-import workshop.demo.DataAccessLayer.GuestJpaRepository;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -33,6 +31,8 @@ import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 import workshop.demo.InfrastructureLayer.Encoder;
+import workshop.demo.InfrastructureLayer.GuestJpaRepository;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
 
 @Service
 public class UserService {

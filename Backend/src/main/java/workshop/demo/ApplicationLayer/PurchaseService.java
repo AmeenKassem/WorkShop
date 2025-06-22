@@ -28,9 +28,6 @@ import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DTOs.UserDTO;
-import workshop.demo.DataAccessLayer.GuestJpaRepository;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -59,6 +56,9 @@ import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import workshop.demo.InfrastructureLayer.GuestJpaRepository;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
+import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 
 import org.springframework.transaction.annotation.Transactional;
 

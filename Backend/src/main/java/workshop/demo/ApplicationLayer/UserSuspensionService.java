@@ -6,14 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.UserSuspensionDTO;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.Registered;
 // import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
+import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-import workshop.demo.DataAccessLayer.UserJpaRepository;
 
 @Service
 public class UserSuspensionService {

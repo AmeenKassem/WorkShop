@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ReviewDTO;
-import workshop.demo.DataAccessLayer.ReviewJpaRepository;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -26,6 +24,8 @@ import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import workshop.demo.InfrastructureLayer.ReviewJpaRepository;
+import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 
 @Service
 public class ReviewService {

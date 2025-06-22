@@ -28,8 +28,6 @@ import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.SystemAnalyticsDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSuspensionDTO;
-import workshop.demo.DataAccessLayer.GuestJpaRepository;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Order.IOrderRepoDB;
@@ -38,8 +36,10 @@ import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import workshop.demo.InfrastructureLayer.GuestJpaRepository;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
+import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 import workshop.demo.PresentationLayer.Requests.AddToCartRequest;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 
 @RestController
 @RequestMapping("/api/users")

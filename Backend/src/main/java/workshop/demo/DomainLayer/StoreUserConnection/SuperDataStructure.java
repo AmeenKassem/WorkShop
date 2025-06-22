@@ -12,12 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import jakarta.transaction.Transactional;
-import workshop.demo.DataAccessLayer.NodeJPARepository;
-import workshop.demo.DataAccessLayer.OfferJpaRepository;
-import workshop.demo.DataAccessLayer.StoreTreeJPARepository;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.InfrastructureLayer.NodeJPARepository;
+import workshop.demo.InfrastructureLayer.OfferJpaRepository;
+import workshop.demo.InfrastructureLayer.StoreTreeJPARepository;
 
 @Component
 public class SuperDataStructure {

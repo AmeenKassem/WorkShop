@@ -16,12 +16,12 @@ import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.ReceiptProduct;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Order.IOrderRepoDB;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
 
 @RestController
 @RequestMapping("/api/history")

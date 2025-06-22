@@ -1,4 +1,4 @@
-package workshop.demo.DataAccessLayer;
+package workshop.demo.InfrastructureLayer;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +22,6 @@ public interface UserJpaRepository extends JpaRepository<Registered, Integer> {
 
     @Query("SELECT r FROM Registered r WHERE r.username = :username")
     Optional<Registered> findByUsername(@Param("username") String username);
-
 
     @Query("SELECT r FROM Registered r WHERE r.id = :id AND r.username = :username")
     Optional<Registered> findByIdAndUsername(@Param("id") int id, @Param("username") String username);
