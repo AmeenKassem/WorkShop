@@ -140,11 +140,18 @@ public class UserSuspensionService {
 
         return suspensionJpaRepo.findAll()
                 .stream()
-                .map(s -> new UserSuspensionDTO(
-                s.getUserId(),
-                s.isPaused(),
-                s.getSuspensionEndTime(),
-                s.getRemainingWhenPaused()))
+                .map(s -> {
+                    String username = userRepo.findById(s.getUserId())
+                            .map(Registered::getUsername)
+                            .orElse("Unknown");
+                    return new UserSuspensionDTO(
+                            s.getUserId(),
+                            username,
+                            s.isPaused(),
+                            s.getSuspensionEndTime(),
+                            s.getRemainingWhenPaused()
+                    );
+                })
                 .collect(Collectors.toList());
     }
 }
