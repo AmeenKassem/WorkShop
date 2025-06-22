@@ -1,8 +1,24 @@
 package workshop.demo.DTOs;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import workshop.demo.DomainLayer.Order.Order;
 
+@Entity
+@Table(name = "receipt_product")
 public class ReceiptProduct {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
     private String productName;
+    @Enumerated(EnumType.STRING)
     private Category category;
     // private String description;
     private String storename;
@@ -10,6 +26,10 @@ public class ReceiptProduct {
     private int price;
     private int productId;
     private int storeId;
+
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private Order order;
 
     public ReceiptProduct(String productName, String storename, int quantity, int price, int productId,
             Category category, int storeId) {
@@ -75,5 +95,13 @@ public class ReceiptProduct {
 
     public Integer getStoreId() {
         return storeId;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
+
+    public Order getOrder() {
+        return order;
     }
 }
