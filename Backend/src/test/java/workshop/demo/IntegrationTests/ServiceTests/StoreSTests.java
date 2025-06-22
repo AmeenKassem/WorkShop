@@ -106,8 +106,8 @@ public class StoreSTests {
     @Autowired
     private GuestJpaRepository guestRepo;
 
-    @Autowired
-    private OrderRepository orderRepository;
+    // @Autowired
+    // private OrderRepository orderRepository;
     @Autowired
     private PurchaseRepository purchaseRepository;
 
@@ -175,9 +175,9 @@ public class StoreSTests {
         if (stockRepository != null) {
             stockRepository.clear();
         }
-        if (orderRepository != null) {
-            orderRepository.clear();
-        }
+        // if (orderRepository != null) {
+        //     orderRepository.clear();
+        // }
         GToken = userService.generateGuest();
         userService.register(GToken, "User", "User", 16);
         NGToken = userService.login(GToken, "User", "User");
@@ -1301,7 +1301,7 @@ public class StoreSTests {
         // Purchase cart
         ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(NGToken, payment, supply);
 
-        // Fetch and assert order
+        // replace it with order repo
         List<OrderDTO> orders = orderRepository.getOrderDTOsByUserId(userId);
 
         assertNotNull(orders);

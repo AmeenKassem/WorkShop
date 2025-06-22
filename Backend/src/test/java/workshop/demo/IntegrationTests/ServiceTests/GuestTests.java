@@ -53,7 +53,7 @@ import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.NotificationRepository;
-import workshop.demo.InfrastructureLayer.OrderRepository;
+// import workshop.demo.InfrastructureLayer.OrderRepository;
 import workshop.demo.InfrastructureLayer.PurchaseRepository;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StockRepository;
@@ -82,8 +82,8 @@ public class GuestTests {
     private IStockRepoDB stockRepositoryjpa;
     @Autowired
     private IStoreRepoDB storeRepositoryjpa;
-    @Autowired
-    private OrderRepository orderRepository;
+    // @Autowired
+    // private OrderRepository orderRepository;
     @Autowired
     private PurchaseRepository purchaseRepository;
     @Autowired
@@ -154,9 +154,9 @@ public class GuestTests {
         if (stockRepository != null) {
             stockRepository.clear();
         }
-        if (orderRepository != null) {
-            orderRepository.clear();
-        }
+        // if (orderRepository != null) {
+        //     orderRepository.clear();
+        // }
 
         GToken = userService.generateGuest();
 

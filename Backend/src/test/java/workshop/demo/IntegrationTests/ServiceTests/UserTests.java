@@ -537,11 +537,11 @@ public class UserTests {
     // @Test
     // void testUserBuyCart_ProductNotAvailable() throws Exception {
 
-    //     PaymentDetails paymentDetails = PaymentDetails.testPayment();
-    //     SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+    // PaymentDetails paymentDetails = PaymentDetails.testPayment();
+    // SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-    //    userService.addToUserCart(NGToken, new ItemStoreDTO(0, 0, 0, null, 0, 2, "", "TestStore"), 1);
-       
+    // userService.addToUserCart(NGToken, new ItemStoreDTO(0, 0, 0, null, 0, 2, "",
+    // "TestStore"), 1);
 
     // }
 
@@ -725,53 +725,54 @@ public class UserTests {
         assertTrue(result);
         assertTrue(userService.getRegularCart(NGToken).length == 0);
     }
-     @Test
+
+    @Test
     void test_user_cart_given_many_items_one_not_avaliable() throws Exception {
         // TODO abu el3asi make one with many items .
         // cart must not change + quantity for all stores must not change
         // Product 2 - Smartphone
-                int x = storeRepositoryjpa.findAll().get(0).getstoreId();
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-String[] keywords2 = { "Phone", "Smartphone", "Mobile" };
-int PID2 = stockService.addProduct(NOToken, "Smartphone", Category.Electronics, "Latest smartphone model", keywords2);
+        String[] keywords2 = { "Phone", "Smartphone", "Mobile" };
+        int PID2 = stockService.addProduct(NOToken, "Smartphone", Category.Electronics, "Latest smartphone model",
+                keywords2);
 
-stockService.addItem(x, NOToken, PID2, 15, 1000, Category.Electronics);
-ItemStoreDTO itemStoreDTO2 = new ItemStoreDTO(PID2, 15, 1000, Category.Electronics, 0,
-        x, "Smartphone", "TestStore");
+        stockService.addItem(x, NOToken, PID2, 15, 1000, Category.Electronics);
+        ItemStoreDTO itemStoreDTO2 = new ItemStoreDTO(PID2, 15, 1000, Category.Electronics, 0,
+                x, "Smartphone", "TestStore");
 
-// Product 3 - Headphones
-String[] keywords3 = { "Headphones", "Audio", "Music" };
-int PID3 = stockService.addProduct(NOToken, "Headphones", Category.Electronics, "Wireless over-ear headphones", keywords3);
+        // Product 3 - Headphones
+        String[] keywords3 = { "Headphones", "Audio", "Music" };
+        int PID3 = stockService.addProduct(NOToken, "Headphones", Category.Electronics, "Wireless over-ear headphones",
+                keywords3);
 
-stockService.addItem(x, NOToken, PID3, 20, 300, Category.Electronics);
-ItemStoreDTO itemStoreDTO3 = new ItemStoreDTO(PID3, 20, 300, Category.Electronics, 0,
-        x, "Headphones", "TestStore");
+        stockService.addItem(x, NOToken, PID3, 20, 300, Category.Electronics);
+        ItemStoreDTO itemStoreDTO3 = new ItemStoreDTO(PID3, 20, 300, Category.Electronics, 0,
+                x, "Headphones", "TestStore");
 
         userService.addToUserCart(NGToken, itemStoreDTO, 1);
 
         userService.addToUserCart(NGToken, itemStoreDTO3, 100);
         userService.addToUserCart(NGToken, itemStoreDTO2, 1);
-  PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
 
-    ReceiptDTO[] re= purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
+        ReceiptDTO[] re = purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
 
-            var items = stockService.getProductsInStore(x);
+        var items = stockService.getProductsInStore(x);
 
-// You know the product IDs and expected quantities:
-Map<Integer, Integer> expectedQuantities = Map.of(
-    PID, 9,
-    PID2, 14,
-    PID3, 20
-);
+        // You know the product IDs and expected quantities:
+        Map<Integer, Integer> expectedQuantities = Map.of(
+                PID, 9,
+                PID2, 14,
+                PID3, 20);
 
-// Verify each product quantity hasn't changed
-for (ItemStoreDTO item : items) {
-    int expectedQty = expectedQuantities.getOrDefault(item.getProductId(), -1);
-    assertNotEquals(-1, expectedQty, "Unexpected product in store: " + item.getProductId());
-    assertEquals(expectedQty, item.getQuantity(), "Product ID " + item.getProductId() + " has wrong quantity");
-}
-
+        // Verify each product quantity hasn't changed
+        for (ItemStoreDTO item : items) {
+            int expectedQty = expectedQuantities.getOrDefault(item.getProductId(), -1);
+            assertNotEquals(-1, expectedQty, "Unexpected product in store: " + item.getProductId());
+            assertEquals(expectedQty, item.getQuantity(), "Product ID " + item.getProductId() + " has wrong quantity");
+        }
 
     }
 
@@ -811,10 +812,10 @@ for (ItemStoreDTO item : items) {
 
     // @Test
     // void testGetAllUsers_NotAdmin_ThrowsException() {
-    //     // Act + Assert
-    //     Exception ex = assertThrows(Exception.class, () -> {
-    //         userService.getAllUsers(NGToken); // regular user token
-    //     });
+    // // Act + Assert
+    // Exception ex = assertThrows(Exception.class, () -> {
+    // userService.getAllUsers(NGToken); // regular user token
+    // });
     // }
 
     @Test
