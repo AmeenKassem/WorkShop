@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.CreateDiscountDTO;
 import workshop.demo.DTOs.NotificationDTO;
 import workshop.demo.DTOs.StoreDTO;
@@ -331,23 +332,20 @@ public class StoreService {
         logger.info("manager {} successfully deleted from store {} by owner {}", managerId, storeId, ownerId);
     }
 
-    // MUST CHECK WHO CAN DO IT??
-    /* 
-    public List<OrderDTO> veiwStoreHistory(int storeId) throws Exception {
-        return this.orderRepo.getAllOrderByStore(storeId);
-    }
-     */
+    @Transactional
     public void rankStore(String token, int storeId, int newRank) throws Exception {
         logger.info("about to rank store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        userService.checkUserRegisterOnline_ThrowException(userId);
+        //userService.checkUserRegisterOnline_ThrowException(userId);
         UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        this.storeRepo.rankStore(storeId, newRank);
+        store.rankStore(newRank);
+        //storeJpaRepo.save(store);
+        //this.storeRepo.rankStore(storeId, newRank);
         logger.info("store ranked sucessfully!");
 
     }

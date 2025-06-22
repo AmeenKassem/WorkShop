@@ -83,6 +83,40 @@ public class StoreDetailsPresenter {
         return result;
     }
 
+    public void rankStore(String token, int storeId, int newRank) {
+        String url = String.format(
+                Base.url + "/api/store/rankStore?token=%s&storeId=%d&newRank=%d",
+                UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                storeId,
+                newRank
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    ApiResponse.class
+            );
+            ApiResponse body = response.getBody();
+            if (body != null && body.getErrNumber() == -1) {
+                //NotificationView.showSuccess("Store ranked successfully.");
+            } else if (body != null) {
+                NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+            } else {
+                NotificationView.showError("Unknown error ranking the store.");
+            }
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+    }
+
     public void addReviewToItem(String token, int storeId, int productId, String review) {
         String url = String.format(
                 Base.url + "/api/Review/addToProduct?token=%s&storeId=%d&productId=%d&review=%s",

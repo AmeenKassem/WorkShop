@@ -54,7 +54,17 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
 
         Button showReviewsBtn = new Button("📖 Show Store Reviews", e -> showStoreReviewsDialog());
         Button addReviewBtn = new Button("📝 Add Review to Store", e -> openStoreReviewDialog());
+        Button addRankBtn = new Button("🌟 Rank Store");
+        addRankBtn.getStyle()
+                .set("background-color", "#ff9900")
+                .set("color", "white")
+                .set("font-weight", "bold")
+                .set("border-radius", "12px")
+                .set("padding", "8px 18px");
 
+        addRankBtn.addClickListener(event -> openRankStoreDialog(myStoreId));
+
+        storeActions.add(showReviewsBtn, addReviewBtn, addRankBtn);
         showReviewsBtn.getStyle()
                 .set("background-color", "#ff9900")
                 .set("color", "white")
@@ -105,6 +115,35 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
             NotificationView.showError("Failed to load products: " + e.getMessage());
         }
 
+    }
+
+    private void openRankStoreDialog(int storeId) {
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Rank this Store");
+
+        ComboBox<Integer> rankCombo = new ComboBox<>("Select Rating");
+        rankCombo.setItems(1, 2, 3, 4, 5);
+        rankCombo.setPlaceholder("Choose 1–5");
+
+        Button submitBtn = new Button("Submit", e -> {
+            Integer selectedRank = rankCombo.getValue();
+            if (selectedRank == null) {
+                NotificationView.showError("Please select a rating first.");
+                return;
+            }
+            try {
+                presenter.rankStore(token, storeId, selectedRank);
+                NotificationView.showSuccess("Store ranked successfully with " + selectedRank + " stars.");
+                dialog.close();
+            } catch (Exception ex) {
+                NotificationView.showError("Error ranking the store: " + ex.getMessage());
+            }
+        });
+
+        VerticalLayout layout = new VerticalLayout(rankCombo, submitBtn);
+        dialog.add(layout);
+        dialog.open();
     }
 
     private Div createProductCard(ItemStoreDTO item, ProductDTO product) {

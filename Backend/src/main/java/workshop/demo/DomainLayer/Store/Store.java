@@ -14,6 +14,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Transient;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
@@ -35,27 +38,22 @@ public class Store {
     private boolean active;
     @Transient
     private AtomicInteger[] rank;// rank[x] is the number of people who ranked i+1
-    // must add something for messages
-    @Transient
-    private List<String> messgesInStore;
+    //in the db: 5 coulmns each is a counter
+    @Column(name = "rank_1_count")
+    private int rank1;
+    @Column(name = "rank_2_count")
+    private int rank2;
+    @Column(name = "rank_3_count")
+    private int rank3;
+    @Column(name = "rank_4_count")
+    private int rank4;
+    @Column(name = "rank_5_count")
+    private int rank5;
+
     @Transient
     private Discount discount;
     @Transient
     private final List<PurchasePolicy> purchasePolicies = new ArrayList<>();
-
-    // public Store(int storeId, String storeName, String category) {
-    //     logger.debug("Creating store: ID={}, Name={}, Category={}", storeId, storeName, category);
-
-    //     this.storeId = storeId;
-    //     this.storeName = storeName;
-    //     this.category = category;
-    //     this.active = true;
-    //     this.rank = new AtomicInteger[5];
-    //     for (int i = 0; i < 5; i++) {
-    //         rank[i] = new AtomicInteger(0);
-    //     }
-    //     this.messgesInStore = Collections.synchronizedList(new LinkedList<>());
-    // }
 
     public Store(String storeName, String cat) {
         this.storeName = storeName;
@@ -72,6 +70,25 @@ public class Store {
         for (int i = 0; i < 5; i++) {
             rank[i] = new AtomicInteger(0);
         }
+    }
+
+    @PostLoad
+    private void initRankArray() {
+        rank[0] = new AtomicInteger(rank1);
+        rank[1] = new AtomicInteger(rank2);
+        rank[2] = new AtomicInteger(rank3);
+        rank[3] = new AtomicInteger(rank4);
+        rank[4] = new AtomicInteger(rank5);
+    }
+
+    @PrePersist
+    @PreUpdate
+    private void updateRankColumns() {
+        rank1 = rank[0].get();
+        rank2 = rank[1].get();
+        rank3 = rank[2].get();
+        rank4 = rank[3].get();
+        rank5 = rank[4].get();
     }
 
     public int getstoreId() {
@@ -104,6 +121,18 @@ public class Store {
             return false;
         }
         rank[i - 1].incrementAndGet();
+        switch (i) {
+            case 1 ->
+                rank1 = rank[0].get();
+            case 2 ->
+                rank2 = rank[1].get();
+            case 3 ->
+                rank3 = rank[2].get();
+            case 4 ->
+                rank4 = rank[3].get();
+            case 5 ->
+                rank5 = rank[4].get();
+        }
         logger.debug("Ranking store {} with {}", storeId, i);
 
         return true;
@@ -167,8 +196,9 @@ public class Store {
     }
 
     public void addPurchasePolicy(PurchasePolicy p) throws Exception {
-        if (p == null)
+        if (p == null) {
             throw new Exception("Policy must not be null");
+        }
         purchasePolicies.add(p);
     }
 
@@ -182,37 +212,41 @@ public class Store {
 
     public void assertPurchasePolicies(UserDTO buyer, List<ItemStoreDTO> cart) throws Exception {
         for (PurchasePolicy p : purchasePolicies) {
-            if (!p.isSatisfied(buyer, cart))
+            if (!p.isSatisfied(buyer, cart)) {
                 throw new Exception(p.violationMessage());
+            }
         }
     }
 
     public Discount findDiscountByName(String targetName) {
-        if (discount == null || targetName == null)
+        if (discount == null || targetName == null) {
             return null;
+        }
         return dfsFind(discount, targetName);
     }
 
     // ---------------- private helper ----------------
     private Discount dfsFind(Discount node, String targetName) {
-        if (node.getName().equals(targetName))
+        if (node.getName().equals(targetName)) {
             return node;
+        }
         if (node instanceof CompositeDiscount comp) {
             for (Discount child : comp.getDiscounts()) {
                 Discount found = dfsFind(child, targetName);
-                if (found != null)
+                if (found != null) {
                     return found;
+                }
             }
         }
         return null; // not found in this branch
     }
 
     public void setCategory(String category2) {
-        category=category2;
+        category = category2;
     }
 
     public void setName(String storeName2) {
-       this.storeName= storeName2;
+        this.storeName = storeName2;
     }
 
 }
