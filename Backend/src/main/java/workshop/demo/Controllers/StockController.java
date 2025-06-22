@@ -31,26 +31,6 @@ public class StockController {
     @Autowired
     private StockService stockService;
 
-    //  @Autowired
-    // public StockController(
-    //     IStockRepo stockrepo,
-    //     IStoreRepo storeRepo,
-    //     IAuthRepo auth,
-    //     UserJpaRepository userRepo,
-    //     ISUConnectionRepo sUConnectionRepo,
-    //     UserSuspensionJpaRepository suspensionJpaRepo,
-    //     INotificationRepo notificationRepo, IStockRepoDB stockJpaRepo, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStock
-    // ) {
-    //     this.stockService = new StockService(
-    //         stockrepo,
-    //         storeRepo,
-    //         auth,
-    //         userRepo,
-    //         sUConnectionRepo,
-    //         suspensionJpaRepo,
-    //         notificationRepo,stockJpaRepo,storeJpaRepo,storeStock
-    //     );
-    // }
     @GetMapping("/getProductInfo")
     public String getProductInfo(@RequestParam String token,
             @RequestParam int productId) {

@@ -70,21 +70,6 @@ public class StockService {
     private NotificationService notifier;
     private AISearch aiSearch = new AISearch();
 
-    // @Autowired
-    // public StockService(IStockRepo stockRepo, IStoreRepo storeRepo, IAuthRepo authRepo, UserJpaRepository userRepo,
-    //         ISUConnectionRepo cons, UserSuspensionJpaRepository suspensionJpaRepo, INotificationRepo notificationRepo,
-    //         IStockRepoDB stockJpaRepo, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStock) {
-    //     this.stockRepo = stockRepo;
-    //     this.authRepo = authRepo;
-    //     this.storeRepo = storeRepo;
-    //     this.userRepo = userRepo;
-    //     this.suConnectionRepo = cons;
-    //     this.suspensionJpaRepo = suspensionJpaRepo;
-    //     this.notificationRepo = notificationRepo;
-    //     this.stockJpaRepo = stockJpaRepo;
-    //     this.storeJpaRepo = storeJpaRepo;
-    //     this.storeStockRepo = storeStock;
-    // }
     private UIException storeNotFound() {
         return new UIException(" store does not exist.", ErrorCodes.STORE_NOT_FOUND);
     }

@@ -51,28 +51,6 @@ public class UserController {
     private UserSuspensionService userSuspensionService;
     // private final AdminHandler adminHandler;
 
-    // @Autowired
-    // public UserController(
-    // IStoreRepoDB storeRepo,
-    // IOrderRepo orderRepo,
-    // IAuthRepo auth, // the JWT token provider
-    // IStockRepo stockrepo,
-    // AdminInitilizer adminInitializer,
-    // UserSuspensionJpaRepository userSuspensionJpaRepository,
-    // UserJpaRepository regRepo,
-    // GuestJpaRepository guest, UserJpaRepository userRepo
-    // ) throws Exception {
-    // // this.adminHandler = new AdminHandler(orderRepo, storeRepo, userRepo,
-    // auth);
-    // // this.userSuspensionService = new
-    // UserSuspensionService(userSuspensionJpaRepository, userRepo, auth);
-    // // this.userService = new UserService(regRepo,auth, stockrepo,
-    // adminInitializer,guest,storeRepo);
-    // }
-    // @ModelAttribute
-    // public void beforeEveryRequest(HttpServletRequest request) {
-    // System.out.println("must check if the system get published by admin ...");
-    // }
     @GetMapping("/generateGuest")
     public ResponseEntity<?> generateGuest() {
         try {
@@ -273,11 +251,9 @@ public class UserController {
             // SpecialCartItemDTO special1 = new SpecialCartItemDTO();
             // special1.setIds(201, 1001, 0, SpecialType.Random);
             // special1.setValues("Mystery Box", false, false);
-
             // SpecialCartItemDTO special2 = new SpecialCartItemDTO();
             // special2.setIds(202, 1002, 0, SpecialType.Auction);
             // special2.setValues("Rare Coin", true, true);
-
             // SpecialCartItemDTO special3 = new SpecialCartItemDTO();
             // special3.setIds(203, 1003, 10001, SpecialType.BID);
             // special3.setValues("Gaming Chair", false, true);
@@ -454,7 +430,6 @@ public class UserController {
     // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
     // }
     // }
-
     // @GetMapping("/analytics")
     // public ResponseEntity<SystemAnalyticsDTO> getSystemAnalytics(@RequestParam
     // String token) {
@@ -467,7 +442,6 @@ public class UserController {
     // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
     // }
     // }
-
     @GetMapping("/getAllUsers")
     public ResponseEntity<ApiResponse<List<UserDTO>>> getAllUsers(@RequestParam String token) {
         ApiResponse<List<UserDTO>> res;

@@ -26,6 +26,7 @@ import workshop.demo.DataAccessLayer.UserJpaRepository;
 
 @Service
 public class UserSuspensionService {
+
     @Autowired
     private UserJpaRepository userRepo;
     @Autowired
@@ -38,15 +39,6 @@ public class UserSuspensionService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserSuspensionService.class);
     private final ConcurrentHashMap<Integer, Object> userLocks = new ConcurrentHashMap<>();
-
-    // @Autowired
-    // public UserSuspensionService(UserSuspensionJpaRepository
-    // userSuspensionJpaRepository, UserJpaRepository userRepo,
-    // IAuthRepo authRepo) {
-    // this.suspensionJpaRepo = userSuspensionJpaRepository;
-    // this.userRepo = userRepo;
-    // this.authRepo = authRepo;
-    // }
 
     public boolean isUserSuspended(int userId) {
         return suspensionJpaRepo.findById(userId)
@@ -149,10 +141,10 @@ public class UserSuspensionService {
         return suspensionJpaRepo.findAll()
                 .stream()
                 .map(s -> new UserSuspensionDTO(
-                        s.getUserId(),
-                        s.isPaused(),
-                        s.getSuspensionEndTime(),
-                        s.getRemainingWhenPaused()))
+                s.getUserId(),
+                s.isPaused(),
+                s.getSuspensionEndTime(),
+                s.getRemainingWhenPaused()))
                 .collect(Collectors.toList());
     }
 }

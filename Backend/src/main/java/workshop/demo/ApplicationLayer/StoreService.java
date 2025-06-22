@@ -75,24 +75,6 @@ public class StoreService {
     @Autowired
     private OfferJpaRepository offerJPARepo;
 
-    // @Autowired
-    // public StoreService(UserService userService, IStoreRepo storeRepository, INotificationRepo notiRepo,
-    //         IAuthRepo authRepo, UserJpaRepository userRepo, IOrderRepo orderRepo,
-    //         ISUConnectionRepo sUConnectionRepo, IStockRepo stock, IUserSuspensionRepo susRepo,
-    //         IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStock) {
-    //     this.storeRepo = storeRepository;
-    //     this.notiRepo = notiRepo;
-    //     this.authRepo = authRepo;
-    //     this.orderRepo = orderRepo;
-    //     this.userRepo = userRepo;
-    //     this.suConnectionRepo = sUConnectionRepo;
-    //     this.stockRepo = stock;
-    //     this.susRepo = susRepo;
-    //     this.userService = userService;
-    //     this.storeJpaRepo = storeJpaRepo;
-    //     this.storeStock = storeStock;
-    //     logger.info("created the StoreService");
-    // }
     @PostConstruct
     public void loadStoreTreesIntoMemory() {
         System.out.println("innnn load");

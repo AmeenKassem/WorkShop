@@ -45,17 +45,8 @@ import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 @RequestMapping("/purchase")
 public class PurcheseContoller {
 
-    private final PurchaseService purchaseService;
-
     @Autowired
-    public PurcheseContoller(IAuthRepo auth, IStockRepo stockrepo, IStoreRepo storeRepo, 
-            IPurchaseRepo purchaseRepo, IOrderRepoDB orderJpaRepo, IPaymentService paymentService,
-            ISupplyService supplyService, UserSuspensionJpaRepository usersuspentionjpa, UserJpaRepository userJpaRepo,
-            GuestJpaRepository guestJpaRepository, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStockRepo) {
-        this.purchaseService = new PurchaseService(auth, stockrepo, storeRepo, 
-                purchaseRepo, orderJpaRepo, paymentService, supplyService, usersuspentionjpa, userJpaRepo,
-                guestJpaRepository,storeJpaRepo,storeStockRepo);
-    }
+    private PurchaseService purchaseService;
 
     @ModelAttribute
     public void beforeEveryRequest(HttpServletRequest request) {
@@ -116,7 +107,6 @@ public class PurcheseContoller {
             // ReceiptDTO r1 = new ReceiptDTO("TechStore", "2025-06-01", List.of(p1), 1200);
             // ReceiptDTO r2 = new ReceiptDTO("HomeMart", "2025-06-02", List.of(p2), 300);
             // ReceiptDTO r3 = new ReceiptDTO("FashionHub", "2025-06-03", List.of(p3), 75);
-
             // // Create array of ReceiptDTO
             // ReceiptDTO[] receipts = new ReceiptDTO[] { r1, r2, r3 };
             ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(token, paymentdetails, supplydetails);
@@ -183,12 +173,10 @@ public class PurcheseContoller {
             // Category.Furniture);
             // ReceiptProduct p3 = new ReceiptProduct("T-Shirt", "FashionHub", 3, 25, 3,
             // Category.Clothing);
-
             // // Create ReceiptDTO instances
             // ReceiptDTO r1 = new ReceiptDTO("TechStore", "2025-06-01", List.of(p1), 1200);
             // ReceiptDTO r2 = new ReceiptDTO("HomeMart", "2025-06-02", List.of(p2), 300);
             // ReceiptDTO r3 = new ReceiptDTO("FashionHub", "2025-06-03", List.of(p3), 75);
-
             // // Create array of ReceiptDTO
             // ReceiptDTO[] receipts = new ReceiptDTO[] { r1, r2, r3 };
             res = new ApiResponse<>(receipts, null);

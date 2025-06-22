@@ -3,6 +3,7 @@ package workshop.demo.Controllers;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,16 +23,12 @@ import workshop.demo.DomainLayer.Order.IOrderRepoDB;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 
-
 @RestController
 @RequestMapping("/api/history")
 public class HistoryController {
 
-    private final OrderService orderService;
-
-    public HistoryController(IOrderRepoDB orderJpaRepo, IStoreRepo storeRepo, IAuthRepo auth, UserJpaRepository userRepo, IStoreRepoDB storeJpaRepo) {
-        this.orderService = new OrderService( orderJpaRepo,  storeRepo,  auth,  userRepo, storeJpaRepo);
-    }
+    @Autowired
+    private OrderService orderService;
 
     @GetMapping("/getreceipts")
     public ResponseEntity<ApiResponse<ReceiptDTO[]>> getReceipts(@RequestParam String token) {
@@ -44,7 +41,7 @@ public class HistoryController {
             return ResponseEntity.ok(response);
 
         } catch (UIException e) {
-           response = new ApiResponse<>(null, e.getMessage(), e.getNumber());
+            response = new ApiResponse<>(null, e.getMessage(), e.getNumber());
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             response = new ApiResponse<>(null, e.getMessage(), -1);

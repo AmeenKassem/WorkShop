@@ -57,20 +57,6 @@ public class UserService {
     @Autowired
     private GuestJpaRepository guestJpaRepository;
 
-    // @Autowired
-    // public UserService(UserJpaRepository regJpaRepo, IAuthRepo authRepo, IStockRepo stockRepo,
-    //         AdminInitilizer adminInitilizer,
-    //         GuestJpaRepository guestRepo, IStoreRepoDB storeRepo) {
-    //     // this.userRepo = userRepo;
-    //     this.authRepo = authRepo;
-    //     this.stockRepo = stockRepo;
-    //     this.storeRepo = storeRepo;
-    //     this.adminInitilizer = adminInitilizer;
-    //     // this.adminHandler = adminHandler;
-    //     this.regJpaRepo = regJpaRepo;
-    //     this.guestJpaRepository = guestRepo;
-    // }
-
     public String generateGuest() throws UIException, Exception {
         logger.info("generateGuest called");
         Guest guest = new Guest();
@@ -126,8 +112,9 @@ public class UserService {
                 user.login();
                 regJpaRepo.save(user);
                 return user.getId();
-            } else
+            } else {
                 throw new UIException("wrong password!!", ErrorCodes.WRONG_PASSWORD);
+            }
         } else {
             throw new UIException("User not found: " + username, ErrorCodes.USER_NOT_FOUND);
         }
@@ -213,8 +200,9 @@ public class UserService {
         Optional<Registered> reg = regJpaRepo.findById(userId);
         if (!reg.isPresent()) {
             Optional<Guest> guest = guestJpaRepository.findById(userId);
-            if (!guest.isPresent())
+            if (!guest.isPresent()) {
                 throw new UIException("id is not registered or guest", ErrorCodes.USER_NOT_FOUND);
+            }
             return guest.get();
         }
         return reg.get();
@@ -318,13 +306,15 @@ public class UserService {
 
     public void checkUserRegisterOnline_ThrowException(int bossId) throws UIException {
         Optional<Registered> regs = regJpaRepo.findById(bossId);
-        if (!regs.isPresent())
+        if (!regs.isPresent()) {
             throw new UIException("user not registered!", ErrorCodes.USER_NOT_LOGGED_IN);
+        }
     }
 
     public void checkAdmin_ThrowException(int adminId) throws UIException {
         Optional<Registered> reg = regJpaRepo.findById(adminId);
-        if (!reg.isPresent())
+        if (!reg.isPresent()) {
             throw new UIException("user is not admin!!", ErrorCodes.NO_PERMISSION);
+        }
     }
 }
