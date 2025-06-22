@@ -556,7 +556,11 @@ public class StockService {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        this.stockRepo.rankProduct(storeId, productId, newRank);
+        //this.stockRepo.rankProduct(storeId, productId, newRank);
+        StoreStock stock = storeStockRepo.findById(storeId)
+                .orElseThrow(() -> new DevException("store stock not found on db!!"));
+        stock.rankProduct(productId, newRank);
+        storeStockRepo.saveAndFlush(stock);
         logger.info("the rank updated successfully for product {} in store {}", productId, storeId);
         return productId;
     }
