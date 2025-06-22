@@ -10,7 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 @Entity
@@ -21,8 +20,10 @@ public class Order {
     private int orderId;
     private int userId;
     private String date;
-    @Transient
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReceiptProduct> productsList;
+
     private double finalPrice;
     private String storeName;
 
@@ -33,6 +34,11 @@ public class Order {
         this.date = receiptDTO.getDate();
         this.finalPrice = receiptDTO.getFinalPrice();
         this.storeName = storeName;
+        if (this.productsList != null) {
+            for (ReceiptProduct rp : this.productsList) {
+                rp.setOrder(this);
+            }
+        }
 
     }
 
@@ -42,6 +48,11 @@ public class Order {
         this.productsList = receiptDTO.getProductsList();
         this.finalPrice = receiptDTO.getFinalPrice();
         this.storeName = storeName;
+        if (this.productsList != null) {
+            for (ReceiptProduct rp : this.productsList) {
+                rp.setOrder(this);
+            }
+        }
     }
     public Order() {
         // Default constructor for JPA
