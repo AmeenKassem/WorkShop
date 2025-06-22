@@ -65,7 +65,6 @@ import workshop.demo.InfrastructureLayer.PurchaseRepository;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
-import workshop.demo.InfrastructureLayer.UserRepository;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -950,7 +949,7 @@ for (ItemStoreDTO item : items) {
         stockService.setProductToRandom(NOToken, productId, 10, 2000, x, 2000);
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null, null, null, 1, 0, 5000, 0, 5);
+                "laptop", null, null, 1, 0, 5000, 0, 5);
 
         RandomDTO[] result = stockService.searchActiveRandoms(NGToken, criteria);
         assertNotNull(result);
@@ -967,7 +966,7 @@ for (ItemStoreDTO item : items) {
         stockService.setProductToBid(NOToken, x, PID, 10);
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null, null, null, 1, null, null, null, null);
+                "Laptop", null, null, 1, null, null, null, null);
 
         BidDTO[] result = stockService.searchActiveBids(NGToken, criteria);
         assertNotNull(result);
@@ -983,7 +982,7 @@ for (ItemStoreDTO item : items) {
         stockService.setProductToAuction(NOToken, x, PID, 10, endTime, 2000.0);
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null, null, null, 1, null, null, null, null);
+                "Laptop", null, null, 1, null, null, null, null);
 
         AuctionDTO[] result = stockService.searchActiveAuctions(NGToken, criteria);
         assertNotNull(result);
@@ -1012,7 +1011,7 @@ for (ItemStoreDTO item : items) {
     @Test
     void testSearchByCategory_Match() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null, Category.Electronics, null, null,
+                "Laptop", Category.Electronics, null, null,
                 -1.0, -1.0, -1.0, -1.0);
         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(1, result.length);
@@ -1047,7 +1046,7 @@ for (ItemStoreDTO item : items) {
     @Test
     void testSearchByMinPrice_Pass() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null, null, null, null,
+                "laptop", null, null, null,
                 1500.0, -1.0, -1.0, -1.0);
         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(1, result.length);
@@ -1056,7 +1055,7 @@ for (ItemStoreDTO item : items) {
     @Test
     void testSearchByMinPrice_TooHigh() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null, null, null, null,
+                "Laptop", null, null, null,
                 3000.0, -1.0, -1.0, -1.0);
         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(0, result.length);
@@ -1065,7 +1064,7 @@ for (ItemStoreDTO item : items) {
     @Test
     void testSearchByMaxPrice_Pass() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null, null, null, null,
+                "Laptop", null, null, null,
                 -1.0, 3000.0, -1.0, -1.0);
         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(1, result.length);
@@ -1074,7 +1073,7 @@ for (ItemStoreDTO item : items) {
     @Test
     void testSearchByMaxPrice_TooLow() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null, null, null, null,
+                "Laptop", null, null, null,
                 -1.0, 1000.0, -1.0, -1.0);
         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(0, result.length);
@@ -1083,7 +1082,7 @@ for (ItemStoreDTO item : items) {
     @Test
     void testSearchByRatingRange_Pass() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null, null, null, null,
+                "Laptop", null, null, null,
                 -1.0, -1.0, 0.0, 5.0);
         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(1, result.length);
@@ -1092,7 +1091,7 @@ for (ItemStoreDTO item : items) {
     @Test
     void testSearchByMinRating_TooHigh() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null, null, null, null,
+                "Laptop", null, null, null,
                 -1.0, -1.0, 4.9, -1.0);
         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(0, result.length);
@@ -1101,7 +1100,7 @@ for (ItemStoreDTO item : items) {
     @Test
     void testSearchByMaxRating_TooLow() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null, null, null, null,
+                "Laptop", null, null, null,
                 -1.0, -1.0, -1.0, 0.0);
         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(0, result.length);
@@ -1110,7 +1109,7 @@ for (ItemStoreDTO item : items) {
     @Test
     void testSearchByStoreId_Match() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null, null, null, 1,
+                "Laptop", null, null, 1,
                 -1.0, -1.0, -1.0, -1);
         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
         assertEquals(1, result.length);

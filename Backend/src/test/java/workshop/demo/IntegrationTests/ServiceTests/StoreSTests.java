@@ -82,7 +82,6 @@ import workshop.demo.InfrastructureLayer.PurchaseRepository;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
-import workshop.demo.InfrastructureLayer.UserRepository;
 import workshop.demo.SocketCommunication.SocketHandler;
 
 @SpringBootTest

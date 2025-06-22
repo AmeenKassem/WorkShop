@@ -96,6 +96,10 @@ public class StockService {
         List<Product> products = null ;
         if(criteria.keywordSearch() && aiSearch.isActive()){
             List<Integer> ids = aiSearch.getSameProduct(criteria.getKeyword(), criteria.specificCategory()?criteria.getCategory().hashCode():-1, 0.35);
+                  if (ids == null || ids.isEmpty()) {
+            logger.info("No product IDs found from AI search. Returning empty list."); // if we dont find any matches we return empty list
+            return new ItemStoreDTO[0];
+        }
             products =  stockJpaRepo.findAllById(ids);
         }else if(criteria.nameSearch()){
             products = stockJpaRepo.findByNameContainingIgnoreCase(criteria.getName());

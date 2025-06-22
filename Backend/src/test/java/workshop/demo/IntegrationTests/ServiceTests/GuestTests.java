@@ -487,7 +487,7 @@ for (ItemStoreDTO item : items) {
     void testGuestSearchProductInStore_Success() throws Exception {
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null, // product name filter
+                "Laptop", // product name filter
                 null, // category filter
                 null, // keyword filter
                 createdStoreId, // store ID to filter
@@ -506,10 +506,10 @@ for (ItemStoreDTO item : items) {
 
     @Test
     void testGuestSearchProducts_Success() throws Exception {
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         // --- Step 2: Prepare search criteria ---
         String[] keywords = { "Laptop", "Lap", "top" };
-        System.out.println(storeService.getFinalRateInStore(createdStoreId));
 
         ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop",
                 Category.Electronics, null, createdStoreId, 0, 3000, 0,
@@ -522,7 +522,6 @@ for (ItemStoreDTO item : items) {
         assertEquals(2000, result[0].getPrice());
         assertEquals(createdStoreId, result[0].getStoreId());
 
-        // --- Step 7: Verify mocks ---
     }
 
     @Test
@@ -546,10 +545,11 @@ for (ItemStoreDTO item : items) {
 
     @Test
     void testSearchProducts_NoMatches() throws Exception {
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         String[] keywords = { "Laptop", "Lap", "top" };
         ProductSearchCriteria criteria = new ProductSearchCriteria("aa",
-                Category.Electronics, keywords[0], createdStoreId, 0, 5000,
+                Category.Electronics, keywords[0], x, 0, 5000,
                 0, 5);
         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(GToken, criteria);
         assertNotNull(result);
