@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ReviewDTO;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DataAccessLayer.ReviewJpaRepository;
+import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -40,17 +40,6 @@ public class ReviewService {
 
     private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
 
-    // @Autowired
-    // public ReviewService(IReviewRepo reviewRepo, IAuthRepo authRepo, IStoreRepo storeRepo, IStockRepo stockRepo,
-    //         IStoreRepoDB storeJpaRepo) {
-    //     this.authRepo = authRepo;
-    //     this.reviewRepo = reviewRepo;
-    //     this.storeRepo = storeRepo;
-    //     // this.userRepo = userRepo;
-    //     this.stockRepo = stockRepo;
-    //     this.storeJpaRepo = storeJpaRepo;
-    //     logger.info("created review service");
-    // }
     private UIException storeNotFound() {
         return new UIException(" store does not exist.", ErrorCodes.STORE_NOT_FOUND);
     }

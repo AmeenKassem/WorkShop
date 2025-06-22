@@ -3,7 +3,6 @@ package workshop.demo.Controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Purchase.IPaymentService;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.ISupplyService;
@@ -41,9 +40,8 @@ public class Repos {
     @Autowired
     public AuthenticationRepo auth;
 
-    @Autowired
-    public INotificationRepo notificationRepo;
-
+    // @Autowired
+    // public INotificationRepo notificationRepo;
     @Autowired
     public IStockRepo stockrepo;
 
@@ -60,6 +58,5 @@ public class Repos {
 
     @Autowired
     public ISUConnectionRepo sUConnectionRepo;
-
 
 }

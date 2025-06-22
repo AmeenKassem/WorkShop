@@ -14,7 +14,6 @@ import elemental.json.JsonObject;
 import jakarta.annotation.PostConstruct;
 import workshop.demo.DTOs.CreateDiscountDTO;
 import workshop.demo.DTOs.NotificationDTO;
-import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.WorkerDTO;
 import workshop.demo.DataAccessLayer.OfferJpaRepository;
@@ -25,8 +24,6 @@ import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Notification.INotificationRepo;
-import workshop.demo.DomainLayer.Order.IOrderRepoDB;
 import workshop.demo.DomainLayer.Order.IOrderRepoDB;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
@@ -46,7 +43,6 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.StoreTreeEntity;
 import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
 
 @Service
 public class StoreService {
@@ -54,7 +50,7 @@ public class StoreService {
     @Autowired
     private IStoreRepo storeRepo;
     @Autowired
-    private INotificationRepo notiRepo;
+    private NotificationService notifier;
     @Autowired
     private IAuthRepo authRepo;
     @Autowired
@@ -168,7 +164,7 @@ public class StoreService {
         suConnectionRepo.addNewStoreOwner(storeId, bossId);
         // stockRepo.addStore(storeId);
         StoreStock stock4Store = new StoreStock();
-        stock4Store.setStoreId(storeId); 
+        stock4Store.setStoreId(storeId);
 
         storeStock.save(stock4Store);
 
@@ -223,7 +219,7 @@ public class StoreService {
                 true, owner, storeId);
         suConnectionRepo.makeOffer(storeId, ownerId, newOwnerId, true, null, Message);
 
-        this.notiRepo.sendDelayedMessageToUser(newOwnerName, jssonMessage);
+        this.notifier.sendDelayedMessageToUser(newOwnerName, jssonMessage);
 
     }
 
@@ -303,7 +299,7 @@ public class StoreService {
         String jssonMessage = convertNotificationToJson(message, nameNew, NotificationDTO.NotificationType.OFFER, false,
                 owner, storeId);
         suConnectionRepo.makeOffer(storeId, ownerId, managerId, false, authorization, message);
-        this.notiRepo.sendDelayedMessageToUser(nameNew, jssonMessage);
+        this.notifier.sendDelayedMessageToUser(nameNew, jssonMessage);
 
     }
 
@@ -358,8 +354,7 @@ public class StoreService {
     public List<OrderDTO> veiwStoreHistory(int storeId) throws Exception {
         return this.orderRepo.getAllOrderByStore(storeId);
     }
-    */
-
+     */
     public void rankStore(String token, int storeId, int newRank) throws Exception {
         logger.info("about to rank store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -397,7 +392,7 @@ public class StoreService {
         for (int userId : toNotify) {
             String userName = this.userRepo.findById(userId).get().getUsername();
             String message = String.format("The store: %s is deactivated ✅", storeName);
-            this.notiRepo.sendDelayedMessageToUser(userName, message);
+            this.notifier.sendDelayedMessageToUser(userName, message);
         }
         return storeId;
     }
@@ -422,7 +417,7 @@ public class StoreService {
             String message = String.format("The store: %s has been closed, you are no longer an employee there.",
                     storeName);
 
-            this.notiRepo.sendDelayedMessageToUser(userName, message);
+            this.notifier.sendDelayedMessageToUser(userName, message);
         }
 
         return storeId;
@@ -599,7 +594,6 @@ public class StoreService {
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
-        
 
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);
