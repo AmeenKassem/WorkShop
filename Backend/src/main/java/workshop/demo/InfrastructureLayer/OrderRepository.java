@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
+/* 
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -105,3 +105,4 @@ public class OrderRepository implements IOrderRepo {
         history.putIfAbsent(storeId, new ArrayList<>());
     }
 }
+*/

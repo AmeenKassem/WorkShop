@@ -18,9 +18,10 @@ import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Order.IOrderRepo;
+import workshop.demo.DomainLayer.Order.IOrderRepoDB;
 import workshop.demo.DomainLayer.Store.IStoreRepo;
 import workshop.demo.DomainLayer.Store.IStoreRepoDB;
+
 
 @RestController
 @RequestMapping("/api/history")
@@ -28,8 +29,8 @@ public class HistoryController {
 
     private final OrderService orderService;
 
-    public HistoryController(IOrderRepo orderRepo, IStoreRepo storeRepo, IAuthRepo auth, UserJpaRepository userRepo, IStoreRepoDB storeJpaRepo) {
-        this.orderService = new OrderService( orderRepo,  storeRepo,  auth,  userRepo, storeJpaRepo);
+    public HistoryController(IOrderRepoDB orderJpaRepo, IStoreRepo storeRepo, IAuthRepo auth, UserJpaRepository userRepo, IStoreRepoDB storeJpaRepo) {
+        this.orderService = new OrderService( orderJpaRepo,  storeRepo,  auth,  userRepo, storeJpaRepo);
     }
 
     @GetMapping("/getreceipts")

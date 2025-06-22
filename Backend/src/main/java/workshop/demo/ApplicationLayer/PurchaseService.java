@@ -35,7 +35,8 @@ import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Order.IOrderRepo;
+import workshop.demo.DomainLayer.Order.IOrderRepoDB;
+import workshop.demo.DomainLayer.Order.Order;
 import workshop.demo.DomainLayer.Purchase.IPaymentService;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.ISupplyService;
@@ -67,9 +68,9 @@ public class PurchaseService {
     private final IAuthRepo authRepo;
     private final IStockRepo stockRepo;
     private final IStoreRepo storeRepo;
+    private final IOrderRepoDB orderJpaRepo;
     // private final IUserRepo userRepo;
     private final IPurchaseRepo purchaseRepo;
-    private IOrderRepo orderRepo;
     private final IPaymentService paymentService;
     private final ISupplyService supplyService;
     private UserSuspensionJpaRepository suspensionJpaRepo;
@@ -83,7 +84,7 @@ public class PurchaseService {
 
     @Autowired
     public PurchaseService(IAuthRepo authRepo, IStockRepo stockRepo, IStoreRepo storeRepo,
-            IPurchaseRepo purchaseRepo, IOrderRepo orderRepo, IPaymentService paymentService,
+            IPurchaseRepo purchaseRepo, IOrderRepoDB orderJpaRepo, IPaymentService paymentService,
             ISupplyService supplyService, UserSuspensionJpaRepository usersuspentionjpa, UserJpaRepository regsRepo,
             GuestJpaRepository guestRepo, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStockRepo) {
         this.authRepo = authRepo;
@@ -91,7 +92,7 @@ public class PurchaseService {
         this.storeRepo = storeRepo;
         // this.userRepo = userRepo;
         this.purchaseRepo = purchaseRepo;
-        this.orderRepo = orderRepo;
+        this.orderJpaRepo = orderJpaRepo;
         this.paymentService = paymentService;
         this.supplyService = supplyService;
         this.suspensionJpaRepo = usersuspentionjpa;
@@ -387,7 +388,11 @@ public class PurchaseService {
             // changed this to do price*qunatity instead of just price itself
             ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, total);
             receipts.add(receipt);
-            orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
+            //orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
+            Order order = new Order(userId, receipt, storeName);
+            orderJpaRepo.save(order);
+
+
             logger.info("Saved receipt for storeId={}, total={}", storeId, total);
 
         }
@@ -414,7 +419,9 @@ public class PurchaseService {
             // changed this to do price*qunatity instead of just price itself
             ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, discountedTotal);
             receipts.add(receipt);
-            orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
+            //orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
+            Order order = new Order(userId, receipt, storeName);
+            orderJpaRepo.save(order);
             logger.info("Saved receipt for storeId={}, total={}", storeId, total);
 
         }
