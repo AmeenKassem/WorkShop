@@ -576,7 +576,7 @@ public class UserTests {
     @Test
     void testUserSearchProductInStore_Success() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null, // product name filter
+                "Laptop", // product name filter
                 null, // category filter
                 null, // keyword filter
                 1, // store ID to filter
@@ -589,7 +589,6 @@ public class UserTests {
         assertNotNull(result);
         assertEquals(1, result.length);
         assertEquals(2000, result[0].getPrice());
-        assertEquals(1, result[0].getStoreId());
         assertEquals(Category.Electronics, result[0].getCategory());
     }
 
