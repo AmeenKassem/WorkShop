@@ -10,6 +10,7 @@ import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -187,6 +188,9 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         TextField name = new TextField("Product Name");
         TextField description = new TextField("Description");
         //keyword:
+        TextField keyword = new TextField("Keyword");
+        keyword.setPlaceholder("e.g. summer, electronics, sport...");
+        Label keywordHelp = new Label("Enter a keyword that best describes the product (required)");
 
         ComboBox<Category> category = new ComboBox<>("Category");
         category.setItems(Category.values());
@@ -195,7 +199,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
         // Add button
         Button add = new Button("Add to Store", e -> {
-            if (name.isEmpty() || description.isEmpty() || category.isEmpty()
+            if (name.isEmpty() || description.isEmpty() || keyword.isEmpty() || category.isEmpty()
                     || price.isEmpty() || quantity.isEmpty()) {
                 NotificationView.showInfo("Please fill in all fields");
                 return;
@@ -206,6 +210,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                     token,
                     name.getValue(),
                     description.getValue(),
+                    keyword.getValue(),
                     category.getValue(),
                     price.getValue(),
                     quantity.getValue(),
@@ -213,7 +218,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             );
         });
 
-        VerticalLayout layout = new VerticalLayout(name, description, category, price, quantity, add);
+        VerticalLayout layout = new VerticalLayout(name, description, keyword, category, price, quantity, add);
         dialog.add(layout);
         dialog.open();
     }

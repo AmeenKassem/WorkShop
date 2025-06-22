@@ -9,8 +9,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,7 +39,7 @@ public class ManageStoreProductsPresenter {
         //loads the products in this store:
         try {
             System.out.println("Fetching products for storeId: " + storeId);
-            String url = Base.url+"/stock/getProductsInStore?storeId=" + storeId;
+            String url = Base.url + "/stock/getProductsInStore?storeId=" + storeId;
             ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);
             ApiResponse body = response.getBody();
 
@@ -70,7 +70,7 @@ public class ManageStoreProductsPresenter {
     private ProductDTO fetchProductDetails(String token, int productId) {
 
         try {
-            String url = Base.url+"/stock/getProductInfo?token="
+            String url = Base.url + "/stock/getProductInfo?token="
                     + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
                     + "&productId=" + productId;
 
@@ -88,15 +88,15 @@ public class ManageStoreProductsPresenter {
         return new ProductDTO(productId, "(unknown)", null, "(no description)");
     }
 
-    public void addProductToStore(int storeId, String token, String name, String desc,
+    public void addProductToStore(int storeId, String token, String name, String desc, String keyword,
             Category category, String price,
             String quantity, Dialog dialog) {
 
         try {
-            String keywords = generateKeywordsFrom(name, desc);
+            String[] keywords = generateKeywordsFrom(name, desc, keyword);
             int productId = getOrCreateProductId(token, name, desc, category, keywords);
 
-            String addItemUrl = Base.url+"/stock/addItem?storeId=" + storeId
+            String addItemUrl = Base.url + "/stock/addItem?storeId=" + storeId
                     + "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
                     + "&productId=" + productId
                     + "&quantity=" + UriUtils.encodeQueryParam(quantity, StandardCharsets.UTF_8)
@@ -113,8 +113,8 @@ public class ManageStoreProductsPresenter {
         }
     }
 
-    private int getOrCreateProductId(String token, String name, String desc, Category category, String keywords) throws Exception {
-        String getAllUrl = Base.url+"/stock//getAllProducts?token="
+    private int getOrCreateProductId(String token, String name, String desc, Category category, String[] keywords) throws Exception {
+        String getAllUrl = Base.url + "/stock//getAllProducts?token="
                 + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8);
         ResponseEntity<ApiResponse> response = restTemplate.getForEntity(getAllUrl, ApiResponse.class);
         ProductDTO[] products = mapper.convertValue(response.getBody().getData(), ProductDTO[].class);
@@ -123,19 +123,27 @@ public class ManageStoreProductsPresenter {
                 return product.getProductId();
             }
         }
-        String addUrl = Base.url+"/stock/addProduct?token="
-                + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
-                + "&name=" + UriUtils.encodeQueryParam(name, StandardCharsets.UTF_8)
-                + "&description=" + UriUtils.encodeQueryParam(desc, StandardCharsets.UTF_8)
-                + "&category=" + category
-                + "&keywords=" + UriUtils.encodeQueryParam(keywords, StandardCharsets.UTF_8);
-        ResponseEntity<ApiResponse> addResponse = restTemplate.postForEntity(addUrl, null, ApiResponse.class);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(Base.url + "/stock/addProduct")
+                .queryParam("token", token)
+                .queryParam("name", name)
+                .queryParam("description", desc)
+                .queryParam("category", category);
+
+        for (String k : keywords) {
+            builder.queryParam("keywords", k);
+        }
+
+        ResponseEntity<ApiResponse> addResponse = restTemplate.postForEntity(
+                builder.toUriString(),
+                null,
+                ApiResponse.class
+        );
         return mapper.convertValue(addResponse.getBody().getData(), Integer.class);
     }
 
     public void deleteProduct(int storeId, String token, int productId) {
         try {
-            String url = Base.url+"/stock/removeItem?storeId=" + storeId
+            String url = Base.url + "/stock/removeItem?storeId=" + storeId
                     + "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
                     + "&productId=" + productId;
 
@@ -152,7 +160,7 @@ public class ManageStoreProductsPresenter {
         try {
             if (!quantity.isEmpty()) {
 
-                String quantityUrl = Base.url+"/stock/updateQuantity?storeId=" + storeId
+                String quantityUrl = Base.url + "/stock/updateQuantity?storeId=" + storeId
                         + "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
                         + "&productId=" + productId
                         + "&newQuantity=" + UriUtils.encodeQueryParam(quantity, StandardCharsets.UTF_8);
@@ -160,7 +168,7 @@ public class ManageStoreProductsPresenter {
             }
 
             if (!price.isEmpty()) {
-                String priceUrl = Base.url+"/stock/updatePrice?storeId=" + storeId
+                String priceUrl = Base.url + "/stock/updatePrice?storeId=" + storeId
                         + "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
                         + "&productId=" + productId
                         + "&newPrice=" + UriUtils.encodeQueryParam(price, StandardCharsets.UTF_8);
@@ -179,13 +187,13 @@ public class ManageStoreProductsPresenter {
         //load all the products in the sytem except the products in the store:
         try {
             // Get all products in the system
-            String allUrl = Base.url+"/stock/getAllProducts?token="
+            String allUrl = Base.url + "/stock/getAllProducts?token="
                     + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8);
             ResponseEntity<ApiResponse> allResponse = restTemplate.getForEntity(allUrl, ApiResponse.class);
             ProductDTO[] allProducts = mapper.convertValue(allResponse.getBody().getData(), ProductDTO[].class);
 
             // Get products already in this store
-            String inStoreUrl = Base.url+"/stock/getProductsInStore?storeId=" + storeId;
+            String inStoreUrl = Base.url + "/stock/getProductsInStore?storeId=" + storeId;
             ResponseEntity<ApiResponse> storeResponse = restTemplate.getForEntity(inStoreUrl, ApiResponse.class);
             ItemStoreDTO[] storeItems = mapper.convertValue(storeResponse.getBody().getData(), ItemStoreDTO[].class);
 
@@ -206,7 +214,7 @@ public class ManageStoreProductsPresenter {
 
     public void addExistingProductAsItem(int storeId, String token, ProductDTO product, String price, String quantity, Dialog dialog) {
         try {
-            String addItemUrl = Base.url+"/stock/addItem"
+            String addItemUrl = Base.url + "/stock/addItem"
                     + "?storeId=" + storeId
                     + "&token=" + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
                     + "&productId=" + product.getProductId()
@@ -225,7 +233,7 @@ public class ManageStoreProductsPresenter {
 
     public void setProductToAuction(int storeId, String token, int productId, int quantity, long time, double startPrice) {
         String url = String.format(
-                Base.url+"/stock/setProductToAuction?token=%s&storeId=%d&productId=%d&quantity=%d&time=%d&startPrice=%.2f",
+                Base.url + "/stock/setProductToAuction?token=%s&storeId=%d&productId=%d&quantity=%d&time=%d&startPrice=%.2f",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                 storeId, productId, quantity, time, startPrice
         );
@@ -241,7 +249,7 @@ public class ManageStoreProductsPresenter {
     public void setProductToBid(int storeId, String token, int productId, int quantity) {
         try {
             String url = String.format(
-                    Base.url+"/stock/setProductToBid?token=%s&storeId=%d&productId=%d&quantity=%d",
+                    Base.url + "/stock/setProductToBid?token=%s&storeId=%d&productId=%d&quantity=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     storeId, productId, quantity
             );
@@ -256,7 +264,7 @@ public class ManageStoreProductsPresenter {
     public void setProductToRandom(int storeId, String token, int productId, int quantity, double productPrice, long randomTime) {
         try {
             String url = String.format(
-                    Base.url+"/stock/setProductToRandom?token=%s&productId=%d&quantity=%d&productPrice=%.2f&storeId=%d&randomTime=%d",
+                    Base.url + "/stock/setProductToRandom?token=%s&productId=%d&quantity=%d&productPrice=%.2f&storeId=%d&randomTime=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     productId, quantity, productPrice, storeId, randomTime
             );
@@ -268,12 +276,12 @@ public class ManageStoreProductsPresenter {
         }
     }
 
-    private String generateKeywordsFrom(String name, String desc) {
-        return java.util.Arrays.stream((name + " " + desc).toLowerCase().split(" "))
-                .map(w -> w.replaceAll("[^a-z0-9]", ""))
-                .filter(w -> w.length() > 2)
+    private String[] generateKeywordsFrom(String name, String desc, String keyword) {
+        return java.util.Arrays.stream((name + " " + desc + " " + keyword).toLowerCase().split("\\s+"))
+                .map(w -> w.replaceAll("[^a-z0-9]", "")) // Keep only alphanumeric
+                .filter(w -> w.length() > 2) // Min length 3 -> removing is, it, a...
                 .distinct()
-                .collect(java.util.stream.Collectors.joining(","));
+                .toArray(String[]::new);
     }
 
 }
