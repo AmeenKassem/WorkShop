@@ -100,7 +100,7 @@ public class StockService {
         }else if(criteria.nameSearch()){
             products = stockJpaRepo.findByNameContainingIgnoreCase(criteria.getName());
         }else {
-            throw new UIException("++",ErrorCodes.AI_NOT_WORK);
+            throw new UIException("the ai search api is not running !!",ErrorCodes.AI_NOT_WORK);
         }
         logger.info("Returning matched items to client ");
         List<ItemStoreDTO> res=new ArrayList<>() ;
@@ -439,11 +439,7 @@ public class StockService {
         return res;
     }
 
-    private StoreStock newStock(int storeId) {
-        StoreStock stock = new StoreStock(storeId);
-        storeStockRepo.save(stock);
-        return stock;
-    }
+
 
     public int addItem(int storeId, String token, int productId, int quantity, int price, Category category)
             throws Exception, DevException {
@@ -489,9 +485,11 @@ public class StockService {
         }
         Product product = new Product(name, category, description, keywords);
         product = stockJpaRepo.save(product);
+        aiSearch.trainProduct(name,keywords);
         logger.info("Product added successfully: {} with id ={}", name, product.getProductId());
         return product.getProductId();
     }
+
 
     public int removeItem(int storeId, String token, int productId) throws Exception, DevException {
         logger.info("User attempting to remove item {} from store {}", productId, storeId);

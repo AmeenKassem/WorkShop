@@ -16,7 +16,7 @@ window.initNotificationSocket = function(username, baseWebSocketUrl) {
         // Make sure to use the correct WebSocket URL
         const socket = new WebSocket(`${baseWebSocketUrl}/notifications?username=${encodeURIComponent(username)}`);
         window.notificationSocket = socket;
-        
+        console.log(baseWebSocketUrl);
         socket.onopen = function() {
             console.log("🟢 WebSocket connection established for user: " + username);
         };

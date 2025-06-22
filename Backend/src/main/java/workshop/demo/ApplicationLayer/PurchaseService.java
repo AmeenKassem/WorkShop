@@ -181,6 +181,7 @@ public class PurchaseService {
             storeToProducts.put(storeId, Pair.of(boughtItems, totalForStore));
         }
         if (!paymentService.processPayment(payment, finalTotal) || !supplyService.processSupply(supply)) {
+            logger.info("payment failed!!");
             throw new UIException("payment not successeded!!!", ErrorCodes.PAYMENT_ERROR);
         }
         storeStockRepo.flush();

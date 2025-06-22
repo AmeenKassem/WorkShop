@@ -5,16 +5,26 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale.Category;
+import java.util.Map;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.stereotype.Repository;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Repository
 public class AISearch {
@@ -89,14 +99,53 @@ public class AISearch {
 
     public static void main(String[] args) {
         AISearch a = new AISearch();
-        List<Integer> res= a.getSameProduct("bsle", -1, 0.35);
-        for (Integer i : res) {
-            System.err.println(i);
-        }
+        a.trainProduct("bsle",new String[]{"cheetos","btata"});
+        new Thread(new Runnable(){
+
+            @Override
+            public void run() {
+                // TODO Auto-generated method stub
+                a.trainProduct("bsle",new String[]{"cheetos","btata"});
+                
+            }
+
+        }).start();
+        
+
     }
 
     public boolean isActive() {
         // TODO Auto-generated method stub
         return true;
+    }
+
+    private static final HttpClient client = HttpClient.newHttpClient();
+    private static final ObjectMapper mapper = new ObjectMapper(); // From Jackson
+
+    public void trainProduct(String name, String[] keywords) {
+        try {
+            // Prepare JSON payload
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("string1", name);
+            payload.put("string2_list", Arrays.asList(keywords));
+            payload.put("same", 1); // or 0 depending on logic
+
+            String json = mapper.writeValueAsString(payload);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://localhost:5000/addPairs")) // Replace with your Flask server address
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+
+            // Send the request
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            System.out.println("Response Code: " + response.statusCode());
+            System.out.println("Response Body: " + response.body());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

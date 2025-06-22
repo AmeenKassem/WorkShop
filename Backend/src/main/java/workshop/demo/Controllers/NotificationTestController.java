@@ -22,7 +22,7 @@ public class NotificationTestController {
         System.out.println("request received");
         try{ 
             
-            notificationService.sendDMessageToUser(username, message);
+            notificationService.sendDelayedMessageToUser(username, message);
             return ResponseEntity.ok("Notification sent to " + username);
 
         } catch (Exception e) {

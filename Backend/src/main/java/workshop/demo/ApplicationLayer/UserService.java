@@ -40,30 +40,36 @@ public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     // private IUserRepo userRepo;
+    @Autowired
     private IAuthRepo authRepo;
+    @Autowired
     private IStockRepo stockRepo;
+    @Autowired
     private IStoreRepoDB storeRepo;
-    private final AdminInitilizer adminInitilizer;
+    @Autowired
+    private AdminInitilizer adminInitilizer;
     // private final AdminHandler adminHandler;
-    // @Autowired
+    @Autowired
     private Encoder encoder = new Encoder();
 
+    @Autowired
     private UserJpaRepository regJpaRepo;
+    @Autowired
     private GuestJpaRepository guestJpaRepository;
 
-    @Autowired
-    public UserService(UserJpaRepository regJpaRepo, IAuthRepo authRepo, IStockRepo stockRepo,
-            AdminInitilizer adminInitilizer,
-            GuestJpaRepository guestRepo, IStoreRepoDB storeRepo) {
-        // this.userRepo = userRepo;
-        this.authRepo = authRepo;
-        this.stockRepo = stockRepo;
-        this.storeRepo = storeRepo;
-        this.adminInitilizer = adminInitilizer;
-        // this.adminHandler = adminHandler;
-        this.regJpaRepo = regJpaRepo;
-        this.guestJpaRepository = guestRepo;
-    }
+    // @Autowired
+    // public UserService(UserJpaRepository regJpaRepo, IAuthRepo authRepo, IStockRepo stockRepo,
+    //         AdminInitilizer adminInitilizer,
+    //         GuestJpaRepository guestRepo, IStoreRepoDB storeRepo) {
+    //     // this.userRepo = userRepo;
+    //     this.authRepo = authRepo;
+    //     this.stockRepo = stockRepo;
+    //     this.storeRepo = storeRepo;
+    //     this.adminInitilizer = adminInitilizer;
+    //     // this.adminHandler = adminHandler;
+    //     this.regJpaRepo = regJpaRepo;
+    //     this.guestJpaRepository = guestRepo;
+    // }
 
     public String generateGuest() throws UIException, Exception {
         logger.info("generateGuest called");

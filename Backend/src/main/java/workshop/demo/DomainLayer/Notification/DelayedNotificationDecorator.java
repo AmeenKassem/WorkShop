@@ -18,14 +18,14 @@ public class DelayedNotificationDecorator {
     private static final Logger logger = LoggerFactory.getLogger(DelayedNotificationDecorator.class);
 
     private BaseNotifier notifier;
-    // private Map<String, List<String>> delayedMessages;
-    @Autowired
-    private DelayedNotificationRepository notificationRepo;
+    // // private Map<String, List<String>> delayedMessages;
+    // @Autowired
+    // private DelayedNotificationRepository notificationRepo;
 
     @Autowired
     public DelayedNotificationDecorator(BaseNotifier notifier) {
         this.notifier = notifier;
-        //delayedMessages = new ConcurrentHashMap<>();
+        //delayedMessages = new ConcusrrentHashMap<>();
     }
 
     public void sendDelayedMessageToUser(String username, String message) {
@@ -34,7 +34,7 @@ public class DelayedNotificationDecorator {
         if (notifier.isUserOnline(username)) {
             notifier.send(username, message); // Send immediately if online
         } else {
-            notificationRepo.save(new DelayedNotification(username, message));
+            // notificationRepo.save(new DelayedNotification(username, message));
         }
         //  if (delayedMessages.containsKey(username)) {
         //     delayedMessages.get(username).add(message);
@@ -45,13 +45,13 @@ public class DelayedNotificationDecorator {
     }
 
     public String[] getDelayedMessages(String username) {
-        List<DelayedNotification> messages = notificationRepo.findByUsername(username);
+        List<DelayedNotification> messages = new ArrayList<>();
         if (messages.isEmpty()) {
             return null;
         }
 
         // Delete after loading
-        notificationRepo.deleteByUsername(username);
+        // notificationRepo.deleteByUsername(username);
 
         return messages.stream().map(DelayedNotification::getMessage).toArray(String[]::new);
     }

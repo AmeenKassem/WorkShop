@@ -10,6 +10,7 @@ import workshop.demo.DomainLayer.Notification.RealTimeNotificationDecorator;
 @Repository
 public class NotificationRepository implements INotificationRepo {
 
+    
     private final RealTimeNotificationDecorator realTimeNotificationDecorator;
     private final DelayedNotificationDecorator delayedNotificationDecorator;
 

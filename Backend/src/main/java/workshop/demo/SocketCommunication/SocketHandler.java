@@ -81,6 +81,7 @@ public class SocketHandler extends TextWebSocketHandler {
 	}
 
     public boolean hasUserSession(String username) {
+		System.err.println(sessions.get(username) != null);
 		return sessions.get(username) != null;
     }
 }

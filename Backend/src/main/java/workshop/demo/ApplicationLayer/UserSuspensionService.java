@@ -26,20 +26,27 @@ import workshop.demo.DataAccessLayer.UserJpaRepository;
 
 @Service
 public class UserSuspensionService {
-    private final UserJpaRepository userRepo;
-    private final IAuthRepo authRepo;
+    @Autowired
+    private UserJpaRepository userRepo;
+    @Autowired
+    private IAuthRepo authRepo;
     @Autowired
     private UserSuspensionJpaRepository suspensionJpaRepo;
+
+    @Autowired
+    private NotificationService notifier;
+
     private static final Logger logger = LoggerFactory.getLogger(UserSuspensionService.class);
     private final ConcurrentHashMap<Integer, Object> userLocks = new ConcurrentHashMap<>();
 
-    @Autowired
-    public UserSuspensionService(UserSuspensionJpaRepository userSuspensionJpaRepository, UserJpaRepository userRepo,
-            IAuthRepo authRepo) {
-        this.suspensionJpaRepo = userSuspensionJpaRepository;
-        this.userRepo = userRepo;
-        this.authRepo = authRepo;
-    }
+    // @Autowired
+    // public UserSuspensionService(UserSuspensionJpaRepository
+    // userSuspensionJpaRepository, UserJpaRepository userRepo,
+    // IAuthRepo authRepo) {
+    // this.suspensionJpaRepo = userSuspensionJpaRepository;
+    // this.userRepo = userRepo;
+    // this.authRepo = authRepo;
+    // }
 
     public boolean isUserSuspended(int userId) {
         return suspensionJpaRepo.findById(userId)
@@ -51,6 +58,7 @@ public class UserSuspensionService {
         System.out.println(
                 "Calling suspendRegisteredUser: userId=" + userId + ", minutes=" + minutes + ", token=" + adminToken);
         validateAdmin(adminToken);
+        Registered user = userRepo.findById(userId).orElse(null);
 
         Object lock = userLocks.computeIfAbsent(userId, k -> new Object());
         synchronized (lock) {
@@ -59,6 +67,7 @@ public class UserSuspensionService {
             }
             UserSuspension suspension = new UserSuspension(userId, minutes);
             suspensionJpaRepo.save(suspension);
+            notifier.sendDelayedMessageToUser(user.getUsername(), "You have been suspended :(");
             logger.info("User " + userId + " suspended for " + minutes + " minutes.");
         }
     }
@@ -117,7 +126,6 @@ public class UserSuspensionService {
         logger.info("Suspension for " + userId + " resumed.");
     }
 
-
     public void cancelSuspension(Integer userId, String adminToken) throws UIException {
         System.out.println("Calling cancelSuspension: userId=" + userId + ", token=" + adminToken);
         validateAdmin(adminToken);
@@ -126,7 +134,6 @@ public class UserSuspensionService {
         suspensionJpaRepo.delete(suspension);
         logger.info("Suspension for " + userId + " cancelled.");
     }
-
 
     public LocalDateTime getSuspensionEndTimeIfAny(String token) throws UIException {
         int userId = authRepo.getUserId(token);

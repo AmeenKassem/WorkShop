@@ -45,25 +45,30 @@ import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserService userService;
-    private final UserSuspensionService userSuspensionService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private UserSuspensionService userSuspensionService;
     // private final AdminHandler adminHandler;
 
-    @Autowired
-    public UserController(
-            IStoreRepoDB storeRepo,
-            IOrderRepo orderRepo,
-            IAuthRepo auth,                      // the JWT token provider
-            IStockRepo stockrepo,
-            AdminInitilizer adminInitializer,
-            UserSuspensionJpaRepository userSuspensionJpaRepository,
-            UserJpaRepository regRepo,
-            GuestJpaRepository guest, UserJpaRepository userRepo
-    ) throws Exception {
-        // this.adminHandler = new AdminHandler(orderRepo, storeRepo, userRepo, auth);
-        this.userSuspensionService = new UserSuspensionService(userSuspensionJpaRepository, userRepo, auth);
-        this.userService = new UserService(regRepo,auth, stockrepo, adminInitializer,guest,storeRepo);
-    }
+    // @Autowired
+    // public UserController(
+    // IStoreRepoDB storeRepo,
+    // IOrderRepo orderRepo,
+    // IAuthRepo auth, // the JWT token provider
+    // IStockRepo stockrepo,
+    // AdminInitilizer adminInitializer,
+    // UserSuspensionJpaRepository userSuspensionJpaRepository,
+    // UserJpaRepository regRepo,
+    // GuestJpaRepository guest, UserJpaRepository userRepo
+    // ) throws Exception {
+    // // this.adminHandler = new AdminHandler(orderRepo, storeRepo, userRepo,
+    // auth);
+    // // this.userSuspensionService = new
+    // UserSuspensionService(userSuspensionJpaRepository, userRepo, auth);
+    // // this.userService = new UserService(regRepo,auth, stockrepo,
+    // adminInitializer,guest,storeRepo);
+    // }
     // @ModelAttribute
     // public void beforeEveryRequest(HttpServletRequest request) {
     // System.out.println("must check if the system get published by admin ...");
@@ -201,7 +206,7 @@ public class UserController {
         try {
             boolean result = userService.ModifyCartAddQToBuy(token, productId, quantity);
             res = new ApiResponse<>(result, null);
-            //System.out.println("ModifyCart result: " + result);
+            // System.out.println("ModifyCart result: " + result);
             return ResponseEntity.ok(res);
         } catch (UIException ex) {
             res = new ApiResponse<>(null, ex.getMessage(), ex.getNumber());
@@ -405,7 +410,7 @@ public class UserController {
 
     @PostMapping("/cancelSuspension")
     public ResponseEntity<ApiResponse<Boolean>> cancelSuspension(@RequestParam Integer userId,
-                                                                @RequestParam String token) {
+            @RequestParam String token) {
         ApiResponse<Boolean> res;
         try {
             userSuspensionService.cancelSuspension(userId, token);
@@ -420,7 +425,7 @@ public class UserController {
         }
     }
 
-   @GetMapping("/viewSuspensions")
+    @GetMapping("/viewSuspensions")
     public ResponseEntity<?> viewSuspensions(@RequestParam String token) {
         try {
             List<UserSuspensionDTO> suspensions = userSuspensionService.viewAllSuspensions(token);
@@ -435,30 +440,32 @@ public class UserController {
 
     // // Additional admin methods can be added here...
     // @GetMapping("/purchaseHistory")
-    // public ResponseEntity<List<PurchaseHistoryDTO>> getSystemPurchaseHistory(@RequestParam String token) {
-    //     try {
-    //         List<PurchaseHistoryDTO> history = adminHandler.viewPurchaseHistory(token);
-    //         return ResponseEntity.ok(history);
-    //     } catch (UIException ex) {
-    //         // Return an error response if token is invalid or user is not admin
-    //         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-    //                 .body(null);
-    //     } catch (Exception ex) {
-    //         // Handle other exceptions as needed
-    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-    //     }
+    // public ResponseEntity<List<PurchaseHistoryDTO>>
+    // getSystemPurchaseHistory(@RequestParam String token) {
+    // try {
+    // List<PurchaseHistoryDTO> history = adminHandler.viewPurchaseHistory(token);
+    // return ResponseEntity.ok(history);
+    // } catch (UIException ex) {
+    // // Return an error response if token is invalid or user is not admin
+    // return ResponseEntity.status(HttpStatus.FORBIDDEN)
+    // .body(null);
+    // } catch (Exception ex) {
+    // // Handle other exceptions as needed
+    // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    // }
     // }
 
     // @GetMapping("/analytics")
-    // public ResponseEntity<SystemAnalyticsDTO> getSystemAnalytics(@RequestParam String token) {
-    //     try {
-    //         SystemAnalyticsDTO analytics = adminHandler.getSystemAnalytics(token);
-    //         return ResponseEntity.ok(analytics);
-    //     } catch (UIException ex) {
-    //         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-    //     } catch (Exception ex) {
-    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-    //     }
+    // public ResponseEntity<SystemAnalyticsDTO> getSystemAnalytics(@RequestParam
+    // String token) {
+    // try {
+    // SystemAnalyticsDTO analytics = adminHandler.getSystemAnalytics(token);
+    // return ResponseEntity.ok(analytics);
+    // } catch (UIException ex) {
+    // return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+    // } catch (Exception ex) {
+    // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    // }
     // }
 
     @GetMapping("/getAllUsers")
