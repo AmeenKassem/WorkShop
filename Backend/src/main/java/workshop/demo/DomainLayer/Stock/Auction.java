@@ -8,6 +8,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.security.access.method.P;
 
+import com.github.javaparser.ast.Generated;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.AuctionStatus;
 import workshop.demo.DTOs.SingleBidDTO;
@@ -15,16 +22,20 @@ import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
+@Entity
 public class Auction {
 
     private int productId;
     private int quantity;
     private AuctionStatus status;
     private Timer timer;
+    @Id
     private int auctionId;
-    private List<SingleBid> bids;
+
+    @OneToOne(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<UserAuctionBid> bids;
     private double maxBid;
-    private SingleBid winner;
+    private UserAuctionBid winner;
     private int storeId;
     private AtomicInteger idGen = new AtomicInteger();
     private final Object lock = new Object();
@@ -40,29 +51,29 @@ public class Auction {
         this.status = AuctionStatus.IN_PROGRESS;
         this.endTimeMillis = System.currentTimeMillis() + time;
         maxBid = min;
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                for (SingleBid singleBid : bids) {
-                    if (maxBid == singleBid.getBidPrice()) {
-                        winner = singleBid;
-                        winner.markAsWinner();
-                    } else {
-                        singleBid.markAsLosed();
-                    }
-                }
-                status = AuctionStatus.FINISH;
-            }
-        }, time);
+        // timer.schedule(new TimerTask() {
+        //     @Override
+        //     public void run() {
+        //         for (UserAuctionBid UserAuctionBid : bids) {
+        //             if (maxBid == UserAuctionBid.getBidPrice()) {
+        //                 winner = UserAuctionBid;
+        //                 winner.markAsWinner();
+        //             } else {
+        //                 UserAuctionBid.markAsLosed();
+        //             }
+        //         }
+        //         status = AuctionStatus.FINISH;
+        //     }
+        // }, time);
     }
 
     public void endAuction() {
-        for (SingleBid singleBid : bids) {
-            if (maxBid == singleBid.getBidPrice()) {
-                winner = singleBid;
-                winner.markAsWinner();
+        for (UserAuctionBid UserAuctionBid : bids) {
+            if (maxBid == UserAuctionBid.getBidPrice()) {
+                winner = UserAuctionBid;
+                winner.finishAuction();
             } else {
-                singleBid.markAsLosed();
+                UserAuctionBid.finishAuction();
             }
         }
         status = AuctionStatus.FINISH;
@@ -73,7 +84,7 @@ public class Auction {
     }
 
     
-    public SingleBid bid(int userId, double price) throws UIException {
+    public UserAuctionBid bid(int userId, double price) throws UIException {
         synchronized (lock) {
             if (status == AuctionStatus.FINISH) {
                 throw new UIException("This auction has ended!", ErrorCodes.AUCTION_FINISHED);
@@ -84,12 +95,12 @@ public class Auction {
 
             maxBid = price;
 
-            SingleBid bid = new SingleBid(productId, quantity, userId, price, SpecialType.Auction, storeId,
-                    idGen.incrementAndGet(), auctionId);
+            // UserAuctionBid bid = new UserAuctionBid(productId, quantity, userId, price, SpecialType.Auction, storeId,
+            //         idGen.incrementAndGet(), auctionId);
 
-            bids.add(bid);
+            // bids.add(bid);
 
-            return bid;
+            return null;
         }
     }
 
@@ -99,7 +110,7 @@ public class Auction {
         res.maxBid = maxBid;
         res.productId = productId;
         res.quantity = quantity;
-        res.winner = winner;
+        res.winner = winner.convertToDTO();
         res.storeId = storeId;
         res.endTimeMillis = this.endTimeMillis;
 
@@ -114,7 +125,7 @@ public class Auction {
         return res;
     }
 
-    public SingleBid getWinner() {
+    public UserAuctionBid getWinner() {
         return winner;
     }
 
@@ -122,10 +133,10 @@ public class Auction {
         return winner != null && winner.getId() == bidId;
     }
 
-    public SingleBid getBid(int bidId) {
-        for (SingleBid singleBid : bids) {
-            if (singleBid.getId() == bidId) {
-                return singleBid;
+    public UserAuctionBid getBid(int bidId) {
+        for (UserAuctionBid UserAuctionBid : bids) {
+            if (UserAuctionBid.getId() == bidId) {
+                return UserAuctionBid;
             }
         }
         return null;
