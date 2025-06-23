@@ -26,34 +26,6 @@ public class StoreController {
     @Autowired
     private StoreService storeService;
 
-    // @Autowired
-    // public StoreController(
-    //         IStoreRepo storeRepo,
-    //         INotificationRepo notificationRepo,
-    //         IAuthRepo authRepo,
-    //         IOrderRepo orderRepo,
-    //         ISUConnectionRepo sUConnectionRepo,
-    //         IStockRepo stockRepo,
-    //         IUserSuspensionRepo userSuspensionRepo,
-    //         UserJpaRepository regJpaRepo,
-    //         AdminInitilizer adminInitilizer, GuestJpaRepository guest, IStoreRepoDB storeJpaRepo,
-    //         IStoreStockRepo storeStock) {
-    //     UserService userService = new UserService(
-    //             regJpaRepo,
-    //             authRepo,
-    //             stockRepo,
-    //             adminInitilizer,
-    //             guest);
-    //     this.storeService = new StoreService(userService,
-    //             storeRepo,
-    //             notificationRepo,
-    //             authRepo,
-    //             regJpaRepo,
-    //             orderRepo,
-    //             sUConnectionRepo,
-    //             stockRepo,
-    //             userSuspensionRepo, storeJpaRepo, storeStock);
-    // }
     @PostMapping("/addStore")
     public ResponseEntity<?> addStore(@RequestParam String token,
             @RequestParam String storeName,

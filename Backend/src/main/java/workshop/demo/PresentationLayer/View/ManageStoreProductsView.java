@@ -10,8 +10,8 @@ import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
@@ -40,7 +40,6 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
     private final ManageStoreDiscountsPresenter discPresenter = new ManageStoreDiscountsPresenter();
     private Map<ItemStoreDTO, ProductDTO> currentProducts = Map.of();
 
-
     public ManageStoreProductsView() {
         this.presenter = new ManageStoreProductsPresenter(this);
         addClassName("manage-products-container");
@@ -61,7 +60,6 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         HorizontalLayout footer = new HorizontalLayout(addProductBtn, manageDiscBtn);
         footer.addClassName("footer-buttons");
         footer.setWidthFull();
-
 
         add(title, errorMessage, productSection, footer);
     }
@@ -189,6 +187,11 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         // Fields
         TextField name = new TextField("Product Name");
         TextField description = new TextField("Description");
+        //keyword:
+        TextField keyword = new TextField("Keyword");
+        keyword.setPlaceholder("e.g. summer, electronics, sport...");
+        Label keywordHelp = new Label("Enter a keyword that best describes the product (required)");
+
         ComboBox<Category> category = new ComboBox<>("Category");
         category.setItems(Category.values());
         TextField price = new TextField("Price");
@@ -196,7 +199,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
         // Add button
         Button add = new Button("Add to Store", e -> {
-            if (name.isEmpty() || description.isEmpty() || category.isEmpty()
+            if (name.isEmpty() || description.isEmpty() || keyword.isEmpty() || category.isEmpty()
                     || price.isEmpty() || quantity.isEmpty()) {
                 NotificationView.showInfo("Please fill in all fields");
                 return;
@@ -207,6 +210,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                     token,
                     name.getValue(),
                     description.getValue(),
+                    keyword.getValue(),
                     category.getValue(),
                     price.getValue(),
                     quantity.getValue(),
@@ -214,7 +218,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             );
         });
 
-        VerticalLayout layout = new VerticalLayout(name, description, category, price, quantity, add);
+        VerticalLayout layout = new VerticalLayout(name, description, keyword, category, price, quantity, add);
         dialog.add(layout);
         dialog.open();
     }
@@ -314,16 +318,17 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         dialog.getFooter().add(new HorizontalLayout(confirm, cancel));
         dialog.open();
     }
+
     /* ---------------------------------------------------------
      *  Add / Combine Discounts dialog – revised implementation
      * --------------------------------------------------------- */
-    /* ---------------------------------------------------------
+ /* ---------------------------------------------------------
      *  Add / Combine Discounts dialog – final implementation
      * --------------------------------------------------------- */
-    /* ------------------------------------------------------------------
+ /* ------------------------------------------------------------------
      *  Add / Combine Discounts dialog  –  backend-compatible version
      * ------------------------------------------------------------------ */
-    /* --------------------------------------------------------------
+ /* --------------------------------------------------------------
      *  Add / Combine Discounts dialog – hardened numeric handling
      * -------------------------------------------------------------- */
     private void openDiscountDialog() {
@@ -335,13 +340,15 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         TextField nameField = new TextField("Name");
 
         NumberField percent = new NumberField("Percent (0-100)");
-        percent.setMin(0); percent.setMax(100); percent.setValue(0.0);
+        percent.setMin(0);
+        percent.setMax(100);
+        percent.setValue(0.0);
 
-        ComboBox<String> typeBox  = new ComboBox<>("Type", "VISIBLE", "INVISIBLE");
+        ComboBox<String> typeBox = new ComboBox<>("Type", "VISIBLE", "INVISIBLE");
         typeBox.setValue("VISIBLE");
 
         ComboBox<String> logicBox = new ComboBox<>("Logic",
-                "SINGLE","AND","OR","XOR","MAX","MULTIPLY");
+                "SINGLE", "AND", "OR", "XOR", "MAX", "MULTIPLY");
         logicBox.setValue("SINGLE");
 
         /* ── predicate section ─────────────────────────────────── */
@@ -361,8 +368,14 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
             // operator (always ">")
             if ("TOTAL".equals(p) || "QUANTITY".equals(p)) {
-                opBox.setItems(">"); opBox.setValue(">"); opBox.setEnabled(false);
-            } else { opBox.clear(); opBox.setItems(); opBox.setEnabled(false); }
+                opBox.setItems(">");
+                opBox.setValue(">");
+                opBox.setEnabled(false);
+            } else {
+                opBox.clear();
+                opBox.setItems();
+                opBox.setEnabled(false);
+            }
 
             // value editor
             valueWrapper.removeAll();
@@ -386,28 +399,40 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                     prod.setPageSize(20);
                     valueWrapper.add(prod);
                 }
-                default -> valueWrapper.add(new Span());
+                default ->
+                    valueWrapper.add(new Span());
             }
         };
         predBox.addValueChangeListener(e -> refreshUI.run());
         refreshUI.run();
 
         /* ── sub-discount list / delete unchanged … ───────────────── */
-
         CheckboxGroup<String> subs = new CheckboxGroup<>();
         subs.setLabel("Sub-discounts");
-        try { subs.setItems(discPresenter.fetchDiscountNames(storeId, token)); }
-        catch (Exception ex) { ExceptionHandlers.handleException(ex); }
+        try {
+            subs.setItems(discPresenter.fetchDiscountNames(storeId, token));
+        } catch (Exception ex) {
+            ExceptionHandlers.handleException(ex);
+        }
 
         Button deleteBtn = new Button("🗑 Delete selected", ev -> {
             var toDelete = new ArrayList<>(subs.getSelectedItems());
-            if (toDelete.isEmpty()) { NotificationView.showError("Select a discount first"); return; }
+            if (toDelete.isEmpty()) {
+                NotificationView.showError("Select a discount first");
+                return;
+            }
             toDelete.forEach(name -> {
-                try { discPresenter.deleteDiscount(storeId, token, name); }
-                catch (Exception ex) { ExceptionHandlers.handleException(ex); }
+                try {
+                    discPresenter.deleteDiscount(storeId, token, name);
+                } catch (Exception ex) {
+                    ExceptionHandlers.handleException(ex);
+                }
             });
-            try { subs.setItems(discPresenter.fetchDiscountNames(storeId, token)); }
-            catch (Exception ex) { ExceptionHandlers.handleException(ex); }
+            try {
+                subs.setItems(discPresenter.fetchDiscountNames(storeId, token));
+            } catch (Exception ex) {
+                ExceptionHandlers.handleException(ex);
+            }
         });
 
         /* ── SAVE ───────────────────────────────────────────────── */
@@ -417,11 +442,11 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                 String valuePart = "";
                 if (valueWrapper.getElement().getChildCount() > 0) {
                     Component editor = valueWrapper.getChildren().findFirst().get();
-                    if (editor instanceof ComboBox<?> cb &&
-                            cb.getValue() instanceof ItemStoreDTO dto) {
+                    if (editor instanceof ComboBox<?> cb
+                            && cb.getValue() instanceof ItemStoreDTO dto) {
                         valuePart = String.valueOf(dto.getProductId());  // PRODUCT → id
-                    } else if (editor instanceof HasValue<?,?> hv &&
-                            hv.getValue() != null) {
+                    } else if (editor instanceof HasValue<?, ?> hv
+                            && hv.getValue() != null) {
                         valuePart = hv.getValue().toString();
                     }
                 }
@@ -429,22 +454,30 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                 /* 2 normalize numeric (trim, strip .0) */
                 valuePart = valuePart.trim();
                 String predicate = predBox.getValue();
-                if (("TOTAL".equals(predicate) || "QUANTITY".equals(predicate)) &&
-                        valuePart.isBlank()) {
+                if (("TOTAL".equals(predicate) || "QUANTITY".equals(predicate))
+                        && valuePart.isBlank()) {
                     NotificationView.showError("Enter a numeric value for " + predicate);
                     return;
                 }
-                if (valuePart.endsWith(".0")) valuePart = valuePart.substring(0, valuePart.length() - 2);
+                if (valuePart.endsWith(".0")) {
+                    valuePart = valuePart.substring(0, valuePart.length() - 2);
+                }
 
                 /* 3 build condition */
                 String condition;
                 switch (predicate == null ? "" : predicate) {
-                    case ""         -> condition = "";
-                    case "CATEGORY" -> condition = "CATEGORY:" + valuePart;
-                    case "TOTAL"    -> condition = "TOTAL>"    + valuePart;
-                    case "QUANTITY" -> condition = "QUANTITY>" + valuePart;
-                    case "PRODUCT"  -> condition = "ITEM:"     + valuePart;
-                    default         -> condition = "";
+                    case "" ->
+                        condition = "";
+                    case "CATEGORY" ->
+                        condition = "CATEGORY:" + valuePart;
+                    case "TOTAL" ->
+                        condition = "TOTAL>" + valuePart;
+                    case "QUANTITY" ->
+                        condition = "QUANTITY>" + valuePart;
+                    case "PRODUCT" ->
+                        condition = "ITEM:" + valuePart;
+                    default ->
+                        condition = "";
                 }
 
                 System.out.println("DEBUG addDiscount condition = [" + condition + "]");
@@ -480,10 +513,5 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         ));
         dlg.open();
     }
-
-
-
-
-
 
 }

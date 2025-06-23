@@ -1,8 +1,8 @@
 package workshop.demo.Controllers;
 
-import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,27 +11,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import workshop.demo.ApplicationLayer.OrderService;
-import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ReceiptDTO;
-import workshop.demo.DTOs.ReceiptProduct;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
-import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Order.IOrderRepoDB;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
-
 
 @RestController
 @RequestMapping("/api/history")
 public class HistoryController {
 
-    private final OrderService orderService;
-
-    public HistoryController(IOrderRepoDB orderJpaRepo, IStoreRepo storeRepo, IAuthRepo auth, UserJpaRepository userRepo, IStoreRepoDB storeJpaRepo) {
-        this.orderService = new OrderService( orderJpaRepo,  storeRepo,  auth,  userRepo, storeJpaRepo);
-    }
+    @Autowired
+    private OrderService orderService;
 
     @GetMapping("/getreceipts")
     public ResponseEntity<ApiResponse<ReceiptDTO[]>> getReceipts(@RequestParam String token) {
@@ -44,7 +33,7 @@ public class HistoryController {
             return ResponseEntity.ok(response);
 
         } catch (UIException e) {
-           response = new ApiResponse<>(null, e.getMessage(), e.getNumber());
+            response = new ApiResponse<>(null, e.getMessage(), e.getNumber());
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             response = new ApiResponse<>(null, e.getMessage(), -1);

@@ -1,6 +1,5 @@
 package workshop.demo.ApplicationLayer;
 
-import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,69 +18,53 @@ import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SpecialType;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Notification.INotificationRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Stock.IStockRepoDB;
-import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-// import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
-// <<<<<<< HEAD
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.InfrastructureLayer.AISearch;
-// >>>>>>> search-after-persist
+import workshop.demo.InfrastructureLayer.IStockRepoDB;
+import workshop.demo.InfrastructureLayer.IStoreRepoDB;
+import workshop.demo.InfrastructureLayer.IStoreStockRepo;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
+import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 
 @Service
 public class StockService {
 
     private static final Logger logger = LoggerFactory.getLogger(StockService.class);
-
-    private IStockRepo stockRepo;
-    private IAuthRepo authRepo;
-    private IStoreRepo storeRepo;
-    private ISUConnectionRepo suConnectionRepo;
-    private UserJpaRepository userRepo;
-    private UserSuspensionJpaRepository suspensionJpaRepo;
-    private INotificationRepo notificationRepo;
-    private IStockRepoDB stockJpaRepo;
-    private IStoreRepoDB storeJpaRepo;
-    private IStoreStockRepo storeStockRepo;
-
-    private AISearch aiSearch= new AISearch();
-
     @Autowired
-    public StockService(IStockRepo stockRepo, IStoreRepo storeRepo, IAuthRepo authRepo, UserJpaRepository userRepo,
-            ISUConnectionRepo cons, UserSuspensionJpaRepository suspensionJpaRepo, INotificationRepo notificationRepo,
-            IStockRepoDB stockJpaRepo, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStock) {
-        this.stockRepo = stockRepo;
-        this.authRepo = authRepo;
-        this.storeRepo = storeRepo;
-        this.userRepo = userRepo;
-        this.suConnectionRepo = cons;
-        this.suspensionJpaRepo = suspensionJpaRepo;
-        this.notificationRepo = notificationRepo;
-        this.stockJpaRepo = stockJpaRepo;
-        this.storeJpaRepo = storeJpaRepo;
-        this.storeStockRepo = storeStock;
-    }
+    private IStockRepo stockRepo;
+    @Autowired
+    private IAuthRepo authRepo;
+    @Autowired
+    private ISUConnectionRepo suConnectionRepo;
+    @Autowired
+    private UserJpaRepository userRepo;
+    @Autowired
+    private UserSuspensionJpaRepository suspensionJpaRepo;
+    @Autowired
+    private IStockRepoDB stockJpaRepo;
+    @Autowired
+    private IStoreRepoDB storeJpaRepo;
+    @Autowired
+    private IStoreStockRepo storeStockRepo;
+    @Autowired
+    private NotificationService notifier;
+    private AISearch aiSearch = new AISearch();
 
     private UIException storeNotFound() {
         return new UIException(" store does not exist.", ErrorCodes.STORE_NOT_FOUND);
@@ -93,23 +76,23 @@ public class StockService {
         logger.info("Starting searchProducts with criteria: {}", criteria);
 
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        List<Product> products = null ;
-        if(criteria.keywordSearch() && aiSearch.isActive()){
-            List<Integer> ids = aiSearch.getSameProduct(criteria.getKeyword(), criteria.specificCategory()?criteria.getCategory().hashCode():-1, 0.35);
-            products =  stockJpaRepo.findAllById(ids);
-        }else if(criteria.nameSearch()){
+        List<Product> products = null;
+        if (criteria.keywordSearch() && aiSearch.isActive()) {
+            List<Integer> ids = aiSearch.getSameProduct(criteria.getKeyword(), criteria.specificCategory() ? criteria.getCategory().hashCode() : -1, 0.35);
+            products = stockJpaRepo.findAllById(ids);
+        } else if (criteria.nameSearch()) {
             products = stockJpaRepo.findByNameContainingIgnoreCase(criteria.getName());
-        }else {
-            throw new UIException("the ai search api is not running !!",ErrorCodes.AI_NOT_WORK);
+        } else {
+            throw new UIException("the ai search api is not running !!", ErrorCodes.AI_NOT_WORK);
         }
         logger.info("Returning matched items to client ");
-        List<ItemStoreDTO> res=new ArrayList<>() ;
+        List<ItemStoreDTO> res = new ArrayList<>();
         for (Product product : products) {
-            logger.info ("product match found: "+product.getName());
+            logger.info("product match found: " + product.getName());
             List<item> items = storeStockRepo.findItemsByProductId(product.getProductId());
             for (item item : items) {
-                if(criteria.matchesForStore(item)){
-                    logger.info("found item in store "+item.getStoreId());
+                if (criteria.matchesForStore(item)) {
+                    logger.info("found item in store " + item.getStoreId());
                     ItemStoreDTO toAdd = new ItemStoreDTO();
                     toAdd.setProductId(product.getProductId());
                     toAdd.setName(product.getName());
@@ -130,7 +113,8 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
         RandomDTO[] randoms = stockRepo.searchActiveRandoms(criteria);
-        storeRepo.fillWithStoreName(randoms);
+        //storeRepo.fillWithStoreName(randoms);
+        //-> must be jpa
         return randoms;
     }
 
@@ -139,7 +123,8 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
         BidDTO[] bids = stockRepo.searchActiveBids(criteria);
-        storeRepo.fillWithStoreName(bids);
+        //storeRepo.fillWithStoreName(bids);
+        //-> must be jpa
         return bids;
     }
 
@@ -148,7 +133,8 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
         AuctionDTO[] auctions = stockRepo.searchActiveAuctions(criteria);
-        storeRepo.fillWithStoreName(auctions);
+        //storeRepo.fillWithStoreName(auctions);
+        //-> must be jpa
         return auctions;
     }
 
@@ -189,8 +175,9 @@ public class StockService {
 
     private void checkUserRegisterOnline_ThrowException(int userId) throws UIException {
         Optional<Registered> user = userRepo.findById(userId);
-        if (!user.isPresent())
+        if (!user.isPresent()) {
             throw new UIException("stock service:user not found!", ErrorCodes.USER_NOT_FOUND);
+        }
     }
 
     public boolean addRegularBid(String token, int bitId, int storeId, double price) throws UIException, DevException {
@@ -210,7 +197,7 @@ public class StockService {
         userRepo.findById(userId).get().addSpecialItemToCart(specialItem);
         for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
             String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
-            notificationRepo.sendDelayedMessageToUser(ownerName,
+            notifier.sendDelayedMessageToUser(ownerName,
                     "User " + userRepo.findById(userId).get().getUsername() + " placed a bid on your product");
         }
         logger.info("Regular bid successful by user: {}", userId);
@@ -260,7 +247,7 @@ public class StockService {
         }
         for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
             String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
-            notificationRepo.sendDelayedMessageToUser(ownerName, "Owner "
+            notifier.sendDelayedMessageToUser(ownerName, "Owner "
                     + userRepo.findById(userId).get().getUsername() + " set a product to auction in your store");
         }
         return stockRepo.addAuctionToStore(storeId, productId, quantity, time, startPrice);
@@ -282,7 +269,7 @@ public class StockService {
         }
         for (Node worker : suConnectionRepo.getOwnersInStore(storeid)) {
             String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
-            notificationRepo.sendDelayedMessageToUser(ownerName,
+            notifier.sendDelayedMessageToUser(ownerName,
                     "Owner " + userRepo.findById(userId).get().getUsername() + " set a product to bid in your store");
         }
 
@@ -329,12 +316,12 @@ public class StockService {
 
         SingleBid bidAccepted = stockRepo.acceptBid(storeId, bidId, bidToAcceptId);
         if (!bidAccepted.isWinner()) {
-            notificationRepo.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
+            notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
                     "Owner " + userRepo.findById(userId).get().getUsername() + " accepted your bid");
         } else {
-            notificationRepo.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
+            notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
                     "Owner " + userRepo.findById(userId).get().getUsername()
-                            + " accepted your bid and you are the winner!");
+                    + " accepted your bid and you are the winner!");
         }
         logger.info("Bid accepted. User: {} is the winner.", bidAccepted.getUserId());
         return bidAccepted;
@@ -368,7 +355,7 @@ public class StockService {
         }
         for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
             String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
-            notificationRepo.sendDelayedMessageToUser(ownerName, "Owner "
+            notifier.sendDelayedMessageToUser(ownerName, "Owner "
                     + userRepo.findById(userId).get().getUsername() + " set a product to random in your store");
         }
         return stockRepo.addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
@@ -439,8 +426,6 @@ public class StockService {
         return res;
     }
 
-
-
     public int addItem(int storeId, String token, int productId, int quantity, int price, Category category)
             throws Exception, DevException {
         logger.info("User attempting to add item {} to store {}", productId, storeId);
@@ -485,11 +470,10 @@ public class StockService {
         }
         Product product = new Product(name, category, description, keywords);
         product = stockJpaRepo.save(product);
-        aiSearch.trainProduct(name,keywords);
+        aiSearch.trainProduct(name, keywords);
         logger.info("Product added successfully: {} with id ={}", name, product.getProductId());
         return product.getProductId();
     }
-
 
     public int removeItem(int storeId, String token, int productId) throws Exception, DevException {
         logger.info("User attempting to remove item {} from store {}", productId, storeId);
@@ -571,7 +555,11 @@ public class StockService {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        this.stockRepo.rankProduct(storeId, productId, newRank);
+        //this.stockRepo.rankProduct(storeId, productId, newRank);
+        StoreStock stock = storeStockRepo.findById(storeId)
+                .orElseThrow(() -> new DevException("store stock not found on db!!"));
+        stock.rankProduct(productId, newRank);
+        storeStockRepo.saveAndFlush(stock);
         logger.info("the rank updated successfully for product {} in store {}", productId, storeId);
         return productId;
     }

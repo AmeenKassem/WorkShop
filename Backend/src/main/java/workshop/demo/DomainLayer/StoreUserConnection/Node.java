@@ -41,7 +41,7 @@ public class Node {
 
     private boolean isManager; // false → owner
 
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<Node> children = Collections.synchronizedList(new ArrayList<>());
 
     //private int parentId; // -1 if I'm the boss

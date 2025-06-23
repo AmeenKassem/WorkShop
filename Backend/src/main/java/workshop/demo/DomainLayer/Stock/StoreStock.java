@@ -150,12 +150,13 @@ public class StoreStock {
     public void rankProduct(int productId, int newRank) throws UIException {
         item currenItem = getItemByProductId(productId);
         if (currenItem != null) {
-            AtomicInteger[] ranks = currenItem.getRank();
-            if (newRank >= 1 && newRank <= ranks.length) {
-                ranks[newRank - 1].incrementAndGet(); // thread-safe increment
-            } else {
-                throw new UIException("Invalid rank index: " + newRank, ErrorCodes.INVALID_RANK);
-            }
+            currenItem.rankItem(newRank);
+            // AtomicInteger[] ranks = currenItem.getRank();
+            // if (newRank >= 1 && newRank <= ranks.length) {
+            //     ranks[newRank - 1].incrementAndGet(); // thread-safe increment
+            // } else {
+            //     throw new UIException("Invalid rank index: " + newRank, ErrorCodes.INVALID_RANK);
+            // }
         } else {
             throw new UIException("Product ID not found: " + productId, ErrorCodes.PRODUCT_NOT_FOUND);
         }
@@ -193,7 +194,6 @@ public class StoreStock {
     // for (ItemCartDTO dto : cartItems) {
     // CartItem item = new CartItem(dto);
     // item storeItem = getItemByProductId(item.getProductId());
-
     // if (storeItem == null || storeItem.getQuantity() < item.getQuantity()) {
     // if (isGuest) {
     // throw new UIException("Insufficient stock during guest purchase.",
@@ -212,7 +212,6 @@ public class StoreStock {
     // }
     // return boughtItems;
     // }
-
     public void changequantity(List<ItemCartDTO> cartItems, boolean isGuest, String storeName) throws UIException {
         List<ReceiptProduct> boughtItems = new ArrayList<>();
         for (ItemCartDTO dto : cartItems) {
@@ -263,10 +262,12 @@ public class StoreStock {
     }
 
     public boolean isAvaliable(int productId, int quantity) {
-        if (!stock.containsKey(productId))
+        if (!stock.containsKey(productId)) {
             return false;
-        if (stock.get(productId).getQuantity() < quantity)
+        }
+        if (stock.get(productId).getQuantity() < quantity) {
             return false;
+        }
         return true;
     }
 

@@ -1,4 +1,4 @@
-package workshop.demo.DataAccessLayer;
+package workshop.demo.InfrastructureLayer;
 
 import java.util.Optional;
 

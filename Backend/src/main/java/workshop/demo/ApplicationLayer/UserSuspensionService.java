@@ -6,14 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.UserSuspensionDTO;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.User.Registered;
 // import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
+import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -22,10 +22,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import workshop.demo.DataAccessLayer.UserJpaRepository;
-
 @Service
 public class UserSuspensionService {
+
     @Autowired
     private UserJpaRepository userRepo;
     @Autowired
@@ -38,15 +37,6 @@ public class UserSuspensionService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserSuspensionService.class);
     private final ConcurrentHashMap<Integer, Object> userLocks = new ConcurrentHashMap<>();
-
-    // @Autowired
-    // public UserSuspensionService(UserSuspensionJpaRepository
-    // userSuspensionJpaRepository, UserJpaRepository userRepo,
-    // IAuthRepo authRepo) {
-    // this.suspensionJpaRepo = userSuspensionJpaRepository;
-    // this.userRepo = userRepo;
-    // this.authRepo = authRepo;
-    // }
 
     public boolean isUserSuspended(int userId) {
         return suspensionJpaRepo.findById(userId)
@@ -148,11 +138,18 @@ public class UserSuspensionService {
 
         return suspensionJpaRepo.findAll()
                 .stream()
-                .map(s -> new UserSuspensionDTO(
-                        s.getUserId(),
-                        s.isPaused(),
-                        s.getSuspensionEndTime(),
-                        s.getRemainingWhenPaused()))
+                .map(s -> {
+                    String username = userRepo.findById(s.getUserId())
+                            .map(Registered::getUsername)
+                            .orElse("Unknown");
+                    return new UserSuspensionDTO(
+                            s.getUserId(),
+                            username,
+                            s.isPaused(),
+                            s.getSuspensionEndTime(),
+                            s.getRemainingWhenPaused()
+                    );
+                })
                 .collect(Collectors.toList());
     }
 }

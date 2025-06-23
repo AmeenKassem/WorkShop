@@ -12,12 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import jakarta.transaction.Transactional;
-import workshop.demo.DataAccessLayer.NodeJPARepository;
-import workshop.demo.DataAccessLayer.OfferJpaRepository;
-import workshop.demo.DataAccessLayer.StoreTreeJPARepository;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.InfrastructureLayer.NodeJPARepository;
+import workshop.demo.InfrastructureLayer.OfferJpaRepository;
+import workshop.demo.InfrastructureLayer.StoreTreeJPARepository;
 
 @Component
 public class SuperDataStructure {
@@ -299,6 +299,7 @@ public class SuperDataStructure {
         int parentId = root.getParentId();
 
     }*/
+    @Transactional
     public void closeStore(int storeID) throws Exception {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeID, k -> new ReentrantLock());
         lock.lock();
@@ -308,8 +309,9 @@ public class SuperDataStructure {
             }
             this.employees.remove(storeID);
             this.offers.remove(storeID);
+            nodeJPARepo.deleteByStoreId(storeID);
             storeTreeJPARepo.deleteById(storeID);
-            storeTreeJPARepo.deleteById(storeID);
+
             offerJPARepo.deleteByIdStoreId(storeID);
         } finally {
             lock.unlock();

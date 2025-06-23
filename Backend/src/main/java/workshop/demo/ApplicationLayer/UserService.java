@@ -3,7 +3,6 @@ package workshop.demo.ApplicationLayer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,22 +16,20 @@ import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.UserDTO;
-import workshop.demo.DataAccessLayer.GuestJpaRepository;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.SingleBid;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
-// import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 import workshop.demo.InfrastructureLayer.Encoder;
+import workshop.demo.InfrastructureLayer.GuestJpaRepository;
+import workshop.demo.InfrastructureLayer.IStoreRepoDB;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
 
 @Service
 public class UserService {
@@ -56,20 +53,6 @@ public class UserService {
     private UserJpaRepository regJpaRepo;
     @Autowired
     private GuestJpaRepository guestJpaRepository;
-
-    // @Autowired
-    // public UserService(UserJpaRepository regJpaRepo, IAuthRepo authRepo, IStockRepo stockRepo,
-    //         AdminInitilizer adminInitilizer,
-    //         GuestJpaRepository guestRepo, IStoreRepoDB storeRepo) {
-    //     // this.userRepo = userRepo;
-    //     this.authRepo = authRepo;
-    //     this.stockRepo = stockRepo;
-    //     this.storeRepo = storeRepo;
-    //     this.adminInitilizer = adminInitilizer;
-    //     // this.adminHandler = adminHandler;
-    //     this.regJpaRepo = regJpaRepo;
-    //     this.guestJpaRepository = guestRepo;
-    // }
 
     public String generateGuest() throws UIException, Exception {
         logger.info("generateGuest called");
@@ -126,8 +109,9 @@ public class UserService {
                 user.login();
                 regJpaRepo.save(user);
                 return user.getId();
-            } else
+            } else {
                 throw new UIException("wrong password!!", ErrorCodes.WRONG_PASSWORD);
+            }
         } else {
             throw new UIException("User not found: " + username, ErrorCodes.USER_NOT_FOUND);
         }
@@ -213,8 +197,9 @@ public class UserService {
         Optional<Registered> reg = regJpaRepo.findById(userId);
         if (!reg.isPresent()) {
             Optional<Guest> guest = guestJpaRepository.findById(userId);
-            if (!guest.isPresent())
+            if (!guest.isPresent()) {
                 throw new UIException("id is not registered or guest", ErrorCodes.USER_NOT_FOUND);
+            }
             return guest.get();
         }
         return reg.get();
@@ -318,13 +303,15 @@ public class UserService {
 
     public void checkUserRegisterOnline_ThrowException(int bossId) throws UIException {
         Optional<Registered> regs = regJpaRepo.findById(bossId);
-        if (!regs.isPresent())
+        if (!regs.isPresent()) {
             throw new UIException("user not registered!", ErrorCodes.USER_NOT_LOGGED_IN);
+        }
     }
 
     public void checkAdmin_ThrowException(int adminId) throws UIException {
         Optional<Registered> reg = regJpaRepo.findById(adminId);
-        if (!reg.isPresent())
+        if (!reg.isPresent()) {
             throw new UIException("user is not admin!!", ErrorCodes.NO_PERMISSION);
+        }
     }
 }

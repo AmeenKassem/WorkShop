@@ -1,6 +1,5 @@
 package workshop.demo.ApplicationLayer;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -10,19 +9,19 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ReviewDTO;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
-import workshop.demo.DataAccessLayer.ReviewJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Review.Review;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
+import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import workshop.demo.InfrastructureLayer.IStoreRepoDB;
+import workshop.demo.InfrastructureLayer.IStoreStockRepo;
+import workshop.demo.InfrastructureLayer.ReviewJpaRepository;
+import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 
 @Service
 public class ReviewService {
@@ -30,7 +29,7 @@ public class ReviewService {
     @Autowired
     private IAuthRepo authRepo;
     @Autowired
-    private IStockRepo stockRepo;
+    private IStoreStockRepo storeStockRepo;
     @Autowired
     private IStoreRepoDB storeJpaRepo;
     @Autowired
@@ -40,17 +39,6 @@ public class ReviewService {
 
     private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
 
-    // @Autowired
-    // public ReviewService(IReviewRepo reviewRepo, IAuthRepo authRepo, IStoreRepo storeRepo, IStockRepo stockRepo,
-    //         IStoreRepoDB storeJpaRepo) {
-    //     this.authRepo = authRepo;
-    //     this.reviewRepo = reviewRepo;
-    //     this.storeRepo = storeRepo;
-    //     // this.userRepo = userRepo;
-    //     this.stockRepo = stockRepo;
-    //     this.storeJpaRepo = storeJpaRepo;
-    //     logger.info("created review service");
-    // }
     private UIException storeNotFound() {
         return new UIException(" store does not exist.", ErrorCodes.STORE_NOT_FOUND);
     }
@@ -68,12 +56,20 @@ public class ReviewService {
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
-        ItemStoreDTO[] items = stockRepo.getProductsInStore(storeId);
-        boolean found = Arrays.stream(items)
-                .anyMatch(item -> item.getProductId() == productId);
+        List<item> items = storeStockRepo.findItemsByStoreId(storeId);
+        if (items == null || items.size() == 0) {
+            logger.debug("[AddReviewToProduct] No items found for StoreId={}. Check the database or stock service!", storeId);
+            throw new UIException("No products found for Store ID " + storeId, ErrorCodes.PRODUCT_NOT_FOUND);
+        }
 
-        if (!found) {
-            throw new UIException("Product with ID " + productId + " not found in store " + storeId,
+        List<Integer> availableProductIds = items.stream()
+                .map(item -> item.getProductId())
+                .toList();
+
+        if (!availableProductIds.contains(productId)) {
+            logger.error("[AddReviewToProduct] ProductId={} NOT found in StoreId={}. Available ids: {}",
+                    productId, storeId, availableProductIds);
+            throw new UIException("Product with ID " + productId + " not found in Store " + storeId,
                     ErrorCodes.PRODUCT_NOT_FOUND);
         }
         String username = authRepo.getUserName(token);
