@@ -125,7 +125,7 @@ public class StockRepository implements IStockRepo {
     @Override
     public SingleBid bidOnAuction(int StoreId, int userId, int auctionId, double price)
             throws UIException, DevException {
-        return getActivePurchases(StoreId).addUserBidToAuction(auctionId, userId, price);
+        return null;
     }
 
     @Override

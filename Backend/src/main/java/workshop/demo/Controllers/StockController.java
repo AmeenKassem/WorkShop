@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import workshop.demo.ApplicationLayer.ActivePurchasesService;
 import workshop.demo.ApplicationLayer.StockService;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
@@ -30,6 +31,8 @@ public class StockController {
 
     @Autowired
     private StockService stockService;
+    @Autowired
+    private ActivePurchasesService activeService;
 
     @GetMapping("/getProductInfo")
     public String getProductInfo(@RequestParam String token,
@@ -331,7 +334,7 @@ public class StockController {
             @RequestParam int productId, @RequestParam int quantity,
             @RequestParam long time, @RequestParam double startPrice) {
         try {
-            int id = stockService.setProductToAuction(token, storeId, productId, quantity, time, startPrice);
+            int id = activeService.setProductToAuction(token, storeId, productId, quantity, time, startPrice);
             return ResponseEntity.ok(new ApiResponse<>(id, null));
 
         } catch (UIException ex) {

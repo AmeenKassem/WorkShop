@@ -11,12 +11,12 @@ import workshop.demo.DTOs.SingleBidDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.Status;
 
-@Entity
+// @Entity
 public class UserAuctionBid {
 
     private int amount;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // @Id
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private double price;
     private int auctionId;
@@ -26,9 +26,9 @@ public class UserAuctionBid {
     private int userId;
     private int productId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "auction_id")
-    private Auction auction;
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "auction_id")
+    // private Auction auction;
 
     public double getBidPrice() {
         return price;

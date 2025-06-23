@@ -5,22 +5,28 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import workshop.demo.DataAccessLayer.UserJpaRepository;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
+import jakarta.annotation.PostConstruct;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
+import workshop.demo.DomainLayer.Stock.ActivePurcheses;
+import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import workshop.demo.InfrastructureLayer.IStoreRepoDB;
+import workshop.demo.InfrastructureLayer.IStoreStockRepo;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
+import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 
+
+@Service
 public class ActivePurchasesService {
 
     private static final Logger logger = LoggerFactory.getLogger(StockService.class);
@@ -41,13 +47,22 @@ public class ActivePurchasesService {
     @Autowired
     private IAuthRepo authRepo;
 
+    @Autowired
+    private IActivePurchasesRepo activePurchasesRepo ;
+
+
+    
+
     public int setProductToAuction(String token, int storeId, int productId, int quantity, long time, double startPrice)
             throws Exception, DevException {
         logger.info("Setting product {} to auction in store {}", productId, storeId);
         int userId = checkUserAndStore(token, storeId);
         //adding auction here:
-            
-        
+        ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();
+        active.addProductToAuction(productId, quantity, time, startPrice);
+        activePurchasesRepo.save(active);  
+        // timer : after auction.getTimeLeft() ->> 
+            //auction.end() + notify all paricipates . notify winner . notify onwers + if the auction has no winner return back the stock
         for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
             String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
             notifier.sendDelayedMessageToUser(ownerName, "Owner "

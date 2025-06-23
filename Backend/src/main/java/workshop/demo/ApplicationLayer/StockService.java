@@ -77,12 +77,16 @@ public class StockService {
 
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         List<Product> products = null;
-          if(criteria.keywordSearch() && aiSearch.isActive()){
-            List<Integer> ids = aiSearch.getSameProduct(criteria.getKeyword(), criteria.specificCategory()?criteria.getCategory().hashCode():-1, 0.35);
-                  if (ids == null || ids.isEmpty()) {
-            logger.info("No product IDs found from AI search. Returning empty list."); // if we dont find any matches we return empty list
-            return new ItemStoreDTO[0];
-        } products = stockJpaRepo.findAllById(ids);
+        if (criteria.keywordSearch() && aiSearch.isActive()) {
+            List<Integer> ids = aiSearch.getSameProduct(criteria.getKeyword(),
+                    criteria.specificCategory() ? criteria.getCategory().hashCode() : -1, 0.35);
+            if (ids == null || ids.isEmpty()) {
+                logger.info("No product IDs found from AI search. Returning empty list."); // if we dont find any
+                                                                                           // matches we return empty
+                                                                                           // list
+                return new ItemStoreDTO[0];
+            }
+            products = stockJpaRepo.findAllById(ids);
         } else if (criteria.nameSearch()) {
             products = stockJpaRepo.findByNameContainingIgnoreCase(criteria.getName());
         } else {
@@ -116,8 +120,8 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
         RandomDTO[] randoms = stockRepo.searchActiveRandoms(criteria);
-        //storeRepo.fillWithStoreName(randoms);
-        //-> must be jpa
+        // storeRepo.fillWithStoreName(randoms);
+        // -> must be jpa
         return randoms;
     }
 
@@ -126,8 +130,8 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
         BidDTO[] bids = stockRepo.searchActiveBids(criteria);
-        //storeRepo.fillWithStoreName(bids);
-        //-> must be jpa
+        // storeRepo.fillWithStoreName(bids);
+        // -> must be jpa
         return bids;
     }
 
@@ -136,8 +140,8 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
         AuctionDTO[] auctions = stockRepo.searchActiveAuctions(criteria);
-        //storeRepo.fillWithStoreName(auctions);
-        //-> must be jpa
+        // storeRepo.fillWithStoreName(auctions);
+        // -> must be jpa
         return auctions;
     }
 
@@ -324,7 +328,7 @@ public class StockService {
         } else {
             notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
                     "Owner " + userRepo.findById(userId).get().getUsername()
-                    + " accepted your bid and you are the winner!");
+                            + " accepted your bid and you are the winner!");
         }
         logger.info("Bid accepted. User: {} is the winner.", bidAccepted.getUserId());
         return bidAccepted;
@@ -557,8 +561,9 @@ public class StockService {
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
-     //   Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        //this.stockRepo.rankProduct(storeId, productId, newRank);
+        // Store store = storeJpaRepo.findById(storeId).orElseThrow(() ->
+        // storeNotFound());
+        // this.stockRepo.rankProduct(storeId, productId, newRank);
         StoreStock stock = storeStockRepo.findById(storeId)
                 .orElseThrow(() -> new DevException("store stock not found on db!!"));
         stock.rankProduct(productId, newRank);

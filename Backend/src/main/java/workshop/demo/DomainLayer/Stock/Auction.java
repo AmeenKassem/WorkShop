@@ -13,8 +13,13 @@ import com.github.javaparser.ast.Generated;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Transient;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.AuctionStatus;
 import workshop.demo.DTOs.SingleBidDTO;
@@ -26,45 +31,65 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 public class Auction {
 
     private int productId;
+
     private int quantity;
     private AuctionStatus status;
+    @Transient
     private Timer timer;
     @Id
-    private int auctionId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int auctionId;//-->auction_id
 
-    @OneToOne(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    // @OneToOne(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval =
+    // true, fetch = FetchType.LAZY)
+    @Transient
     private List<UserAuctionBid> bids;
     private double maxBid;
+    @Transient
     private UserAuctionBid winner;
-    private int storeId;
+    // private int storeId;
+    @Transient
     private AtomicInteger idGen = new AtomicInteger();
+    @Transient
     private final Object lock = new Object();
     private long endTimeMillis;
+
+    @ManyToOne
+    @JoinColumn(name = "active_store_id")
+    private ActivePurcheses activePurcheses;
 
     public Auction(int productId, int quantity, long time, int id, int storeId, double min) {
         this.productId = productId;
         this.quantity = quantity;
         this.timer = new Timer();
         bids = new ArrayList<>();
-        this.storeId = storeId;
+        // this.storeId = storeId;
         this.auctionId = id;
         this.status = AuctionStatus.IN_PROGRESS;
         this.endTimeMillis = System.currentTimeMillis() + time;
         maxBid = min;
         // timer.schedule(new TimerTask() {
-        //     @Override
-        //     public void run() {
-        //         for (UserAuctionBid UserAuctionBid : bids) {
-        //             if (maxBid == UserAuctionBid.getBidPrice()) {
-        //                 winner = UserAuctionBid;
-        //                 winner.markAsWinner();
-        //             } else {
-        //                 UserAuctionBid.markAsLosed();
-        //             }
-        //         }
-        //         status = AuctionStatus.FINISH;
-        //     }
+        // @Override
+        // public void run() {
+        // for (UserAuctionBid UserAuctionBid : bids) {
+        // if (maxBid == UserAuctionBid.getBidPrice()) {
+        // winner = UserAuctionBid;
+        // winner.markAsWinner();
+        // } else {
+        // UserAuctionBid.markAsLosed();
+        // }
+        // }
+        // status = AuctionStatus.FINISH;
+        // }
         // }, time);
+    }
+
+    public Auction() {
+        
+    }
+
+    public void setActivePurchases(ActivePurcheses active){
+        activePurcheses=active;
     }
 
     public void endAuction() {
@@ -79,11 +104,30 @@ public class Auction {
         status = AuctionStatus.FINISH;
     }
 
-    public boolean mustReturnToStock(){
-        return status==AuctionStatus.FINISH && bids.isEmpty();
+    public void setProductId(int productId) {
+        this.productId = productId;
     }
 
-    
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public void setMaxBid(double maxBid) {
+        this.maxBid = maxBid;
+    }
+
+    // public void setStoreId(int storeId) {
+    //     this.storeId = storeId;
+    // }
+
+    public void setEndTimeMillis(long endTimeMillis) {
+        this.endTimeMillis = endTimeMillis;
+    }
+
+    public boolean mustReturnToStock() {
+        return status == AuctionStatus.FINISH && bids.isEmpty();
+    }
+
     public UserAuctionBid bid(int userId, double price) throws UIException {
         synchronized (lock) {
             if (status == AuctionStatus.FINISH) {
@@ -95,8 +139,9 @@ public class Auction {
 
             maxBid = price;
 
-            // UserAuctionBid bid = new UserAuctionBid(productId, quantity, userId, price, SpecialType.Auction, storeId,
-            //         idGen.incrementAndGet(), auctionId);
+            // UserAuctionBid bid = new UserAuctionBid(productId, quantity, userId, price,
+            // SpecialType.Auction, storeId,
+            // idGen.incrementAndGet(), auctionId);
 
             // bids.add(bid);
 
@@ -111,7 +156,7 @@ public class Auction {
         res.productId = productId;
         res.quantity = quantity;
         res.winner = winner.convertToDTO();
-        res.storeId = storeId;
+        // res.storeId = storeId;
         res.endTimeMillis = this.endTimeMillis;
 
         SingleBidDTO[] arrayBids = new SingleBidDTO[bids.size()];
@@ -144,5 +189,9 @@ public class Auction {
 
     public int getProductId() {
         return productId;
+    }
+
+    public Integer getId() {
+        return auctionId;
     }
 }

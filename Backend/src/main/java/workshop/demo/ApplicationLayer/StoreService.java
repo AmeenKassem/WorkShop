@@ -21,6 +21,8 @@ import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.ActivePurcheses;
+import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Store.CompositeDiscount;
@@ -72,6 +74,8 @@ public class StoreService {
     private StoreTreeJPARepository storeTreeJPARepo;
     @Autowired
     private OfferJpaRepository offerJPARepo;
+    @Autowired 
+    private IActivePurchasesRepo activePurchasesRepo;
 
     @PostConstruct
     public void loadStoreTreesIntoMemory() {
@@ -145,7 +149,8 @@ public class StoreService {
         // stockRepo.addStore(storeId);
         StoreStock stock4Store = new StoreStock();
         stock4Store.setStoreId(storeId);
-
+        ActivePurcheses active = new ActivePurcheses(storeId);
+        activePurchasesRepo.save(active);
         storeStock.save(stock4Store);
 
         logger.info("Store '{}' added successfully with ID {} by boss {}", storeName, storeId, bossId);
