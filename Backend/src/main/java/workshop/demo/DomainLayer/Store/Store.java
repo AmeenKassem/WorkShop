@@ -200,6 +200,7 @@ public class Store {
             throw new Exception("Policy must not be null");
         }
         purchasePolicies.add(p);
+        
     }
 
     public void removePurchasePolicy(PurchasePolicy p) {
