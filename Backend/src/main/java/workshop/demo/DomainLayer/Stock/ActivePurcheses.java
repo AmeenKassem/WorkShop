@@ -43,7 +43,6 @@ public class ActivePurcheses {
     @Transient
     private HashMap<Integer, Random> activeRandom = new HashMap<>();
 
-
     @Transient
     private static AtomicInteger bidIdGen = new AtomicInteger();
     @Transient
@@ -51,8 +50,8 @@ public class ActivePurcheses {
 
     @Transient
     private HashMap<Integer, List<BID>> productIdToBids = new HashMap<>();
-    @Transient
-    private HashMap<Integer, List<Auction>> productIdToAuctions = new HashMap<>();
+
+    // private Map<Integer, List<Integer>> productIdToAuctions = new HashMap<>();
     @Transient
     private HashMap<Integer, List<Random>> productIdToRandoms = new HashMap<>();
 
@@ -60,7 +59,8 @@ public class ActivePurcheses {
         this.storeId = storeId;
     }
 
-    public ActivePurcheses(){}
+    public ActivePurcheses() {
+    }
 
     // ========== Auction ==========
 
@@ -74,19 +74,21 @@ public class ActivePurcheses {
         // int id = auctionIdGen.incrementAndGet();
         Auction auction = new Auction();
         auction.setMaxBid(min);
-        auction.setEndTimeMillis(System.currentTimeMillis()+time);
+        auction.setEndTimeMillis(System.currentTimeMillis() + time);
         auction.setProductId(productId);
         auction.setQuantity(quantity);
         // auction.setStoreId(storeId);
         auction.setActivePurchases(this);
         activeAuction.put(auction.getId(), auction);
-        productIdToAuctions.computeIfAbsent(productId, k -> new ArrayList<>()).add(auction);
+        // productIdToAuctions.computeIfAbsent(productId, k -> new
+        // ArrayList<>()).add(auction.getId());
         logger.debug("Auction created with id={}", auction.getId());
 
         return auction.getId();
     }
 
-    public UserAuctionBid addUserBidToAuction(int auctionId, int userId, double price) throws DevException, UIException {
+    public UserAuctionBid addUserBidToAuction(int auctionId, int userId, double price)
+            throws DevException, UIException {
         logger.debug("addUserBidToAuction called with auctionId={}, userId={}, price={}", auctionId, userId, price);
 
         if (!activeAuction.containsKey(auctionId)) {
@@ -103,6 +105,7 @@ public class ActivePurcheses {
         AuctionDTO[] auctionDTOs = new AuctionDTO[activeAuction.size()];
         int i = 0;
         for (Auction auction : activeAuction.values()) {
+            auction.endAuction();
             auctionDTOs[i] = auction.getDTO();
             i++;
         }
@@ -352,11 +355,19 @@ public class ActivePurcheses {
         return result;
     }
 
-    public List<AuctionDTO> getAuctionsForProduct(int productId) {
+    public List<AuctionDTO> getAuctionsForProduct(int productId, String storeName, String productName) {
         List<AuctionDTO> result = new ArrayList<>();
-        List<Auction> auctions = productIdToAuctions.getOrDefault(productId, new ArrayList<>());
-        for (Auction auction : auctions) {
-            result.add(auction.getDTO());
+        // List<Integer> auctions = productIdToAuctions.getOrDefault(productId, new
+        // ArrayList<>());
+        for (Auction auction : activeAuction.values()) {
+            auction.endAuction();
+            if (auction.getProductId() == productId &&
+                    !auction.isEnded()) {
+                AuctionDTO auctionDto = auction.getDTO();
+                auctionDto.storeName = storeName;
+                auctionDto.productName = productName;
+                result.add(auctionDto);
+            }
         }
         return result;
     }
@@ -374,6 +385,20 @@ public class ActivePurcheses {
 
     public Auction getAuctionById(int res) {
         return activeAuction.get(res);
+    }
+
+    public Integer getStoreId() {
+        return storeId;
+    }
+
+    public ParticipationInRandomDTO getRandomCard(int storeId2, int specialId, int bidId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getRandomCard'");
+    }
+
+    public SingleBid getBid(int storeId2, int specialId, int bidId, SpecialType type) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getBid'");
     }
 
 }

@@ -201,7 +201,7 @@ public class PurchaseService {
         }
 
         ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
-        UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random);
+        UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random,-1);
         user.addSpecialItemToCart(item);
         boolean done = paymentService.processPayment(paymentDetails, amountPaid);
         if (!done) {

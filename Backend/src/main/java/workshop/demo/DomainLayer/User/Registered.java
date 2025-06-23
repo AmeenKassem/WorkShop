@@ -99,10 +99,11 @@ public class Registered extends Guest {
     }
 
     public void addSpecialItemToCart(UserSpecialItemCart item) throws DevException {
-        logger.debug("adding special item {}:{}:{}:{}", item.storeId, item.specialId, item.bidId, item.type.toString());
         if (item == null) {
             throw new DevException("item is null ");
         }
+        logger.debug("adding special item {}:{}:{}:{}", item.storeId, item.specialId, item.bidId, item.type.toString());
+        item.user = this;
         specialCart.add(item);
     }
 

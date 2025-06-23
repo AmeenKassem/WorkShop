@@ -9,8 +9,15 @@ public class SpecialCartItemDTO {
     public SpecialType type;
     //x2
     public String productName;
+    public String storeName;
     public boolean isWinner;
     public boolean isEnded;
+
+    //Auction
+    public double myBid;
+    public double maxBid;
+    public boolean onTop;
+
 
     public SpecialCartItemDTO() {
     }

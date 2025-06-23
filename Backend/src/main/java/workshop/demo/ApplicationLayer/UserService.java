@@ -13,14 +13,21 @@ import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.SingleBidDTO;
 import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.ActivePurcheses;
+import workshop.demo.DomainLayer.Stock.Auction;
+import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.SingleBid;
+import workshop.demo.DomainLayer.Stock.UserAuctionBid;
+import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
@@ -28,6 +35,7 @@ import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.GuestJpaRepository;
+import workshop.demo.InfrastructureLayer.IStockRepoDB;
 import workshop.demo.InfrastructureLayer.IStoreRepoDB;
 import workshop.demo.InfrastructureLayer.UserJpaRepository;
 
@@ -40,7 +48,7 @@ public class UserService {
     @Autowired
     private IAuthRepo authRepo;
     @Autowired
-    private IStockRepo stockRepo;
+    private IStockRepoDB stockRepo;
     @Autowired
     private IStoreRepoDB storeRepo;
     @Autowired
@@ -53,6 +61,9 @@ public class UserService {
     private UserJpaRepository regJpaRepo;
     @Autowired
     private GuestJpaRepository guestJpaRepository;
+
+    @Autowired
+    private IActivePurchasesRepo activePurchasesRepo;
 
     public String generateGuest() throws UIException, Exception {
         logger.info("generateGuest called");
@@ -241,16 +252,25 @@ public class UserService {
         List<UserSpecialItemCart> specialIds = user.getSpecialCart();
         List<SpecialCartItemDTO> result = new ArrayList<>();
         for (UserSpecialItemCart item : specialIds) {
+            logger.info("one special item found "+item.specialId);
             SpecialCartItemDTO itemToSend = new SpecialCartItemDTO();
             itemToSend.setIds(item.storeId, item.specialId, item.bidId, item.type);
+            ActivePurcheses activePurcheses = activePurchasesRepo.findById(item.storeId).orElse(null);
+            Store store = storeRepo.findById(item.storeId).orElse(null);
+            itemToSend.storeName = store.getStoreName();
+            Product product = stockRepo.findById(item.getProductId()).orElse(null);
             if (item.type == SpecialType.Random) {
-                ParticipationInRandomDTO card = stockRepo.getRandomCard(item.storeId, item.specialId, item.bidId);
-                itemToSend.setValues(stockRepo.GetProductNameForBid(item.storeId, item.specialId, item.type),
-                        card.isWinner, card.ended);
-            } else {
-                SingleBid bid = stockRepo.getBid(item.storeId, item.specialId, item.bidId, item.type);
-                itemToSend.setValues(stockRepo.GetProductNameForBid(item.storeId, item.specialId, item.type),
-                        bid.isWinner() || bid.isAccepted(), bid.isEnded());
+                ParticipationInRandomDTO card = activePurcheses.getRandomCard(item.storeId, item.specialId, item.bidId);
+                itemToSend.setValues(product.getName(), card.isWinner, card.ended);
+            } else if (item.type == SpecialType.BID) {
+                SingleBid bid = activePurcheses.getBid(item.storeId, item.specialId, item.bidId, item.type);
+                itemToSend.setValues(product.getName(), bid.isWinner() || bid.isAccepted(), bid.isEnded());
+            } else if (item.type == SpecialType.Auction) {
+                Auction auction = activePurcheses.getAuctionById(item.specialId);
+                itemToSend.setValues(product.getName(), auction.bidIsWinner(item.bidId), auction.isEnded());
+                itemToSend.myBid = auction.getBid(item.bidId).getBidPrice();
+                itemToSend.maxBid = auction.getMaxBid();
+                itemToSend.onTop= auction.bidIsTop(item.bidId);
             }
             result.add(itemToSend);
         }
@@ -301,11 +321,12 @@ public class UserService {
         return res;
     }
 
-    public void checkUserRegisterOnline_ThrowException(int bossId) throws UIException {
+    public Registered checkUserRegisterOnline_ThrowException(int bossId) throws UIException {
         Optional<Registered> regs = regJpaRepo.findById(bossId);
         if (!regs.isPresent()) {
             throw new UIException("user not registered!", ErrorCodes.USER_NOT_LOGGED_IN);
         }
+        return regs.get();
     }
 
     public void checkAdmin_ThrowException(int adminId) throws UIException {
@@ -314,4 +335,6 @@ public class UserService {
             throw new UIException("user is not admin!!", ErrorCodes.NO_PERMISSION);
         }
     }
+
+    
 }

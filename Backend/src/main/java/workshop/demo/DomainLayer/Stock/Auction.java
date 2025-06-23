@@ -18,6 +18,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Transient;
 import workshop.demo.DTOs.AuctionDTO;
@@ -38,18 +39,15 @@ public class Auction {
     private Timer timer;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int auctionId;//-->auction_id
+    private int auctionId;// -->auction_id
 
-    // @OneToOne(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval =
-    // true, fetch = FetchType.LAZY)
-    @Transient
-    private List<UserAuctionBid> bids;
+    @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<UserAuctionBid> bids = new ArrayList<>();
     private double maxBid;
-    @Transient
-    private UserAuctionBid winner;
+    // @Transient
+    private int winnerId = -1;
     // private int storeId;
-    @Transient
-    private AtomicInteger idGen = new AtomicInteger();
+
     @Transient
     private final Object lock = new Object();
     private long endTimeMillis;
@@ -68,38 +66,26 @@ public class Auction {
         this.status = AuctionStatus.IN_PROGRESS;
         this.endTimeMillis = System.currentTimeMillis() + time;
         maxBid = min;
-        // timer.schedule(new TimerTask() {
-        // @Override
-        // public void run() {
-        // for (UserAuctionBid UserAuctionBid : bids) {
-        // if (maxBid == UserAuctionBid.getBidPrice()) {
-        // winner = UserAuctionBid;
-        // winner.markAsWinner();
-        // } else {
-        // UserAuctionBid.markAsLosed();
-        // }
-        // }
-        // status = AuctionStatus.FINISH;
-        // }
-        // }, time);
+
     }
 
     public Auction() {
-        
+        status = AuctionStatus.IN_PROGRESS;
     }
 
-    public void setActivePurchases(ActivePurcheses active){
-        activePurcheses=active;
+    public void setActivePurchases(ActivePurcheses active) {
+        activePurcheses = active;
     }
 
     public void endAuction() {
+        if (endTimeMillis > System.currentTimeMillis() || status == AuctionStatus.FINISH)
+            return;
         for (UserAuctionBid UserAuctionBid : bids) {
             if (maxBid == UserAuctionBid.getBidPrice()) {
-                winner = UserAuctionBid;
-                winner.finishAuction();
-            } else {
-                UserAuctionBid.finishAuction();
+                winnerId = UserAuctionBid.getId();
             }
+            UserAuctionBid.finishAuction();
+
         }
         status = AuctionStatus.FINISH;
     }
@@ -117,7 +103,7 @@ public class Auction {
     }
 
     // public void setStoreId(int storeId) {
-    //     this.storeId = storeId;
+    // this.storeId = storeId;
     // }
 
     public void setEndTimeMillis(long endTimeMillis) {
@@ -130,7 +116,7 @@ public class Auction {
 
     public UserAuctionBid bid(int userId, double price) throws UIException {
         synchronized (lock) {
-            if (status == AuctionStatus.FINISH) {
+            if (status == AuctionStatus.FINISH || System.currentTimeMillis() > endTimeMillis) {
                 throw new UIException("This auction has ended!", ErrorCodes.AUCTION_FINISHED);
             }
             if (price <= maxBid) {
@@ -138,14 +124,17 @@ public class Auction {
             }
 
             maxBid = price;
+            UserAuctionBid bid = new UserAuctionBid();
+            bid.setUserId(userId);
+            bid.setPrice(price);
+            bid.setAuction(this);
+            bid.markAsCurrTop();
+            for (UserAuctionBid userAuctionBid : bids) {
+                userAuctionBid.markAsLosedTop();
+            }
+            bids.add(bid);
 
-            // UserAuctionBid bid = new UserAuctionBid(productId, quantity, userId, price,
-            // SpecialType.Auction, storeId,
-            // idGen.incrementAndGet(), auctionId);
-
-            // bids.add(bid);
-
-            return null;
+            return bid;
         }
     }
 
@@ -155,8 +144,8 @@ public class Auction {
         res.maxBid = maxBid;
         res.productId = productId;
         res.quantity = quantity;
-        res.winner = winner.convertToDTO();
-        // res.storeId = storeId;
+        res.winner = null;
+        res.storeId = activePurcheses.getStoreId();
         res.endTimeMillis = this.endTimeMillis;
 
         SingleBidDTO[] arrayBids = new SingleBidDTO[bids.size()];
@@ -171,11 +160,15 @@ public class Auction {
     }
 
     public UserAuctionBid getWinner() {
-        return winner;
+        for (UserAuctionBid userAuctionBid : bids) {
+            if (userAuctionBid.getId() == winnerId)
+                return userAuctionBid;
+        }
+        return null;
     }
 
     public boolean bidIsWinner(int bidId) {
-        return winner != null && winner.getId() == bidId;
+        return bidId == winnerId;
     }
 
     public UserAuctionBid getBid(int bidId) {
@@ -193,5 +186,29 @@ public class Auction {
 
     public Integer getId() {
         return auctionId;
+    }
+
+    public int getStoreId() {
+        return activePurcheses.getStoreId();
+    }
+
+    public int getAmount() {
+        return quantity;
+    }
+
+    public boolean isEnded() {
+        return System.currentTimeMillis() >= endTimeMillis;
+    }
+
+    public double getMaxBid() {
+        return maxBid;
+    }
+
+    public boolean bidIsTop(int bidId) {
+        for (UserAuctionBid userAuctionBid : bids) {
+            if(userAuctionBid.getId()==bidId) return userAuctionBid.isCurrTop();
+
+        }
+        return false;
     }
 }

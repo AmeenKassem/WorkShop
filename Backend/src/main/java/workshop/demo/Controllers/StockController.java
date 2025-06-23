@@ -258,7 +258,7 @@ public class StockController {
             @RequestParam(required = false) Double maxProductRating) {
         try {
             ProductSearchCriteria criteria = new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter, storeId, minPrice, maxPrice, minProductRating, maxProductRating);
-            AuctionDTO[] results = stockService.searchActiveAuctions(token, criteria);
+            AuctionDTO[] results = activeService.searchActiveAuctions(token, criteria);
             return ResponseEntity.ok(new ApiResponse<>(results, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
@@ -286,7 +286,7 @@ public class StockController {
     @GetMapping("/getAllAuctions")
     public ResponseEntity<?> getAllAuctions(@RequestParam String token, @RequestParam int storeId) {
         try {
-            AuctionDTO[] auctions = stockService.getAllAuctions_user(token, storeId);
+            AuctionDTO[] auctions = activeService.getAllAuctions_user(token, storeId);
             return ResponseEntity.ok(new ApiResponse<>(auctions, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
@@ -301,7 +301,7 @@ public class StockController {
     public ResponseEntity<?> addBidOnAuction(@RequestParam String token, @RequestParam int auctionId,
             @RequestParam int storeId, @RequestParam double price) {
         try {
-            stockService.addBidOnAucction(token, auctionId, storeId, price);
+            activeService.addBidOnAucction(token, auctionId, storeId, price);
             return ResponseEntity.ok(new ApiResponse<>("Bid added successfully", null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
