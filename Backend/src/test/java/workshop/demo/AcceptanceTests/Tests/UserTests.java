@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+
 import java.util.List;
 import java.util.LinkedList;
 
@@ -51,54 +52,101 @@ import workshop.demo.InfrastructureLayer.Encoder;
 public class UserTests extends AcceptanceTests {
 
     private static final Logger logger = LoggerFactory.getLogger(UserTests.class);
-
     private Registered user;
     private List<Registered> repo_results;
+    String Rtoken="Rtoken";
+    public UserTests() {
+        // Logical ID consistent with AtomicInteger usage
+        this.user = new Registered(1, "bashar", "encoded", 20);
+        this.repo_results = List.of(user);
+    }
 
-//    public UserTests() {
-//        // Logical ID consistent with AtomicInteger usage
-//        this.user = new Registered("bashar", "encoded", 20);
-//        setId(user, 1); // ID 1 is realistic for first registered user
-//        this.repo_results = List.of(user);
-//    }
-//
-//    @BeforeEach
-//    void setup() throws Exception {
-//        mockGuestRepo.deleteAll();
-//        mockUserRepo.deleteAll();
-//
-//        // Inject mocked encoder using reflection
-//        Field encoderField = UserService.class.getDeclaredField("encoder");
-//        encoderField.setAccessible(true);
-//        encoderField.set(userService, encoder);
-//
-//        // Logical behavior for password validation
-//        when(encoder.matches("pass123", "encoded")).thenReturn(true);
-//    }
-//
-//    @Test
-//    void testUser_LogIn_Success() throws Exception {
-//        mockSaveGuestSuccess();
-//        mockExistsByUsernameFailure();
-//
-//
-//        saveUserRepo(user);
-//        when(mockUserRepo.findRegisteredUsersByUsername("bashar")).thenReturn(repo_results);
-//        String guestToken = userService.generateGuest();
-//        assertTrue(userService.register(guestToken, "bashar", "pass123", 20));
-//
-//        String userToken = userService.login(guestToken, "bashar", "pass123");
-//
-//        assertNotNull(userToken);
-//        assertFalse(userToken.isEmpty());
-//    }
+    @BeforeEach
+    void setup() throws Exception {
+        mockGuestRepo.deleteAll();
+        mockUserRepo.deleteAll();
 
+        // Inject the real encoder into userService
+        Field encoderField = UserService.class.getDeclaredField("encoder");
+        encoderField.setAccessible(true);
+        encoderField.set(userService, encoder);
+
+        // Setup real password and encoding
+        String rawPassword = "pass123";
+        String encodedPassword = encoder.encodePassword(rawPassword);
+
+        // Create registered user (pre-existing)
+        user = new Registered(1, "bashar", encodedPassword, 20);
+        repo_results = List.of(user);
+
+        // Mock repository behavior for the registered user
+        saveUserRepo(user);
+        when(mockUserRepo.existsByUsername("bashar")).thenReturn(1); // simulate user exists
+        when(mockUserRepo.findRegisteredUsersByUsername("bashar")).thenReturn(repo_results);
+
+    }
+
+
+
+    @Test
+    void testUser_LogIn_Success() throws Exception {
+        // Arrange
+        // Guest setup
+        Guest guest = new Guest();
+        saveGuestRepo(guest);
+        when(mockGuestRepo.save(any())).thenReturn(guest);
+        when(mockAuthRepo.generateGuestToken(0)).thenReturn("guest-token");
+        when(mockAuthRepo.validToken("guest-token")).thenReturn(true);
+
+        // Register step
+        when(mockUserRepo.existsByUsername("bashar")).thenReturn(0);
+        when(mockUserRepo.save(any())).thenReturn(user); // use user from setup
+
+        // Login step
+        when(mockUserRepo.findRegisteredUsersByUsername("bashar")).thenReturn(repo_results); // use repo_results from setup
+        when(mockAuthRepo.generateUserToken(0, "bashar")).thenReturn("user-token");
+
+        // Act
+        String guestToken = userService.generateGuest();
+        boolean registerSuccess = userService.register(guestToken, "bashar", "pass123", 20);
+        String userToken = userService.login(guestToken, "bashar", "pass123");
+
+        // Assert
+        assertTrue(registerSuccess);
+        assertEquals("user-token", userToken);
+    }
 
 
 
     @Test
     void testUser_LogOut_Success() throws Exception {
+        // Arrange
+        mockExistsByUsernameFailure();
+        saveUserRepo(user);
+        saveGuestRepo(new Guest());
+
+        when(mockAuthRepo.generateUserToken(anyInt(), anyString())).thenReturn(Rtoken);
+        when(mockUserRepo.findRegisteredUsersByUsername("bashar")).thenReturn(List.of(user));
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(Rtoken, logger);
+
+        // These two are required for logoutUser(...)
+        when(mockAuthRepo.getUserName(Rtoken)).thenReturn("bashar");
+        when(mockAuthRepo.generateGuestToken(user.getId())).thenReturn("G1");
+
+        // Act
+        String guestToken = userService.generateGuest();
+        boolean registered = userService.register(guestToken, "bashar", "pass123", 20);
+        String userToken = userService.login(guestToken, "bashar", "pass123");
+        String newGuestToken = userService.logoutUser(userToken);
+
+        // Assert
+        assertTrue(registered);
+        assertNotNull(userToken);
+        assertEquals(Rtoken, userToken);
+        assertNotNull(newGuestToken);
+        assertEquals("G1", newGuestToken);
     }
+
 
     @Test
     void testUser_LogIn_Failure_Invalid_UserName() {
@@ -112,88 +160,112 @@ public class UserTests extends AcceptanceTests {
 
         assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getNumber());
     }
-//
-//    @Test
-//    void testUser_LogOut_Failure() {
-//        doThrow(new RuntimeException("logout error"))
-//                .when(mockAuthRepo).logout("token_user");
-//
-//        Exception ex = assertThrows(Exception.class, () -> {
-//            userService.logout("token_user");
-//        });
-//
-//        assertTrue(ex.getMessage().contains("logout error"));
-//    }
 
-//    @Test
-//    void testUserLogin_Failure_InvalidToken() throws UIException {
-//        mockValidTokenFailure("bad-token");
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            userService.getUser("bad-token");
-//        });
-//
-//        assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
-//    }
-//
-//    @Test
-//    void testUserLogin_Failure_UserNotFound() throws Exception {
-//        when(mockAuthRepo.validToken("some-token")).thenReturn(true);
-//        when(mockAuthRepo.getUserId("some-token")).thenReturn(100);
-//        when(mockUserRepo.findById(100)).thenReturn(null);
-//
-//        Exception ex = assertThrows(Exception.class, () -> {
-//            userService.getUser("some-token");
-//        });
-//
-//        assertTrue(ex.getMessage().contains("User not found"));
-//    }
-//
-//    @Test
-//    void testUserLogout_Failure_UserNotFound() throws Exception {
-//        doThrow(new RuntimeException("user not found"))
-//                .when(mockAuthRepo).logout("unknown-token");
-//
-//        Exception ex = assertThrows(Exception.class, () -> {
-//            userService.logout("unknown-token");
-//        });
-//
-//        assertTrue(ex.getMessage().contains("user not found"));
-//    }
-//
-//    @Test
-//    void testUserLogout_Failure_GuestTokenGenerationError() throws Exception {
-//        doThrow(new RuntimeException("token error"))
-//                .when(mockAuthRepo).logout("guest-token");
-//
-//        Exception ex = assertThrows(Exception.class, () -> {
-//            userService.logout("guest-token");
-//        });
-//
-//        assertTrue(ex.getMessage().contains("token error"));
-//    }
-//
-//    @Test
-//    void testUser_setAdmin_Success() throws Exception {
-//        mockValidToken("admin-token", true);
-//        mockGetUserIdFromToken("admin-token", 1);
-//        when(mockUserRepo.existsById(7)).thenReturn(true);
-//
-//        boolean result = userService.setAdmin("admin-token", 7);
-//
-//        assertTrue(result);
-//    }
-//
-//    @Test
-//    void testUser_setAdmin_Failure_InvalidToken() throws UIException {
-//        mockValidTokenFailure("bad-admin-token");
-//
-//        UIException ex = assertThrows(UIException.class, () -> {
-//            userService.setAdmin("bad-admin-token", 7);
-//        });
-//
-//        assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
-//    }
+    @Test
+    void testUser_LogOut_Failure_invalidtoken() throws UIException {
+        // No need to register user again – setup already has it
+        // Simulate invalid token
+        doThrow(new UIException("Invalid token", ErrorCodes.INVALID_TOKEN))
+                .when(mockAuthRepo).checkAuth_ThrowTimeOutException("token_user", logger);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            userService.logoutUser("token_user");
+        });
+
+        assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
+    }
+
+
+    @Test
+    void testUserLogin_Failure_InvalidToken() throws UIException {
+        mockValidTokenFailure("bad-token");
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            userService.getUserDTO("bad-token");
+        });
+
+        assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
+    }
+
+
+    @Test
+    void testUserLogin_Failure_UserNotFound() throws Exception {
+        // Arrange
+        String token = "some-token";
+        int fakeId = user.getId(); // dynamic from setup
+
+        // Correctly mock token validation (does nothing)
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(token, logger);
+        when(mockAuthRepo.getUserId(token)).thenReturn(fakeId);
+
+        // Simulate user not found
+        when(mockUserRepo.findById(fakeId)).thenReturn(Optional.empty());
+        when(mockGuestRepo.findById(fakeId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        UIException ex = assertThrows(UIException.class, () -> {
+            userService.getUserDTO(token); // internally calls getUser(...)
+        });
+
+        assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getNumber());
+    }
+
+
+    @Test
+    void testUserLogout_Failure_UserNotFound() throws Exception {
+        String token = "some-valid-token";
+
+        // Token is valid
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(token, logger);
+        when(mockAuthRepo.getUserName(token)).thenReturn("nonexistent-user");
+
+        // User lookup fails
+        when(mockUserRepo.findRegisteredUsersByUsername("nonexistent-user")).thenReturn(List.of());
+
+        // Act & Assert
+        UIException ex = assertThrows(UIException.class, () -> {
+            userService.logoutUser(token);
+        });
+
+        assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getNumber());
+    }
+
+
+
+    @Test
+    void testUser_setAdmin_Success() throws Exception {
+        // Arrange
+        String token = "admin-token";
+        int userId = user.getId(); // from setup
+
+        mockValidToken(token, true);
+        mockGetUserIdFromToken(token, 99); // admin caller
+        when(mockUserRepo.findById(userId)).thenReturn(Optional.of(user));
+        when(adminInitilizer.matchPassword("123321")).thenReturn(true);
+
+        // Act
+        boolean result = userService.setAdmin(token, "123321", userId);
+
+        // Assert
+        assertTrue(result);
+    }
+
+    @Test
+    void testUser_setAdmin_Failure_InvalidToken() throws UIException {
+        // Arrange
+        String token = "bad-admin-token";
+        int userId = user.getId(); // from setup
+
+        mockValidTokenFailure(token); // simulate invalid token
+
+        // Act + Assert
+        UIException ex = assertThrows(UIException.class, () -> {
+            userService.setAdmin(token, "123321", userId); // supply correct admin key
+        });
+
+        assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
+    }
+
 
 //     @Test
 //     void testUser_CheckPurchaseHistory_Success() throws Exception {

@@ -203,7 +203,7 @@ public class StoreRepository implements IStoreRepo {
             }
         }
     }
-    
+
     public void fillWithStoreName(BidDTO[] bids) {
         for (BidDTO bid : bids) {
             int storeId = bid.storeId;

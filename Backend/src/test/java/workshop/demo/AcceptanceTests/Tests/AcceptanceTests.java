@@ -4,11 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import workshop.demo.ApplicationLayer.*;
 import workshop.demo.DTOs.*;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.*;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
@@ -32,6 +35,7 @@ import static org.mockito.Mockito.*;
 @ActiveProfiles("test")
 public class AcceptanceTests {
 
+    private static final Logger logger = LoggerFactory.getLogger(AcceptanceTests.class);
 
 
 
@@ -44,6 +48,7 @@ public class AcceptanceTests {
     protected IStoreStockRepo mockStoreStock=Mockito.mock(IStoreStockRepo.class);
     protected NodeJPARepository mockNodeRepo=Mockito.mock(NodeJPARepository.class);
     protected IStockRepo mockStockRepo = Mockito.mock(IStockRepo.class);
+    protected AdminInitilizer adminInitilizer = Mockito.mock(AdminInitilizer.class); // ✅ Added
 
 
 
@@ -87,6 +92,12 @@ public class AcceptanceTests {
 
 
 
+    protected void mockSaveGuestSuccess() {
+        when(mockGuestRepo.save(any())).thenAnswer(invocation -> {
+            Guest guest = invocation.getArgument(0);
+            return guest;
+        });
+    }
 
     protected void mockSaveRegisteredFailure() {
         when(mockUserRepo.save(any(Registered.class))).thenThrow(new RuntimeException("DB error saving registered"));
@@ -99,7 +110,24 @@ public class AcceptanceTests {
     protected void mockExistsByUsernameFailure() {
         when(mockUserRepo.existsByUsername(any())).thenReturn(0);
     }
+    protected void mockValidTokenFailure(String token) throws UIException {
+        when(mockAuthRepo.validToken(token)).thenReturn(false);
+        doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
+                .when(mockAuthRepo).checkAuth_ThrowTimeOutException(eq(token), any());
+    }
 
+    protected void mockValidToken(String token, boolean isValid) throws UIException {
+        when(mockAuthRepo.validToken(token)).thenReturn(isValid);
+        if (isValid) {
+            doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(eq(token), eq(logger));
+        } else {
+            doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
+                    .when(mockAuthRepo).checkAuth_ThrowTimeOutException(eq(token),eq(logger));
+        }
+    }
+    protected void mockGetUserIdFromToken(String token, int userId) throws UIException {
+        when(mockAuthRepo.getUserId(token)).thenReturn(userId);
+    }
 
 
 

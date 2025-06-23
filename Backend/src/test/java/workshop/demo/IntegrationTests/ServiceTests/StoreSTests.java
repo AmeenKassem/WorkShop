@@ -54,11 +54,7 @@ import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DTOs.WorkerDTO;
-import workshop.demo.DataAccessLayer.GuestJpaRepository;
-import workshop.demo.DataAccessLayer.NodeJPARepository;
-import workshop.demo.DataAccessLayer.OfferJpaRepository;
-import workshop.demo.DataAccessLayer.StoreTreeJPARepository;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
+import workshop.demo.DataAccessLayer.*;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -82,8 +78,6 @@ import workshop.demo.InfrastructureLayer.PurchaseRepository;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreRepository;
-import workshop.demo.InfrastructureLayer.UserRepository;
-import workshop.demo.InfrastructureLayer.UserSuspensionRepo;
 import workshop.demo.SocketCommunication.SocketHandler;
 
 @SpringBootTest
@@ -112,7 +106,7 @@ public class StoreSTests {
     @Autowired
     private PurchaseRepository purchaseRepository;
     @Autowired
-    private UserSuspensionRepo suspensionRepo;
+    private UserSuspensionJpaRepository suspensionRepo;
     @Autowired
     private AuthenticationRepo authRepo;
 

@@ -39,7 +39,7 @@ public class GuestTests extends AcceptanceTests {
     Guest go = new Guest();
     Registered or = new Registered(0, "bashar", "password", 24);
 
-    Store s=new Store("TestStore","Home");
+    //Store s=new Store("TestStore","Home");
 
     @BeforeEach
     void setup() throws Exception {
@@ -49,7 +49,7 @@ public class GuestTests extends AcceptanceTests {
         mockStockRepo1.deleteAll();
         mockStoreStock.deleteAll();
         mockNodeRepo.deleteAll();
-        userService.generateGuest();
+
         //the owner of the store
         // guest ---> owner
         saveGuestRepo(go);
@@ -72,34 +72,19 @@ public class GuestTests extends AcceptanceTests {
         saveUserRepo(or);
         or.login();
 
-        //add store to the owner
-        when(mockAuthRepo.getUserId(OToken)).thenReturn(or.getId());
-        //doNothing().when(userService).checkUserRegisterOnline_ThrowException(or.getId());
-       // doNothing().when(mockSusRepo).(or.getId());
-
-
-        when(mockStoreRepo.save(any())).thenReturn(s);
-
-        //doNothing().when(mock).addNewStoreOwner(anyInt(), eq(or.getId()));
-        when(mockStoreStock.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        doNothing().when(mockOrderRepo).addStoreTohistory(anyInt());
-
-        int storeId = storeService.addStoreToSystem(OToken, "TestStore", "Home");
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//        //add store to the owner
+//        when(mockAuthRepo.getUserId(OToken)).thenReturn(or.getId());
+//        doNothing().when(userService).checkUserRegisterOnline_ThrowException(or.getId());
+//       // doNothing().when(mockSusRepo).(or.getId());
+//
+//
+//        when(mockStoreRepo.save(any())).thenReturn(s);
+//
+//        //doNothing().when(mock).addNewStoreOwner(anyInt(), eq(or.getId()));
+//        when(mockStoreStock.save(any())).thenAnswer(inv -> inv.getArgument(0));
+//        doNothing().when(mockOrderRepo).addStoreTohistory(anyInt());
+//
+//        int storeId = storeService.addStoreToSystem(OToken, "TestStore", "Home");
     }
 
     @Test
@@ -258,35 +243,32 @@ public class GuestTests extends AcceptanceTests {
 //
 //         when(mockAuthRepo.validToken(guestTokenB)).thenReturn(true);
 //
-//         when(mockStockRepo.GetProductInfo(productId)).thenReturn(null);
-//
 //         UIException exception = assertThrows(UIException.class, () -> {
 //             testGuest_GetProductInfo(guestTokenB, productId);
 //         });
 //
 //         assertEquals("Product not found.", exception.getMessage());
 //     }
-////
+//
 //     @Test
 //     void testGuestAddProductToCart_Success() throws Exception {
 //         int guestId = 1;
 //         int storeId = 10;
-//         int productId = 100;
+//         int prod
+////         ItemStoreDTO itemStoreDTO = new ItemStoreDTO(productId, 5, 1500, Category.Electronics, 0, 4, "Laptop", "TestStore");
+////         ItemCartDTO itemCartDTO = new ItemCaructId = 100;
 //         String guestToken = "guest-token-1";
 //
 //         when(mockAuthRepo.validToken(guestToken)).thenReturn(true);
 //         when(mockAuthRepo.getUserId(guestToken)).thenReturn(guestId);
-//
-//         ItemStoreDTO itemStoreDTO = new ItemStoreDTO(productId, 5, 1500, Category.Electronics, 0, 4, "Laptop", "TestStore");
-//         ItemCartDTO itemCartDTO = new ItemCartDTO(storeId, productId, 5, 1500, "Laptop", "TestStore", Category.Electronics);
+//tDTO(storeId, productId, 5, 1500, "Laptop", "TestStore", Category.Electronics);
 //
 //         doNothing().when(mockUserRepo).addItemToGeustCart(guestId, itemCartDTO);
 //
 //         assertDoesNotThrow(() -> {
 //             userService.addToUserCart(guestToken, itemStoreDTO, 2);
 //         });
-//     }
-//
+
 //     @Test
 //     void testGuestAddProductToCart_InvalidToken() throws Exception {
 //         int storeId = 10;
@@ -792,25 +774,24 @@ public class GuestTests extends AcceptanceTests {
 //         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
 //     }
 //
-//     @Test
-//     void testGuestModifyCartAddQToBuy_GuestNotFound() throws Exception {
-//         int guestId = 999;
-//         String guestToken = "guest-token-999";
-//         int productId = 100;
-//         int newQuantity = 3;
-//
-//         when(mockAuthRepo.validToken(guestToken)).thenReturn(true);
-//         when(mockAuthRepo.getUserId(guestToken)).thenReturn(guestId);
-//
-//         doThrow(new UIException("Guest not found: " + guestId, ErrorCodes.GUEST_NOT_FOUND))
-//                 .when(mockUserRepo).ModifyCartAddQToBuy(eq(guestId), eq(productId), eq(newQuantity));
-//
-//         UIException ex = assertThrows(UIException.class, ()
-//                 -> userService.ModifyCartAddQToBuy(guestToken, productId, newQuantity)
-//         );
-//
-//         assertEquals("Guest not found: " + guestId, ex.getMessage());
-//         assertEquals(ErrorCodes.GUEST_NOT_FOUND, ex.getNumber());
-//     }
+     @Test
+     void testGuestModifyCartAddQToBuy_GuestNotFound() throws Exception {
+         int guestId = 999;
+         String guestToken = "guest-token-999";
+         int productId = 100;
+         int newQuantity = 3;
+
+         when(mockAuthRepo.validToken(guestToken)).thenReturn(true);
+         when(mockAuthRepo.getUserId(guestToken)).thenReturn(guestId);
+
+
+
+         UIException ex = assertThrows(UIException.class, ()
+                 -> userService.ModifyCartAddQToBuy(guestToken, productId, newQuantity)
+         );
+
+         assertEquals("id is not registered or guest", ex.getMessage());
+         assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getNumber());
+     }
 
 }

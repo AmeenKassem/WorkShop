@@ -53,8 +53,8 @@ public class UserService {
 
     @Autowired
     public UserService(UserJpaRepository regJpaRepo, IAuthRepo authRepo, IStockRepo stockRepo,
-            AdminInitilizer adminInitilizer,
-            GuestJpaRepository guestRepo, IStoreRepoDB storeRepo) {
+                       AdminInitilizer adminInitilizer,
+                       GuestJpaRepository guestRepo, IStoreRepoDB storeRepo) {
         // this.userRepo = userRepo;
         this.authRepo = authRepo;
         this.stockRepo = stockRepo;
@@ -68,9 +68,9 @@ public class UserService {
     public String generateGuest() throws UIException, Exception {
         logger.info("generateGuest called");
         Guest guest = new Guest();
-        Guest savedGuest = guestJpaRepository.save(guest);
-        logger.info("Generated guest with ID={}", savedGuest.getId());
-        return authRepo.generateGuestToken(savedGuest.getId());
+        guestJpaRepository.save(guest);
+        logger.info("Generated guest with ID={}", guest.getId());
+        return authRepo.generateGuestToken(guest.getId());
 
     }
 
@@ -104,9 +104,6 @@ public class UserService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
 
         int id = login(username, pass);
-        // Hmode
-        // adminHandler.recordLoginEvent();
-        // HmodeEnd
         logger.info("User {} logged in .", username);
         return authRepo.generateUserToken(id, username);
 

@@ -63,12 +63,12 @@ public class UserSuspension {
         return paused;
     }
 
-    public static void main(String[] args){
-        // UserSuspension sus = new UserSuspension(1, Duration.ofSeconds(10));
-        // sus.pause();
-        // System.out.println("hii");
-        // sus.remainingDuration.
-    }
+//    public static void main(String[] args){
+//        // UserSuspension sus = new UserSuspension(1, Duration.ofSeconds(10));
+//        // sus.pause();
+//        // System.out.println("hii");
+//        // sus.remainingDuration.
+//    }
 
     public LocalDateTime getSuspensionEndTime() {
         return suspensionEndTime;
