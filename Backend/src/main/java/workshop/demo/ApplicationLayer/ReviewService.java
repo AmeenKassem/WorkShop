@@ -28,8 +28,6 @@ public class ReviewService {
 
     @Autowired
     private IAuthRepo authRepo;
-    // @Autowired
-    // private IStockRepo stockRepo;
     @Autowired
     private IStoreStockRepo storeStockRepo;
     @Autowired

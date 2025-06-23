@@ -78,25 +78,6 @@ public class PurchaseService {
 
     private static final Logger logger = LoggerFactory.getLogger(PurchaseService.class);
 
-    // @Autowired
-    // public PurchaseService(IAuthRepo authRepo, IStockRepo stockRepo, IStoreRepo storeRepo,
-    //         IPurchaseRepo purchaseRepo, IOrderRepoDB orderJpaRepo, IPaymentService paymentService,
-    //         ISupplyService supplyService, UserSuspensionJpaRepository usersuspentionjpa, UserJpaRepository regsRepo,
-    //         GuestJpaRepository guestRepo, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStockRepo) {
-    //     this.authRepo = authRepo;
-    //     this.stockRepo = stockRepo;
-    //     this.storeRepo = storeRepo;
-    //     // this.userRepo = userRepo;
-    //     this.purchaseRepo = purchaseRepo;
-    //     this.orderJpaRepo = orderJpaRepo;
-    //     this.paymentService = paymentService;
-    //     this.supplyService = supplyService;
-    //     this.suspensionJpaRepo = usersuspentionjpa;
-    //     this.guestRepo = guestRepo;
-    //     this.regRepo = regsRepo;
-    //     this.storeJpaRepo = storeJpaRepo;
-    //     this.storeStockRepo = storeStockRepo;
-    // }
     @Transactional(rollbackFor = UIException.class)
     public ReceiptDTO[] buyGuestCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
             throws Exception {
