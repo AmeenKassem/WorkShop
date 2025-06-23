@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,66 +21,97 @@ import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
+import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.InfrastructureLayer.AuthenticationRepo;
-import workshop.demo.InfrastructureLayer.Encoder;
-import workshop.demo.InfrastructureLayer.NotificationRepository;
-import workshop.demo.InfrastructureLayer.OrderRepository;
-import workshop.demo.InfrastructureLayer.PurchaseRepository;
-import workshop.demo.InfrastructureLayer.SUConnectionRepository;
-import workshop.demo.InfrastructureLayer.StockRepository;
-import workshop.demo.InfrastructureLayer.StoreRepository;
-import workshop.demo.InfrastructureLayer.UserRepository;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
+import workshop.demo.InfrastructureLayer.*;
 
 @Service
 @SpringBootTest
 @ActiveProfiles("test")
 public class SuspendTests {
 
+ @Autowired
+    StoreTreeJPARepository tree;
     @Autowired
-    private NotificationRepository notificationRepository;
+    private NodeJPARepository node;
+    // @Autowired
+    // private NotificationRepository notificationRepository;
+   
     @Autowired
-    private StoreRepository storeRepository;
+    private IStockRepoDB stockRepositoryjpa;
     @Autowired
-    private StockRepository stockRepository;
+    private IStoreRepoDB storeRepositoryjpa;
     @Autowired
-    private OrderRepository orderRepository;
+    private IOrderRepoDB orderRepository;
     @Autowired
     private PurchaseRepository purchaseRepository;
     @Autowired
     private UserSuspensionJpaRepository suspensionRepo;
     @Autowired
     private AuthenticationRepo authRepo;
+    @Autowired
+    private UserJpaRepository userRepo;
+    @Autowired
+    private SUConnectionRepository sIsuConnectionRepo;
+    @Autowired
+    private GuestJpaRepository guestRepo;
+    @Autowired
+    private IStoreStockRepo storeStockRepo;
+    @Autowired
+    private OfferJpaRepository offerRepo;
+    // ======================== Services ========================
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private StoreService storeService;
+    @Autowired
+    private StockService stockService;
+    @Autowired
+    private PurchaseService purchaseService;
+    @Autowired
+    private OrderService orderService;
+    @Autowired
+    private UserSuspensionService suspensionService;
 
+    // ======================== Payment / Supply ========================
     @Autowired
-    PaymentServiceImp payment;
+    private PaymentServiceImp payment;
     @Autowired
-    SupplyServiceImp serviceImp;
+    private SupplyServiceImp serviceImp;
 
+    // ======================== Utility ========================
     @Autowired
-    SUConnectionRepository sIsuConnectionRepo;
+    private Encoder encoder;
 
-    @Autowired
-    Encoder encoder;
-    @Autowired
-    UserRepository userRepo;
-    @Autowired
-    UserSuspensionService suspensionService;
-    // @Autowired
-    // AdminHandler adminService;
-    @Autowired
-    UserService userService;
-    @Autowired
-    StockService stockService;
-    @Autowired
-    StoreService storeService;
-    @Autowired
-    PurchaseService purchaseService;
-    @Autowired
-    OrderService orderService;
+    // ======================== Test Data ========================
+    //String NOToken;
+    //String NGToken;
+    //String GToken;
+    //String Admin;
+    //ItemStoreDTO itemStoreDTO;
+    //int PID;
 
+    //int createdStoreId;
+
+    @BeforeEach
+    void setup() throws Exception {
+        node.deleteAll();
+        orderRepository.deleteAll();
+        tree.deleteAll();
+        userRepo.deleteAll();
+
+        guestRepo.deleteAll();
+
+        stockRepositoryjpa.deleteAll();
+        offerRepo.deleteAll();
+        storeRepositoryjpa.deleteAll();
+        storeStockRepo.deleteAll();
+
+       
+        suspensionRepo.deleteAll();
+            orderRepository.deleteAll();
+    }
     public SuspendTests() throws Exception {
     }
 
@@ -97,7 +130,9 @@ public class SuspendTests {
         int userId = authRepo.getUserId(userToken);
         suspensionService.suspendRegisteredUser(userId, 1, adminToken);
         assertTrue(suspensionService.isUserSuspended(userId));
-        Thread.sleep(1200);
+        Thread.sleep(65000);
+     userId = authRepo.getUserId(userToken);
+
         assertFalse(suspensionService.isUserSuspended(userId));
     }
 
@@ -113,7 +148,7 @@ public class SuspendTests {
 
         suspensionService.suspendGuestUser(guestId, 1, adminToken);
         assertTrue(suspensionService.isUserSuspended(guestId));
-        Thread.sleep(1200);
+        Thread.sleep(65000);
         assertFalse(suspensionService.isUserSuspended(guestId));
     }
 
@@ -127,7 +162,11 @@ public class SuspendTests {
         String guestToken = userService.generateGuest();
         int guestId = authRepo.getUserId(guestToken);
 
-        suspensionService.suspendGuestUser(guestId, 2, adminToken);
+        userService.register(token, "sus", "sus", 22);
+         guestToken = userService.login(guestToken, "sus", "sus");
+         guestId = authRepo.getUserId(guestToken);
+
+        suspensionService.suspendRegisteredUser(guestId, 1, adminToken);
         assertTrue(suspensionService.isUserSuspended(guestId));
 
         suspensionService.pauseSuspension(guestId, adminToken);
@@ -136,7 +175,7 @@ public class SuspendTests {
         suspensionService.resumeSuspension(guestId, adminToken);
         assertTrue(suspensionService.isUserSuspended(guestId));
 
-        Thread.sleep(2100);
+        Thread.sleep(65000);
         assertFalse(suspensionService.isUserSuspended(guestId));
     }
 

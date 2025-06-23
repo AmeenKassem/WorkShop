@@ -82,11 +82,12 @@ public class AdminPageView extends VerticalLayout {
             Button pause = new Button("Pause", click -> presenter.onPauseSuspension(user.getId()));
             Button resume = new Button("Resume", click -> presenter.onResumeSuspension(user.getId()));
             Button cancel = new Button("Cancel", click -> presenter.onCancelSuspension(user.getId()));
-            actions.add(suspend,cancel, pause, resume);
+            actions.add(suspend, cancel, pause, resume);
             return actions;
         }).setHeader("Actions")
-        .setAutoWidth(true)
-        .setFlexGrow(0);setFlexGrow(0);
+                .setAutoWidth(true)
+                .setFlexGrow(0);
+        setFlexGrow(0);
 
         try {
             List<UserDTO> users = presenter.getAllUsers();
@@ -116,21 +117,21 @@ public class AdminPageView extends VerticalLayout {
         } else {
             Grid<UserSuspensionDTO> grid = new Grid<>(UserSuspensionDTO.class, false);
 
-            grid.addColumn(UserSuspensionDTO::getUserId)
-                .setHeader("User ID");
+            grid.addColumn(UserSuspensionDTO::getUserName)
+                    .setHeader("User Name");
 
             grid.addColumn(s -> s.isPaused() ? "Yes" : "No")
-                .setHeader("Paused");
+                    .setHeader("Paused");
 
             grid.addColumn(s -> s.getSuspensionEndTime() != null ? s.getSuspensionEndTime().toString() : "N/A")
-                .setHeader("End Time")
-                .setAutoWidth(true)  
-                .setFlexGrow(0);    
+                    .setHeader("End Time")
+                    .setAutoWidth(true)
+                    .setFlexGrow(0);
 
             grid.addColumn(UserSuspensionDTO::getRemainingWhenPaused)
-                .setHeader("Remaining Time ")
-                .setAutoWidth(true)
-                .setFlexGrow(0);
+                    .setHeader("Remaining Time ")
+                    .setAutoWidth(true)
+                    .setFlexGrow(0);
 
             grid.setItems(suspensions);
             grid.setWidthFull();
@@ -144,7 +145,6 @@ public class AdminPageView extends VerticalLayout {
 
         dialog.open();
     }
-
 
     private void showManageStores() {
         removeAll(); // Clear current content
@@ -170,7 +170,5 @@ public class AdminPageView extends VerticalLayout {
         add(storeGrid);
 
     }
-
-    
 
 }

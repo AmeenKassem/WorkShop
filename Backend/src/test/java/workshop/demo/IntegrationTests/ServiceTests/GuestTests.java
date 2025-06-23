@@ -39,27 +39,12 @@ import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DTOs.UserDTO;
-import workshop.demo.DataAccessLayer.GuestJpaRepository;
-import workshop.demo.DataAccessLayer.NodeJPARepository;
-import workshop.demo.DataAccessLayer.OfferJpaRepository;
-import workshop.demo.DataAccessLayer.StoreTreeJPARepository;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Stock.IStockRepoDB;
-import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.User.ShoppingCart;
-import workshop.demo.InfrastructureLayer.AuthenticationRepo;
-import workshop.demo.InfrastructureLayer.Encoder;
-import workshop.demo.InfrastructureLayer.NotificationRepository;
-// import workshop.demo.InfrastructureLayer.OrderRepository;
-import workshop.demo.InfrastructureLayer.PurchaseRepository;
-import workshop.demo.InfrastructureLayer.SUConnectionRepository;
-import workshop.demo.InfrastructureLayer.StockRepository;
-import workshop.demo.InfrastructureLayer.StoreRepository;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
+import workshop.demo.InfrastructureLayer.*;
+
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -72,18 +57,15 @@ public class GuestTests {
     StoreTreeJPARepository tree;
     @Autowired
     private NodeJPARepository node;
-    @Autowired
-    private NotificationRepository notificationRepository;
-    @Autowired
-    private StoreRepository storeRepository;
-    @Autowired
-    private StockRepository stockRepository;
+    // @Autowired
+    // private NotificationRepository notificationRepository;
+   
     @Autowired
     private IStockRepoDB stockRepositoryjpa;
     @Autowired
     private IStoreRepoDB storeRepositoryjpa;
-    // @Autowired
-    // private OrderRepository orderRepository;
+    @Autowired
+    private IOrderRepoDB orderRepository;
     @Autowired
     private PurchaseRepository purchaseRepository;
     @Autowired
@@ -137,7 +119,7 @@ public class GuestTests {
     @BeforeEach
     void setup() throws Exception {
         node.deleteAll();
-
+        orderRepository.deleteAll();
         tree.deleteAll();
         userRepo.deleteAll();
 
@@ -148,15 +130,10 @@ public class GuestTests {
         storeRepositoryjpa.deleteAll();
         storeStockRepo.deleteAll();
 
-        if (storeRepository != null) {
-            storeRepository.clear();
-        }
-        if (stockRepository != null) {
-            stockRepository.clear();
-        }
-        // if (orderRepository != null) {
-        //     orderRepository.clear();
-        // }
+       
+        
+            orderRepository.deleteAll();
+        
 
         GToken = userService.generateGuest();
 
@@ -173,7 +150,6 @@ public class GuestTests {
         createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore",
                 "ELECTRONICS");
         // assertEquals( 1,createdStoreId);
-        System.out.println(createdStoreId + "aaaaaaaaaaaaaaaaa");
 
         // ======================= PRODUCT & ITEM ADDITION =======================
         String[] keywords = { "Laptop", "Lap", "top" };
@@ -347,9 +323,8 @@ public class GuestTests {
 
     // //NOTE :BUY CART FINISH +ASK FOR MORE FAILURE
     @Test
-    void testGuestBuyCart_Success()  {
+    void testGuestBuyCart_Success() throws Exception  {
 
-        try{
             userService.addToUserCart(GToken, itemStoreDTO, 1);
             PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if
             SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if
@@ -369,10 +344,7 @@ public class GuestTests {
     
             assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 9);
 
-        }catch(Exception ex ){
-            assertEquals("", ex.getMessage());
-        }
-
+    
     }
 
     @Test
@@ -487,7 +459,7 @@ for (ItemStoreDTO item : items) {
     void testGuestSearchProductInStore_Success() throws Exception {
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                null, // product name filter
+                "Laptop", // product name filter
                 null, // category filter
                 null, // keyword filter
                 createdStoreId, // store ID to filter
@@ -506,10 +478,10 @@ for (ItemStoreDTO item : items) {
 
     @Test
     void testGuestSearchProducts_Success() throws Exception {
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         // --- Step 2: Prepare search criteria ---
         String[] keywords = { "Laptop", "Lap", "top" };
-        System.out.println(storeService.getFinalRateInStore(createdStoreId));
 
         ProductSearchCriteria criteria = new ProductSearchCriteria("Laptop",
                 Category.Electronics, null, createdStoreId, 0, 3000, 0,
@@ -522,7 +494,6 @@ for (ItemStoreDTO item : items) {
         assertEquals(2000, result[0].getPrice());
         assertEquals(createdStoreId, result[0].getStoreId());
 
-        // --- Step 7: Verify mocks ---
     }
 
     @Test
@@ -546,10 +517,11 @@ for (ItemStoreDTO item : items) {
 
     @Test
     void testSearchProducts_NoMatches() throws Exception {
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         String[] keywords = { "Laptop", "Lap", "top" };
         ProductSearchCriteria criteria = new ProductSearchCriteria("aa",
-                Category.Electronics, keywords[0], createdStoreId, 0, 5000,
+                Category.Electronics, keywords[0], x, 0, 5000,
                 0, 5);
         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(GToken, criteria);
         assertNotNull(result);

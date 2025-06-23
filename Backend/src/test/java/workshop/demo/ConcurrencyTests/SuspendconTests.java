@@ -14,11 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.ApplicationLayer.*;
-import workshop.demo.DataAccessLayer.*;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Stock.IStockRepoDB;
-import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.InfrastructureLayer.*;
 
 @SpringBootTest
@@ -29,12 +25,10 @@ public class SuspendconTests {
     // ============ Autowired Repositories & Services ============
     @Autowired private StoreTreeJPARepository tree;
     @Autowired private NodeJPARepository node;
-    @Autowired private NotificationRepository notificationRepository;
-    @Autowired private StoreRepository storeRepository;
+  
     @Autowired private StockRepository stockRepository;
     @Autowired private IStockRepoDB stockRepositoryjpa;
     @Autowired private IStoreRepoDB storeRepositoryjpa;
-    @Autowired private OrderRepository orderRepository;
     @Autowired private PurchaseRepository purchaseRepository;
     @Autowired private UserSuspensionJpaRepository suspensionRepo;
     @Autowired private AuthenticationRepo authRepo;

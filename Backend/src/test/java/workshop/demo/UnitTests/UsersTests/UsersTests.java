@@ -20,16 +20,14 @@ import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.ShoppingCart;
-
+import workshop.demo.InfrastructureLayer.GuestJpaRepository;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
 import workshop.demo.ApplicationLayer.UserService;
-
-import workshop.demo.DataAccessLayer.GuestJpaRepository;
-
-import workshop.demo.DataAccessLayer.UserJpaRepository;
 
 @SpringBootTest
 @ActiveProfiles("test")
 public class UsersTests {
+
     @Autowired
     private IAuthRepo auth;
     // private Encoder enc = new Encoder();
@@ -73,8 +71,8 @@ public class UsersTests {
     @Test
     void testAddToCart_ImplicitStore() {
         CartItem item = new CartItem(new ItemCartDTO(1, 1, 1, 1, "phone", "store", Category.Electronics)); // storeId =
-                                                                                                           // 2 inside
-                                                                                                           // item
+        // 2 inside
+        // item
         guest.addToCart(item);
 
         List<CartItem> items = guest.getCart();
@@ -113,8 +111,6 @@ public class UsersTests {
         // No assert here because inner method does not expose anything
         // JaCoCo will register coverage on the condition
     }
-
-
 
     @Test
     void testToUserDTO() {

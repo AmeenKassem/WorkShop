@@ -25,7 +25,7 @@ import pyodbc
 
 # Define connection parameters
 server = 'ws-server.database.windows.net'
-database = 'bhaa_db'
+database = 'rahaf_db'
 username = 'rahaf'
 password = 'RaPass2025'
 driver = '{ODBC Driver 17 for SQL Server}'  # Ensure this driver is installed

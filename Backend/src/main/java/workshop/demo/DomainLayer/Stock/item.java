@@ -5,49 +5,44 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-
-// import com.vaadin.flow.component.template.Id;
-
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Transient;
 import workshop.demo.DTOs.Category;
 
 @Embeddable
 public class item {
+
     private static final Logger logger = LoggerFactory.getLogger(item.class);
-
-    // @Id
-    // @GeneratedValue(strategy = GenerationType.IDENTITY)
-    // private int id;
-
     private int productId;
     private int quantity;
     private int price;
     private Category category;
     private int storeId;
 
-    public void setStoreId(int id){
+    public void setStoreId(int id) {
         storeId = id;
     }
-
-    // @ManyToOne
-    // @JoinColumn(name = "storeid")
-    // private StoreStock store;
-
+    @Column(name = "rank_1_count")
+    private int rank1;
+    @Column(name = "rank_2_count")
+    private int rank2;
+    @Column(name = "rank_3_count")
+    private int rank3;
+    @Column(name = "rank_4_count")
+    private int rank4;
+    @Column(name = "rank_5_count")
+    private int rank5;
     @Transient
     private AtomicInteger[] rank;// rank[x] is the number of people who ranked i+1
 
     // discounts ...
-
-    public item(){
-        productId=1;
-        rank=new AtomicInteger[5];
+    public item() {
+        productId = 1;
+        rank = new AtomicInteger[5];
         for (int i = 0; i < 5; i++) {
             rank[i] = new AtomicInteger(0);
         }
@@ -57,12 +52,32 @@ public class item {
         this.productId = produtId;
         this.price = price;
         this.quantity = quantity;
-        
+
         this.rank = new AtomicInteger[5];
         for (int i = 0; i < 5; i++) {
             rank[i] = new AtomicInteger(0);
         }
         this.category = category;
+    }
+
+    @PostLoad
+    private void initRankArray() {
+        rank = new AtomicInteger[5];
+        rank[0] = new AtomicInteger(rank1);
+        rank[1] = new AtomicInteger(rank2);
+        rank[2] = new AtomicInteger(rank3);
+        rank[3] = new AtomicInteger(rank4);
+        rank[4] = new AtomicInteger(rank5);
+    }
+
+    @PrePersist
+    @PreUpdate
+    private void updateRankColumns() {
+        rank1 = rank[0].get();
+        rank2 = rank[1].get();
+        rank3 = rank[2].get();
+        rank4 = rank[3].get();
+        rank5 = rank[4].get();
     }
 
     public int getFinalRank() {
@@ -90,9 +105,21 @@ public class item {
 
             return false;
         }
-        logger.debug("Ranking productId={} with rank={}", productId, i);
 
         rank[i - 1].incrementAndGet();
+        switch (i) {
+            case 1 ->
+                rank1 = rank[0].get();
+            case 2 ->
+                rank2 = rank[1].get();
+            case 3 ->
+                rank3 = rank[2].get();
+            case 4 ->
+                rank4 = rank[3].get();
+            case 5 ->
+                rank5 = rank[4].get();
+        }
+        logger.debug("Ranking productId={} with rank={}", productId, i);
         return true;
     }
 
@@ -109,7 +136,7 @@ public class item {
     public void changeQuantity(int quantity) {
         logger.debug("Setting quantity for productId={} to {}", productId, quantity);
 
-        this.quantity=(quantity);
+        this.quantity = (quantity);
     }
 
     public AtomicInteger[] getRank() {
@@ -142,8 +169,7 @@ public class item {
     }
 
     public int getStoreId() {
-       return storeId;
+        return storeId;
     }
 
-    
 }

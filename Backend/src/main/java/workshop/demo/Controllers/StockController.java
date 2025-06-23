@@ -21,45 +21,15 @@ import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
-import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Notification.INotificationRepo;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Stock.IStockRepoDB;
-import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
-import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 
 @RestController
 @RequestMapping("/stock")
 public class StockController {
 
-    private final StockService stockService;
-
-     @Autowired
-    public StockController(
-        IStockRepo stockrepo,
-        IStoreRepo storeRepo,
-        IAuthRepo auth,
-        UserJpaRepository userRepo,
-        ISUConnectionRepo sUConnectionRepo,
-        UserSuspensionJpaRepository suspensionJpaRepo,
-        INotificationRepo notificationRepo, IStockRepoDB stockJpaRepo, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStock
-    ) {
-        this.stockService = new StockService(
-            stockrepo,
-            storeRepo,
-            auth,
-            userRepo,
-            sUConnectionRepo,
-            suspensionJpaRepo,
-            notificationRepo,stockJpaRepo,storeJpaRepo,storeStock
-        );
-    }
+    @Autowired
+    private StockService stockService;
 
     @GetMapping("/getProductInfo")
     public String getProductInfo(@RequestParam String token,

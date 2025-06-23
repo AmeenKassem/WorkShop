@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import workshop.demo.ApplicationLayer.ReviewService;
 import workshop.demo.DTOs.ReviewDTO;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 
 @RestController
 @RequestMapping("/api/Review")

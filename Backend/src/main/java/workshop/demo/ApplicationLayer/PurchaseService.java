@@ -2,105 +2,81 @@ package workshop.demo.ApplicationLayer;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-// import jakarta.transaction.Transactional;
-import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.SupplyDetails;
-import workshop.demo.DTOs.UserDTO;
-import workshop.demo.DataAccessLayer.GuestJpaRepository;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Order.IOrderRepoDB;
 import workshop.demo.DomainLayer.Order.Order;
 import workshop.demo.DomainLayer.Purchase.IPaymentService;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.ISupplyService;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Stock.IStockRepoDB;
-import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
-import workshop.demo.DomainLayer.Store.Discount;
-import workshop.demo.DomainLayer.Store.DiscountScope;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
-// import workshop.demo.DomainLayer.User.IUserRepo;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingBasket;
-import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
-
-import org.springframework.transaction.annotation.Transactional;
+import workshop.demo.InfrastructureLayer.GuestJpaRepository;
+import workshop.demo.InfrastructureLayer.IOrderRepoDB;
+import workshop.demo.InfrastructureLayer.IStockRepoDB;
+import workshop.demo.InfrastructureLayer.IStoreRepoDB;
+import workshop.demo.InfrastructureLayer.IStoreStockRepo;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
+import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 
 @Service
 public class PurchaseService {
 
-    private final IAuthRepo authRepo;
-    private final IStockRepo stockRepo;
-    private final IStoreRepo storeRepo;
-    private final IOrderRepoDB orderJpaRepo;
+    @Autowired
+    private IAuthRepo authRepo;
+    @Autowired
+    private IStockRepo stockRepo;
+    @Autowired
+    private IOrderRepoDB orderJpaRepo;
     // private final IUserRepo userRepo;
-    private final IPurchaseRepo purchaseRepo;
-    private final IPaymentService paymentService;
-    private final ISupplyService supplyService;
+    @Autowired
+    private IPurchaseRepo purchaseRepo;
+    @Autowired
+    private IPaymentService paymentService;
+    @Autowired
+    private ISupplyService supplyService;
+    @Autowired
     private UserSuspensionJpaRepository suspensionJpaRepo;
+    @Autowired
     private UserJpaRepository regRepo;
+    @Autowired
     private GuestJpaRepository guestRepo;
+    @Autowired
     private IStoreRepoDB storeJpaRepo;
+    @Autowired
     private IStockRepoDB stockJpaRepo;
+    @Autowired
     private IStoreStockRepo storeStockRepo;
 
     private static final Logger logger = LoggerFactory.getLogger(PurchaseService.class);
-
-    @Autowired
-    public PurchaseService(IAuthRepo authRepo, IStockRepo stockRepo, IStoreRepo storeRepo,
-            IPurchaseRepo purchaseRepo, IOrderRepoDB orderJpaRepo, IPaymentService paymentService,
-            ISupplyService supplyService, UserSuspensionJpaRepository usersuspentionjpa, UserJpaRepository regsRepo,
-            GuestJpaRepository guestRepo, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStockRepo) {
-        this.authRepo = authRepo;
-        this.stockRepo = stockRepo;
-        this.storeRepo = storeRepo;
-        // this.userRepo = userRepo;
-        this.purchaseRepo = purchaseRepo;
-        this.orderJpaRepo = orderJpaRepo;
-        this.paymentService = paymentService;
-        this.supplyService = supplyService;
-        this.suspensionJpaRepo = usersuspentionjpa;
-        this.guestRepo = guestRepo;
-        this.regRepo = regsRepo;
-        this.storeJpaRepo = storeJpaRepo;
-        this.storeStockRepo = storeStockRepo;
-    }
 
     @Transactional(rollbackFor = UIException.class)
     public ReceiptDTO[] buyGuestCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
@@ -140,8 +116,9 @@ public class PurchaseService {
             throws Exception {
         logger.info("processCart called for userId={}, isGuest={}", userId, isGuest);
         Guest user = getUser(isGuest, userId);
-        if (user.emptyCart())
+        if (user.emptyCart()) {
             throw new UIException("Shopping cart is empty or not found", ErrorCodes.CART_NOT_FOUND);
+        }
         Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts = new HashMap<>();
         double finalTotal = 0;
         for (ShoppingBasket basket : user.getBaskets()) {
@@ -197,17 +174,17 @@ public class PurchaseService {
             if (guset.isPresent()) {
 
                 return guset.get();
-            }
-
-            else
+            } else {
                 throw new UIException("there is no guest with given id", ErrorCodes.USER_NOT_FOUND);
+            }
         } else {
             Optional<Registered> user = regRepo.findById(userId);
             if (user.isPresent()) {
 
                 return user.get();
-            } else
+            } else {
                 throw new UIException("there is no guest with given id", ErrorCodes.USER_NOT_FOUND);
+            }
         }
     }
 
@@ -260,9 +237,9 @@ public class PurchaseService {
 
             if (specialItem.type == SpecialType.Random) {
                 ParticipationInRandomDTO card = stockRepo.getRandomCardforuser( // had to change this to get card for
-                                                                                // user to be able to do refund if the
-                                                                                // card stays null we never reach the
-                                                                                // refund statement
+                        // user to be able to do refund if the
+                        // card stays null we never reach the
+                        // refund statement
                         specialItem.storeId, specialItem.specialId, userId);
 
                 if (card != null && card.isWinner && card.ended) {
@@ -391,7 +368,6 @@ public class PurchaseService {
             //orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
             Order order = new Order(userId, receipt, storeName);
             orderJpaRepo.save(order);
-
 
             logger.info("Saved receipt for storeId={}, total={}", storeId, total);
 

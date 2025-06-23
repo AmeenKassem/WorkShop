@@ -2,13 +2,10 @@ package workshop.demo.Controllers;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,44 +15,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.PurchaseService;
-import workshop.demo.Controllers.ApiResponse;
-import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ReceiptDTO;
-import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SupplyDetails;
-import workshop.demo.DataAccessLayer.GuestJpaRepository;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
-import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Order.IOrderRepoDB;
-import workshop.demo.DomainLayer.Purchase.IPaymentService;
-import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
-import workshop.demo.DomainLayer.Purchase.ISupplyService;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
-import workshop.demo.DomainLayer.Store.CouponContext;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
-// import workshop.demo.DomainLayer.User.IUserRepo;
-import workshop.demo.DataAccessLayer.UserSuspensionJpaRepository;
 
 @RestController
 @RequestMapping("/purchase")
 public class PurcheseContoller {
 
-    private final PurchaseService purchaseService;
-
     @Autowired
-    public PurcheseContoller(IAuthRepo auth, IStockRepo stockrepo, IStoreRepo storeRepo, 
-            IPurchaseRepo purchaseRepo, IOrderRepoDB orderJpaRepo, IPaymentService paymentService,
-            ISupplyService supplyService, UserSuspensionJpaRepository usersuspentionjpa, UserJpaRepository userJpaRepo,
-            GuestJpaRepository guestJpaRepository, IStoreRepoDB storeJpaRepo, IStoreStockRepo storeStockRepo) {
-        this.purchaseService = new PurchaseService(auth, stockrepo, storeRepo, 
-                purchaseRepo, orderJpaRepo, paymentService, supplyService, usersuspentionjpa, userJpaRepo,
-                guestJpaRepository,storeJpaRepo,storeStockRepo);
-    }
+    private PurchaseService purchaseService;
 
     @ModelAttribute
     public void beforeEveryRequest(HttpServletRequest request) {
@@ -116,7 +87,6 @@ public class PurcheseContoller {
             // ReceiptDTO r1 = new ReceiptDTO("TechStore", "2025-06-01", List.of(p1), 1200);
             // ReceiptDTO r2 = new ReceiptDTO("HomeMart", "2025-06-02", List.of(p2), 300);
             // ReceiptDTO r3 = new ReceiptDTO("FashionHub", "2025-06-03", List.of(p3), 75);
-
             // // Create array of ReceiptDTO
             // ReceiptDTO[] receipts = new ReceiptDTO[] { r1, r2, r3 };
             ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(token, paymentdetails, supplydetails);
@@ -183,12 +153,10 @@ public class PurcheseContoller {
             // Category.Furniture);
             // ReceiptProduct p3 = new ReceiptProduct("T-Shirt", "FashionHub", 3, 25, 3,
             // Category.Clothing);
-
             // // Create ReceiptDTO instances
             // ReceiptDTO r1 = new ReceiptDTO("TechStore", "2025-06-01", List.of(p1), 1200);
             // ReceiptDTO r2 = new ReceiptDTO("HomeMart", "2025-06-02", List.of(p2), 300);
             // ReceiptDTO r3 = new ReceiptDTO("FashionHub", "2025-06-03", List.of(p3), 75);
-
             // // Create array of ReceiptDTO
             // ReceiptDTO[] receipts = new ReceiptDTO[] { r1, r2, r3 };
             res = new ApiResponse<>(receipts, null);

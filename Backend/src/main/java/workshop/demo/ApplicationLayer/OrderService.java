@@ -11,39 +11,28 @@ import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.ReceiptDTO;
-import workshop.demo.DataAccessLayer.UserJpaRepository;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Order.IOrderRepoDB;
 import workshop.demo.DomainLayer.Order.Order;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.Store.Store;
-// import workshop.demo.DomainLayer.User.IUserRepo;
+import workshop.demo.InfrastructureLayer.IOrderRepoDB;
+import workshop.demo.InfrastructureLayer.IStoreRepoDB;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
 
 @Service
 public class OrderService {
 
+    @Autowired
     private IOrderRepoDB orderJpaRepo;
-    private IStoreRepo storeRepo;
+    @Autowired
     private IAuthRepo authRepo;
+    @Autowired
     private UserJpaRepository userRepo;
+    @Autowired
     private IStoreRepoDB storeJpaRepo;
 
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
-
-    @Autowired
-    public OrderService(IOrderRepoDB orderJpaRepo, IStoreRepo storeRepo, IAuthRepo authoRepo, UserJpaRepository userRepo,IStoreRepoDB storeJpaRepo) {
-        this.orderJpaRepo = orderJpaRepo;
-        this.storeRepo = storeRepo;
-        this.authRepo = authoRepo;
-        this.userRepo = userRepo;
-        this.storeJpaRepo = storeJpaRepo;
-        logger.info("created Order/history service");
-    }
-
-
 
     public List<OrderDTO> getAllOrderByStore(int storeId) throws Exception {
         logger.info("about to get all the orders that have been made in this history!");
@@ -67,7 +56,7 @@ public class OrderService {
         // if (!userRepo.isRegistered(userId)) {
         //     throw new UIException(String.format("The user:%d is not registered to the system!", userId), ErrorCodes.USER_NOT_FOUND);
         // }
-        userRepo.findById(userId).orElseThrow(()->new UIException(String.format("The user:%d is not registered to the system!", userId), ErrorCodes.USER_NOT_FOUND));
+        userRepo.findById(userId).orElseThrow(() -> new UIException(String.format("The user:%d is not registered to the system!", userId), ErrorCodes.USER_NOT_FOUND));
         List<Order> orders = orderJpaRepo.findOrdersByUserId(userId);
         List<ReceiptDTO> result = new ArrayList<>();
         for (Order order : orders) {
