@@ -21,15 +21,11 @@ import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Order.IOrderRepoDB;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Store.CompositeDiscount;
 import workshop.demo.DomainLayer.Store.Discount;
 import workshop.demo.DomainLayer.Store.DiscountFactory;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.Store.PurchasePolicy;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
@@ -40,6 +36,9 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.StoreTreeEntity;
 import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import workshop.demo.InfrastructureLayer.IOrderRepoDB;
+import workshop.demo.InfrastructureLayer.IStoreRepoDB;
+import workshop.demo.InfrastructureLayer.IStoreStockRepo;
 import workshop.demo.InfrastructureLayer.OfferJpaRepository;
 import workshop.demo.InfrastructureLayer.StoreTreeJPARepository;
 import workshop.demo.InfrastructureLayer.UserJpaRepository;
@@ -48,8 +47,6 @@ import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 @Service
 public class StoreService {
 
-    @Autowired
-    private IStoreRepo storeRepo;
     @Autowired
     private NotificationService notifier;
     @Autowired
@@ -353,9 +350,12 @@ public class StoreService {
     // who can do it??? -> might be just in repo
     public int getFinalRateInStore(int storeId) throws Exception {
         logger.info("about to get the final rank of the store");
-        return this.storeRepo.getFinalRateInStore(storeId);
+        Store store = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new Exception("Store not found"));
+        return store.getFinalRateInStore();
     }
 
+    @Transactional
     public int deactivateteStore(int storeId, String token) throws Exception {
         logger.info("user attempting to deactivate store {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -364,7 +364,8 @@ public class StoreService {
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         suConnectionRepo.checkMainOwnerToDeactivateStore_ThrowException(storeId, ownerId);
         List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
-        storeRepo.deactivateStore(storeId, ownerId);
+        storeJpaRepo.deactivateStore(storeId);
+        //storeRepo.deactivateStore(storeId, ownerId);
         String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
         logger.info("Store {} successfully deactivated by owner {}", storeId, ownerId);
         logger.info("About to notify all employees");
@@ -377,6 +378,7 @@ public class StoreService {
         return storeId;
     }
 
+    @Transactional
     public int closeStore(int storeId, String token) throws Exception {
         logger.info("Admin attempting to close store {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -387,8 +389,10 @@ public class StoreService {
         String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
         List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
         // this.storeRepo.closeStore(storeId);
-        store.setActive(false);
+        //store.setActive(false);
+
         this.suConnectionRepo.closeStore(storeId);
+        storeJpaRepo.delete(store);
         logger.info("store removed successfully!");
         logger.info("About to notify all employees");
         // also notify the employees

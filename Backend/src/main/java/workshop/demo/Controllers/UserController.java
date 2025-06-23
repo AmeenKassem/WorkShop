@@ -17,28 +17,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
-// import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
-import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.PurchaseHistoryDTO;
 import workshop.demo.DTOs.SpecialCartItemDTO;
-import workshop.demo.DTOs.SpecialType;
-import workshop.demo.DTOs.SystemAnalyticsDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DTOs.UserSuspensionDTO;
-import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Order.IOrderRepoDB;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
-import workshop.demo.DomainLayer.User.AdminInitilizer;
-import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
-import workshop.demo.InfrastructureLayer.GuestJpaRepository;
-import workshop.demo.InfrastructureLayer.UserJpaRepository;
-import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 import workshop.demo.PresentationLayer.Requests.AddToCartRequest;
 
 @RestController

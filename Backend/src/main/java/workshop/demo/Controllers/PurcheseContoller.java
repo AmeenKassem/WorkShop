@@ -2,13 +2,10 @@ package workshop.demo.Controllers;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,27 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 import workshop.demo.ApplicationLayer.PurchaseService;
-import workshop.demo.Controllers.ApiResponse;
-import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ReceiptDTO;
-import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SupplyDetails;
-import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Order.IOrderRepoDB;
-import workshop.demo.DomainLayer.Purchase.IPaymentService;
-import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
-import workshop.demo.DomainLayer.Purchase.ISupplyService;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
-import workshop.demo.DomainLayer.Store.CouponContext;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
-import workshop.demo.InfrastructureLayer.GuestJpaRepository;
-import workshop.demo.InfrastructureLayer.UserJpaRepository;
-import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 
 @RestController
 @RequestMapping("/purchase")

@@ -299,6 +299,7 @@ public class SuperDataStructure {
         int parentId = root.getParentId();
 
     }*/
+    @Transactional
     public void closeStore(int storeID) throws Exception {
         ReentrantLock lock = storeLocks.computeIfAbsent(storeID, k -> new ReentrantLock());
         lock.lock();
@@ -308,8 +309,9 @@ public class SuperDataStructure {
             }
             this.employees.remove(storeID);
             this.offers.remove(storeID);
+            nodeJPARepo.deleteByStoreId(storeID);
             storeTreeJPARepo.deleteById(storeID);
-            storeTreeJPARepo.deleteById(storeID);
+
             offerJPARepo.deleteByIdStoreId(storeID);
         } finally {
             lock.unlock();

@@ -23,15 +23,11 @@ import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Stock.IStockRepoDB;
-import workshop.demo.DomainLayer.Stock.IStoreStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
-import workshop.demo.DomainLayer.Store.IStoreRepo;
-import workshop.demo.DomainLayer.Store.IStoreRepoDB;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
@@ -40,7 +36,9 @@ import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 import workshop.demo.InfrastructureLayer.AISearch;
-// >>>>>>> search-after-persist
+import workshop.demo.InfrastructureLayer.IStockRepoDB;
+import workshop.demo.InfrastructureLayer.IStoreRepoDB;
+import workshop.demo.InfrastructureLayer.IStoreStockRepo;
 import workshop.demo.InfrastructureLayer.UserJpaRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 
@@ -52,8 +50,6 @@ public class StockService {
     private IStockRepo stockRepo;
     @Autowired
     private IAuthRepo authRepo;
-    @Autowired
-    private IStoreRepo storeRepo;
     @Autowired
     private ISUConnectionRepo suConnectionRepo;
     @Autowired
@@ -117,7 +113,8 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
         RandomDTO[] randoms = stockRepo.searchActiveRandoms(criteria);
-        storeRepo.fillWithStoreName(randoms);
+        //storeRepo.fillWithStoreName(randoms);
+        //-> must be jpa
         return randoms;
     }
 
@@ -126,7 +123,8 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
         BidDTO[] bids = stockRepo.searchActiveBids(criteria);
-        storeRepo.fillWithStoreName(bids);
+        //storeRepo.fillWithStoreName(bids);
+        //-> must be jpa
         return bids;
     }
 
@@ -135,7 +133,8 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
         AuctionDTO[] auctions = stockRepo.searchActiveAuctions(criteria);
-        storeRepo.fillWithStoreName(auctions);
+        //storeRepo.fillWithStoreName(auctions);
+        //-> must be jpa
         return auctions;
     }
 
