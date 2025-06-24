@@ -76,13 +76,18 @@ public class MainLayout extends AppLayout {
     private HorizontalLayout buttonRow;
 
     private void createHeader() {
-        H1 logo = new H1("🛒 Click Market");
+        H1 logo = new H1("🛒 ShopPoint");
         logo.addClassName("market-title");
+    logo.getStyle()
+        .set("font-size", "2rem")
+        .set("border-bottom", "2px solid #ce5290") // קו עדין מתחת לשם
+        .set("padding-bottom", "0.5rem")
+        .set("margin-bottom", "1rem"); // רווח בין שם החנות לכפתורים
 
         // Vertical layout for the full header: logo on top, buttons below
-        VerticalLayout headerLayout = new VerticalLayout();
+        HorizontalLayout headerLayout = new HorizontalLayout();
         headerLayout.setWidthFull();
-        headerLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        headerLayout.setAlignItems(Alignment.CENTER); // שומר על יישור למרכז
         headerLayout.setSpacing(false);
         headerLayout.setPadding(true);
         headerLayout.addClassName("app-header");
@@ -92,12 +97,11 @@ public class MainLayout extends AppLayout {
 
         // Prepare the horizontal layout for buttons
         buttonRow = new HorizontalLayout();
-        buttonRow.setSpacing(true);
+        buttonRow.setSpacing(false);
         buttonRow.setPadding(false);
+        buttonRow.getStyle().set("gap", "0.5rem"); // רווח קטן בין הכפתורים
         buttonRow.setAlignItems(Alignment.CENTER);
         buttonRow.addClassName("header-button-row");
-
-        // Add buttons (they'll be populated in addRightSideButtons)
         headerLayout.add(buttonRow);
 
         // Add everything to the top nav

@@ -1,0 +1,76 @@
+.store-action-button {
+    background: linear-gradient(90deg, #ce5290, #f472b6);
+    color: white;
+    font-weight: bold;
+    font-size: 0.95rem;
+    padding: 0.5rem 1.2rem;
+    border-radius: 12px;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.store-action-button:hover {
+    background: linear-gradient(90deg, #ce5290, #f472b6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+
+.product-card {
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+
+.product-card button {
+    background: linear-gradient(90deg, #f472b6, #ec4899);
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    transition: background 0.3s ease, box-shadow 0.2s ease;
+}
+
+
+
+.product-card h4 {
+    font-size: 1.1rem;
+    color: #374151;
+}
+
+.product-card p, .product-card span {
+    font-size: 0.95rem;
+    color: #6b7280
+}
+
+.product-card:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.product-card button:active {
+    transform: scale(0.97);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+.product-card button {
+    width: 100%;
+}
+.product-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.search-button {
+     background: linear-gradient(90deg, #ce5290, #f472b6); 
+    color: white;
+    font-weight: bold;
+    border-radius: 12px;
+    padding: 0.5rem 1rem;
+    transition: background 0.3s ease;
+}
+
+.search-button:hover {
+    background: linear-gradient(90deg, #ce5290, #896276);
+}
