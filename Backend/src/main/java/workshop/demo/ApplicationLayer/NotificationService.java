@@ -58,4 +58,10 @@ public class NotificationService {
             sendDelayedMessageToUser(user.getUsername(), string);
         }
     }
+
+    public void sendMessageToUser(int id, String string) {
+        Registered user = userRepo.findById(id).orElseThrow();
+        sendDelayedMessageToUser(user.getUsername(), string);
+    }
+
 }

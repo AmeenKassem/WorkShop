@@ -10,6 +10,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
+// import org.hibernate.engine.jdbc.env.internal.LobCreationLogging_.logger;
 import org.springframework.security.access.method.P;
 
 import com.github.javaparser.ast.Generated;
@@ -25,6 +26,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Transient;
+import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.AuctionStatus;
 import workshop.demo.DTOs.SingleBidDTO;
@@ -45,7 +47,7 @@ public class Auction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int auctionId;// -->auction_id
 
-    @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserAuctionBid> bids = new ArrayList<>();
     private double maxBid;
     // @Transient
@@ -81,6 +83,7 @@ public class Auction {
         activePurcheses = active;
     }
 
+    // @Transactional
     public void endAuction() {
         if (endTimeMillis > System.currentTimeMillis() || status == AuctionStatus.FINISH)
             return;
@@ -224,7 +227,11 @@ public class Auction {
     }
 
     public boolean isEnded() {
-        return System.currentTimeMillis() >= endTimeMillis;
+        return status==AuctionStatus.FINISH;
+    }
+
+    public boolean mustEnd(){
+        return System.currentTimeMillis()<endTimeMillis;
     }
 
     public double getMaxBid() {
@@ -238,5 +245,31 @@ public class Auction {
 
         }
         return false;
+    }
+
+    public long getRestMS() {
+        return endTimeMillis - System.currentTimeMillis();
+    }
+
+    public int getTopId() {
+        for (UserAuctionBid userAuctionBid : bids) {
+            if (userAuctionBid.isCurrTop())
+                return userAuctionBid.getId();
+        }
+        return -1;
+    }
+
+    public List<Integer> getBidsUsersIds() {
+        List<Integer> res = new ArrayList<>();
+        for (UserAuctionBid integer : bids) {
+            res.add(integer.getUserId());
+        }
+        return res;
+    }
+
+    public void loadBids() {
+        for (UserAuctionBid userAuctionBid : bids) {
+
+        }
     }
 }

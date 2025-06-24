@@ -25,7 +25,7 @@ public class UserAuctionBid {
     // private int storeId;
     // private int productId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "auction_id")
     private Auction auction;
 
