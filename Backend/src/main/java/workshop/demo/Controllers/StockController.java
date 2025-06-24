@@ -420,7 +420,7 @@ public class StockController {
     public ResponseEntity<?> setProductToRandom(@RequestParam String token, @RequestParam int productId, @RequestParam int quantity,
             @RequestParam double productPrice, @RequestParam int storeId, @RequestParam long randomTime) {
         try {
-            int result = stockService.setProductToRandom(token, productId, quantity, productPrice, storeId, randomTime);
+            int result = activeService.setProductToRandom(token, productId, quantity, productPrice, storeId, randomTime);
             return ResponseEntity.ok(new ApiResponse<>(result, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()

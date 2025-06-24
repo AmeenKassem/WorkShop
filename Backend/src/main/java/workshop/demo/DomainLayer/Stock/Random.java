@@ -1,16 +1,20 @@
 package workshop.demo.DomainLayer.Stock;
 
 import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
+// import java.util.Timer;
+// import java.util.TimerTask;
 
-import com.vaadin.flow.component.template.Id;
+import org.springframework.data.annotation.Transient;
 
+import jakarta.persistence.Id;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -22,7 +26,9 @@ public class Random {
 
     private int productId;
     private int quantity;
-    private HashMap<Integer, ParticipationInRandomDTO> usersParticipations;
+
+    @OneToMany(mappedBy = "random", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private HashMap<Integer, ParticipationInRandom> usersParticipations;
     private double amountLeft;
 
     @Id
@@ -31,10 +37,12 @@ public class Random {
 
     private int storeId;
     private double productPrice;
-
-    private ParticipationInRandomDTO winner;
+    @Transient
+    private ParticipationInRandom winner;
+    @Transient
     private final Object lock = new Object();
-    private Timer timer;
+    //@Transient
+    //private Timer timer;
     private boolean isActive = true;
     private boolean canceled;
     private long endTimeMillis;
@@ -53,31 +61,31 @@ public class Random {
         this.productPrice = productPrice;
         this.randomId = id;
         this.isActive = true;
-        this.timer = new Timer();
+        // this.timer = new Timer();
         this.endTimeMillis = System.currentTimeMillis() + randomTime;
 
         this.canceled =false;
 
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                synchronized (lock) {
-                    if (!isActive)
-                        return;
-                    isActive = false;
-                    if (amountLeft > 0) {
-                        for (ParticipationInRandomDTO participation : usersParticipations.values()) {
-                            if (participation != winner) {
-                               participation.mustRefund = true;
-                            }
-                        }
-                    }
-                }
-            }
-        }, randomTime);
+        // timer.schedule(new TimerTask() {
+        //     @Override
+        //     public void run() {
+        //         synchronized (lock) {
+        //             if (!isActive)
+        //                 return;
+        //             isActive = false;
+        //             if (amountLeft > 0) {
+        //                 for (ParticipationInRandomDTO participation : usersParticipations.values()) {
+        //                     if (participation != winner) {
+        //                        participation.mustRefund = true;
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }, randomTime);
     }
 
-    public ParticipationInRandomDTO participateInRandom(int userId, double amountPaid) throws UIException {
+    public ParticipationInRandom participateInRandom(int userId, double amountPaid) throws UIException {
         synchronized (lock) {
             if (!isActive)
                 throw new UIException("Random event is over.", ErrorCodes.RANDOM_FINISHED);
@@ -90,12 +98,12 @@ public class Random {
                 throw new UIException("User has already participated in this random event.",
                         ErrorCodes.DUPLICATE_RANDOM_ENTRY);
 
-            usersParticipations.put(userId, new ParticipationInRandomDTO(productId, storeId, userId, randomId, amountPaid));
+            usersParticipations.put(userId, new ParticipationInRandom(productId, storeId, userId, randomId, amountPaid));
             amountLeft -= amountPaid;
 
             if (amountLeft == 0) {
                 endRandom();
-                timer.cancel();
+                //timer.cancel();
             }
             return usersParticipations.get(userId);
         }
@@ -105,13 +113,13 @@ public class Random {
         activePurcheses=active;
     }
 
-    public ParticipationInRandomDTO endRandom() {
+    public ParticipationInRandom endRandom() {
         synchronized (lock) {
             isActive = false;
             double rand = new java.util.Random().nextDouble() * productPrice;
             double cumulativeWeight = 0.0;
-            for (ParticipationInRandomDTO participation : usersParticipations.values()) {
-                cumulativeWeight += participation.amountPaid;
+            for (ParticipationInRandom participation : usersParticipations.values()) {
+                cumulativeWeight += participation.getAmountPaid();
                 if (rand <= cumulativeWeight) {
                     winner = participation;
                     break;
@@ -119,8 +127,8 @@ public class Random {
             }
             if (winner != null) {
                 winner.markAsWinner();
-                for (ParticipationInRandomDTO card : usersParticipations.values()) {
-                    if (card.userId != winner.getUserId())
+                for (ParticipationInRandom card : usersParticipations.values()) {
+                    if (card.getUserId() != winner.getUserId())
                         card.markAsLoser();
                 }
             }
@@ -136,13 +144,13 @@ public class Random {
         randomDTO.amountLeft = amountLeft;
         randomDTO.id = randomId;
         randomDTO.storeId = storeId;
-        randomDTO.winner = winner;
+        randomDTO.winner = winner != null ? winner.toDTO() : null;
         randomDTO.endTimeMillis = getEndTimeMillis();
 
         ParticipationInRandomDTO[] participations = new ParticipationInRandomDTO[usersParticipations.size()];
         int i = 0;
-        for (ParticipationInRandomDTO card : usersParticipations.values()) {
-            participations[i] = card;
+        for (ParticipationInRandom card : usersParticipations.values()) {
+            participations[i] = card.toDTO();
             i++;
         }
         randomDTO.participations = participations;
@@ -163,14 +171,14 @@ public class Random {
 
     public boolean userIsWinner(int userId) {
         if(winner == null) return false;
-        return winner.userId == userId;
+        return winner.getUserId() == userId;
     }
 
-    public ParticipationInRandomDTO getWinner() {
+    public ParticipationInRandom getWinner() {
         return winner;
     }
 
-    public ParticipationInRandomDTO getCard(int userId) {
+    public ParticipationInRandom getCard(int userId) {
         return usersParticipations.get(userId);
     }
 

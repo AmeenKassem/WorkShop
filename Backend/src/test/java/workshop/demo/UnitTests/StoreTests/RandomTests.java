@@ -331,11 +331,11 @@ public class RandomTests {
     void testEndRandomMarksWinnerAndLosers() throws Exception {
         random.participateInRandom(101, 40.0);
         random.participateInRandom(102, 60.0);
-        ParticipationInRandomDTO winner = random.endRandom();
+        ParticipationInRandomDTO winner = random.endRandom().toDTO();
         assertNotNull(winner);
         assertTrue(winner.isWinner);
         for (int uid : new int[]{101, 102}) {
-            ParticipationInRandomDTO dto = random.getCard(uid);
+            ParticipationInRandomDTO dto = random.getCard(uid).toDTO();
             if (uid == winner.getUserId()) {
                 assertTrue(dto.isWinner);
             } else {
@@ -357,7 +357,7 @@ public class RandomTests {
     void testUserIsWinnerTrue() throws Exception {
         random.participateInRandom(1, 50.0);
         random.participateInRandom(2, 50.0);
-        ParticipationInRandomDTO win = random.endRandom();
+        ParticipationInRandomDTO win = random.endRandom().toDTO();
         assertTrue(random.userIsWinner(win.getUserId()));
     }
 
@@ -365,7 +365,7 @@ public class RandomTests {
     void testUserIsWinnerFalse() throws Exception {
         random.participateInRandom(1, 50.0);
         random.participateInRandom(2, 50.0);
-        ParticipationInRandomDTO win = random.endRandom();
+        ParticipationInRandomDTO win = random.endRandom().toDTO();
         assertFalse(random.userIsWinner(win.getUserId() == 1 ? 2 : 1));
     }
 

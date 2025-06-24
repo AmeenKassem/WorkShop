@@ -66,7 +66,7 @@ public class ActivePurchasesService {
     @Autowired
     private StockService stock;
 
-    private Timer timer = new Timer();
+    private Timer auctionTimer = new Timer();
 
     public int setProductToAuction(String token, int storeId, int productId, int quantity, long time, double startPrice)
             throws Exception, DevException {
@@ -82,9 +82,9 @@ public class ActivePurchasesService {
         activePurchasesRepo.save(active);
         // timer : after auction.getTimeLeft() ->>
         // auction.end() + notify all paricipates . notify winner . notify onwers + if
-        // the auction has no winner return back the stock
+        // the auction has no winner return back the stock 
         Store store = storeJpaRepo.findById(storeId).orElse(null);
-        timer.schedule(new TimerTask() {
+        auctionTimer.schedule(new TimerTask() {
 
             @Override
             public void run() {
