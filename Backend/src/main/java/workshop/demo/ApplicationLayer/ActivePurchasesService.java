@@ -73,6 +73,29 @@ public class ActivePurchasesService {
         return -1;
     }
 
+    public int setProductToRandom(String token, int productId, int quantity, double productPrice, int storeId,
+            long RandomTime) throws UIException, DevException, Exception {
+                logger.info("Setting product {} to random in store {}", productId, storeId);
+        int userId = checkUserAndStore(token, storeId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
+
+        ActivePurcheses activePurcheses = activePurchasesRepo.findById(storeId).orElseThrow();
+        activePurcheses.addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
+        activePurchasesRepo.save(activePurcheses);
+
+        for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
+            String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
+            notifier.sendDelayedMessageToUser(ownerName, "Owner "
+                    + userRepo.findById(userId).get().getUsername() + " set a product to random in your store");
+        }
+        // return stockRepo.addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
+        return -1;
+    }
+
+
     private void checkUserRegisterOnline_ThrowException(int userId) throws UIException {
         Optional<Registered> user = userRepo.findById(userId);
         if (!user.isPresent())

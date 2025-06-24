@@ -1,5 +1,7 @@
 package workshop.demo.DTOs;
 
+import jakarta.persistence.Entity;
+
 public class ParticipationInRandomDTO {
 
     public int userId;

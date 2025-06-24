@@ -1,29 +1,47 @@
-package workshop.demo.DomainLayer.Store;
+package workshop.demo.DomainLayer.Stock;
 
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.vaadin.flow.component.template.Id;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
+@Entity
 public class Random {
+
 
     private int productId;
     private int quantity;
     private HashMap<Integer, ParticipationInRandomDTO> usersParticipations;
     private double amountLeft;
-    private int id;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int randomId;
+
     private int storeId;
     private double productPrice;
+
     private ParticipationInRandomDTO winner;
     private final Object lock = new Object();
     private Timer timer;
     private boolean isActive = true;
     private boolean canceled;
     private long endTimeMillis;
+
+    @ManyToOne
+    @JoinColumn(name = "active_store_id")
+    private ActivePurcheses activePurcheses;
 
 
     public Random(int productId, int quantity, double productPrice, int id, int storeId, long randomTime) {
@@ -33,7 +51,7 @@ public class Random {
         this.usersParticipations = new HashMap<>();
         this.storeId = storeId;
         this.productPrice = productPrice;
-        this.id = id;
+        this.randomId = id;
         this.isActive = true;
         this.timer = new Timer();
         this.endTimeMillis = System.currentTimeMillis() + randomTime;
@@ -72,7 +90,7 @@ public class Random {
                 throw new UIException("User has already participated in this random event.",
                         ErrorCodes.DUPLICATE_RANDOM_ENTRY);
 
-            usersParticipations.put(userId, new ParticipationInRandomDTO(productId, storeId, userId, id, amountPaid));
+            usersParticipations.put(userId, new ParticipationInRandomDTO(productId, storeId, userId, randomId, amountPaid));
             amountLeft -= amountPaid;
 
             if (amountLeft == 0) {
@@ -81,6 +99,10 @@ public class Random {
             }
             return usersParticipations.get(userId);
         }
+    }
+
+    public void setActivePurchases(ActivePurcheses active){
+        activePurcheses=active;
     }
 
     public ParticipationInRandomDTO endRandom() {
@@ -112,7 +134,7 @@ public class Random {
         randomDTO.quantity = quantity;
         randomDTO.productPrice = productPrice;
         randomDTO.amountLeft = amountLeft;
-        randomDTO.id = id;
+        randomDTO.id = randomId;
         randomDTO.storeId = storeId;
         randomDTO.winner = winner;
         randomDTO.endTimeMillis = getEndTimeMillis();
