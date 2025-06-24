@@ -11,7 +11,7 @@ public class AuctionDTO {
     public double maxBid;
     // public <DateTime> timer;
     public int auctionId;
-    public SingleBid winner;
+    public SingleBidDTO winner;
     public int quantity;
     public String storeName;
     public String productName;

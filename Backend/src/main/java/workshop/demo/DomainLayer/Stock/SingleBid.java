@@ -17,6 +17,7 @@ public class SingleBid {
     private int productId;
     public int ownersNum;// number of owners at the time i added my bid
     private int acceptCounter;
+    
 
     public SingleBid(int productId, int amount, int userId, double price, SpecialType type, int storeId, int id, int specialId) {
         this.productId = productId;

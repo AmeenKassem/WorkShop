@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
-import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
@@ -76,18 +75,7 @@ public class StockService {
         logger.info("Starting searchProducts with criteria: {}", criteria);
 
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        List<Product> products = null;
-          if(criteria.keywordSearch() && aiSearch.isActive()){
-            List<Integer> ids = aiSearch.getSameProduct(criteria.getKeyword(), criteria.specificCategory()?criteria.getCategory().hashCode():-1, 0.35);
-                  if (ids == null || ids.isEmpty()) {
-            logger.info("No product IDs found from AI search. Returning empty list."); // if we dont find any matches we return empty list
-            return new ItemStoreDTO[0];
-        } products = stockJpaRepo.findAllById(ids);
-        } else if (criteria.nameSearch()) {
-            products = stockJpaRepo.findByNameContainingIgnoreCase(criteria.getName());
-        } else {
-            throw new UIException("the ai search api is not running !!", ErrorCodes.AI_NOT_WORK);
-        }
+        List<Product> products = getMatchProducts(criteria);
         logger.info("Returning matched items to client ");
         List<ItemStoreDTO> res = new ArrayList<>();
         for (Product product : products) {
@@ -111,13 +99,33 @@ public class StockService {
         return res.toArray(new ItemStoreDTO[0]);
     }
 
+    public List<Product> getMatchProducts(ProductSearchCriteria criteria) throws UIException{
+        List<Product> products = null;
+        if (criteria.keywordSearch() && aiSearch.isActive()) {
+            List<Integer> ids = aiSearch.getSameProduct(criteria.getKeyword(),
+                    criteria.specificCategory() ? criteria.getCategory().hashCode() : -1, 0.35);
+            if (ids == null || ids.isEmpty()) {
+                logger.info("No product IDs found from AI search. Returning empty list."); // if we dont find any
+                                                                                           // matches we return empty
+                                                                                           // list
+                return new ArrayList<>();
+            }
+            products = stockJpaRepo.findAllById(ids);
+        } else if (criteria.nameSearch()) {
+            products = stockJpaRepo.findByNameContainingIgnoreCase(criteria.getName());
+        } else {
+            throw new UIException("the ai search api is not running !!", ErrorCodes.AI_NOT_WORK);
+        }
+        return products;
+    }
+
     public RandomDTO[] searchActiveRandoms(String token, ProductSearchCriteria criteria) throws Exception {
         logger.info("Starting searchRandoms with criteria: {}", criteria);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
         RandomDTO[] randoms = stockRepo.searchActiveRandoms(criteria);
-        //storeRepo.fillWithStoreName(randoms);
-        //-> must be jpa
+        // storeRepo.fillWithStoreName(randoms);
+        // -> must be jpa
         return randoms;
     }
 
@@ -126,20 +134,12 @@ public class StockService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
         BidDTO[] bids = stockRepo.searchActiveBids(criteria);
-        //storeRepo.fillWithStoreName(bids);
-        //-> must be jpa
+        // storeRepo.fillWithStoreName(bids);
+        // -> must be jpa
         return bids;
     }
 
-    public AuctionDTO[] searchActiveAuctions(String token, ProductSearchCriteria criteria) throws Exception {
-        logger.info("Starting searchAuctions with criteria: {}", criteria);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
-        AuctionDTO[] auctions = stockRepo.searchActiveAuctions(criteria);
-        //storeRepo.fillWithStoreName(auctions);
-        //-> must be jpa
-        return auctions;
-    }
+
 
     public ProductDTO getProductInfo(String token, int productId) throws UIException {
         logger.info("Fetching product info for ID {}", productId);
@@ -156,25 +156,7 @@ public class StockService {
         return dto;
     }
 
-    public boolean addBidOnAucction(String token, int auctionId, int storeId, double price)
-            throws UIException, DevException {
-        logger.info("User trying to bid on auction: {}, store: {}", auctionId, storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
-        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
-        }
 
-        SingleBid bid = stockRepo.bidOnAuction(storeId, userId, auctionId, price);
-        UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, bid.getSpecialId(), bid.getId(),
-                SpecialType.Auction);
-        userRepo.findById(userId).get().addSpecialItemToCart(specialItem);
-        logger.info("Bid placed successfully by user: {} on auction: {}", userId, auctionId);
-        return true;
-
-    }
 
     private void checkUserRegisterOnline_ThrowException(int userId) throws UIException {
         Optional<Registered> user = userRepo.findById(userId);
@@ -196,7 +178,7 @@ public class StockService {
         SingleBid bid = stockRepo.bidOnBid(bitId, price, userId, storeId);
         bid.ownersNum = suConnectionRepo.getOwnersInStore(storeId).size();
         UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, bid.getSpecialId(), bid.getId(),
-                SpecialType.BID);
+                SpecialType.BID,-1);
         userRepo.findById(userId).get().addSpecialItemToCart(specialItem);
         for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
             String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
@@ -208,54 +190,7 @@ public class StockService {
 
     }
 
-    public AuctionDTO[] getAllAuctions(String token, int storeId) throws Exception {
-        logger.info("User requesting all auctions in store: {}", storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        logger.info("Returning auction list to user: {}", userId);
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-            throw new UIException("you have no permession to see auctions info.", ErrorCodes.NO_PERMISSION);
-        }
-        return stockRepo.getAuctionsOnStore(storeId);
-    }
-
-    public AuctionDTO[] getAllAuctions_user(String token, int storeId) throws Exception {
-        logger.info("User requesting all auctions in store: {}", storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        logger.info("Returning auction list to user: {}", userId);
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-
-        return stockRepo.getAuctionsOnStore(storeId);
-    }
-
-    public int setProductToAuction(String token, int storeId, int productId, int quantity, long time, double startPrice)
-            throws Exception, DevException {
-        logger.info("Setting product {} to auction in store {}", productId, storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
-        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
-        }
-
-        // must add the exceptions here:
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-            throw new UIException("you have no permession to set produt to auction.", ErrorCodes.NO_PERMISSION);
-        }
-        for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
-            String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
-            notifier.sendDelayedMessageToUser(ownerName, "Owner "
-                    + userRepo.findById(userId).get().getUsername() + " set a product to auction in your store");
-        }
-        return stockRepo.addAuctionToStore(storeId, productId, quantity, time, startPrice);
-    }
-
+    
     public int setProductToBid(String token, int storeid, int productId, int quantity) throws Exception {
         logger.info("User attempting to set product {} as bid in store {}", productId, storeid);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -286,7 +221,7 @@ public class StockService {
         checkUserRegisterOnline_ThrowException(userId);
 
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-            throw new UIException("you have no permession to see auctions info.", ErrorCodes.NO_PERMISSION);
+            throw new UIException("you have no permession to see bidss info.", ErrorCodes.NO_PERMISSION);
         }
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
 
@@ -324,7 +259,7 @@ public class StockService {
         } else {
             notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
                     "Owner " + userRepo.findById(userId).get().getUsername()
-                    + " accepted your bid and you are the winner!");
+                            + " accepted your bid and you are the winner!");
         }
         logger.info("Bid accepted. User: {} is the winner.", bidAccepted.getUserId());
         return bidAccepted;
@@ -557,8 +492,9 @@ public class StockService {
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
-     //   Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        //this.stockRepo.rankProduct(storeId, productId, newRank);
+        // Store store = storeJpaRepo.findById(storeId).orElseThrow(() ->
+        // storeNotFound());
+        // this.stockRepo.rankProduct(storeId, productId, newRank);
         StoreStock stock = storeStockRepo.findById(storeId)
                 .orElseThrow(() -> new DevException("store stock not found on db!!"));
         stock.rankProduct(productId, newRank);

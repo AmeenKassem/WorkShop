@@ -19,19 +19,21 @@ public class UserSpecialItemCart {
     public int storeId;
     public int specialId;
     public int bidId;
-     @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.STRING)
     public SpecialType type;
+    public int productId;
 
     @ManyToOne
     @JoinColumn(name = "registered_id")
     public Registered user;
 
     // Constructor
-    public UserSpecialItemCart(int storeId, int specialId, int bidId, SpecialType type) {
+    public UserSpecialItemCart(int storeId, int specialId, int bidId, SpecialType type, int productId) {
         this.storeId = storeId;
         this.specialId = specialId;
         this.bidId = bidId;
         this.type = type;
+        this.productId = productId;
     }
 
     public UserSpecialItemCart() {
@@ -50,5 +52,9 @@ public class UserSpecialItemCart {
         return storeId == that.storeId
                 && specialId == that.specialId
                 && type == that.type;
+    }
+
+    public Integer getProductId() {
+        return productId;
     }
 }
