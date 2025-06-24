@@ -111,4 +111,16 @@ public class UserAuctionBid {
         return auction;
     }
 
+    public Integer getStoreId() {
+        return auction.getStoreId();
+    }
+
+    public int getAmount() {
+        return auction.getAmount();
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
 }

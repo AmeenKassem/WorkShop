@@ -271,6 +271,7 @@ public class UserService {
                 itemToSend.myBid = auction.getBid(item.bidId).getBidPrice();
                 itemToSend.maxBid = auction.getMaxBid();
                 itemToSend.onTop= auction.bidIsTop(item.bidId);
+                itemToSend.dateEnd = auction.getDateOfEnd();
             }
             result.add(itemToSend);
         }

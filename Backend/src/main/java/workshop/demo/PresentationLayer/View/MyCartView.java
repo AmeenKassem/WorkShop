@@ -177,10 +177,10 @@ public class MyCartView extends VerticalLayout {
         card.add(createStyledLabel("🏪 Store: " + item.storeName));
         card.add(createStyledLabel("🎯 Type: " + item.getType()));
         if(item.getType()==SpecialType.Auction){
-            card.add(createStyledLabel("🏁 Ended: " + (item.isEnded() ? "Yes" : "No")));
-            card.add(createStyledLabel("🏆 On top: " + (item.onTop ? "Yes" : "No")));
             card.add(createStyledLabel("💰 my bid: " + (item.myBid)));
-            if(!item.onTop) card.add(createStyledLabel("💰 current max bid: " + (item.maxBid)));
+            card.add(createStyledLabel("🏁" + (item.isEnded() ? "Ended!" : " Ends at "+item.dateEnd)));
+            card.add(createStyledLabel("🏆" + (item.onTop ? " You are on the top !" : " Some one bid with "+(item.maxBid))));
+            // if(!item.onTop) card.add(createStyledLabel("💰 current max bid: " + (item.maxBid)));
         }
         return card;
     }

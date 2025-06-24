@@ -165,20 +165,22 @@ public class PurchasePresenter {
             String paymentJson = mapper.writeValueAsString(paymentDetails);
             String supplyJson = mapper.writeValueAsString(supplyDetails);
 
-            //URL-encode the JSON strings
+            // URL-encode the JSON strings
             String encodedPaymentJson = UriUtils.encodeQueryParam(paymentJson, StandardCharsets.UTF_8);
             String encodedSupplyJson = UriUtils.encodeQueryParam(supplyJson, StandardCharsets.UTF_8);
 
             Object userType = VaadinSession.getCurrent().getAttribute("user-type");
             String url;
-            if ("user".equals(userType)||userType.equals("admin")) {
+            if ("user".equals(userType) || userType.equals("admin")) {
                 System.out.println("User type is registered, using registered purchase endpoint.");
-                url = String.format(Base.url+"/purchase/registered?token=%s&paymentJson=%s&supplyJson=%s",
-                        UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8), encodedPaymentJson, encodedSupplyJson);
+                url = String.format(Base.url + "/purchase/registered?token=%s&paymentJson=%s&supplyJson=%s",
+                        UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8), encodedPaymentJson,
+                        encodedSupplyJson);
             } else {
                 System.out.println("User type is guest, using guest purchase endpoint.");
-                url = String.format(Base.url+"/purchase/guest?token=%s&paymentJson=%s&supplyJson=%s",
-                        UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8), encodedPaymentJson, encodedSupplyJson);
+                url = String.format(Base.url + "/purchase/guest?token=%s&paymentJson=%s&supplyJson=%s",
+                        UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8), encodedPaymentJson,
+                        encodedSupplyJson);
             }
 
             HttpHeaders headers = new HttpHeaders();
@@ -186,7 +188,7 @@ public class PurchasePresenter {
             headers.setAccept(List.of(MediaType.APPLICATION_JSON));
             HttpEntity<?> entity = new HttpEntity<>(headers);
 
-            ResponseEntity<ApiResponse<List<ReceiptDTO>>> response = restTemplate.exchange(
+            ResponseEntity<ApiResponse<ReceiptDTO[]>> response = restTemplate.exchange(
                     url,
                     HttpMethod.POST,
                     entity,
@@ -224,12 +226,12 @@ public class PurchasePresenter {
             String paymentJson = mapper.writeValueAsString(paymentDetails);
             String supplyJson = mapper.writeValueAsString(supplyDetails);
 
-            //URL-encode the JSON strings
+            // URL-encode the JSON strings
             String encodedPaymentJson = UriUtils.encodeQueryParam(paymentJson, StandardCharsets.UTF_8);
             String encodedSupplyJson = UriUtils.encodeQueryParam(supplyJson, StandardCharsets.UTF_8);
 
             String url = String.format(
-                    Base.url+"/purchase/finalizeSpecialCart?token=%s&paymentJson=%s&supplyJson=%s",
+                    Base.url + "/purchase/finalizeSpecialCart?token=%s&paymentJson=%s&supplyJson=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8), encodedPaymentJson, encodedSupplyJson);
 
             HttpHeaders headers = new HttpHeaders();
@@ -238,7 +240,7 @@ public class PurchasePresenter {
 
             HttpEntity<?> entity = new HttpEntity<>(headers);
 
-            ResponseEntity<ApiResponse<List<ReceiptDTO>>> response = restTemplate.exchange(
+            ResponseEntity<ApiResponse<ReceiptDTO[]>> response = restTemplate.exchange(
                     url,
                     HttpMethod.POST,
                     entity,
@@ -252,19 +254,24 @@ public class PurchasePresenter {
         }
     }
 
-    private void handleResponse(ApiResponse<List<ReceiptDTO>> responseBody) {
+    private void handleResponse(ApiResponse<ReceiptDTO[]> responseBody) {
         if (responseBody != null && responseBody.getErrNumber() == -1) {
-            List<ReceiptDTO> receiptList = responseBody.getData();
-
-            if (receiptList == null || receiptList.isEmpty()) {
+            ReceiptDTO[] receipt = responseBody.getData();
+            System.out.println(responseBody.getErrorMsg());
+            if (receipt == null || receipt.length == 0) {
+                System.out.println(receipt == null);
+                for (ReceiptDTO receiptDTO : receipt) {
+                    System.out.println("hiiiiiiiiii");
+                }
                 NotificationView.showInfo("You haven't won in any special purchase yet.");
                 return;
             }
 
-            ReceiptDTO[] receipts = receiptList.toArray(new ReceiptDTO[0]);
-            PurchaseView.showReceiptDialog(receipts);
+            // ReceiptDTO[] receipts = receiptList.toArray(new ReceiptDTO[0]);
+            PurchaseView.showReceiptDialog(receipt);
             UI.getCurrent().navigate("");
         } else {
+            System.out.println(responseBody.getErrNumber());
             NotificationView.showError(ExceptionHandlers.getErrorMessage(responseBody.getErrNumber()));
         }
     }

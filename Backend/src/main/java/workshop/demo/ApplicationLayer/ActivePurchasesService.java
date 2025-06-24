@@ -88,9 +88,9 @@ public class ActivePurchasesService {
             @Override
             public void run() {
                 try {
-                    active.endRandom(randomId);
+                    active.endAuction(randomId);
                     storeStock.IncreaseQuantitytoBuy(productId, quantity);
-                } catch (DevException | UIException e) {
+                } catch ( UIException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }

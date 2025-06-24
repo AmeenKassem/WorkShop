@@ -1,5 +1,9 @@
 package workshop.demo.DomainLayer.Stock;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -122,6 +126,18 @@ public class Auction {
             if (price <= maxBid) {
                 throw new UIException("Your bid must be higher than the current maximum bid!", ErrorCodes.BID_TOO_LOW);
             }
+            for (UserAuctionBid userAuctionBid : bids) {
+                if (userAuctionBid.getUserId() != userId)
+                    userAuctionBid.markAsLosedTop();
+            }
+            for (UserAuctionBid userAuctionBid : bids) {
+                if (userAuctionBid.getUserId() == userId) {
+                    maxBid = price;
+                    userAuctionBid.setPrice(price);
+                    userAuctionBid.markAsCurrTop();
+                    return userAuctionBid;
+                }
+            }
 
             maxBid = price;
             UserAuctionBid bid = new UserAuctionBid();
@@ -129,11 +145,7 @@ public class Auction {
             bid.setPrice(price);
             bid.setAuction(this);
             bid.markAsCurrTop();
-            for (UserAuctionBid userAuctionBid : bids) {
-                userAuctionBid.markAsLosedTop();
-            }
             bids.add(bid);
-
             return bid;
         }
     }
@@ -157,6 +169,21 @@ public class Auction {
         res.auctionId = this.auctionId;
         res.bids = arrayBids; // this line wasnt here , so bids was always null
         return res;
+    }
+
+    public String getDateOfEnd() {
+        // Convert to LocalDateTime
+        LocalDateTime dateTime = LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(endTimeMillis),
+                ZoneId.systemDefault() // Use your system time zone or ZoneId.of("UTC"), etc.
+        );
+
+        // Format to readable string
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        String formatted = dateTime.format(formatter);
+        System.out.println("Formatted Time: " + formatted);
+        return formatted;
     }
 
     public UserAuctionBid getWinner() {
@@ -206,7 +233,8 @@ public class Auction {
 
     public boolean bidIsTop(int bidId) {
         for (UserAuctionBid userAuctionBid : bids) {
-            if(userAuctionBid.getId()==bidId) return userAuctionBid.isCurrTop();
+            if (userAuctionBid.getId() == bidId)
+                return userAuctionBid.isCurrTop();
 
         }
         return false;

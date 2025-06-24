@@ -27,7 +27,6 @@ public class Registered extends Guest {
     private boolean isOnline;
     private int age;
     private RoleOnSystem systemRole = RoleOnSystem.Regular;
-    
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserSpecialItemCart> specialCart;
@@ -58,14 +57,13 @@ public class Registered extends Guest {
         this.age = age;
     }
 
-    
-
     // public boolean login(String username, String password) {
-    //     boolean res = encoder.matches(password, encrybtedPassword) && username.equals(this.username);
-    //     if (res) {
-    //         login();
-    //     }
-    //     return res;
+    // boolean res = encoder.matches(password, encrybtedPassword) &&
+    // username.equals(this.username);
+    // if (res) {
+    // login();
+    // }
+    // return res;
     // }
 
     public void setAdmin() {
@@ -104,6 +102,12 @@ public class Registered extends Guest {
         }
         logger.debug("adding special item {}:{}:{}:{}", item.storeId, item.specialId, item.bidId, item.type.toString());
         item.user = this;
+        for (UserSpecialItemCart userSpecialItemCart : specialCart) {
+            if (userSpecialItemCart.bidId == item.bidId && item.specialId == userSpecialItemCart.specialId
+                    && item.productId == userSpecialItemCart.productId && userSpecialItemCart.storeId == item.storeId
+                    && userSpecialItemCart.type == item.type)
+                return;//do not dublicate item!!!
+        }
         specialCart.add(item);
     }
 
@@ -133,6 +137,10 @@ public class Registered extends Guest {
 
     public void clearSpecialCart() {
         specialCart.removeAll(specialCart);
+    }
+
+    public void clearSpecialCart(List<UserSpecialItemCart> itemsToRemove) {
+        specialCart.removeAll(itemsToRemove);
     }
 
 }

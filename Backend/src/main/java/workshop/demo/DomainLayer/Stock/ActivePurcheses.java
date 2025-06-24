@@ -401,4 +401,8 @@ public class ActivePurcheses {
         throw new UnsupportedOperationException("Unimplemented method 'getBid'");
     }
 
+    public void endAuction(int randomId) {
+        getAuctionById(randomId).endAuction();
+    }
+
 }

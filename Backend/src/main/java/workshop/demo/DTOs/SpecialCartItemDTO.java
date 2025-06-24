@@ -17,6 +17,7 @@ public class SpecialCartItemDTO {
     public double myBid;
     public double maxBid;
     public boolean onTop;
+    public String dateEnd;
 
 
     public SpecialCartItemDTO() {
