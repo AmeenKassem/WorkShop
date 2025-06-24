@@ -43,8 +43,9 @@ public class HomePage extends VerticalLayout {
     public HomePage() {
         this.homePagePresenter = new HomePagePresenter(this);
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-        LocalDateTime suspensionEnd = this.homePagePresenter.fetchSuspensionEndTime(token);
 
+        // בדיקת השעיה
+        LocalDateTime suspensionEnd = this.homePagePresenter.fetchSuspensionEndTime(token);
         if (suspensionEnd != null) {
             String formatted = suspensionEnd.format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy - HH:mm"));
             Paragraph suspensionMsg = new Paragraph("🚫 You are suspended until: " + formatted);
@@ -56,31 +57,42 @@ public class HomePage extends VerticalLayout {
         setSizeFull();
         setSpacing(false);
         setPadding(true);
-        setAlignItems(Alignment.STRETCH);
+        setAlignItems(Alignment.CENTER);
 
-        add(createSearchBar()); // אזור חיפוש
-        add(resultsContainer);  // תוצאות חיפוש (\u05deעל featured)
+        // Search bar
+        VerticalLayout searchBarContainer = createSearchBar();
+        searchBarContainer.addClassName("search-bar-container");
+        add(searchBarContainer);
 
-        // כותרת
+        // תוצאות חיפוש
+        resultsContainer.setWidthFull();
+        resultsContainer.getStyle().set("max-width", "1100px");
+        add(resultsContainer);
+
+        // Featured Stores
+        VerticalLayout storeSection = new VerticalLayout();
+        storeSection.addClassName("store-section");
+        storeSection.setWidthFull();
+        storeSection.setAlignItems(Alignment.START);
+
         Span title = new Span("🔥 Featured Stores");
         title.addClassName("section-title");
+        storeSection.add(title);
 
-        // רשת חנויות
         Div storeContainer = new Div();
         storeContainer.addClassName("store-container");
 
-        List<StoreDTO> stores = this.homePagePresenter.fetchStores();
+        List<StoreDTO> stores = homePagePresenter.fetchStores();
         if (stores == null || stores.isEmpty()) {
             Paragraph noStores = new Paragraph("No stores yet.");
             noStores.getStyle().set("font-size", "18px").set("color", "gray");
             storeContainer.add(noStores);
         } else {
-            for (StoreDTO store : stores) {
-                storeContainer.add(this.homePagePresenter.createStoreCard(store));
-            }
+            stores.forEach(store -> storeContainer.add(homePagePresenter.createStoreCard(store)));
         }
 
-        add(title, storeContainer);
+        storeSection.add(storeContainer);
+        add(storeSection);
     }
 
     //------------------------------- for search:
@@ -198,26 +210,32 @@ public class HomePage extends VerticalLayout {
                 }
             }
         });
-        searchBtn.getStyle()
-                .set("background-color", "#ff9900")
-                .set("color", "white")
-                .set("font-weight", "bold")
-                .set("border-radius", "12px")
-                .set("padding", "6px 16px")
-                .set("font-size", "1rem");
+        searchBtn.addClassName("search-button");
 
         HorizontalLayout row = new HorizontalLayout();
         row.setSpacing(true);
         row.getStyle()
-                .set("flex-wrap", "wrap")
-                .set("align-items", "end")
-                .set("gap", "10px");
+            .set("display", "flex")
+            .set("flex-wrap", "wrap")
+            .set("justify-content", "center")
+            .set("gap", "8px");
+
+        row.setDefaultVerticalComponentAlignment(Alignment.BASELINE); 
+
+        searchField.setWidth("150px");
+        categoryCombo.setWidth("130px");
+        typeSelector.setWidth("130px");
+        searchBySelector.setWidth("130px");
+        minPriceField.setWidth("80px");
+        maxPriceField.setWidth("80px");
+        productRateCombo.setWidth("100px");
 
         if (isUser) {
             row.add(searchField, categoryCombo, typeSelector, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
         } else {
             row.add(searchField, categoryCombo, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
         }
+
 
         layout.add(row);
         return layout;

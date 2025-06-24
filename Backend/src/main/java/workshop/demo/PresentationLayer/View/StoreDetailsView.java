@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
@@ -36,6 +37,7 @@ import workshop.demo.DTOs.ReviewDTO;
 import workshop.demo.PresentationLayer.Presenter.StoreDetailsPresenter;
 
 @Route(value = "store", layout = MainLayout.class)
+@CssImport("./Theme/storeDetails.css")
 public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<Integer> {
 
     private int myStoreId;
@@ -47,43 +49,38 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         this.presenter = new StoreDetailsPresenter();
         add(new H1("Store Details "));
         add(resultsContainer);
-
+     
         add(createSearchBar());
         HorizontalLayout storeActions = new HorizontalLayout();
         storeActions.setSpacing(true);
 
         Button showReviewsBtn = new Button("📖 Show Store Reviews", e -> showStoreReviewsDialog());
         Button addReviewBtn = new Button("📝 Add Review to Store", e -> openStoreReviewDialog());
-        Button addRankBtn = new Button("🌟 Rank Store");
-        addRankBtn.getStyle()
-                .set("background-color", "#ff9900")
-                .set("color", "white")
-                .set("font-weight", "bold")
-                .set("border-radius", "12px")
-                .set("padding", "8px 18px");
+        showReviewsBtn.addClassName("store-action-button");
+        addReviewBtn.addClassName("store-action-button");
 
-        addRankBtn.addClickListener(event -> openRankStoreDialog(myStoreId));
 
-        storeActions.add(showReviewsBtn, addReviewBtn, addRankBtn);
         showReviewsBtn.getStyle()
-                .set("background-color", "#ff9900")
-                .set("color", "white")
-                .set("font-weight", "bold")
-                .set("border-radius", "12px")
-                .set("padding", "8px 18px");
+        .set("background-color", "#ff9900")
+        .set("color", "white")
+        .set("font-weight", "bold")
+        .set("border-radius", "12px")
+        .set("padding", "8px 18px");
 
-        addReviewBtn.getStyle()
-                .set("background-color", "#ff9900")
-                .set("color", "white")
-                .set("font-weight", "bold")
-                .set("border-radius", "12px")
-                .set("padding", "8px 18px");
+    addReviewBtn.getStyle()
+        .set("background-color", "#ff9900")
+        .set("color", "white")
+        .set("font-weight", "bold")
+        .set("border-radius", "12px")
+        .set("padding", "8px 18px");
+
 
         storeActions.add(showReviewsBtn, addReviewBtn);
         add(storeActions);
         productContainer.setJustifyContentMode(FlexLayout.JustifyContentMode.START);
         productContainer.setAlignItems(FlexLayout.Alignment.START);
         productContainer.getStyle().set("gap", "1rem").set("margin-top", "1rem");
+        productContainer.addClassName("product-container");
 
         add(productContainer);
     }
@@ -117,45 +114,11 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
 
     }
 
-    private void openRankStoreDialog(int storeId) {
-        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-        Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("Rank this Store");
-
-        ComboBox<Integer> rankCombo = new ComboBox<>("Select Rating");
-        rankCombo.setItems(1, 2, 3, 4, 5);
-        rankCombo.setPlaceholder("Choose 1–5");
-
-        Button submitBtn = new Button("Submit", e -> {
-            Integer selectedRank = rankCombo.getValue();
-            if (selectedRank == null) {
-                NotificationView.showError("Please select a rating first.");
-                return;
-            }
-            try {
-                presenter.rankStore(token, storeId, selectedRank);
-                NotificationView.showSuccess("Store ranked successfully with " + selectedRank + " stars.");
-                dialog.close();
-            } catch (Exception ex) {
-                NotificationView.showError("Error ranking the store: " + ex.getMessage());
-            }
-        });
-
-        VerticalLayout layout = new VerticalLayout(rankCombo, submitBtn);
-        dialog.add(layout);
-        dialog.open();
-    }
-
     private Div createProductCard(ItemStoreDTO item, ProductDTO product) {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         int storeId = item.getStoreId();
         Div card = new Div();
-        card.getStyle()
-                .set("border", "1px solid #ddd")
-                .set("border-radius", "8px")
-                .set("padding", "1rem")
-                .set("width", "240px")
-                .set("background-color", "#f9f9f9");
+        card.addClassName("product-card");
 
         H4 title = new H4("📦 " + item.getProductName());
         VerticalLayout actions = new VerticalLayout();
@@ -236,75 +199,109 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         addReview.setWidthFull();
         addRank.setWidthFull();
         showReview.setWidthFull();
+        
         actions.add(addToCart, showReview, addReview, addRank);
         card.add(title, rating, price, quantity, category, description, actions);
         return card;
 
     }
+public void openProductRankDialog(ItemStoreDTO item) {
+    String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+    Dialog dialog = new Dialog();
+    dialog.setHeaderTitle("⭐ Rank Product: " + item.getProductName());
+    dialog.setCloseOnOutsideClick(true);
 
-    public void openProductRankDialog(ItemStoreDTO item) {
-        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-        Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("⭐ Rank Product: " + item.getProductName());
+    VerticalLayout layout = new VerticalLayout();
+    layout.setSpacing(true);
+    layout.setPadding(false);
+    layout.setWidth("300px");
 
-        VerticalLayout layout = new VerticalLayout();
-        layout.setSpacing(true);
+    com.vaadin.flow.component.select.Select<Integer> rankSelect = new com.vaadin.flow.component.select.Select<>();
+    rankSelect.setLabel("Select a rank");
+    rankSelect.setItems(1, 2, 3, 4, 5);
+    rankSelect.setPlaceholder("Choose...");
+    rankSelect.setWidthFull();
 
-        com.vaadin.flow.component.select.Select<Integer> rankSelect = new com.vaadin.flow.component.select.Select<>();
-        rankSelect.setLabel("Select a rank");
-        rankSelect.setItems(1, 2, 3, 4, 5);
-        rankSelect.setPlaceholder("Choose...");
-
-        Button submit = new Button("Submit", e -> {
-            Integer rank = rankSelect.getValue();
-            if (rank == null) {
-                Notification.show("Please select a rank.");
-                return;
-            }
-            presenter.rankProduct(item.getStoreId(), token, item.getProductId(), rank);
-            dialog.close();
-        });
-
-        Button cancel = new Button("Cancel", e -> dialog.close());
-
-        HorizontalLayout buttons = new HorizontalLayout(submit, cancel);
-        layout.add(rankSelect, buttons);
-        dialog.add(layout);
-        dialog.open();
-    }
-
-    public void showDialog(List<String> reviews) {
-        Dialog dialog = new Dialog();
-
-        VerticalLayout content = new VerticalLayout();
-        content.setPadding(false);
-        content.setSpacing(true);
-        content.setWidth("400px");
-
-        if (reviews == null || reviews.isEmpty()) {
-            content.add(new Paragraph("There is nothing here yet."));
-        } else {
-            for (String review : reviews) {
-                content.add(new Paragraph("💬 " + review));
-            }
+    Button submit = new Button("Submit", e -> {
+        Integer rank = rankSelect.getValue();
+        if (rank == null) {
+            Notification.show("⚠️ Please select a rank.");
+            return;
         }
+        presenter.rankProduct(item.getStoreId(), token, item.getProductId(), rank);
+        dialog.close();
+    });
 
-        Button closeBtn = new Button("Close", e -> dialog.close());
-        dialog.getFooter().add(closeBtn);
-        dialog.add(content);
-        dialog.open();
+    Button cancel = new Button("Cancel", e -> dialog.close());
+
+    submit.getStyle()
+        .set("background", "linear-gradient(90deg, #10b981, #059669)")  // ירוק יפה
+        .set("color", "white")
+        .set("font-weight", "bold")
+        .set("border-radius", "8px")
+        .set("padding", "6px 12px");
+
+    cancel.getStyle()
+        .set("background-color", "#e5e7eb")
+        .set("color", "#374151")
+        .set("border-radius", "8px")
+        .set("padding", "6px 12px");
+
+    HorizontalLayout buttons = new HorizontalLayout(submit, cancel);
+    buttons.setSpacing(true);
+
+    layout.add(rankSelect, buttons);
+    dialog.add(layout);
+    dialog.open();
+}
+
+
+   public void showDialog(List<String> reviews) {
+    Dialog dialog = new Dialog();
+    dialog.setHeaderTitle("📖 Store Reviews");
+    dialog.setCloseOnOutsideClick(true);
+
+    VerticalLayout content = new VerticalLayout();
+    content.setPadding(true);
+    content.setSpacing(true);
+    content.setWidth("400px");
+    content.getStyle()
+        .set("background-color", "#f9fafb")
+        .set("border-radius", "8px");
+
+    if (reviews == null || reviews.isEmpty()) {
+        content.add(new Paragraph("⚠️ There is nothing here yet."));
+    } else {
+        for (String review : reviews) {
+            Paragraph p = new Paragraph(review);
+            p.getStyle()
+                .set("background-color", "#f3f4f6")
+                .set("padding", "8px")
+                .set("border-radius", "6px")
+                .set("font-size", "0.95rem")
+                .set("color", "#374151");
+            content.add(p);
+        }
     }
+
+    Button closeBtn = new Button("Close", e -> dialog.close());
+    closeBtn.getStyle()
+        .set("background", "linear-gradient(90deg, #6b7280, #4b5563)")
+        .set("color", "white")
+        .set("border-radius", "8px")
+        .set("padding", "6px 12px")
+        .set("font-weight", "bold");
+
+    dialog.add(content);
+    dialog.getFooter().add(closeBtn);
+    dialog.open();
+}
 
     private void showStoreReviewsDialog() {
         try {
             List<ReviewDTO> reviews = presenter.getStoreReviews(myStoreId);
             List<String> filteredReviews = reviews.stream()
-                    .map(r -> {
-                        String name = (r.getName() == null || r.getName().isBlank())
-                                ? "Guest"
-                                : r.getName();
-                        return "👤 " + name + ": " + r.getReviewMsg();
-                    })
+                    .map(r -> "👤 " + r.getName() + ": " + r.getReviewMsg())
                     .toList();
             showDialog(filteredReviews);
         } catch (Exception e) {
@@ -315,7 +312,8 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
     private void openProductReviewDialog(ItemStoreDTO item) {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("Review for " + item.getProductName());
+        dialog.setHeaderTitle("💬 Review for " + item.getProductName());
+        dialog.setCloseOnOutsideClick(true);
 
         VerticalLayout content = new VerticalLayout();
         content.setPadding(false);
@@ -325,7 +323,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         TextArea input = new TextArea("Your Review");
         input.setWidthFull();
         input.setPlaceholder("Type something meaningful...");
-        content.add(input);
+        input.getStyle().set("min-height", "100px");
 
         Button submit = new Button("Submit", e -> {
             String review = input.getValue();
@@ -335,7 +333,6 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
             }
             try {
                 presenter.addReviewToItem(token, item.getStoreId(), item.getProductId(), review);
-                //NotificationView.showSuccess("Product review submitted");
             } catch (Exception ex) {
                 NotificationView.showError("Failed to submit: " + ex.getMessage());
             }
@@ -343,12 +340,29 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         });
 
         Button cancel = new Button("Cancel", e -> dialog.close());
-        HorizontalLayout footer = new HorizontalLayout(submit, cancel);
 
+        submit.getStyle()
+            .set("background", "linear-gradient(90deg, #10b981, #059669)")  // ירוק חיובי
+            .set("color", "white")
+            .set("font-weight", "bold")
+            .set("border-radius", "8px")
+            .set("padding", "6px 12px");
+
+        cancel.getStyle()
+            .set("background-color", "#e5e7eb")
+            .set("color", "#374151")
+            .set("border-radius", "8px")
+            .set("padding", "6px 12px");
+
+        HorizontalLayout footer = new HorizontalLayout(submit, cancel);
+        footer.setSpacing(true);
+
+        content.add(input);
         dialog.add(content);
         dialog.getFooter().add(footer);
         dialog.open();
     }
+
 
     private void openStoreReviewDialog() {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
@@ -379,6 +393,15 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
             dialog.close();
         });
 
+        submit.getStyle()
+        .set("background", "linear-gradient(90deg, #ce5290, #f472b6)")
+        .set("color", "white")
+        .set("font-weight", "bold")
+        .set("border-radius", "8px")
+        .set("padding", "6px 12px")
+        .set("box-shadow", "0 2px 6px rgba(0,0,0,0.1)");
+
+
         Button cancel = new Button("Cancel", e -> dialog.close());
         HorizontalLayout footer = new HorizontalLayout(submit, cancel);
 
@@ -387,55 +410,69 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         dialog.open();
     }
 
-    private void openAddToCartDialog(ItemStoreDTO item) {
-        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+  private void openAddToCartDialog(ItemStoreDTO item) {
+    String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+    Dialog dialog = new Dialog();
+    dialog.setHeaderTitle("🛒 Add to Cart");
+    dialog.setCloseOnOutsideClick(true);
 
-        Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("🛒 Add to Cart");
+    VerticalLayout layout = new VerticalLayout();
+    layout.setSpacing(true);
+    layout.setPadding(false);
+    layout.setWidth("400px");
 
-        VerticalLayout layout = new VerticalLayout();
-        layout.setSpacing(true);
+    TextField quantityField = new TextField("Quantity");
+    quantityField.setPlaceholder("Enter quantity (e.g. 1)");
+    quantityField.setWidthFull();
 
-        TextField quantityField = new TextField("Quantity");
-        quantityField.setPlaceholder("Enter quantity (e.g. 1)");
-        quantityField.setWidthFull();
-
-        Button submit = new Button("Add", event -> {
-            try {
-                int quantity = Integer.parseInt(quantityField.getValue());
-                if (quantity <= 0) {
-                    Notification.show("Quantity must be positive.");
-                    return;
-                }
-
-                presenter.addToCart(token, item, quantity);
-                dialog.close();
-            } catch (NumberFormatException ex) {
-                Notification.show("Please enter a valid number.");
+    Button submit = new Button("Add", event -> {
+        try {
+            int quantity = Integer.parseInt(quantityField.getValue());
+            if (quantity <= 0) {
+                Notification.show("⚠️ Quantity must be positive.");
+                return;
             }
-        });
+            presenter.addToCart(token, item, quantity);
+            Notification.show("✅ Added to cart successfully!");
+            dialog.close();
+        } catch (NumberFormatException ex) {
+            Notification.show("⚠️ Please enter a valid number.");
+        }
+    });
+    submit.getStyle()
+        .set("background", "linear-gradient(90deg, #ce5290, #f472b6)")
+        .set("color", "white")
+        .set("font-weight", "bold")
+        .set("border-radius", "8px")
+        .set("padding", "6px 12px")
+        .set("box-shadow", "0 2px 6px rgba(0,0,0,0.1)");
 
-        Button cancel = new Button("Cancel", e -> dialog.close());
+    Button cancel = new Button("Cancel", e -> dialog.close());
+    cancel.getStyle()
+        .set("background-color", "#e5e7eb")
+        .set("color", "#374151")
+        .set("border-radius", "8px")
+        .set("padding", "6px 12px");
 
-        HorizontalLayout buttons = new HorizontalLayout(submit, cancel);
-        layout.add(quantityField, buttons);
-        dialog.add(layout);
-        dialog.open();
-    }
+    HorizontalLayout buttons = new HorizontalLayout(submit, cancel);
+    buttons.setSpacing(true);
+    buttons.setJustifyContentMode(JustifyContentMode.END);
+
+    layout.add(quantityField, buttons);
+    dialog.add(layout);
+    dialog.open();
+}
+
 
     private void openProductReviewsDialog(ItemStoreDTO item) {
         try {
             List<ReviewDTO> reviews = presenter.getProductReviews(item.getStoreId(), item.getProductId());
-            List<String> filteredReviews = reviews.stream()
-                    .map(r -> {
-                        String name = (r.getName() == null || r.getName().isBlank())
-                                ? "Guest"
-                                : r.getName();
-                        return "👤 " + name + ": " + r.getReviewMsg();
-                    })
+
+            List<String> formatted = reviews.stream()
+                    .map(r -> "👤 " + r.getName() + ": " + r.getReviewMsg())
                     .toList();
 
-            showDialog(filteredReviews);
+            showDialog(formatted);
         } catch (Exception e) {
             showDialog(List.of("Failed to load product reviews: " + e.getMessage()));
         }
@@ -536,145 +573,147 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
     }
 
     //------------------------------- for search:
-    private VerticalLayout createSearchBar() {
-        VerticalLayout layout = new VerticalLayout();
-        layout.setSpacing(false);
-        layout.setPadding(true);
-        layout.getStyle()
-                .set("background-color", "#f5f6ff")
-                .set("border-radius", "12px")
-                .set("padding", "20px")
-                .set("box-shadow", "0 2px 10px rgba(0, 0, 0, 0.05)")
-                .set("margin-bottom", "1.5rem");
+private VerticalLayout createSearchBar() {
+    VerticalLayout layout = new VerticalLayout();
+    layout.setSpacing(false);
+    layout.setPadding(true);
+    layout.getStyle()
+        .set("background-color", "#f5f6ff")
+        .set("border-radius", "12px")
+        .set("padding", "20px")
+        .set("box-shadow", "0 2px 10px rgba(0, 0, 0, 0.05)")
+        .set("margin-bottom", "1.5rem");
 
-        String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
-        boolean isUser = "user".equals(userType);
+    String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
+    boolean isUser = "user".equals(userType);
 
-        TextField searchField = new TextField("Search");
-        searchField.setPlaceholder("Enter keyword or product name");
-        searchField.setWidth("200px");
+    TextField searchField = new TextField("Search");
+    searchField.setPlaceholder("Enter keyword or product name");
+    searchField.setWidth("200px");
 
-        ComboBox<Category> categoryCombo = new ComboBox<>("Category");
-        categoryCombo.setItems(Category.values());
-        categoryCombo.setPlaceholder("Select Category");
-        categoryCombo.setWidth("160px");
+    ComboBox<Category> categoryCombo = new ComboBox<>("Category");
+    categoryCombo.setItems(Category.values());
+    categoryCombo.setPlaceholder("Select Category");
+    categoryCombo.setWidth("160px");
 
-        ComboBox<String> typeSelector = new ComboBox<>("Product Type");
-        typeSelector.setItems("Normal", "Bid", "Auction", "Random Draw");
-        typeSelector.setPlaceholder("Select Type");
-        typeSelector.setRequired(true);
-        typeSelector.setWidth("150px");
+    ComboBox<String> typeSelector = new ComboBox<>("Product Type");
+    typeSelector.setItems("Normal", "Bid", "Auction", "Random Draw");
+    typeSelector.setPlaceholder("Select Type");
+    typeSelector.setRequired(true);
+    typeSelector.setWidth("150px");
 
-        ComboBox<String> searchBySelector = new ComboBox<>("Search By");
-        searchBySelector.setItems("Keyword", "Product Name");
-        searchBySelector.setPlaceholder("Search By");
-        searchBySelector.setRequired(true);
-        searchBySelector.setWidth("150px");
+    ComboBox<String> searchBySelector = new ComboBox<>("Search By");
+    searchBySelector.setItems("Keyword", "Product Name");
+    searchBySelector.setPlaceholder("Search By");
+    searchBySelector.setRequired(true);
+    searchBySelector.setWidth("150px");
 
-        TextField minPriceField = new TextField("Min Price");
-        minPriceField.setPlaceholder("Min");
-        minPriceField.setWidth("100px");
+    TextField minPriceField = new TextField("Min Price");
+    minPriceField.setPlaceholder("Min");
+    minPriceField.setWidth("100px");
 
-        TextField maxPriceField = new TextField("Max Price");
-        maxPriceField.setPlaceholder("Max");
-        maxPriceField.setWidth("100px");
+    TextField maxPriceField = new TextField("Max Price");
+    maxPriceField.setPlaceholder("Max");
+    maxPriceField.setWidth("100px");
 
-        ComboBox<Integer> productRateCombo = new ComboBox<>("Product Rate");
-        productRateCombo.setItems(1, 2, 3, 4, 5);
-        productRateCombo.setPlaceholder("1-5");
-        productRateCombo.setWidth("120px");
+    ComboBox<Integer> productRateCombo = new ComboBox<>("Product Rate");
+    productRateCombo.setItems(1, 2, 3, 4, 5);
+    productRateCombo.setPlaceholder("1-5");
+    productRateCombo.setWidth("120px");
 
-        Button searchBtn = new Button("Search", event -> {
-            String selectedType = typeSelector.getValue();
-            String searchBy = searchBySelector.getValue();
-            String inputText = searchField.getValue();
-            Category category = categoryCombo.getValue();
-            Double minPrice = parseDouble(minPriceField.getValue());
-            Double maxPrice = parseDouble(maxPriceField.getValue());
-            Integer productRate = productRateCombo.getValue();
+    Button searchBtn = new Button("🔍 Search");
+    searchBtn.addClassName("search-button");
+    searchBtn.getStyle()
+        .set("background", "linear-gradient(90deg, #ce5290, #f472b6)")
+        .set("color", "white")
+        .set("font-weight", "bold")
+        .set("border-radius", "12px")
+        .set("padding", "8px 18px")
+        .set("font-size", "1rem")
+        .set("box-shadow", "0 2px 6px rgba(0, 0, 0, 0.1)");
 
-            if ((isUser && selectedType == null) || searchBy == null) {
-                NotificationView.showError("Please select both product type and search mode.");
-                return;
+    searchBtn.addClickListener(event -> {
+        String selectedType = typeSelector.getValue();
+        String searchBy = searchBySelector.getValue();
+        String inputText = searchField.getValue();
+        Category category = categoryCombo.getValue();
+        Double minPrice = parseDouble(minPriceField.getValue());
+        Double maxPrice = parseDouble(maxPriceField.getValue());
+        Integer productRate = productRateCombo.getValue();
+
+        if ((isUser && selectedType == null) || searchBy == null) {
+            NotificationView.showError("Please select both product type and search mode.");
+            return;
+        }
+
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        String name = "Product Name".equals(searchBy) ? inputText : null;
+        String keyword = "Keyword".equals(searchBy) ? inputText : null;
+
+        resultsContainer.removeAll();
+
+        if (!isUser) {
+            List<ItemStoreDTO> items = presenter.searchNormal(token, name, keyword, category, minPrice, maxPrice, productRate, myStoreId);
+            if (items == null || items.isEmpty()) {
+                resultsContainer.add(new Paragraph("❌ No normal products found."));
+            } else {
+                items.forEach(item -> resultsContainer.add(createItemCard(item)));
             }
+            return;
+        }
 
-            String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-            String name = searchBy.equals("Product Name") ? inputText : null;
-            String keyword = searchBy.equals("Keyword") ? inputText : null;
-
-            resultsContainer.removeAll();
-
-            if (!isUser) {
-                // guest search: Normal only
+        switch (selectedType) {
+            case "Bid" -> {
+                List<BidDTO> bids = presenter.searchBids(token, name, keyword, category, minPrice, maxPrice, productRate, myStoreId);
+                if (bids == null || bids.isEmpty()) {
+                    resultsContainer.add(new Paragraph("❌ No bid products found."));
+                } else {
+                    bids.forEach(bid -> resultsContainer.add(createBidCard(bid)));
+                }
+            }
+            case "Auction" -> {
+                List<AuctionDTO> auctions = presenter.searchAuctions(token, name, keyword, category, minPrice, maxPrice, productRate, myStoreId);
+                if (auctions == null || auctions.isEmpty()) {
+                    resultsContainer.add(new Paragraph("❌ No auction products found."));
+                } else {
+                    auctions.forEach(auction -> resultsContainer.add(createAuctionCard(auction)));
+                }
+            }
+            case "Random Draw" -> {
+                List<RandomDTO> randoms = presenter.searchRandoms(token, name, keyword, category, minPrice, maxPrice, productRate, myStoreId);
+                if (randoms == null || randoms.isEmpty()) {
+                    resultsContainer.add(new Paragraph("❌ No random draw products found."));
+                } else {
+                    randoms.forEach(random -> resultsContainer.add(createRandomCard(random)));
+                }
+            }
+            default -> {
                 List<ItemStoreDTO> items = presenter.searchNormal(token, name, keyword, category, minPrice, maxPrice, productRate, myStoreId);
                 if (items == null || items.isEmpty()) {
                     resultsContainer.add(new Paragraph("❌ No normal products found."));
                 } else {
                     items.forEach(item -> resultsContainer.add(createItemCard(item)));
                 }
-                return;
             }
-            //only for user:
-            switch (selectedType) {
-                case "Bid" -> {
-                    List<BidDTO> bids = presenter.searchBids(token, name, keyword, category, minPrice, maxPrice, productRate, myStoreId);
-                    if (bids == null || bids.isEmpty()) {
-                        resultsContainer.add(new Paragraph("❌ No bid products found."));
-                        return;
-                    }
-                    bids.forEach(bid -> resultsContainer.add(createBidCard(bid)));
-                }
-                case "Auction" -> {
-                    List<AuctionDTO> auctions = presenter.searchAuctions(token, name, keyword, category, minPrice, maxPrice, productRate, myStoreId);
-                    if (auctions == null || auctions.isEmpty()) {
-                        resultsContainer.add(new Paragraph("❌ No auction products found."));
-                        return;
-                    }
-                    auctions.forEach(auction -> resultsContainer.add(createAuctionCard(auction)));
-                }
-                case "Random Draw" -> {
-                    List<RandomDTO> randoms = presenter.searchRandoms(token, name, keyword, category, minPrice, maxPrice, productRate, myStoreId);
-                    if (randoms == null || randoms.isEmpty()) {
-                        resultsContainer.add(new Paragraph("❌ No random draw products found."));
-                        return;
-                    }
-                    randoms.forEach(random -> resultsContainer.add(createRandomCard(random)));
-                }
-                default -> {
-                    List<ItemStoreDTO> items = presenter.searchNormal(token, name, keyword, category, minPrice, maxPrice, productRate, myStoreId);
-                    if (items == null || items.isEmpty()) {
-                        resultsContainer.add(new Paragraph("❌ No normal products found."));
-                        return;
-                    }
-                    items.forEach(item -> resultsContainer.add(createItemCard(item)));
-                }
-            }
-        });
-        searchBtn.getStyle()
-                .set("background-color", "#ff9900")
-                .set("color", "white")
-                .set("font-weight", "bold")
-                .set("border-radius", "12px")
-                .set("padding", "6px 16px")
-                .set("font-size", "1rem");
-
-        HorizontalLayout row = new HorizontalLayout();
-        row.setSpacing(true);
-        row.getStyle()
-                .set("flex-wrap", "wrap")
-                .set("align-items", "end")
-                .set("gap", "10px");
-
-        if (isUser) {
-            row.add(searchField, categoryCombo, typeSelector, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
-        } else {
-            row.add(searchField, categoryCombo, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
         }
+    });
 
-        layout.add(row);
-        return layout;
+    HorizontalLayout row = new HorizontalLayout();
+    row.setSpacing(true);
+    row.getStyle()
+        .set("flex-wrap", "wrap")
+        .set("align-items", "end")
+        .set("gap", "10px");
 
+    if (isUser) {
+        row.add(searchField, categoryCombo, typeSelector, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
+    } else {
+        row.add(searchField, categoryCombo, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
     }
+
+    layout.add(row);
+    return layout;
+}
 
     private Double parseDouble(String value) {
         try {
@@ -725,7 +764,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 .set("border-radius", "8px")
                 .set("padding", "6px 16px");
 
-        card.add(name, store, max, endsAt, makeAuction);
+        card.add(name, store, max,endsAt, makeAuction);
         return card;
     }
 
@@ -745,18 +784,20 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         String formattedEndTime = formatEndTime(random.endTimeMillis);
         Paragraph endTime = new Paragraph("🕒 Ends at: " + formattedEndTime);
 
+
+
         Button participate = new Button("Join Random Draw", e -> showRandomParticipationDialog(random));
         participate.getStyle().set("background-color", "#9c27b0").set("color", "white");
 
-        card.add(name, store, amountLeft, price, endTime, participate);
+        card.add(name, store, amountLeft, price, endTime,participate);
         return card;
     }
-
     private String formatEndTime(long endMillis) {
         return java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy - hh:mm a", java.util.Locale.ENGLISH)
                 .withZone(java.time.ZoneId.systemDefault())
                 .format(java.time.Instant.ofEpochMilli(endMillis));
     }
+
 
     private Div createItemCard(ItemStoreDTO item) {
         Div card = new Div();
