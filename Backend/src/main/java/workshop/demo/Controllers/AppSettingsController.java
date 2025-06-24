@@ -42,4 +42,19 @@ public class AppSettingsController {
         boolean initialized = appSettingsService.isInitialized();
         return ResponseEntity.ok(new ApiResponse<>(initialized, null));
     }
+
+    @PostMapping("/shutdown")
+    public ResponseEntity<?> shutdownSystem(@RequestParam int key) {
+        try {
+            appSettingsService.markShutdown(key);
+            return ResponseEntity.ok(new ApiResponse<>(true, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
 }

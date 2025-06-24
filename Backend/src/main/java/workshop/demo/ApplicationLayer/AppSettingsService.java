@@ -34,4 +34,15 @@ public class AppSettingsService {
         settings.setInitialized(true);
         appSettingsRepository.save(settings);
     }
+
+    public void markShutdown(int key) throws UIException {
+        if (key != 123321) {
+            throw new UIException("NOT THE ADMIN", 1039);
+        }
+        AppSettingsEntity settings = appSettingsRepository.findById(1L)
+                .orElse(new AppSettingsEntity());
+        settings.setInitialized(false);
+        appSettingsRepository.save(settings);
+    }
+
 }
