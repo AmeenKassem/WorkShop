@@ -14,7 +14,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -23,7 +23,7 @@ import workshop.demo.PresentationLayer.Presenter.InitPresenter;
 //@Route
 @CssImport("./Theme/main-layout.css")
 @JsModule("./notification.js")
-public class MainLayout extends AppLayout implements BeforeEnterListener {
+public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
     private InitPresenter presenter;
     private VerticalLayout buttonColumn;
@@ -74,11 +74,22 @@ public class MainLayout extends AppLayout implements BeforeEnterListener {
         }
     }
 
+    // @Override
+    // public void beforeEnter(BeforeEnterEvent event) {
+    //     System.out.println("in before enterrrrr main layout");
+    //     if (!presenter.isSiteInitialized()) {
+    //         String path = event.getLocation().getPath();
+    //         if (!path.equals("admin/init") && !path.equals("no-init")) {
+    //             event.forwardTo(NotInitializedView.class);
+    //         }
+    //     }
+    // }
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         System.out.println("in before enterrrrr main layout");
         if (!presenter.isSiteInitialized()) {
             String path = event.getLocation().getPath();
+
             if (!path.equals("admin/init") && !path.equals("no-init")) {
                 event.forwardTo(NotInitializedView.class);
             }
