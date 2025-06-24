@@ -223,7 +223,7 @@ public class ActivePurcheses {
             activeRandom.remove(randomId);
             throw new UIException("Random has ended!", ErrorCodes.RANDOM_FINISHED);
         }
-        return activeRandom.get(randomId).participateInRandom(userId, productPrice);
+        return activeRandom.get(randomId).participateInRandom(userId, productPrice).toDTO();
     }
 
     public ParticipationInRandomDTO endRandom(int randomId) throws DevException {
@@ -234,7 +234,7 @@ public class ActivePurcheses {
 
             throw new DevException("Random ID not found in active randoms!");
         }
-        return activeRandom.get(randomId).endRandom();
+        return activeRandom.get(randomId).endRandom().toDTO();
     }
 
     public RandomDTO[] getRandoms() {
@@ -274,7 +274,7 @@ public class ActivePurcheses {
     public ParticipationInRandomDTO getRandomCardforuser(int specialId, int userId) {
         if (activeRandom.containsKey(specialId)) {
             Random random = activeRandom.get(specialId);
-            return random.getCard(userId);
+            return random.getCard(userId).toDTO();
         } else
             return null;
     }
@@ -317,7 +317,7 @@ public class ActivePurcheses {
         if (activeRandom.containsKey(specialId)) {
             Random random = activeRandom.get(specialId);
             // if (random.userIsWinner())
-            return random.getCard(cardId);
+            return random.getCard(cardId).toDTO();
         }
         return null;
     }
