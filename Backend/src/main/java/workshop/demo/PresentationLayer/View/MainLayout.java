@@ -13,16 +13,17 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.PresentationLayer.Presenter.InitPresenter;
 
-@Route
+//@Route
 @CssImport("./Theme/main-layout.css")
 @JsModule("./notification.js")
-public class MainLayout extends AppLayout {
+public class MainLayout extends AppLayout implements BeforeEnterListener {
 
     private InitPresenter presenter;
     private VerticalLayout buttonColumn;
@@ -73,6 +74,17 @@ public class MainLayout extends AppLayout {
         }
     }
 
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        System.out.println("in before enterrrrr main layout");
+        if (!presenter.isSiteInitialized()) {
+            String path = event.getLocation().getPath();
+            if (!path.equals("admin/init") && !path.equals("no-init")) {
+                event.forwardTo(NotInitializedView.class);
+            }
+        }
+    }
+
     private HorizontalLayout buttonRow;
 
     private void createHeader() {
@@ -105,13 +117,15 @@ public class MainLayout extends AppLayout {
     }
 
     private void addRightSideButtons() {
-        if (buttonRow == null)
+        if (buttonRow == null) {
             return;
+        }
         buttonRow.removeAll();
 
         String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
-        if (userType == null)
+        if (userType == null) {
             userType = "guest";
+        }
 
         // Shared buttons
         RouterLink myCart = new RouterLink("My Cart", MyCartView.class);
