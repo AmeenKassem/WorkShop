@@ -47,33 +47,67 @@ public class UserService {
     // private IUserRepo userRepo;
     @Autowired
     private IAuthRepo authRepo;
+    
+    
     @Autowired
     private IStockRepoDB stockRepo;
     @Autowired
     private IStoreRepoDB storeRepo;
     @Autowired
     private AdminInitilizer adminInitilizer;
-    // private final AdminHandler adminHandler;
     @Autowired
     private Encoder encoder = new Encoder();
-
+    
     @Autowired
     private UserJpaRepository regJpaRepo;
     @Autowired
     private GuestJpaRepository guestJpaRepository;
-
+    
     @Autowired
     private IActivePurchasesRepo activePurchasesRepo;
+    
+    
+    public void setAuthRepo(IAuthRepo authRepo) {
+        this.authRepo = authRepo;
+    }
+
+    public void setStockRepo(IStockRepoDB stockRepo) {
+        this.stockRepo = stockRepo;
+    }
+
+    public void setStoreRepo(IStoreRepoDB storeRepo) {
+        this.storeRepo = storeRepo;
+    }
+
+    public void setAdminInitilizer(AdminInitilizer adminInitilizer) {
+        this.adminInitilizer = adminInitilizer;
+    }
+
+    public void setEncoder(Encoder encoder) {
+        this.encoder = encoder;
+    }
+
+    public void setRegJpaRepo(UserJpaRepository regJpaRepo) {
+        this.regJpaRepo = regJpaRepo;
+    }
+
+    public void setGuestJpaRepository(GuestJpaRepository guestJpaRepository) {
+        this.guestJpaRepository = guestJpaRepository;
+    }
+
+    public void setActivePurchasesRepo(IActivePurchasesRepo activePurchasesRepo) {
+        this.activePurchasesRepo = activePurchasesRepo;
+    }
 
     public String generateGuest() throws UIException, Exception {
         logger.info("generateGuest called");
         Guest guest = new Guest();
-        Guest savedGuest = guestJpaRepository.save(guest);
-        logger.info("Generated guest with ID={}", savedGuest.getId());
-        return authRepo.generateGuestToken(savedGuest.getId());
-
+        guestJpaRepository.save(guest);
+        logger.info("Generated guest with ID={}", guest.getId());
+        return authRepo.generateGuestToken(guest.getId());
+        
     }
-
+    
     public boolean register(String token, String username, String password, int age) throws UIException {
         logger.info("register called for username={}", username);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);

@@ -2,6 +2,8 @@ package workshop.demo.DomainLayer.StoreUserConnection;
 
 import java.util.List;
 
+import org.springframework.stereotype.Repository;
+
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 

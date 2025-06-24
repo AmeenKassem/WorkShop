@@ -27,6 +27,13 @@ public class NotificationService {
     @Autowired
     private UserJpaRepository userRepo;
 
+    public NotificationService(DelayedNotificationRepository mockNotiRepo, BaseNotifier baseNotifier,
+            UserJpaRepository userService) {
+        this.notifier= baseNotifier;
+        this.userRepo = userService;
+        this.notificationRepo = mockNotiRepo;
+    }
+
     public void sendDelayedMessageToUser(String username, String message) {
 
         System.out.println(notifier.isUserOnline(username));
