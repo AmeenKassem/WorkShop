@@ -122,48 +122,48 @@ public class StockRepository implements IStockRepo {
                 product.getDescription());
     }
 
-    @Override
-    public SingleBid bidOnAuction(int StoreId, int userId, int auctionId, double price)
-            throws UIException, DevException {
-        return null;
-    }
+    // @Override
+    // public SingleBid bidOnAuction(int StoreId, int userId, int auctionId, double price)
+    //         throws UIException, DevException {
+    //     return null;
+    // }
 
-    @Override
-    public int addAuctionToStore(int StoreId, int productId, int quantity, long tome, double startPrice)
-            throws UIException, DevException {
-        checkQuantity(productId, quantity, StoreId);
-        int res = getActivePurchases(StoreId).addProductToAuction(productId, quantity, tome,startPrice);
-        if (res != -1) {
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    try {
-                        System.out.println("auction end.");
-                        Auction auction = getActivePurchases(StoreId).getAuctionById(res);
-                        if (auction.mustReturnToStock()) {
-                            System.out.println("auction must return the stock.");
-                            increaseQuantityForStore(StoreId, productId, quantity);
-                        }
-                    } catch (UIException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
+    // @Override
+    // public int addAuctionToStore(int StoreId, int productId, int quantity, long tome, double startPrice)
+    //         throws UIException, DevException {
+    //     checkQuantity(productId, quantity, StoreId);
+    //     int res = getActivePurchases(StoreId).addProductToAuction(productId, quantity, tome,startPrice);
+    //     if (res != -1) {
+    //         timer.schedule(new TimerTask() {
+    //             @Override
+    //             public void run() {
+    //                 try {
+    //                     System.out.println("auction end.");
+    //                     Auction auction = getActivePurchases(StoreId).getAuctionById(res);
+    //                     if (auction.mustReturnToStock()) {
+    //                         System.out.println("auction must return the stock.");
+    //                         increaseQuantityForStore(StoreId, productId, quantity);
+    //                     }
+    //                 } catch (UIException e) {
+    //                     // TODO Auto-generated catch block
+    //                     e.printStackTrace();
+    //                 }
+    //             }
 
-            }, tome);
-        }
-        decreaseQuantitytoBuy(StoreId, productId, quantity);
-        return res;
-    }
+    //         }, tome);
+    //     }
+    //     decreaseQuantitytoBuy(StoreId, productId, quantity);
+    //     return res;
+    // }
 
     private void increaseQuantityForStore(int storeId, int productId, int quantity) throws UIException {
         this.storeStocks.get(storeId).IncreaseQuantitytoBuy(productId, quantity);
     }
 
-    @Override
-    public AuctionDTO[] getAuctionsOnStore(int storeId) throws UIException, DevException {
-        return getActivePurchases(storeId).getAuctions();
-    }
+    // @Override
+    // public AuctionDTO[] getAuctionsOnStore(int storeId) throws UIException, DevException {
+    //     return getActivePurchases(storeId).getAuctions();
+    // }
 
     @Override
     public int addProductToBid(int storeId, int productId, int quantity) throws UIException, DevException {
@@ -538,21 +538,21 @@ public class StockRepository implements IStockRepo {
         return result.toArray(new BidDTO[0]);
     }
 
-    @Override
-    public AuctionDTO[] searchActiveAuctions(ProductSearchCriteria criteria) throws UIException {
-        ItemStoreDTO[] storeItems = search(criteria);
-        List<AuctionDTO> result = new ArrayList<>();
-        for (ItemStoreDTO item : storeItems) {
-            int productId = item.getProductId();
-            ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
-            List<AuctionDTO> auctions = active.getAuctionsForProduct(productId);
-            for (AuctionDTO auction : auctions) {
-                auction.productName = item.getProductName();
-                result.add(auction);
-            }
-        }
-        return result.toArray(new AuctionDTO[0]);
-    }
+    // @Override
+    // public AuctionDTO[] searchActiveAuctions(ProductSearchCriteria criteria) throws UIException {
+    //     ItemStoreDTO[] storeItems = search(criteria);
+    //     List<AuctionDTO> result = new ArrayList<>();
+    //     for (ItemStoreDTO item : storeItems) {
+    //         int productId = item.getProductId();
+    //         ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
+    //         List<AuctionDTO> auctions = active.getAuctionsForProduct(productId);
+    //         for (AuctionDTO auction : auctions) {
+    //             auction.productName = item.getProductName();
+    //             result.add(auction);
+    //         }
+    //     }
+    //     return result.toArray(new AuctionDTO[0]);
+    // }
 
     private ItemStoreDTO convertToItemStoreDTO(item item, Product product, int storeId) {
         return new ItemStoreDTO(product.getProductId(), item.getQuantity(), item.getPrice(), product.getCategory(),

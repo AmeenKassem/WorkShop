@@ -17,6 +17,7 @@ public class SingleBidDTO {
 
     public String productName;
     public String userName;
+    
 
     public SingleBidDTO(int id, int productId, int amount, double price, SpecialType type, int specialId,
             Status status, int storeId, int userId,
