@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import workshop.demo.DomainLayer.Notification.BaseNotifier;
 import workshop.demo.DomainLayer.Notification.DelayedNotification;
+import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.InfrastructureLayer.DelayedNotificationRepository;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
 
 @Service
 public class NotificationService {
@@ -22,6 +24,8 @@ public class NotificationService {
     // private Map<String, List<String>> delayedMessages;
     @Autowired
     private DelayedNotificationRepository notificationRepo;
+    @Autowired
+    private UserJpaRepository userRepo;
 
     public void sendDelayedMessageToUser(String username, String message) {
 
@@ -45,6 +49,13 @@ public class NotificationService {
         notificationRepo.deleteByUsername(username);
         for (int i = 0; i < msgs.size(); i++) {
             sendDelayedMessageToUser(username, msgs.get(i).getMessage());
+        }
+    }
+
+    public void sendMessageForUsers(String string, List<Integer> paricpationIds) {
+        for (Integer id : paricpationIds) {
+            Registered user = userRepo.findById(id).orElseThrow();
+            sendDelayedMessageToUser(user.getUsername(), string);
         }
     }
 }

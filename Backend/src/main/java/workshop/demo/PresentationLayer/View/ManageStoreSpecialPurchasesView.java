@@ -86,7 +86,7 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
 
             card.add(new Paragraph("Product: " + dto.productName));
             card.add(new Paragraph("Max Bid: $" + dto.maxBid));
-            card.add(new Paragraph("Winner: " + (dto.winner != null ? dto.winner.getUserId() : "Not yet")));
+            card.add(new Paragraph("Winner: " + (dto.winner != null ? dto.winner.userName : "Not yet")));
 
             layout.add(card);
         }

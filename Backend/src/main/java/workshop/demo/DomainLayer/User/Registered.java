@@ -80,9 +80,16 @@ public class Registered extends Guest {
     }
 
     public void addSpecialItemToCart(UserSpecialItemCart item) throws DevException {
-        logger.debug("adding special item {}:{}:{}:{}", item.storeId, item.specialId, item.bidId, item.type.toString());
         if (item == null) {
             throw new DevException("item is null ");
+        }
+        logger.debug("adding special item {}:{}:{}:{}", item.storeId, item.specialId, item.bidId, item.type.toString());
+        item.user = this;
+        for (UserSpecialItemCart userSpecialItemCart : specialCart) {
+            if (userSpecialItemCart.bidId == item.bidId && item.specialId == userSpecialItemCart.specialId
+                    && item.productId == userSpecialItemCart.productId && userSpecialItemCart.storeId == item.storeId
+                    && userSpecialItemCart.type == item.type)
+                return;//do not dublicate item!!!
         }
         specialCart.add(item);
     }
@@ -113,6 +120,10 @@ public class Registered extends Guest {
 
     public void clearSpecialCart() {
         specialCart.removeAll(specialCart);
+    }
+
+    public void clearSpecialCart(List<UserSpecialItemCart> itemsToRemove) {
+        specialCart.removeAll(itemsToRemove);
     }
 
 }

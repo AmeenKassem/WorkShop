@@ -28,10 +28,15 @@ import workshop.demo.DomainLayer.Order.Order;
 import workshop.demo.DomainLayer.Purchase.IPaymentService;
 import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.ISupplyService;
+import workshop.demo.DomainLayer.Stock.ActivePurcheses;
+import workshop.demo.DomainLayer.Stock.Auction;
+import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
+import workshop.demo.DomainLayer.Stock.UserAuctionBid;
+import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
@@ -75,6 +80,8 @@ public class PurchaseService {
     private IStockRepoDB stockJpaRepo;
     @Autowired
     private IStoreStockRepo storeStockRepo;
+    @Autowired
+    private IActivePurchasesRepo activeRepo;
 
     private static final Logger logger = LoggerFactory.getLogger(PurchaseService.class);
 
@@ -201,7 +208,7 @@ public class PurchaseService {
         }
 
         ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
-        UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random);
+        UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random, -1);
         user.addSpecialItemToCart(item);
         boolean done = paymentService.processPayment(paymentDetails, amountPaid);
         if (!done) {
@@ -216,6 +223,7 @@ public class PurchaseService {
         return card;
     }
 
+    // @Transactional
     public ReceiptDTO[] finalizeSpecialCart(String token, PaymentDetails payment, SupplyDetails supply)
             throws Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -227,64 +235,95 @@ public class PurchaseService {
 
         logger.info("The user " + userId + " finalizing the special cart.");
         Registered user = regRepo.findById(userId).orElseThrow(() -> notLoggedInException());
+        // winning!!
         List<SingleBid> winningBids = new ArrayList<>();
         List<ParticipationInRandomDTO> winningRandoms = new ArrayList<>();
-        Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
+        List<UserAuctionBid> winningAuctions = new ArrayList<>();
 
+        List<UserSpecialItemCart> itemsToRemove = new ArrayList<>();
         List<UserSpecialItemCart> allSpecialItems = user.getAllSpecialItems();
-        List<UserSpecialItemCart> toPay = new ArrayList<>();
         for (UserSpecialItemCart specialItem : allSpecialItems) {
-
+            logger.info("one special item on the cart!!");
             if (specialItem.type == SpecialType.Random) {
-                ParticipationInRandomDTO card = stockRepo.getRandomCardforuser( // had to change this to get card for
-                        // user to be able to do refund if the
-                        // card stays null we never reach the
-                        // refund statement
-                        specialItem.storeId, specialItem.specialId, userId);
-
-                if (card != null && card.isWinner && card.ended) {
-                    winningRandoms.add(card); // Won
-
-                } else if ((card != null && !card.isWinner && card.ended) || card == null) {
-                    user.removeSpecialItem(specialItem); // Lost or not found → remove
-                } else if (card.mustRefund()) {
-                    // If the card must be refunded, we remove it from the user's cart
-                    user.removeSpecialItem(specialItem);
-                    // And we refund the payment
-                    // paymentService.externalRefund(card.transactionIdForPayment);
-                    stockRepo.returnProductToStock(specialItem.storeId, card.productId, 1, specialItem.specialId);
-                    stockRepo.markRefunded(specialItem.specialId);
-                } else if (card.mustRefund()) {
-                    // If the card must be refunded, we remove it from the user's cart
-                    user.removeSpecialItem(specialItem);
-                    // And we refund the payment
-
-                    paymentService.processRefund(payment, card.amountPaid);
-                }
-
-            } else { // BID or AUCTION
-                SingleBid bid = stockRepo.getBidIfWinner(
-                        specialItem.storeId, specialItem.specialId, specialItem.bidId, specialItem.type);
-
-                if (bid != null && bid.isWinner() && bid.isEnded()) {
-                    winningBids.add(bid); // Won
-                } else if ((bid != null && !bid.isWinner() && bid.isEnded()) || bid == null) {
-                    user.removeSpecialItem(specialItem); // Lost or not found → remove
+                // DO NOT DELETE THIS CODE!!!!!!!!!!!!
+                // ParticipationInRandomDTO card =
+                // stockRepo.getRandomCardforuser(specialItem.storeId, specialItem.specialId,
+                // userId);
+                // if (card != null && card.isWinner && card.ended) {
+                // winningRandoms.add(card); // Won
+                // } else if ((card != null && !card.isWinner && card.ended) || card == null) {
+                // user.removeSpecialItem(specialItem); // Lost or not found → remove
+                // } else if (card.mustRefund()) {
+                // // If the card must be refunded, we remove it from the user's cart
+                // user.removeSpecialItem(specialItem);
+                // paymentService.processRefund(payment, card.amountPaid);
+                // }
+                // DO NOT DELETE THIS CODE!!!!!!!!!!!!
+            } else if (specialItem.type == SpecialType.Auction) { // AUCTION
+                ActivePurcheses active = activeRepo.findById(specialItem.storeId).orElse(null);
+                Auction auction = active.getAuctionById(specialItem.specialId);
+                auction.endAuction();
+                if (auction.isEnded()) {
+                    if (auction.bidIsWinner(specialItem.bidId)) {
+                        winningAuctions.add(auction.getBid(specialItem.bidId));
+                        logger.info("user win bid. id:" + specialItem.bidId);
+                    }
+                    // user.removeSpecialItem(specialItem);
+                    itemsToRemove.add(specialItem);
+                    logger.info("one auction bid must be removed bid id:" + specialItem.bidId);
                 }
             }
         }
-
+        logger.info("hiiiiiiiiiiiii");
+        Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
         double sumToPay = setRecieptMapForBids(winningBids, storeToProducts);
+        sumToPay += setRecieptMapForAuctions(winningAuctions, storeToProducts);
         setRecieptMapForRandoms(storeToProducts, winningRandoms);
-
-        if (supplyService.processSupply(supply) && paymentService.processPayment(payment, sumToPay)) {
-            // user.removeBoughtSpecialItems(userId, winningBids, winningRandoms); // Only
-            // remove bought
-            user.clearSpecialCart();
-            return saveReceipts(userId, storeToProducts);
+        logger.info("finilizing cart with price:" + sumToPay);
+        if (!supplyService.processSupply(supply) || !paymentService.processPayment(payment, sumToPay)) {
+            logger.info("payment for user failed ");
+            throw new UIException("payment or supply went wrong!", ErrorCodes.PAYMENT_ERROR);
         }
+        user.clearSpecialCart(itemsToRemove);
+        activeRepo.flush();
+        regRepo.saveAndFlush(user);
+        logger.info("saving changes with user cart !");
+        return saveReceipts(userId, storeToProducts);
+    }
 
-        throw new DevException("Something went wrong with supply or payment");
+    private double setRecieptMapForAuctions(List<UserAuctionBid> winningAuctions,
+            Map<Integer, List<ReceiptProduct>> res) throws UIException {
+        logger.info("-------------");
+        double price = 0;
+
+        // Handle Auction & Accepted Bids
+        for (UserAuctionBid bid : winningAuctions) {
+            logger.info("one bid must be converted to recipt!!");
+            Product product = stockJpaRepo.findById(bid.getProductId()).orElse(null);
+            if (product == null) {
+                logger.warn("Product not found in finalizeSpecialCart for productId={}", bid.getId());
+                throw new UIException("Product not available", ErrorCodes.PRODUCT_NOT_FOUND);
+            }
+
+            String storeName = storeJpaRepo.findById(bid.getStoreId())
+                    .orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND))
+                    .getStoreName();
+            price += bid.getBidPrice();
+
+            ReceiptProduct receiptProduct = new ReceiptProduct(
+                    product.getName(),
+                    storeName,
+                    bid.getAmount(),
+                    (int) bid.getBidPrice(),
+                    bid.getProductId(),
+                    product.getCategory(), bid.getStoreId());
+
+            res.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
+            // paymentService.processPayment(payment, (int) bid.getBidPrice());
+
+        }
+        // return res;
+        return price;
     }
 
     private UIException notLoggedInException() {
@@ -297,8 +336,7 @@ public class PurchaseService {
 
         // Handle Auction & Accepted Bids
         for (SingleBid bid : winningBids) {
-            Product product = stockJpaRepo.findById(bid.productId())
-                    .orElseThrow(() -> new UIException("product not found!", ErrorCodes.PRODUCT_NOT_FOUND));
+            Product product = stockJpaRepo.findById(bid.productId()).orElse(null);
             if (product == null) {
                 logger.warn("Product not found in finalizeSpecialCart for productId={}", bid.getId());
                 throw new UIException("Product not available", ErrorCodes.PRODUCT_NOT_FOUND);
@@ -365,13 +403,14 @@ public class PurchaseService {
             // changed this to do price*qunatity instead of just price itself
             ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, total);
             receipts.add(receipt);
-            //orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
+            // orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
             Order order = new Order(userId, receipt, storeName);
             orderJpaRepo.save(order);
 
             logger.info("Saved receipt for storeId={}, total={}", storeId, total);
 
         }
+        logger.info(receipts.size()+" reciept items must be return");
         return receipts.toArray(new ReceiptDTO[0]);
     }
 
@@ -395,7 +434,7 @@ public class PurchaseService {
             // changed this to do price*qunatity instead of just price itself
             ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, discountedTotal);
             receipts.add(receipt);
-            //orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
+            // orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
             Order order = new Order(userId, receipt, storeName);
             orderJpaRepo.save(order);
             logger.info("Saved receipt for storeId={}, total={}", storeId, total);

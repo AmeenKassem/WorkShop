@@ -2,13 +2,21 @@ package workshop.demo.DomainLayer.Stock;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.HashMap;
+
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.MapKey;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
@@ -19,26 +27,39 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Store.Random;
 
+@Entity
 public class ActivePurcheses {
 
     private static final Logger logger = LoggerFactory.getLogger(ActivePurcheses.class);
 
+    @Id
     private int storeId;
 
+    @OneToMany(mappedBy = "activePurcheses", cascade = CascadeType.ALL)
+    @MapKey(name = "auctionId") // Use a field in Bid as the key
+    private Map<Integer, Auction> activeAuction = new HashMap<>();
+    @Transient
     private HashMap<Integer, BID> activeBid = new HashMap<>();
+    @Transient
     private HashMap<Integer, Random> activeRandom = new HashMap<>();
-    private HashMap<Integer, Auction> activeAuction = new HashMap<>();
 
+    @Transient
     private static AtomicInteger bidIdGen = new AtomicInteger();
-    private static AtomicInteger auctionIdGen = new AtomicInteger();
+    @Transient
     private static AtomicInteger randomIdGen = new AtomicInteger();
 
+    @Transient
     private HashMap<Integer, List<BID>> productIdToBids = new HashMap<>();
-    private HashMap<Integer, List<Auction>> productIdToAuctions = new HashMap<>();
+
+    // private Map<Integer, List<Integer>> productIdToAuctions = new HashMap<>();
+    @Transient
     private HashMap<Integer, List<Random>> productIdToRandoms = new HashMap<>();
 
     public ActivePurcheses(int storeId) {
         this.storeId = storeId;
+    }
+
+    public ActivePurcheses() {
     }
 
     // ========== Auction ==========
@@ -50,16 +71,24 @@ public class ActivePurcheses {
             logger.error("Invalid auction parameters: quantity={}, time={}", quantity, time);
             throw new UIException("Quantity and time must be positive!", ErrorCodes.INVALID_AUCTION_PARAMETERS);
         }
-        int id = auctionIdGen.incrementAndGet();
-        Auction auction = new Auction(productId, quantity, time, id, storeId,min);
-        activeAuction.put(id, auction);
-        productIdToAuctions.computeIfAbsent(productId, k -> new ArrayList<>()).add(auction);
-        logger.debug("Auction created with id={}", id);
+        // int id = auctionIdGen.incrementAndGet();
+        Auction auction = new Auction();
+        auction.setMaxBid(min);
+        auction.setEndTimeMillis(System.currentTimeMillis() + time);
+        auction.setProductId(productId);
+        auction.setQuantity(quantity);
+        // auction.setStoreId(storeId);
+        auction.setActivePurchases(this);
+        activeAuction.put(auction.getId(), auction);
+        // productIdToAuctions.computeIfAbsent(productId, k -> new
+        // ArrayList<>()).add(auction.getId());
+        logger.debug("Auction created with id={}", auction.getId());
 
-        return id;
+        return auction.getId();
     }
 
-    public SingleBid addUserBidToAuction(int auctionId, int userId, double price) throws DevException, UIException {
+    public UserAuctionBid addUserBidToAuction(int auctionId, int userId, double price)
+            throws DevException, UIException {
         logger.debug("addUserBidToAuction called with auctionId={}, userId={}, price={}", auctionId, userId, price);
 
         if (!activeAuction.containsKey(auctionId)) {
@@ -76,6 +105,7 @@ public class ActivePurcheses {
         AuctionDTO[] auctionDTOs = new AuctionDTO[activeAuction.size()];
         int i = 0;
         for (Auction auction : activeAuction.values()) {
+            auction.endAuction();
             auctionDTOs[i] = auction.getDTO();
             i++;
         }
@@ -254,9 +284,9 @@ public class ActivePurcheses {
         if (type == SpecialType.Auction) {
             if (activeAuction.containsKey(specialId)) {
                 var auction = activeAuction.get(specialId);
-                SingleBid bid = auction.getBid(bidId);
+                SingleBid bid = null;
                 if (bid != null && bid.isWinner()) {
-                    return bid;
+                    return new SingleBid();
                 }
             }
         } else { // BID
@@ -274,7 +304,7 @@ public class ActivePurcheses {
     public SingleBid getBidWithId(int specialId, int bidId, SpecialType type) {
         if (type == SpecialType.Auction) {
             if (activeAuction.containsKey(specialId)) {
-                return activeAuction.get(specialId).getBid(bidId);
+                return null;
             }
         } else {
             if (activeBid.containsKey(specialId)) {
@@ -325,11 +355,19 @@ public class ActivePurcheses {
         return result;
     }
 
-    public List<AuctionDTO> getAuctionsForProduct(int productId) {
+    public List<AuctionDTO> getAuctionsForProduct(int productId, String storeName, String productName) {
         List<AuctionDTO> result = new ArrayList<>();
-        List<Auction> auctions = productIdToAuctions.getOrDefault(productId, new ArrayList<>());
-        for (Auction auction : auctions) {
-            result.add(auction.getDTO());
+        // List<Integer> auctions = productIdToAuctions.getOrDefault(productId, new
+        // ArrayList<>());
+        for (Auction auction : activeAuction.values()) {
+            auction.endAuction();
+            if (auction.getProductId() == productId &&
+                    !auction.isEnded()) {
+                AuctionDTO auctionDto = auction.getDTO();
+                auctionDto.storeName = storeName;
+                auctionDto.productName = productName;
+                result.add(auctionDto);
+            }
         }
         return result;
     }
@@ -341,12 +379,40 @@ public class ActivePurcheses {
 
         // Optionally reset static ID generators if needed
         bidIdGen.set(0);
-        auctionIdGen.set(0);
+        // auctionIdGen.set(0);
         randomIdGen.set(0);
     }
 
     public Auction getAuctionById(int res) {
         return activeAuction.get(res);
+    }
+
+    public Integer getStoreId() {
+        return storeId;
+    }
+
+    public ParticipationInRandomDTO getRandomCard(int storeId2, int specialId, int bidId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getRandomCard'");
+    }
+
+    public SingleBid getBid(int storeId2, int specialId, int bidId, SpecialType type) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getBid'");
+    }
+
+    public void endAuction(int randomId) {
+        getAuctionById(randomId).endAuction();
+    }
+
+    public List<Integer> getParticpationsOnAuction() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getParticpationsOnAuction'");
+    }
+
+    public boolean auctionHasNoWinner(int randomId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'auctionHasNoWinner'");
     }
 
 }

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import workshop.demo.ApplicationLayer.ActivePurchasesService;
 import workshop.demo.ApplicationLayer.StockService;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
@@ -30,6 +31,8 @@ public class StockController {
 
     @Autowired
     private StockService stockService;
+    @Autowired
+    private ActivePurchasesService activeService;
 
     @GetMapping("/getProductInfo")
     public String getProductInfo(@RequestParam String token,
@@ -255,7 +258,7 @@ public class StockController {
             @RequestParam(required = false) Double maxProductRating) {
         try {
             ProductSearchCriteria criteria = new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter, storeId, minPrice, maxPrice, minProductRating, maxProductRating);
-            AuctionDTO[] results = stockService.searchActiveAuctions(token, criteria);
+            AuctionDTO[] results = activeService.searchActiveAuctions(token, criteria);
             return ResponseEntity.ok(new ApiResponse<>(results, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
@@ -283,7 +286,7 @@ public class StockController {
     @GetMapping("/getAllAuctions")
     public ResponseEntity<?> getAllAuctions(@RequestParam String token, @RequestParam int storeId) {
         try {
-            AuctionDTO[] auctions = stockService.getAllAuctions_user(token, storeId);
+            AuctionDTO[] auctions = activeService.getAllAuctions_user(token, storeId);
             return ResponseEntity.ok(new ApiResponse<>(auctions, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
@@ -298,7 +301,7 @@ public class StockController {
     public ResponseEntity<?> addBidOnAuction(@RequestParam String token, @RequestParam int auctionId,
             @RequestParam int storeId, @RequestParam double price) {
         try {
-            stockService.addBidOnAucction(token, auctionId, storeId, price);
+            activeService.addBidOnAucction(token, auctionId, storeId, price);
             return ResponseEntity.ok(new ApiResponse<>("Bid added successfully", null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
@@ -331,7 +334,7 @@ public class StockController {
             @RequestParam int productId, @RequestParam int quantity,
             @RequestParam long time, @RequestParam double startPrice) {
         try {
-            int id = stockService.setProductToAuction(token, storeId, productId, quantity, time, startPrice);
+            int id = activeService.setProductToAuction(token, storeId, productId, quantity, time, startPrice);
             return ResponseEntity.ok(new ApiResponse<>(id, null));
 
         } catch (UIException ex) {
