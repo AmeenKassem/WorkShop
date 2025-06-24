@@ -74,38 +74,41 @@ public class ActivePurchasesService {
         int userId = checkUserAndStore(token, storeId);
         // adding auction here:
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();
-        int randomId = active.addProductToAuction(productId, quantity, time, startPrice);
+        int auctionId = active.addProductToAuction(productId, quantity, time, startPrice);
         StoreStock storeStock = storeStockRepo.findById(storeId).orElse(null);
-        if(!storeStock.decreaseQuantitytoBuy(productId, quantity)){
+        if (!storeStock.decreaseQuantitytoBuy(productId, quantity)) {
             throw new UIException("quantity fsh ", ErrorCodes.INVALID_QUANTITY);
         }
         activePurchasesRepo.save(active);
         // timer : after auction.getTimeLeft() ->>
         // auction.end() + notify all paricipates . notify winner . notify onwers + if
         // the auction has no winner return back the stock
+        Store store = storeJpaRepo.findById(storeId).orElse(null);
         timer.schedule(new TimerTask() {
 
             @Override
             public void run() {
                 try {
-                    active.endAuction(randomId);
-                    storeStock.IncreaseQuantitytoBuy(productId, quantity);
-                } catch ( UIException e) {
+                    active.endAuction(auctionId);
+                    if (active.auctionHasNoWinner(auctionId))
+                        storeStock.IncreaseQuantitytoBuy(productId, quantity);
+                    List<Integer> paricpationIds = active.getParticpationsOnAuction();
+                    notifier.sendMessageForUsers("Auction on store :" + store.getStoreName() + " has ended!",
+                            paricpationIds);
+                } catch (UIException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
-            
-        }, time);
-        for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
-            String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
-            notifier.sendDelayedMessageToUser(ownerName, "Owner "
-                    + userRepo.findById(userId).get().getUsername() + " set a product to auction in your store");
-        }
-        // return stockRepo.addAuctionToStore(storeId, productId, quantity, time,
-        // startPrice);
 
-        return -1;
+        }, time);
+        List<Integer> ownersIds = new ArrayList<>();
+        suConnectionRepo.getOwnersInStore(storeId).forEach(user -> ownersIds.add(user.getMyId()));
+        notifier.sendMessageForUsers(
+                "Owner " + userRepo.findById(userId).get().getUsername() + " set a product to auction in your store",
+                ownersIds);
+
+        return auctionId;
     }
 
     private void checkUserRegisterOnline_ThrowException(int userId) throws UIException {

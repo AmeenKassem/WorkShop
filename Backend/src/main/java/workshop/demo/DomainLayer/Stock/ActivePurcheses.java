@@ -405,4 +405,14 @@ public class ActivePurcheses {
         getAuctionById(randomId).endAuction();
     }
 
+    public List<Integer> getParticpationsOnAuction() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getParticpationsOnAuction'");
+    }
+
+    public boolean auctionHasNoWinner(int randomId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'auctionHasNoWinner'");
+    }
+
 }

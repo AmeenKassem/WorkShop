@@ -29,13 +29,13 @@ public interface IStockRepo {
         // public ProductDTO GetProductInfo(int productId) throws UIException;
 
         // auction
-        public SingleBid bidOnAuction(int StoreId, int userId, int auctionId, double price)
-                        throws UIException, DevException;
+        // public SingleBid bidOnAuction(int StoreId, int userId, int auctionId, double price)
+        //                 throws UIException, DevException;
 
-        public int addAuctionToStore(int StoreId, int productId, int quantity, long tome, double startPrice)
-                        throws UIException, DevException;
+        // public int addAuctionToStore(int StoreId, int productId, int quantity, long tome, double startPrice)
+        //                 throws UIException, DevException;
 
-        public AuctionDTO[] getAuctionsOnStore(int storeId) throws UIException, DevException;
+        // public AuctionDTO[] getAuctionsOnStore(int storeId) throws UIException, DevException;
 
         // bid
         public int addProductToBid(int storeId, int productId, int quantity) throws UIException, DevException;
@@ -114,7 +114,7 @@ public interface IStockRepo {
 
         RandomDTO[] searchActiveRandoms(ProductSearchCriteria criteria) throws UIException;
 
-        AuctionDTO[] searchActiveAuctions(ProductSearchCriteria criteria) throws UIException;
+        // AuctionDTO[] searchActiveAuctions(ProductSearchCriteria criteria) throws UIException;
 
         BidDTO[] searchActiveBids(ProductSearchCriteria criteria) throws UIException;
 
