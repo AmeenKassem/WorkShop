@@ -151,12 +151,6 @@ public class StoreStock {
         item currenItem = getItemByProductId(productId);
         if (currenItem != null) {
             currenItem.rankItem(newRank);
-            // AtomicInteger[] ranks = currenItem.getRank();
-            // if (newRank >= 1 && newRank <= ranks.length) {
-            //     ranks[newRank - 1].incrementAndGet(); // thread-safe increment
-            // } else {
-            //     throw new UIException("Invalid rank index: " + newRank, ErrorCodes.INVALID_RANK);
-            // }
         } else {
             throw new UIException("Product ID not found: " + productId, ErrorCodes.PRODUCT_NOT_FOUND);
         }
@@ -166,52 +160,7 @@ public class StoreStock {
         return this.stock;
     }
 
-    // //display products in store
-    // public List<ItemStoreDTO> getProductsInStore() {
-    // List<ItemStoreDTO> itemStoreDTOList = new ArrayList<>();
-    // for (item i : stock.values()) {
-    // // If item is mutable and accessed by multiple threads, synchronize on the
-    // item
-    // synchronized (i) {
-    // ItemStoreDTO toAdd = new ItemStoreDTO(
-    // i.getProductId(),
-    // i.getQuantity(),
-    // i.getPrice(),
-    // i.getCategory(),
-    // i.getFinalRank(),
-    // storeID
-    // );
-    // itemStoreDTOList.add(toAdd);
-    // }
-    // }
-    // return itemStoreDTOList;
-    // }
-    // may be changed later:
-    // public List<ReceiptProduct> ProcessCartItems(List<ItemCartDTO> cartItems,
-    // boolean isGuest, String storeName)
-    // throws UIException {
-    // List<ReceiptProduct> boughtItems = new ArrayList<>();
-    // for (ItemCartDTO dto : cartItems) {
-    // CartItem item = new CartItem(dto);
-    // item storeItem = getItemByProductId(item.getProductId());
-    // if (storeItem == null || storeItem.getQuantity() < item.getQuantity()) {
-    // if (isGuest) {
-    // throw new UIException("Insufficient stock during guest purchase.",
-    // ErrorCodes.INSUFFICIENT_STOCK);
-    // } else {
-    // continue;
-    // }
-    // }
-    // boughtItems.add(new ReceiptProduct(
-    // item.getName(),
-    // storeName,
-    // item.getQuantity(),
-    // item.getPrice(),
-    // item.productId,
-    // item.category));
-    // }
-    // return boughtItems;
-    // }
+
     public void changequantity(List<ItemCartDTO> cartItems, boolean isGuest, String storeName) throws UIException {
         List<ReceiptProduct> boughtItems = new ArrayList<>();
         for (ItemCartDTO dto : cartItems) {
@@ -242,6 +191,9 @@ public class StoreStock {
 
     // FOR STORE AND TESTING
     public item getItemByProductId(int productId) {
+        for (item item : items) {
+            if(item.getProductId()==productId) return item;
+        }
         return stock.get(productId);
     }
 

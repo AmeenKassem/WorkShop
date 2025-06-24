@@ -64,7 +64,7 @@ public class ActivePurcheses {
 
     // ========== Auction ==========
 
-    public int addProductToAuction(int productId, int quantity, long time, double min) throws UIException {
+    public Auction addProductToAuction(int productId, int quantity, long time, double min) throws UIException {
         logger.debug("addProductToAuction called with productId={}, quantity={}, time={}", productId, quantity, time);
 
         if (quantity <= 0 || time <= 0) {
@@ -84,7 +84,7 @@ public class ActivePurcheses {
         // ArrayList<>()).add(auction.getId());
         logger.debug("Auction created with id={}", auction.getId());
 
-        return auction.getId();
+        return auction;
     }
 
     public UserAuctionBid addUserBidToAuction(int auctionId, int userId, double price)
@@ -405,14 +405,25 @@ public class ActivePurcheses {
         getAuctionById(randomId).endAuction();
     }
 
-    public List<Integer> getParticpationsOnAuction() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getParticpationsOnAuction'");
+    public List<Integer> getParticpationsOnAuction(int auctionId) {
+        return activeAuction.get(auctionId).getBidsUsersIds();
     }
 
-    public boolean auctionHasNoWinner(int randomId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'auctionHasNoWinner'");
+    public boolean auctionHasNoWinner(int auctionId) {
+        return activeAuction.get(auctionId).mustReturnToStock();
+    }
+
+    public int getCurrAuctionTop(int auctionId) {
+        return activeAuction.get(auctionId).getTopId();
+    }
+
+    public List<Auction> getActiveAuctions() {
+        List<Auction> res = new ArrayList<>();
+        for (Auction iterable_element : activeAuction.values()) {
+            if (!iterable_element.isEnded())
+                res.add(iterable_element);
+        }
+        return res;
     }
 
 }
