@@ -46,7 +46,7 @@ public class InitPresenter {
 
     private void connectAsGuest() {
         try {
-            String url = Base.url+"/api/users/generateGuest";
+            String url = Base.url + "/api/users/generateGuest";
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON); // Optional for GET/params
             HttpEntity<Void> entity = new HttpEntity<>(headers); // no body
@@ -93,7 +93,7 @@ public class InitPresenter {
             System.out.println("the token is: " + token);
             try {
                 ResponseEntity<ApiResponse> response = restTemplate.postForEntity(
-                        Base.url+"/api/users/logout?token=" + token,
+                        Base.url + "/api/users/logout?token=" + token,
                         null,
                         ApiResponse.class);
 
@@ -128,7 +128,7 @@ public class InitPresenter {
 
         try {
             String url = String.format(
-                    Base.url+"/api/history/getreceipts?token=%s",
+                    Base.url + "/api/history/getreceipts?token=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
             HttpHeaders headers = new HttpHeaders();
@@ -159,6 +159,25 @@ public class InitPresenter {
 
         }
 
+    }
+
+    public boolean isSiteInitialized() {
+        try {
+            String url = Base.url + "/api/appsettings/isInitialized";
+            ResponseEntity<ApiResponse<Boolean>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ApiResponse<Boolean>>() {
+            });
+            ApiResponse<Boolean> body = response.getBody();
+            System.out.println("[InitPresenter] isSiteInitialized " + body.getData());
+            return body != null && body.getData() != null && body.getData();
+        } catch (Exception e) {
+            System.err.println("[InitPresenter] isSiteInitialized error: " + e.getMessage());
+            ExceptionHandlers.handleException(e);
+            return false;
+        }
     }
 
 }

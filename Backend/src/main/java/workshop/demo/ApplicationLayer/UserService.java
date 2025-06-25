@@ -129,6 +129,28 @@ public class UserService {
         return userToAdd.getId();
     }
 
+    public void registerAdminDirectly(String username, String password, int age) throws UIException {
+        if (regJpaRepo.findByUsername(username).isPresent()) {
+            throw new UIException("Admin user already exists", 1002);
+        }
+
+        String encryptedPassword = encoder.encodePassword(password);
+        Registered admin = new Registered(username, encryptedPassword, age);
+        admin.setAdmin();
+        regJpaRepo.save(admin);
+    }
+
+    public boolean isAdmin(String username, String password) {
+        Optional<Registered> reg = regJpaRepo.findByUsername(username);
+        if (!reg.isPresent()) {
+            return false;
+        }
+
+        Registered user = reg.get();
+        boolean passwordMatches = encoder.matches(password, user.getEncodedPass());
+        return user.isAdmin() && passwordMatches;
+    }
+
     private boolean userExist(String username) {
         return regJpaRepo.existsByUsername(username) == 1;
     }
@@ -230,9 +252,9 @@ public class UserService {
                 itemToAdd.getPrice(), itemToAdd.getProductName(), itemToAdd.getStoreName(), itemToAdd.getCategory());
         CartItem itemCart = new CartItem(item);
 
-        Guest user = getUser(userId); // Hibernate loads the Guest entity with lazy cart
+        Guest user = getUser(userId);
 
-        user.addToCart(itemCart); // ✅ cart is lazy, but safe because @Transactional keeps session open
+        user.addToCart(itemCart);
         guestJpaRepository.save(user);
         logger.info("Item added to user cart");
         return true;

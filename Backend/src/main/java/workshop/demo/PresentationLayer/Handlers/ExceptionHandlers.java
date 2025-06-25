@@ -51,6 +51,11 @@ public class ExceptionHandlers {
         errorMessages.put(ErrorCodes.STORE_EXIST, "This store name is already exists.");
         errorMessages.put(ErrorCodes.DISCOUNT_NOT_FOUND, "This discount is not found");
         errorMessages.put(ErrorCodes.INVALID_QUANTITY, "This are not enough quantity in store");
+        errorMessages.put(ErrorCodes.STORE_EXIST, "A store with this name already exists.");
+        errorMessages.put(ErrorCodes.NO_POLICY, "No policy is defined for this store.");
+        errorMessages.put(ErrorCodes.AI_NOT_WORK, "The AI service is not working right now.");
+        errorMessages.put(ErrorCodes.NO_INIT_SYSTEM, "The system is not initialized.");
+        errorMessages.put(ErrorCodes.NOT_ADMIN, "You are not the admin.");
     }
 
     public static String getErrorMessage(int code) {
