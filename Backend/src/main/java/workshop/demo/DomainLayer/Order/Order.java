@@ -3,13 +3,7 @@ package workshop.demo.DomainLayer.Order;
 
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 @Entity
@@ -26,6 +20,11 @@ public class Order {
 
     private double finalPrice;
     private String storeName;
+    @Column(name = "payment_transaction_id")
+    private int paymentTransactionId;
+    @Column(name = "supply_transaction_id")
+    private int supplyTransactionId;
+
 
     public Order(int orderId, int userId, ReceiptDTO receiptDTO, String storeName) {
         this.orderId = orderId;
@@ -39,6 +38,8 @@ public class Order {
                 rp.setOrder(this);
             }
         }
+        this.paymentTransactionId = receiptDTO.getPaymentTransactionId();
+        this.supplyTransactionId = receiptDTO.getSupplyTransactionId();
 
     }
 
@@ -53,6 +54,9 @@ public class Order {
                 rp.setOrder(this);
             }
         }
+        this.paymentTransactionId = receiptDTO.getPaymentTransactionId();
+        this.supplyTransactionId = receiptDTO.getSupplyTransactionId();
+
     }
     public Order() {
         // Default constructor for JPA
@@ -85,4 +89,20 @@ public class Order {
     public String getStoreName() {
         return storeName;
     }
+    public int getPaymentTransactionId() {
+        return paymentTransactionId;
+    }
+
+    public void setPaymentTransactionId(int paymentTransactionId) {
+        this.paymentTransactionId = paymentTransactionId;
+    }
+
+    public int getSupplyTransactionId() {
+        return supplyTransactionId;
+    }
+
+    public void setSupplyTransactionId(int supplyTransactionId) {
+        this.supplyTransactionId = supplyTransactionId;
+    }
+
 }

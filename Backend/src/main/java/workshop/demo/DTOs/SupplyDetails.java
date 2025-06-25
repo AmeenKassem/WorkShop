@@ -8,12 +8,22 @@ public class SupplyDetails {
     public String city;
     public String state;
     public String zipCode;
+    public String name;
+    public String country;
 
     public SupplyDetails(String address, String city, String state, String zipCode) {
         this.address = address;
         this.city = city;
         this.state = state;
         this.zipCode = zipCode;
+    }
+    public SupplyDetails(String address, String city, String state, String zipCode,String name,String country) {
+        this.address = address;
+        this.city = city;
+        this.state = state;
+        this.zipCode = zipCode;
+        this.name= name;
+        this.country=country;
     }
 
     public SupplyDetails() {
