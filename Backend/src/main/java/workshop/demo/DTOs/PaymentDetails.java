@@ -8,12 +8,20 @@ public class PaymentDetails {
     public String cardHolderName;
     public String expirationDate;
     public String cvv;
+    public int id;
 
     public PaymentDetails(String cardNumber, String cardHolderName, String expirationDate, String cvv) {
         this.cardNumber = cardNumber;
         this.cardHolderName = cardHolderName;
         this.expirationDate = expirationDate;
         this.cvv = cvv;
+    }
+    public PaymentDetails(String cardNumber, String cardHolderName, String expirationDate, String cvv,int id) {
+        this.cardNumber = cardNumber;
+        this.cardHolderName = cardHolderName;
+        this.expirationDate = expirationDate;
+        this.cvv = cvv;
+        this.id=id;
     }
 
     public PaymentDetails() {
