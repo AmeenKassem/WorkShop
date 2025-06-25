@@ -1,5 +1,7 @@
 package workshop.demo.DomainLayer.Store;
 
+import workshop.demo.DTOs.CreateDiscountDTO;
+
 import java.util.function.Predicate;
 
 public class VisibleDiscount implements Discount {
@@ -28,4 +30,16 @@ public class VisibleDiscount implements Discount {
     public String getName() {
         return name;
     }
+
+    public CreateDiscountDTO toDTO() {
+        CreateDiscountDTO dto = new CreateDiscountDTO();
+        dto.setName(this.name);
+        dto.setPercent(this.percent);
+        dto.setType(CreateDiscountDTO.Type.VISIBLE);
+        dto.setLogic(CreateDiscountDTO.Logic.SINGLE);
+        dto.setCondition(condition.toString()); // if overridden properly
+
+        return dto;
+    }
+
 }

@@ -622,5 +622,23 @@ public class StoreService {
             comp.getDiscounts().forEach(d -> collectNames(d, acc));
         }
     }
+    public List<CreateDiscountDTO> getFlattenedDiscounts(int storeId, String token) throws UIException {
+        Store store = storeJpaRepo.findById(storeId).get();
+        Discount root = store.getDiscount();
+
+        if (root == null)
+            return List.of();
+
+        // If it's composite, extract children
+        CreateDiscountDTO rootDTO = root.toDTO();
+        List<CreateDiscountDTO> subs = rootDTO.getSubDiscounts();
+
+        if (subs != null && !subs.isEmpty()) {
+            return subs;
+        }
+
+        // Otherwise, return root as a single-item list
+        return List.of(rootDTO);
+    }
 
 }
