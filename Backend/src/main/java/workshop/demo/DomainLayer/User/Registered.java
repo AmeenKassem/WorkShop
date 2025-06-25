@@ -11,10 +11,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
-import workshop.demo.InfrastructureLayer.Encoder;
 
 @Entity
 @Table(name = "registered")
@@ -35,9 +33,6 @@ public class Registered extends Guest {
         super();
         this.username = username;
         this.encrybtedPassword = encrybtedPassword;
-        // regularBids = new ArrayList<SingleBid>();
-        // auctionBids = new ArrayList<SingleBid>();
-        // participationsOnRandoms = new ArrayList<ParticipationInRandomDTO>();
         specialCart = new ArrayList<>();
         this.age = age;
     }
@@ -50,21 +45,9 @@ public class Registered extends Guest {
     public Registered(String username, String encrybtedPassword, int age) {
         this.username = username;
         this.encrybtedPassword = encrybtedPassword;
-        // regularBids = new ArrayList<SingleBid>();
-        // auctionBids = new ArrayList<SingleBid>();
-        // participationsOnRandoms = new ArrayList<ParticipationInRandomDTO>();
         specialCart = new ArrayList<>();
         this.age = age;
     }
-
-    // public boolean login(String username, String password) {
-    // boolean res = encoder.matches(password, encrybtedPassword) &&
-    // username.equals(this.username);
-    // if (res) {
-    // login();
-    // }
-    // return res;
-    // }
 
     public void setAdmin() {
         systemRole = RoleOnSystem.Admin;

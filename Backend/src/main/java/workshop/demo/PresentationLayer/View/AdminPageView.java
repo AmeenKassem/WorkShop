@@ -10,6 +10,7 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 
@@ -35,8 +36,9 @@ public class AdminPageView extends VerticalLayout {
 
         Button manageUsersBtn = new Button("👥 Manage Users", e -> showManageUsers());
         Button manageStoresBtn = new Button("👥 Manage Stores", e -> showManageStores());
+        Button shutdownSystemBtn = new Button("❌ Shutdown System", e -> showShutdownConfirmation());
 
-        VerticalLayout actionButtons = new VerticalLayout(viewHistoryBtn, manageUsersBtn, manageStoresBtn);
+        VerticalLayout actionButtons = new VerticalLayout(viewHistoryBtn, manageUsersBtn, manageStoresBtn, shutdownSystemBtn);
         add(actionButtons);
     }
 
@@ -169,6 +171,45 @@ public class AdminPageView extends VerticalLayout {
         storeGrid.setItems(stores);
         add(storeGrid);
 
+    }
+
+    private void showShutdownConfirmation() {
+        Dialog confirmDialog = new Dialog();
+        confirmDialog.setHeaderTitle("Confirm Shutdown");
+
+        VerticalLayout layout = new VerticalLayout();
+        layout.setSpacing(true);
+
+        Paragraph warning = new Paragraph("Are you sure you want to shutdown the system? This will mark the site as NOT initialized.");
+        IntegerField keyField = new IntegerField("Enter Admin Key");
+        keyField.setPlaceholder("Enter the shutdown key...");
+
+        layout.add(warning, keyField);
+        confirmDialog.add(layout);
+
+        Button confirmBtn = new Button("Shutdown", e -> {
+            Integer key = keyField.getValue();
+            if (key == null) {
+                NotificationView.showError("Please enter the Admin Key.");
+                return;
+            }
+            try {
+                boolean result = presenter.shutdownSystem(key);
+                if (result) {
+                    NotificationView.showSuccess("System has been successfully shutdown.");
+                    UI.getCurrent().navigate("/404");
+                }
+            } catch (Exception ex) {
+                NotificationView.showError("Error: " + ex.getMessage());
+            } finally {
+                confirmDialog.close();
+            }
+        });
+
+        Button cancelBtn = new Button("Cancel", e -> confirmDialog.close());
+
+        confirmDialog.getFooter().add(confirmBtn, cancelBtn);
+        confirmDialog.open();
     }
 
 }

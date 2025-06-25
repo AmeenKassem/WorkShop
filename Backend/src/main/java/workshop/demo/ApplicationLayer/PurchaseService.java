@@ -165,12 +165,31 @@ public class PurchaseService {
             finalTotal += totalForStore;
             storeToProducts.put(storeId, Pair.of(boughtItems, totalForStore));
         }
-        if (!paymentService.processPayment(payment, finalTotal) || !supplyService.processSupply(supply)) {
-            logger.info("payment failed!!");
-            throw new UIException("payment not successeded!!!", ErrorCodes.PAYMENT_ERROR);
+        //Hmode
+        int paymentTxId = paymentService.processPayment(payment, finalTotal);
+        if (paymentTxId == -1) {
+            logger.error("Payment failed");
+            throw new UIException("Payment failed", ErrorCodes.PAYMENT_ERROR);
         }
+
+        int supplyTxId;
+        try {
+            supplyTxId = supplyService.processSupply(supply);
+            if (supplyTxId == -1) {
+                logger.error("Supply failed");
+                // Auto-refund
+                paymentService.processRefund(paymentTxId);
+                throw new UIException("Supply failed", ErrorCodes.SUPPLY_ERROR);
+            }
+        } catch (Exception e) {
+            logger.error("Supply exception — refunding payment");
+            paymentService.processRefund(paymentTxId);
+            throw e;
+        }
+
+        //Hmode
         storeStockRepo.flush();
-        return saveReceiptsWithDiscount(userId, storeToProducts);
+        return saveReceiptsWithDiscount(userId, storeToProducts,paymentTxId,supplyTxId);
     }
 
     @Transactional
@@ -210,7 +229,8 @@ public class PurchaseService {
         ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
         UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random, -1);
         user.addSpecialItemToCart(item);
-        boolean done = paymentService.processPayment(paymentDetails, amountPaid);
+        //Hmode
+        boolean done = paymentService.processPayment(paymentDetails, amountPaid)==-1?false:true;
         if (!done) {
             logger.error("Payment failed for userId={}, amountPaid={}", userId, amountPaid);
             throw new UIException("Payment failed", ErrorCodes.PAYMENT_ERROR);
@@ -280,15 +300,34 @@ public class PurchaseService {
         sumToPay += setRecieptMapForAuctions(winningAuctions, storeToProducts);
         setRecieptMapForRandoms(storeToProducts, winningRandoms);
         logger.info("finilizing cart with price:" + sumToPay);
-        if (!supplyService.processSupply(supply) || !paymentService.processPayment(payment, sumToPay)) {
-            logger.info("payment for user failed ");
-            throw new UIException("payment or supply went wrong!", ErrorCodes.PAYMENT_ERROR);
+        //Hmode
+        int paymentTxId = paymentService.processPayment(payment, sumToPay);
+        if (paymentTxId == -1) {
+            logger.error("Payment failed");
+            throw new UIException("Payment failed", ErrorCodes.PAYMENT_ERROR);
         }
+
+        int supplyTxId;
+        try {
+            supplyTxId = supplyService.processSupply(supply);
+            if (supplyTxId == -1) {
+                logger.error("Supply failed");
+                // Auto-refund
+                paymentService.processRefund(paymentTxId);
+                throw new UIException("Supply failed", ErrorCodes.SUPPLY_ERROR);
+            }
+        } catch (Exception e) {
+            logger.error("Supply exception — refunding payment");
+            paymentService.processRefund(paymentTxId);
+            throw e;
+        }
+
+        //Hmode
         user.clearSpecialCart(itemsToRemove);
         activeRepo.flush();
         regRepo.saveAndFlush(user);
         logger.info("saving changes with user cart !");
-        return saveReceipts(userId, storeToProducts);
+        return saveReceipts(userId, storeToProducts,paymentTxId,supplyTxId);
     }
 
     private double setRecieptMapForAuctions(List<UserAuctionBid> winningAuctions,
@@ -386,7 +425,7 @@ public class PurchaseService {
         }
     }
 
-    private ReceiptDTO[] saveReceipts(int userId, Map<Integer, List<ReceiptProduct>> storeToProducts)
+    private ReceiptDTO[] saveReceipts(int userId, Map<Integer, List<ReceiptProduct>> storeToProducts,int paymentTxId,int supplyTxId)
             throws UIException {
         logger.info("saveReceipts called for userId={}", userId);
 
@@ -402,6 +441,8 @@ public class PurchaseService {
                     .sum();
             // changed this to do price*qunatity instead of just price itself
             ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, total);
+            receipt.setPaymentTransactionId(paymentTxId);
+            receipt.setSupplyTransactionId(supplyTxId);
             receipts.add(receipt);
             // orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
             Order order = new Order(userId, receipt, storeName);
@@ -415,8 +456,8 @@ public class PurchaseService {
     }
 
     @Transactional
-    private ReceiptDTO[] saveReceiptsWithDiscount(int userId,
-            Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts)
+    public ReceiptDTO[] saveReceiptsWithDiscount(int userId,
+            Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts,int paymentTxId,int supplyTxId)
             throws UIException {
         logger.info("saveReceipts called for userId={}", userId);
 
@@ -433,6 +474,8 @@ public class PurchaseService {
                     .sum();
             // changed this to do price*qunatity instead of just price itself
             ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, discountedTotal);
+            receipt.setPaymentTransactionId(paymentTxId);
+            receipt.setSupplyTransactionId(supplyTxId);
             receipts.add(receipt);
             // orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
             Order order = new Order(userId, receipt, storeName);

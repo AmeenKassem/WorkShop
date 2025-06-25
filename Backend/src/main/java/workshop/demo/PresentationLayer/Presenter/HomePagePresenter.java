@@ -1,5 +1,6 @@
 package workshop.demo.PresentationLayer.Presenter;
 
+
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -25,6 +26,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Controllers.ApiResponse;
@@ -89,18 +92,35 @@ public class HomePagePresenter {
         card.addClassName("store-card");
 
         H3 name = new H3(store.storeName);
-        int filledStars = store.finalRating;
-        int emptyStars = 5 - filledStars;
-        String stars = "⭐".repeat(filledStars) + "☆".repeat(emptyStars);
 
-        Paragraph rank = new Paragraph("⭐ Rank: " + stars);
-        Paragraph category = new Paragraph("🏷️ Category: " + store.category);
-        card.add(name, rank, category);
-        card.addClickListener(e
-                -> UI.getCurrent().navigate("store/" + store.storeId));
+        // דירוג בצורה קומפקטית
+        Span rankBadge = new Span("⭐Rating: " + store.finalRating + "/5");
+        rankBadge.getStyle()
+                .set("background-color", "#fde68a")
+                .set("padding", "4px 8px")
+                .set("border-radius", "8px")
+                .set("font-weight", "bold")
+                .set("font-size", "0.85rem");
+
+        // קטגוריה עם צבע
+        Span categoryBadge = new Span("🏷️ Category: " + store.category);
+        categoryBadge.getStyle()
+                .set("background-color", "#e0f2fe")
+                .set("padding", "4px 8px")
+                .set("border-radius", "8px")
+                .set("font-weight", "bold")
+                .set("font-size", "0.85rem");
+
+        HorizontalLayout infoRow = new HorizontalLayout(rankBadge, categoryBadge);
+        infoRow.setSpacing(true);
+
+        card.add(name, infoRow);
+
+        card.addClickListener(e -> UI.getCurrent().navigate("store/" + store.storeId));
 
         return card;
     }
+
 
     public List<ItemStoreDTO> searchNormal(String token, String name, String keyword, Category category,
             Double minPrice, Double maxPrice, Integer productRate) {

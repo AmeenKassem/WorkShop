@@ -1,0 +1,42 @@
+.status-online {
+    color: green;
+    font-weight: bold;
+}
+
+.status-offline {
+    color: gray;
+    font-style: italic;
+}
+
+/* סגנון למשתמש מושעה */
+.suspended-user {
+    background-color: #ffe6e6; /* אדום בהיר ברקע */
+    font-weight: bold;
+    color: #cc0000;
+}
+
+/* כפתורים */
+.v-button {
+    border-radius: 5px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+}
+
+.v-button.primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.v-button.success {
+    background-color: #28a745;
+    color: white;
+}
+
+.v-button.danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.v-grid-cell {
+    padding: 10px;
+}

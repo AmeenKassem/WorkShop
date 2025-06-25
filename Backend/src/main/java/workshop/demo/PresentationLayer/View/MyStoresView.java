@@ -28,57 +28,60 @@ public class MyStoresView extends VerticalLayout {
         presenter.loadMyStores();
     }
 
-    public void displayStores(List<StoreDTO> stores) {
-        removeAll();
-        addOpenStoreButton();
+   public void displayStores(List<StoreDTO> stores) {
+    removeAll();
+    addOpenStoreButton();
 
-        if (stores == null || stores.isEmpty()) {
-            Span empty = new Span("📭 You do not have any store YET!");
-            empty.getStyle().set("font-size", "1.1rem").set("color", "#555");
-            add(empty);
-            return;
-        }
-
-        H2 title = new H2("Your Stores:");
-        title.getStyle().set("color", "#1f2937").set("margin", "1rem 0");
-        add(title);
-
-        FlexLayout storeContainer = new FlexLayout();
-        storeContainer.addClassName("store-container");
-        storeContainer.setJustifyContentMode(JustifyContentMode.START);
-        storeContainer.setAlignItems(Alignment.START);
-
-        for (StoreDTO store : stores) {
-            VerticalLayout card = new VerticalLayout();
-            card.addClassName("store-card");
-
-            Span name = new Span("🛍️ " + store.getStoreName());
-            name.getStyle().set("font-weight", "bold").set("font-size", "1.2rem");
-
-            Span category = new Span("🗂 Category: " + store.getCategory());
-            category.getStyle().set("color", "#555");
-
-            int filledStars = store.getFinalRating();
-            int emptyStars = 5 - filledStars;
-            String stars = "⭐".repeat(filledStars) + "☆".repeat(emptyStars);
-            Span rating = new Span("Rating: " + stars);
-            rating.addClassName("store-stars");
-
-            Span status = new Span(store.isActive() ? "✅ Active" : "❌ Inactive");
-            status.addClassName("store-status");
-            if (!store.isActive()) {
-                status.addClassName("inactive");
-            }
-
-            Button manageBtn = new Button("Manage My Store", e ->
-                    UI.getCurrent().navigate("manageStore/" + store.getStoreId()));
-            manageBtn.addClassName("store-button");
-
-            card.add(name, category, rating, status, manageBtn);
-            storeContainer.add(card);
-        }
-        add(storeContainer);
+    if (stores == null || stores.isEmpty()) {
+        Span empty = new Span("📭 You do not have any store YET!");
+        empty.getStyle().set("font-size", "1.1rem").set("color", "#555");
+        add(empty);
+        return;
     }
+
+    H2 title = new H2("My Stores:");
+    title.getStyle().set("color", "#1f2937").set("margin", "1rem 0");
+    add(title);
+
+    FlexLayout storeContainer = new FlexLayout();
+    storeContainer.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+    storeContainer.setWidthFull();
+    storeContainer.addClassName("store-container");
+    storeContainer.setJustifyContentMode(JustifyContentMode.CENTER);
+    storeContainer.setAlignItems(Alignment.START);
+
+    for (StoreDTO store : stores) {
+        VerticalLayout card = new VerticalLayout();
+        card.addClassName("store-card");
+        card.setWidth("220px"); // חשוב לקביעת גודל אחיד
+
+        Span name = new Span(store.getStoreName());
+        name.addClassName("store-name");
+
+        Span rating = new Span("⭐ Rating: " + store.getFinalRating() + "/5");
+        rating.addClassName("store-info");
+        rating.addClassName("store-rating");
+
+        Span category = new Span("🏷 Category: " + store.getCategory());
+        category.addClassName("store-info");
+        category.addClassName("store-category");
+
+        Span status = new Span(store.isActive() ? "✅ Active" : "❌ Inactive");
+        status.addClassName("store-status");
+        if (!store.isActive()) {
+            status.addClassName("inactive");
+        }
+
+        Button manageBtn = new Button("Manage My Store", e ->
+                UI.getCurrent().navigate("manageStore/" + store.getStoreId()));
+        manageBtn.addClassName("store-button");
+
+        card.add(name, rating, category, status, manageBtn);
+        storeContainer.add(card);
+    }
+    add(storeContainer);
+}
+
 
     private void addOpenStoreButton() {
         RouterLink openStoreLink = new RouterLink();

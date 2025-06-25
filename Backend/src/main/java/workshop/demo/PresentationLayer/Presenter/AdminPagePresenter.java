@@ -37,22 +37,9 @@ public class AdminPagePresenter {
 
     }
 
-    // public void onSuspendUser() {
-    //     Notification.show("Suspending user -> TODO");
-    // }
-    // public void onPauseSuspension() {
-    //     Notification.show("Pausing suspension for user -> TODO");
-    // }
-    // public void onResumeSuspension() {
-    //     Notification.show("Resuming suspension for user -> TODO");
-    // }
-    // public void onRemoveUser() {
-    //     Notification.show("Removing user -> TODO");
-    // }
-    //close store -> just the admin
     public List<UserDTO> getAllUsers() throws UIException {
         Object token = VaadinSession.getCurrent().getAttribute("auth-token");
-        String url = Base.url+"/api/users/getAllUsers?token=" + token;
+        String url = Base.url + "/api/users/getAllUsers?token=" + token;
 
         try {
             ResponseEntity<ApiResponse<List<UserDTO>>> response = restTemplate.exchange(
@@ -79,7 +66,7 @@ public class AdminPagePresenter {
 
     public void onSuspendUser(int userId, int minutes) {
         Object token = VaadinSession.getCurrent().getAttribute("auth-token");
-        String url = String.format(Base.url+"/api/users/suspendUser?userId=%d&minutes=%d&token=%s",
+        String url = String.format(Base.url + "/api/users/suspendUser?userId=%d&minutes=%d&token=%s",
                 userId, minutes, token);
 
         try {
@@ -104,7 +91,7 @@ public class AdminPagePresenter {
 
     public void onPauseSuspension(int userId) {
         Object token = VaadinSession.getCurrent().getAttribute("auth-token");
-        String url = String.format(Base.url+"/api/users/pauseSuspension?userId=%d&token=%s",
+        String url = String.format(Base.url + "/api/users/pauseSuspension?userId=%d&token=%s",
                 userId, token);
 
         try {
@@ -129,7 +116,7 @@ public class AdminPagePresenter {
 
     public void onResumeSuspension(int userId) {
         Object token = VaadinSession.getCurrent().getAttribute("auth-token");
-        String url = String.format(Base.url+"/api/users/resumeSuspension?userId=%d&token=%s",
+        String url = String.format(Base.url + "/api/users/resumeSuspension?userId=%d&token=%s",
                 userId, token);
 
         try {
@@ -163,7 +150,7 @@ public class AdminPagePresenter {
                     HttpMethod.POST,
                     null,
                     new ParameterizedTypeReference<ApiResponse<Boolean>>() {
-                    }
+            }
             );
 
             ApiResponse<Boolean> res = response.getBody();
@@ -179,7 +166,6 @@ public class AdminPagePresenter {
         }
     }
 
-
     public void onRemoveUser(UserDTO user) {
         Object token = VaadinSession.getCurrent().getAttribute("auth-token");
         NotificationView.showError("coming soon!");
@@ -190,7 +176,7 @@ public class AdminPagePresenter {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         try {
             String url = String.format(
-                    Base.url+"/api/store/allStores?token=%s",
+                    Base.url + "/api/store/allStores?token=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
             HttpHeaders headers = new HttpHeaders();
@@ -221,7 +207,7 @@ public class AdminPagePresenter {
 
     public void onCloseStore(int storeId) {
         String token = String.valueOf(VaadinSession.getCurrent().getAttribute("auth-token"));
-        String url = String.format(Base.url+"/api/store/close?storeId=%d&token=%s", storeId, token);
+        String url = String.format(Base.url + "/api/store/close?storeId=%d&token=%s", storeId, token);
 
         try {
             ResponseEntity<ApiResponse<String>> response = restTemplate.exchange(
@@ -252,7 +238,8 @@ public class AdminPagePresenter {
                     url,
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<ApiResponse<List<UserSuspensionDTO>>>() {}
+                    new ParameterizedTypeReference<ApiResponse<List<UserSuspensionDTO>>>() {
+            }
             );
 
             ApiResponse<List<UserSuspensionDTO>> res = response.getBody();
@@ -270,5 +257,31 @@ public class AdminPagePresenter {
         return Collections.emptyList();
     }
 
+    public boolean shutdownSystem(int key) {
+        String url = String.format(Base.url + "/api/appsettings/shutdown?key=%d", key);
 
+        try {
+            ResponseEntity<ApiResponse<Boolean>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    null,
+                    new ParameterizedTypeReference<ApiResponse<Boolean>>() {
+            }
+            );
+            ApiResponse<Boolean> body = response.getBody();
+
+            if (body != null && body.getErrorMsg() == null && body.getData() != null) {
+                return body.getData();
+            } else {
+                NotificationView.showError(body != null && body.getErrorMsg() != null
+                        ? body.getErrorMsg()
+                        : "Shutdown request failed.");
+            }
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+
+        return false;
+
+    }
 }
