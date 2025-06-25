@@ -24,7 +24,7 @@ public class ParticipationInRandom {
     private double amountPaid;
     private boolean isWinner;
     private boolean ended;
-    private int randomId;
+    //private int randomId;
     private boolean mustRefund;
     private int transactionIdForPayment = 0;
 
@@ -37,7 +37,7 @@ public class ParticipationInRandom {
         this.userId = userId;
         this.storeId = storeId;
         this.productId = productId;
-        this.randomId = randomId;
+        //this.randomId = randomId;
         this.isWinner = false;
     }
 
@@ -49,7 +49,7 @@ public class ParticipationInRandom {
         dto.amountPaid = this.amountPaid;
         dto.isWinner = this.isWinner;
         dto.ended = this.ended;
-        dto.randomId = this.randomId;
+        dto.randomId = this.random != null ? this.random.getRandomId() : -1;
         dto.mustRefund = this.mustRefund;
         dto.transactionIdForPayment = this.transactionIdForPayment;
         return dto;
@@ -97,7 +97,7 @@ public class ParticipationInRandom {
     }
 
     public int getRandomId() {
-        return randomId;
+        return random != null ? random.getRandomId() : -1;
     }
 
     public boolean isMustRefund() {
@@ -106,5 +106,9 @@ public class ParticipationInRandom {
 
     public int getTransactionIdForPayment() {
         return transactionIdForPayment;
+    }
+
+    public void setMustRefund(boolean b) {
+        mustRefund = b;
     }
 }

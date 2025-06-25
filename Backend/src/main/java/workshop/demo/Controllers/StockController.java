@@ -214,7 +214,7 @@ public class StockController {
             @RequestParam(required = false) Double maxProductRating) {
         try {
             ProductSearchCriteria criteria = new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter, storeId, minPrice, maxPrice, minProductRating, maxProductRating);
-            RandomDTO[] results = stockService.searchActiveRandoms(token, criteria);
+            RandomDTO[] results = activeService.searchActiveRandoms(token, criteria);
             return ResponseEntity.ok(new ApiResponse<>(results, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
@@ -388,24 +388,24 @@ public class StockController {
         }
     }
 
-    @PostMapping("/endRandom")
-    public ResponseEntity<?> endRandom(@RequestParam String token, @RequestParam int storeId, @RequestParam int randomId) {
-        try {
-            ParticipationInRandomDTO result = stockService.endBid(token, storeId, randomId);
-            return ResponseEntity.ok(new ApiResponse<>(result, null));
-        } catch (UIException ex) {
-            return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(null, e.getMessage(), -1));
-        }
-    }
+    // @PostMapping("/endRandom")
+    // public ResponseEntity<?> endRandom(@RequestParam String token, @RequestParam int storeId, @RequestParam int randomId) {
+    //     try {
+    //         ParticipationInRandomDTO result = stockService.endBid(token, storeId, randomId);
+    //         return ResponseEntity.ok(new ApiResponse<>(result, null));
+    //     } catch (UIException ex) {
+    //         return ResponseEntity.badRequest()
+    //                 .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+    //     } catch (Exception e) {
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //                 .body(new ApiResponse<>(null, e.getMessage(), -1));
+    //     }
+    // }
 
     @GetMapping("/getAllRandomInStore")
     public ResponseEntity<?> getAllRandomInStore(@RequestParam String token, @RequestParam int storeId) {
         try {
-            RandomDTO[] randoms = stockService.getAllRandomInStoreToUser(token, storeId);
+            RandomDTO[] randoms = activeService.getAllRandoms_user(token, storeId);
             return ResponseEntity.ok(new ApiResponse<>(randoms, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()

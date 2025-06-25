@@ -299,18 +299,18 @@ public class StockService {
         return stockRepo.addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
     }
 
-    public ParticipationInRandomDTO endBid(String token, int storeId, int randomId) throws Exception, DevException {
-        logger.info("Ending random bid {} in store {}", randomId, storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
+    // public ParticipationInRandomDTO endBid(String token, int storeId, int randomId) throws Exception, DevException {
+    //     logger.info("Ending random bid {} in store {}", randomId, storeId);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
 
-        checkUserRegisterOnline_ThrowException(userId);
-        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
-        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
-        }
-        return stockRepo.endRandom(storeId, randomId);
-    }
+    //     checkUserRegisterOnline_ThrowException(userId);
+    //     UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+    //     if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+    //         throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+    //     }
+    //     return stockRepo.endRandom(storeId, randomId);
+    // }
 
     public RandomDTO[] getAllRandomInStore(String token, int storeId) throws Exception, DevException {
         logger.info("Fetching all randoms in store {}", storeId);

@@ -261,8 +261,8 @@ public class UserService {
             itemToSend.storeName = store.getStoreName();
             Product product = stockRepo.findById(item.getProductId()).orElse(null);
             if (item.type == SpecialType.Random) {
-                ParticipationInRandom card = activePurcheses.getRandomCard(item.storeId, item.specialId, item.bidId);
-                itemToSend.setValues(product.getName(), card.isWinner(), card.isEnded());
+                ParticipationInRandomDTO card = activePurcheses.getRandomCard(item.storeId, item.specialId, item.bidId);
+                itemToSend.setValues(product.getName(), card.isWinner, card.ended);
             } else if (item.type == SpecialType.BID) {
                 SingleBid bid = activePurcheses.getBid(item.storeId, item.specialId, item.bidId, item.type);
                 itemToSend.setValues(product.getName(), bid.isWinner() || bid.isAccepted(), bid.isEnded());

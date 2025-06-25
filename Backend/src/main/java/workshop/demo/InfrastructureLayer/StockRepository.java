@@ -197,10 +197,10 @@ public class StockRepository implements IStockRepo {
     public int addProductToRandom(int productId, int quantity, double productPrice, int storeId,
             long RandomTime) throws UIException, DevException {
         checkQuantity(productId, quantity, storeId);
-        int res = getActivePurchases(storeId).addProductToRandom(productId, quantity, productPrice, storeId,
+        Random res = getActivePurchases(storeId).addProductToRandom(productId, quantity, productPrice, storeId,
                 RandomTime);
         this.decreaseQuantitytoBuy(storeId, productId, quantity);
-        return res;
+        return res.getRandomId();
     }
 
     public void returnProductToStock(int storeId, int productId, int quantity, int specialId)
@@ -225,11 +225,6 @@ public class StockRepository implements IStockRepo {
     public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
             throws UIException, DevException {
         return getActivePurchases(storeId).participateInRandom(userId, randomId, amountPaid);
-    }
-
-    @Override
-    public ParticipationInRandomDTO endRandom(int storeId, int randomId) throws Exception {
-        return getActivePurchases(storeId).endRandom(randomId);
     }
 
     @Override
