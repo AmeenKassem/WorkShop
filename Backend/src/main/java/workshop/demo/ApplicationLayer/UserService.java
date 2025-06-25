@@ -67,29 +67,6 @@ public class UserService {
     private IActivePurchasesRepo activePurchasesRepo;
     
     
-    public void setAuthRepo(IAuthRepo authRepo) {
-        this.authRepo = authRepo;
-    }
-
-    public void setStockRepo(IStockRepoDB stockRepo) {
-        this.stockRepo = stockRepo;
-    }
-
-    public void setStoreRepo(IStoreRepoDB storeRepo) {
-        this.storeRepo = storeRepo;
-    }
-
-    public void setAdminInitilizer(AdminInitilizer adminInitilizer) {
-        this.adminInitilizer = adminInitilizer;
-    }
-
-    public void setEncoder(Encoder encoder) {
-        this.encoder = encoder;
-    }
-
-    public void setRegJpaRepo(UserJpaRepository regJpaRepo) {
-        this.regJpaRepo = regJpaRepo;
-    }
 
     public void setGuestJpaRepository(GuestJpaRepository guestJpaRepository) {
         this.guestJpaRepository = guestJpaRepository;
