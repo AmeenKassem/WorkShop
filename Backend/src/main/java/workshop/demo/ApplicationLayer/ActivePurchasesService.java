@@ -130,7 +130,7 @@ public class ActivePurchasesService {
             int productId, int quantity, Store store, Random random) {
         if (time <= 0)
             time = 1;
-
+                random.getUsersParticipations();
         timer.schedule(new TimerTask() {
             @Transactional
             @Override
@@ -375,6 +375,7 @@ public class ActivePurchasesService {
                         product.getName()));
             }
         }
+        System.out.println("all randoms size: " + allRandoms.size());
         return allRandoms.toArray(new RandomDTO[0]);
     }
 

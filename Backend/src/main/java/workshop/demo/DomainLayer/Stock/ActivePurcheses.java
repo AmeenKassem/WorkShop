@@ -56,8 +56,8 @@ public class ActivePurcheses {
     private HashMap<Integer, List<BID>> productIdToBids = new HashMap<>();
 
     // private Map<Integer, List<Integer>> productIdToAuctions = new HashMap<>();
-    @Transient
-    private HashMap<Integer, List<Random>> productIdToRandoms = new HashMap<>();
+    // @Transient
+    // private HashMap<Integer, List<Random>> productIdToRandoms = new HashMap<>();
 
     public ActivePurcheses(int storeId) {
         this.storeId = storeId;
@@ -203,7 +203,7 @@ public class ActivePurcheses {
         Random random = new Random(productId, quantity, productPrice, storeId, randomTime);
         random.setActivePurchases(this);
         activeRandom.put(random.getRandomId(), random);
-        productIdToRandoms.computeIfAbsent(productId, k -> new ArrayList<>()).add(random);
+        //productIdToRandoms.computeIfAbsent(productId, k -> new ArrayList<>()).add(random);
         logger.debug("Random created with id={}", random.getRandomId());
 
         return random;
@@ -333,13 +333,17 @@ public class ActivePurcheses {
     public List<RandomDTO> getRandomsForProduct(int productId, String storeName, String productName) {
 
         List<RandomDTO> result = new ArrayList<>();
-        List<Random> randoms = productIdToRandoms.getOrDefault(productId, new ArrayList<>());
-        for (Random random : randoms) {
+        System.out.println("randoms found : " + activeRandom.size());
+        for (Random random : activeRandom.values()) {
+            System.out.println("randomid: " + random.getRandomId() + " isActive: " + random.isActive());
+            if(random.isActive()){
             RandomDTO dto = random.getDTO();
             dto.storeName = storeName;
             dto.productName = productName;
             result.add(dto);
+            }
         }
+        System.out.println("getRandomsForProduct: " + result.size() + " randoms found for product: " + productName);
         return result;
     }
 

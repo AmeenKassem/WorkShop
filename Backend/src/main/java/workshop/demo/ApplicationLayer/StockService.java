@@ -113,6 +113,8 @@ public class StockService {
             products = stockJpaRepo.findAllById(ids);
         } else if (criteria.nameSearch()) {
             products = stockJpaRepo.findByNameContainingIgnoreCase(criteria.getName());
+            System.out.println("searching by name: " + criteria.getName());
+            System.out.println("found products: " + products.size());
         } else {
             throw new UIException("the ai search api is not running !!", ErrorCodes.AI_NOT_WORK);
         }

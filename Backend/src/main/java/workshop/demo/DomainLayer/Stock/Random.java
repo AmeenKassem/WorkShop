@@ -14,6 +14,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapKey;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Transient;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
@@ -24,11 +25,11 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 @Entity
 public class Random {
 
-
     private int productId;
     private int quantity;
 
     @OneToMany(mappedBy = "random", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @MapKey(name = "userId")
     private Map<Integer, ParticipationInRandom> usersParticipations;
     private double amountLeft;
 
@@ -43,8 +44,8 @@ public class Random {
 
     @Transient
     private final Object lock = new Object();
-    //@Transient
-    //private Timer timer;
+    // @Transient
+    // private Timer timer;
     private boolean isActive = true;
     private boolean canceled;
     private long endTimeMillis;
@@ -52,7 +53,6 @@ public class Random {
     @ManyToOne
     @JoinColumn(name = "active_store_id")
     private ActivePurcheses activePurcheses;
-
 
     public Random(int productId, int quantity, double productPrice, int storeId, long randomTime) {
         this.productId = productId;
@@ -65,33 +65,34 @@ public class Random {
         // this.timer = new Timer();
         this.endTimeMillis = System.currentTimeMillis() + randomTime;
 
-        this.canceled =false;
+        this.canceled = false;
 
         // timer.schedule(new TimerTask() {
-        //     @Override
-        //     public void run() {
-        //         synchronized (lock) {
-        //             if (!isActive)
-        //                 return;
-        //             isActive = false;
-        //             if (amountLeft > 0) {
-        //                 for (ParticipationInRandomDTO participation : usersParticipations.values()) {
-        //                     if (participation != winner) {
-        //                        participation.mustRefund = true;
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
+        // @Override
+        // public void run() {
+        // synchronized (lock) {
+        // if (!isActive)
+        // return;
+        // isActive = false;
+        // if (amountLeft > 0) {
+        // for (ParticipationInRandomDTO participation : usersParticipations.values()) {
+        // if (participation != winner) {
+        // participation.mustRefund = true;
+        // }
+        // }
+        // }
+        // }
+        // }
         // }, randomTime);
     }
 
     public Random() {
-        
+
     }
 
     public ParticipationInRandom participateInRandom(int userId, double amountPaid) throws UIException {
         synchronized (lock) {
+            ParticipationInRandom card;
             if (!isActive)
                 throw new UIException("Random event is over.", ErrorCodes.RANDOM_FINISHED);
             if (amountPaid > amountLeft)
@@ -99,28 +100,30 @@ public class Random {
                         ErrorCodes.INVALID_RANDOM_PARAMETERS);
             if (amountPaid <= 0)
                 throw new UIException("Amount paid must be positive.", ErrorCodes.INVALID_RANDOM_PARAMETERS);
-            if (usersParticipations.containsKey(userId))
-                throw new UIException("User has already participated in this random event.",
-                        ErrorCodes.DUPLICATE_RANDOM_ENTRY);
-            ParticipationInRandom card = new ParticipationInRandom(productId, storeId, userId, randomId, amountPaid);
+            if (usersParticipations.containsKey(userId)) {
+                card = usersParticipations.get(userId);
+                card.setAmountPaid(card.getAmountPaid() + amountPaid);
+            } else {
+                card = new ParticipationInRandom(productId, storeId, userId, randomId, amountPaid);
+            }
             card.setRandom(this);
             usersParticipations.put(userId, card);
             amountLeft -= amountPaid;
 
             if (amountLeft == 0) {
                 endRandom();
-                //timer.cancel();
+                // timer.cancel();
             }
             return usersParticipations.get(userId);
         }
     }
 
-    public void setActivePurchases(ActivePurcheses active){
-        activePurcheses=active;
+    public void setActivePurchases(ActivePurcheses active) {
+        activePurcheses = active;
     }
 
-    public boolean mustEnd(){
-        return System.currentTimeMillis()<endTimeMillis;
+    public boolean mustEnd() {
+        return System.currentTimeMillis() < endTimeMillis;
     }
 
     public ParticipationInRandom endRandom() {
@@ -180,7 +183,8 @@ public class Random {
     }
 
     public boolean userIsWinner(int userId) {
-        if(winner == null) return false;
+        if (winner == null)
+            return false;
         return winner.getUserId() == userId;
     }
 
@@ -195,12 +199,15 @@ public class Random {
     public int getProductId() {
         return productId;
     }
-    public boolean isCanceled(){
+
+    public boolean isCanceled() {
         return canceled;
     }
-    public void setCancel(boolean canceled){
-        this.canceled=canceled;
+
+    public void setCancel(boolean canceled) {
+        this.canceled = canceled;
     }
+
     public long getEndTimeMillis() {
         return endTimeMillis;
     }
@@ -252,6 +259,10 @@ public class Random {
 
     public void setActive(boolean b) {
         this.isActive = b;
+    }
+
+    public Map<Integer, ParticipationInRandom> getUsersParticipations() {
+        return usersParticipations;
     }
 
 }

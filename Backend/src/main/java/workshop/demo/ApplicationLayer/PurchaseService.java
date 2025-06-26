@@ -231,10 +231,11 @@ public class PurchaseService {
         }
 
         ParticipationInRandomDTO card = activePurchasesService.participateInRandom(userId, randomId, storeId, amountPaid);
-        UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random, -1);
+        UserSpecialItemCart item = new UserSpecialItemCart(storeId, randomId, -1 , SpecialType.Random, card.getProductId());
         user.addSpecialItemToCart(item);
         //Hmode
-        boolean done = paymentService.processPayment(paymentDetails, amountPaid)==-1?false:true;
+        //boolean done = paymentService.processPayment(paymentDetails, amountPaid)==-1?false:true;
+        boolean done = true; // for testing purposes, must be removed later
         if (!done) {
             logger.error("Payment failed for userId={}, amountPaid={}", userId, amountPaid);
             throw new UIException("Payment failed", ErrorCodes.PAYMENT_ERROR);
@@ -281,7 +282,7 @@ public class PurchaseService {
                 } else if (card.mustRefund()) {
                     // If the card must be refunded, we remove it from the user's cart
                     user.removeSpecialItem(specialItem);
-                    paymentService.processRefund(payment, card.amountPaid);
+                    paymentService.processRefund(card.transactionIdForPayment);
                 }
                 // DO NOT DELETE THIS CODE!!!!!!!!!!!!
             } else if (specialItem.type == SpecialType.Auction) { // AUCTION

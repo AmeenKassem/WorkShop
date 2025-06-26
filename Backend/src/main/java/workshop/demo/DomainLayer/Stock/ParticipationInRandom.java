@@ -111,4 +111,11 @@ public class ParticipationInRandom {
     public void setMustRefund(boolean b) {
         mustRefund = b;
     }
+
+    public void setAmountPaid(double d) {
+        if (d < 0) {
+            throw new IllegalArgumentException("Amount paid cannot be negative");
+        }
+        this.amountPaid = d;
+    }
 }

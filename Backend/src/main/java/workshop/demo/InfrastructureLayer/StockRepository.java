@@ -508,11 +508,11 @@ public class StockRepository implements IStockRepo {
         for (ItemStoreDTO item : storeItems) {
             int productId = item.getProductId();
             ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
-            List<RandomDTO> randoms = active.getRandomsForProduct(productId);
-            for (RandomDTO random : randoms) {
-                random.productName = item.getProductName();
-                result.add(random);
-            }
+            //List<RandomDTO> randoms = active.getRandomsForProduct(productId);
+            // for (RandomDTO random : randoms) {
+            //     random.productName = item.getProductName();
+            //     result.add(random);
+            // }
         }
         return result.toArray(new RandomDTO[0]);
     }

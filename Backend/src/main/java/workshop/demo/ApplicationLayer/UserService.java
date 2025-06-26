@@ -291,8 +291,13 @@ public class UserService {
             itemToSend.setIds(item.storeId, item.specialId, item.bidId, item.type);
             ActivePurcheses activePurcheses = activePurchasesRepo.findById(item.storeId).orElse(null);
             Store store = storeRepo.findById(item.storeId).orElse(null);
+            //System.out.println(store.getStoreName());
             itemToSend.storeName = store.getStoreName();
+            //System.out.println("product id is " + item.getProductId());
             Product product = stockRepo.findById(item.getProductId()).orElse(null);
+            // if (product == null) {
+            //     System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadddddddddddddddddddddddddddddddddddddddiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiinnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
+            // }
             if (item.type == SpecialType.Random) {
                 ParticipationInRandomDTO card = activePurcheses.getRandomCard(item.storeId, item.specialId, item.user.getId());
                 itemToSend.setValues(product.getName(), card.isWinner, card.ended);
