@@ -244,7 +244,7 @@ public class UserService {
         return true;
     }
 
-    public SpecialCartItemDTO[] getSpecialCart(String token) throws UIException {
+    public SpecialCartItemDTO[] getSpecialCart(String token) throws UIException , Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(userId);
@@ -261,7 +261,7 @@ public class UserService {
             itemToSend.storeName = store.getStoreName();
             Product product = stockRepo.findById(item.getProductId()).orElse(null);
             if (item.type == SpecialType.Random) {
-                ParticipationInRandomDTO card = activePurcheses.getRandomCard(item.storeId, item.specialId, item.bidId);
+                ParticipationInRandomDTO card = activePurcheses.getRandomCard(item.storeId, item.specialId, item.user.getId());
                 itemToSend.setValues(product.getName(), card.isWinner, card.ended);
             } else if (item.type == SpecialType.BID) {
                 SingleBid bid = activePurcheses.getBid(item.storeId, item.specialId, item.bidId, item.type);

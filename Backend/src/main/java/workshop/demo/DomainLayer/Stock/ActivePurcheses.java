@@ -388,9 +388,8 @@ public class ActivePurcheses {
         return storeId;
     }
 
-    public ParticipationInRandomDTO getRandomCard(int storeId2, int specialId, int bidId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getRandomCard'");
+    public ParticipationInRandomDTO getRandomCard(int storeId2, int specialId, int userId) throws DevException {
+       return getRandom(specialId).getCard(userId).toDTO();
     }
 
     public SingleBid getBid(int storeId2, int specialId, int bidId, SpecialType type) {
