@@ -239,6 +239,7 @@ public class PurchaseService {
 
         logger.info("The user " + userId + " finalizing the special cart.");
         Registered user = regRepo.findById(userId).orElseThrow(() -> notLoggedInException());
+        
         // winning!!
         List<SingleBid> winningBids = new ArrayList<>();
         List<ParticipationInRandomDTO> winningRandoms = new ArrayList<>();
