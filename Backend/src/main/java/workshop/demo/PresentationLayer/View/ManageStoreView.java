@@ -72,7 +72,6 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
             new Button("📴 Deactivate Store", e -> presenter.deactivateStore(myStoreId))
         );
 
-        buttons.forEach(this::styleManageButton);
         FlexLayout buttonContainer = new FlexLayout();
         buttonContainer.setFlexWrap(FlexLayout.FlexWrap.WRAP);
         buttonContainer.setJustifyContentMode(FlexLayout.JustifyContentMode.CENTER);
@@ -86,45 +85,71 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
         add(buttonContainer);
     }
 
-    private void styleManageButton(Button btn) {
-        btn.getStyle()
-            .set("background", "linear-gradient(90deg,rgb(169, 115, 142),rgb(141, 129, 134))")
-            .set("color", "white")
-            .set("font-weight", "bold")
-            .set("border-radius", "8px")
-            .set("padding", "10px 16px")
-            .set("font-size", "0.9rem")
-            .set("width", "220px")
-            .set("box-shadow", "0 2px 6px rgba(0,0,0,0.1)");
-    }
-
+   
+    
     public void showDialog(List<String> reviews) {
-        Dialog dialog = new Dialog();
+    Dialog dialog = new Dialog();
+    dialog.setHeaderTitle("⭐ Store Reviews");
 
-        VerticalLayout content = new VerticalLayout();
-        content.setPadding(false);
-        content.setSpacing(true);
-        content.setWidth("400px");
+    VerticalLayout content = new VerticalLayout();
+    content.addClassName("dialog-content");
+    content.setSpacing(true);
+    content.setPadding(true);
+    content.setWidth("400px");
 
-        if (reviews == null || reviews.isEmpty()) {
-            content.add(new Paragraph("There nothing here yet."));
-        } else {
-            for (String review : reviews) {
-                content.add(new Paragraph(review));
-            }
+    if (reviews == null || reviews.isEmpty()) {
+        content.add(new Paragraph("There are no reviews yet."));
+    } else {
+        for (String review : reviews) {
+            String name = extractValue(review, "name");
+            String msg = extractValue(review, "reviewMsg");
+
+            VerticalLayout reviewBox = new VerticalLayout();
+            reviewBox.getStyle()
+                .set("background-color", "white")
+                .set("border-radius", "10px")
+                .set("padding", "0.8rem")
+                .set("box-shadow", "0 2px 6px rgba(0,0,0,0.1)");
+            reviewBox.setSpacing(false);
+            reviewBox.setPadding(false);
+
+            Span nameSpan = new Span("👤 " + name);
+            nameSpan.getStyle().set("font-weight", "bold");
+
+            Span msgSpan = new Span("💬 " + msg);
+
+            reviewBox.add(nameSpan, msgSpan);
+            content.add(reviewBox);
         }
-        Button closeBtn = new Button("Close", e -> dialog.close());
-        dialog.getFooter().add(closeBtn);
-
-        dialog.add(content);
-        dialog.open();
     }
+
+    Button closeBtn = new Button("Close", e -> dialog.close());
+    closeBtn.addClassName("dialog-close-button");
+
+    dialog.add(content);
+    dialog.getFooter().add(closeBtn);
+    dialog.open();
+}
+
+private String extractValue(String raw, String key) {
+    try {
+        int start = raw.indexOf(key + "=");
+        if (start == -1) return "";
+        int end = raw.indexOf(",", start + key.length() + 1);
+        if (end == -1) end = raw.indexOf("}", start);
+        return raw.substring(start + key.length() + 1, end).trim();
+    } catch (Exception e) {
+        return "";
+    }
+}
+
 
     public void showEmployeesDialog(List<WorkerDTO> employees) {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("👥 Employees & Roles");
 
         VerticalLayout content = new VerticalLayout();
+        content.addClassName("dialog-content"); 
         content.setSpacing(false);
         content.setPadding(false);
 
@@ -172,7 +197,8 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
         Button closeBtn = new Button("Close", e -> dialog.close());
         closeBtn.getStyle().set("margin-top", "1rem");
 
-        dialog.add(content, closeBtn);
+        content.add(closeBtn);
+        dialog.add(content);
         dialog.open();
     }
 

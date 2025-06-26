@@ -83,7 +83,7 @@
 }
 
 .login-button::before {
-    content: '🔒'; /* אייקון קטן לפני הכיתוב */
+    content: '🔒';
     font-size: 1.1rem;
 }
 
