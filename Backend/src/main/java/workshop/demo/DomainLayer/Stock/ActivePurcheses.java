@@ -17,6 +17,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MapKey;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Transient;
+import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
@@ -384,6 +385,7 @@ public class ActivePurcheses {
         randomIdGen.set(0);
     }
 
+    @Transactional
     public Auction getAuctionById(int res) {
         return activeAuction.get(res);
     }
