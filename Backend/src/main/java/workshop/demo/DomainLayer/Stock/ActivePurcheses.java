@@ -105,7 +105,7 @@ public class ActivePurcheses {
         AuctionDTO[] auctionDTOs = new AuctionDTO[activeAuction.size()];
         int i = 0;
         for (Auction auction : activeAuction.values()) {
-            auction.endAuction();
+            // auction.endAuction();
             auctionDTOs[i] = auction.getDTO();
             i++;
         }

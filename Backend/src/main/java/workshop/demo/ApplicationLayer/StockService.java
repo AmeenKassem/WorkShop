@@ -531,4 +531,8 @@ public class StockService {
 
         return stockRepo.getAllBids(storeId);
     }
+
+    public Product getProductById(int productId) {
+        return stockJpaRepo.findById(productId).orElse(null);
+    }
 }

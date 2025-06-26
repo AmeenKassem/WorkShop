@@ -159,10 +159,17 @@ public class Auction {
         res.maxBid = maxBid;
         res.productId = productId;
         res.quantity = quantity;
-        res.winner = null;
+        res.winnerId = winnerId;
+        // if(winnerId!=-1){
+        res.winnerUserId = -1;
+        for (UserAuctionBid userAuctionBid : bids) {
+            if (userAuctionBid.getId() == winnerId)
+                res.winnerUserId = userAuctionBid.getUserId();
+        }
+        // }
         res.storeId = activePurcheses.getStoreId();
         res.endTimeMillis = this.endTimeMillis;
-
+        res.endDate = getDateOfEnd();
         SingleBidDTO[] arrayBids = new SingleBidDTO[bids.size()];
         for (int i = 0; i < arrayBids.length; i++) {
             arrayBids[i] = bids.get(i).convertToDTO();
@@ -227,11 +234,11 @@ public class Auction {
     }
 
     public boolean isEnded() {
-        return status==AuctionStatus.FINISH;
+        return status == AuctionStatus.FINISH;
     }
 
-    public boolean mustEnd(){
-        return System.currentTimeMillis()<endTimeMillis;
+    public boolean mustEnd() {
+        return System.currentTimeMillis() < endTimeMillis;
     }
 
     public double getMaxBid() {
