@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
@@ -60,6 +61,9 @@ public class ActivePurchasesService {
     private NotificationService notifier;
 
     @Autowired
+    private ApplicationContext context;
+
+    @Autowired
     private IAuthRepo authRepo;
 
     @Autowired
@@ -68,7 +72,7 @@ public class ActivePurchasesService {
     @Autowired
     private StockService stock;
 
-    private Timer timer = new Timer();
+    // private Timer timer = new Timer();
 
     @Transactional
     @EventListener(ApplicationReadyEvent.class)
@@ -117,48 +121,55 @@ public class ActivePurchasesService {
         return auction.getId();
     }
 
-    @Transactional
     public void scheduleAuctionEnd(ActivePurcheses active, long time, StoreStock storeStock, int auctionId,
             int productId, int quantity, Store store) {
         if (time <= 0)
             time = 1;
+        Timer timer = new Timer();
         timer.schedule(new TimerTask() {
-
-            @Transactional
             @Override
             public void run() {
                 try {
-                    logger.info("auction must be endddddddd! , auction id:" + auctionId);
-                    Auction auction = active.getAuctionById(auctionId);
-                    auction.endAuction();
-                    auction.setActivePurchases(active);
-                    String productName = stock.getProductById(auction.getProductId()).getName();
-                    activePurchasesRepo.saveAndFlush(active);
-                    if (auction.mustReturnToStock()) {
-                        logger.info("must refund the quantity of auction!");
-                        storeStock.IncreaseQuantitytoBuy(productId, auction.getAmount());
-                        storeStockRepo.saveAndFlush(storeStock);
-                    }
-                    List<Integer> paricpationIds = auction.getBidsUsersIds();
-                    notifier.sendMessageForUsers(
-                            "Auction on store :" + store.getStoreName() + "with product " + " Auction on " + productName
-                                    + " has ended!" + " has ended!",
-                            paricpationIds);
-                    List<Integer> ownersIds = new ArrayList<>();
-                    suConnectionRepo.getOwnersInStore(store.getstoreId())
-                            .forEach(user -> ownersIds.add(user.getMyId()));
-                    notifier.sendMessageForUsers(
-                            " Auction on " + productName + " has ended!",
-                            ownersIds);
-
+                    // instead of directly calling `runAuctionEndTask(...)`
+                    // get the proxy of the current bean from Spring context
+                    ActivePurchasesService self = context.getBean(ActivePurchasesService.class);
+                    self.runAuctionEndTask(active, auctionId, storeStock,productId, store);
                 } catch (UIException | DevException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
 
         }, time);
 
+    }
+
+    @Transactional
+    public void runAuctionEndTask(ActivePurcheses active, int auctionId, StoreStock storeStock, int productId,
+            Store store) throws UIException, DevException {
+        logger.info("Running auction end task for auction id: {}", auctionId);
+        ActivePurcheses a = activePurchasesRepo.findById(active.getStoreId()).orElseThrow();
+        Auction auction = a.getAuctionById(auctionId);
+        auction.loadBids();
+        auction.endAuction();
+        auction.setActivePurchases(a);
+
+        String productName = stock.getProductById(auction.getProductId()).getName();
+        activePurchasesRepo.saveAndFlush(a);
+
+        if (auction.mustReturnToStock()) {
+            logger.info("Refunding auction quantity to stock");
+            storeStock.IncreaseQuantitytoBuy(productId, auction.getAmount());
+            storeStockRepo.saveAndFlush(storeStock);
+        }
+
+        List<Integer> participants = auction.getBidsUsersIds();
+        notifier.sendMessageForUsers(
+                "Auction on store: " + store.getStoreName() + " with product " + productName + " has ended!",
+                participants);
+
+        List<Integer> owners = suConnectionRepo.getOwnersInStore(store.getstoreId())
+                .stream().map(user -> user.getMyId()).toList();
+        notifier.sendMessageForUsers("Auction on " + productName + " has ended!", owners);
     }
 
     private void checkUserRegisterOnline_ThrowException(int userId) throws UIException {
@@ -197,12 +208,13 @@ public class ActivePurchasesService {
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
         AuctionDTO[] auctions = active.getAuctions();
         for (AuctionDTO auctionDTO : auctions) {
-            if (auctionDTO.winnerUserId != -1 ) {
-                auctionDTO.winnerUserName = userRepo.findById(auctionDTO.winnerUserId).orElse(new Registered()).getUsername();
+            if (auctionDTO.winnerUserId != -1) {
+                auctionDTO.winnerUserName = userRepo.findById(auctionDTO.winnerUserId).orElse(new Registered())
+                        .getUsername();
             }
             auctionDTO.productName = stock.getProductById(auctionDTO.productId).getName();
         }
-        logger.info("we have to return to te user an array of auctions. size: "+auctions.length);
+        logger.info("we have to return to te user an array of auctions. size: " + auctions.length);
         return auctions;
     }
 
@@ -253,10 +265,10 @@ public class ActivePurchasesService {
         int userLoosedTopId = active.getCurrAuctionTop(auctionId);
         UserAuctionBid bid = active.addUserBidToAuction(auctionId, userId, price);
         logger.info("Bid placed successfully by user: {} on auction: {}", userId, auctionId);
-        if (userLoosedTopId != userId && userLoosedTopId!=-1)
+        if (userLoosedTopId != userId && userLoosedTopId != -1)
             notifier.sendMessageToUser(userLoosedTopId, "You are loosing the top of auction!");
         activePurchasesRepo.flush();
-        logger.info(  "bid saved to user!");
+        logger.info("bid saved to user!");
         UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, auctionId, bid.getId(),
                 SpecialType.Auction, bid.getProductId());
         userRepo.findById(userId).get().addSpecialItemToCart(specialItem);
