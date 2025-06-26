@@ -235,11 +235,8 @@ public class HomePage extends VerticalLayout {
         } else {
             row.add(searchField, categoryCombo, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
         }
-
-
         layout.add(row);
         return layout;
-
     }
 
     private Div createItemCard(ItemStoreDTO item) {

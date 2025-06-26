@@ -1,28 +1,51 @@
 .add-manager-view {
-    background-color: #f4f6fb;
-    padding: 2rem;
+    background-color: white;
+    padding: 2rem 1rem;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-.manager-form-container {
-    background-color: white;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    width: 700px;
-    display: flex;
-    flex-direction: column;
     gap: 2rem;
 }
 
 .title {
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: bold;
     text-align: center;
-    color: #222;
+    color: #1f2937;
+    border-bottom: 2px solid #e11d48;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.add-manager-button {
+    background: linear-gradient(90deg, #ce5290, #f472b6);
+    color: white;
+    font-weight: bold;
+    border-radius: 12px;
+    padding: 0.6rem 1.4rem;
+    border: none;
+    box-shadow: 0 4px 8px rgba(249, 168, 212, 0.4);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.add-manager-button:hover {
+     background: linear-gradient(90deg, #f472b6, #ec4899);
+    transform: scale(1.03);
+}
+
+
+.manager-form-container {
+    background-color: white;
+    border-radius: 16px;
+    border: 1px solid #f9a8d4;
+    box-shadow: 0 6px 20px rgba(249, 168, 212, 0.3);
+    padding: 2rem;
+    width: 700px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 }
 
 .input-section {
@@ -45,41 +68,11 @@
 
 .button-row {
     display: flex;
-    justify-content: space-between;
-    gap: 1.5rem;
-    margin-top: 2rem;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
     flex-wrap: wrap;
     width: 100%;
-}
-
-.add-manager-button {
-    background-color: #3b82f6;
-    color: white;
-    font-weight: bold;
-    border-radius: 8px;
-    padding: 0.6rem 1.4rem;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.add-manager-button:hover {
-    background-color: #2563eb;
-}
-
-.back-to-manager-home-button {
-    background-color: #3b82f6;
-    color: white;
-    font-weight: bold;
-    border-radius: 8px;
-    padding: 0.6rem 1.4rem;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.back-to-manager-home-button:hover {
-    background-color: #2563eb;
 }
 
 .save-permissions-button {
@@ -110,4 +103,44 @@
 
 .delete-manager-button:hover {
     background-color: #dc2626;
+}
+
+.back-to-manager-home-button {
+    background-color: #3b82f6;
+    color: white;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 0.6rem 1.4rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.back-to-manager-home-button:hover {
+    background-color: #2563eb;
+}
+
+.manager-card {
+    background: linear-gradient(90deg, #f3f4f6, #e0f7fa);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.2rem;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
+}
+
+.manager-card p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+.manager-name {
+    font-weight: bold;
+    margin-bottom: 0.8rem;
+    font-size: 1.1rem;
+    color: #1e293b;
+}
+.empty-managers-message {
+    color: #6b7280;
+    font-style: italic;
+    margin-top: 1rem;
 }

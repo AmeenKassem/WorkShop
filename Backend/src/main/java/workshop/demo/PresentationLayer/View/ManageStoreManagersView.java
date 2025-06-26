@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;
@@ -23,7 +24,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.PresentationLayer.Presenter.ManageStoreManagersPresenter;
 
 @Route(value = "manage-store-managers", layout = MainLayout.class)
-// @CssImport("./Theme/manageStoreTheme.css")
+ @CssImport("./Theme/manageStoreTheme.css")
 public class ManageStoreManagersView extends VerticalLayout implements HasUrlParameter<Integer> {
 
     private final ManageStoreManagersPresenter presenter;
@@ -38,7 +39,7 @@ public class ManageStoreManagersView extends VerticalLayout implements HasUrlPar
 
         addClassName("add-manager-view");
         setSizeFull();
-        setJustifyContentMode(JustifyContentMode.CENTER);
+        setJustifyContentMode(JustifyContentMode.START);
         setAlignItems(Alignment.CENTER);
 
         H1 title = new H1("Manage Store Managers");
@@ -118,17 +119,20 @@ public class ManageStoreManagersView extends VerticalLayout implements HasUrlPar
     public void updateManagerList(List<WorkerDTO> managers) {
         managersListLayout.removeAll();
 
+        boolean hasVisibleManagers = false;
+
         for (WorkerDTO manager : managers) {
             if (!manager.isManager() && !manager.isSetByMe()) {
                 continue;
             }
 
+            hasVisibleManagers = true;
+
             VerticalLayout managerBlock = new VerticalLayout();
-            managerBlock.getStyle().set("border", "1px solid #ddd").set("border-radius", "8px").set("padding", "1.5rem")
-                    .set("background", "#fff");
+            managerBlock.addClassName("manager-card");
 
             Paragraph name = new Paragraph(manager.getUsername());
-            name.getStyle().set("font-weight", "bold").set("margin-bottom", "0.8rem");
+            name.addClassName("manager-name");
 
             Map<Permission, Checkbox> checkboxMap = new HashMap<>();
             VerticalLayout permissions = new VerticalLayout();
@@ -154,7 +158,14 @@ public class ManageStoreManagersView extends VerticalLayout implements HasUrlPar
             managerBlock.add(name, permissions, actionRow);
             managersListLayout.add(managerBlock);
         }
+
+        if (!hasVisibleManagers) {
+            Paragraph emptyMsg = new Paragraph("No managers assigned to this store yet.");
+            emptyMsg.addClassName("empty-managers-message");
+            managersListLayout.add(emptyMsg);
+        }
     }
+
 
     public void showSuccess(String message) {
         NotificationView.showSuccess(message);

@@ -25,12 +25,12 @@ public class MyCartView extends VerticalLayout {
     private final MyCartPresenter presenter;
     private final VerticalLayout regularItemsColumn = new VerticalLayout();
     private final VerticalLayout specialItemsColumn = new VerticalLayout();
-    private final VerticalLayout cartWrapper = new VerticalLayout();
+    private final HorizontalLayout cartWrapper = new HorizontalLayout();
 
-    private final Button updateCartBtn = new Button("🔁 Update Cart", new Icon(VaadinIcon.REFRESH));
-    private final Button continueShoppingBtn = new Button("⬅ Continue Shopping", new Icon(VaadinIcon.ARROW_LEFT));
-    private final Button checkoutBtn = new Button("💳 Proceed to Checkout", new Icon(VaadinIcon.CREDIT_CARD));
-    private final Button finalizeSpecialCarButton = new Button("✔ Finalize Special Cart", new Icon(VaadinIcon.CHECK));
+    private final Button updateCartBtn = new Button("Update Cart", new Icon(VaadinIcon.REFRESH));
+    private final Button continueShoppingBtn = new Button("Continue Shopping", new Icon(VaadinIcon.ARROW_LEFT));
+    private final Button checkoutBtn = new Button("Proceed to Checkout", new Icon(VaadinIcon.CREDIT_CARD));
+    private final Button finalizeSpecialCarButton = new Button("Finalize Special Cart", new Icon(VaadinIcon.CHECK));
 
     public MyCartView() {
         setSizeFull();
@@ -49,12 +49,36 @@ public class MyCartView extends VerticalLayout {
             finalizeSpecialCarButton.setVisible(true);
             finalizeSpecialCarButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("purchase/special")));
         }
+
+        continueShoppingBtn.addClassName("cart-btn");
+        updateCartBtn.addClassName("cart-btn");
+        checkoutBtn.addClassName("cart-btn");
+        finalizeSpecialCarButton.addClassName("cart-btn");
     }
 
     private void setupHeader() {
-        H1 header = new H1("🏍️ My Cart");
-        header.addClassName("cart-header");
-        add(header);
+        Icon cartIcon = VaadinIcon.CART.create();
+        cartIcon.setSize("32px");
+        cartIcon.getStyle().set("color", "#ec4899").set("margin-right", "10px");
+        cartIcon.getElement().setProperty("title", "Shopping Cart");
+
+        Span titleText = new Span("Let’s Finalize Your Picks ✨");
+        titleText.getStyle()
+                .set("font-size", "2rem")
+                .set("font-weight", "700")
+                .set("font-family", "'Segoe UI', sans-serif")
+                .set("color", "#be185d");
+
+        HorizontalLayout headerLayout = new HorizontalLayout(cartIcon, titleText);
+        headerLayout.setAlignItems(Alignment.CENTER);
+        headerLayout.setJustifyContentMode(JustifyContentMode.CENTER);
+        headerLayout.setWidthFull();
+        headerLayout.setFlexGrow(1, titleText);
+        headerLayout.setFlexGrow(0, cartIcon);
+        headerLayout.getStyle().set("flex-wrap", "wrap");
+        headerLayout.addClassName("cart-header");
+
+        add(headerLayout);
     }
 
     private void setupCartSections() {
@@ -64,14 +88,15 @@ public class MyCartView extends VerticalLayout {
         regularItemsColumn.setWidthFull();
         specialItemsColumn.setWidthFull();
 
-        VerticalLayout regularSection = new VerticalLayout(new H3("🛒 Regular Cart"), regularItemsColumn);
-        VerticalLayout specialSection = new VerticalLayout(new H3("🔐 Special Cart"), specialItemsColumn);
+        VerticalLayout regularSection = new VerticalLayout(new H3("\ud83d\uded2 Regular Cart"), regularItemsColumn);
+        VerticalLayout specialSection = new VerticalLayout(new H3("\ud83d\udd10 Special Cart"), specialItemsColumn);
 
         regularSection.setClassName("cart-section");
         specialSection.setClassName("cart-section");
 
         cartWrapper.setWidthFull();
-        cartWrapper.setClassName("cart-wrapper");
+        cartWrapper.setSpacing(true);
+        cartWrapper.setJustifyContentMode(JustifyContentMode.EVENLY);
         cartWrapper.add(regularSection, specialSection);
 
         add(cartWrapper);
@@ -84,29 +109,13 @@ public class MyCartView extends VerticalLayout {
         buttons.setJustifyContentMode(JustifyContentMode.CENTER);
         buttons.setWidthFull();
         buttons.addClassName("cart-buttons");
-
-        applyCartButtonStyle(continueShoppingBtn);
-        applyCartButtonStyle(updateCartBtn);
-        applyCartButtonStyle(checkoutBtn);
-        applyCartButtonStyle(finalizeSpecialCarButton);
-
         continueShoppingBtn.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("")));
         checkoutBtn.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("purchase/regular")));
 
         add(buttons);
     }
 
-    private void applyCartButtonStyle(Button btn) {
-        btn.getStyle()
-            .set("background-color", "#ff9900")
-            .set("color", "white")
-            .set("font-weight", "bold")
-            .set("border-radius", "8px")
-            .set("padding", "10px 16px")
-            .set("min-width", "160px")
-            .set("font-family", "'Segoe UI', sans-serif")
-            .set("font-size", "0.9rem");
-    }
+  
 
     public void displayRegularItems(ItemCartDTO[] items) {
         regularItemsColumn.removeAll();
@@ -126,13 +135,16 @@ public class MyCartView extends VerticalLayout {
         VerticalLayout card = new VerticalLayout();
         card.addClassName("item-card");
 
-        card.add(createStyledLabel("🏪 Store: " + item.storeName));
-        card.add(createStyledLabel("📦 Product: " + item.name));
-        card.add(createStyledLabel("💰 Price: ₪" + item.price));
-        card.add(createStyledLabel("📦 Quantity: " + item.quantity));
-        card.add(createStyledLabel("🧮 Subtotal: ₪" + (item.price * item.quantity)));
+        card.add(createInfoLine(VaadinIcon.SHOP, "Store: " + item.storeName));
+        card.add(createInfoLine(VaadinIcon.PACKAGE, "Product: " + item.name));
+        card.add(createInfoLine(VaadinIcon.MONEY, "Price: ₪" + item.price));
+        card.add(createInfoLine(VaadinIcon.CART, "Quantity: " + item.quantity));
+        card.add(createInfoLine(VaadinIcon.CALC_BOOK, "Subtotal: ₪" + (item.price * item.quantity)));
 
         Button changeQtyBtn = new Button("Change Quantity", new Icon(VaadinIcon.PLUS));
+        Button removeBtn = new Button("Remove", new Icon(VaadinIcon.TRASH));
+        removeBtn.getStyle().set("color", "red");
+
         changeQtyBtn.addClickListener(e -> {
             TextField quantityField = new TextField("New Quantity");
             Button confirmBtn = new Button("Confirm");
@@ -151,13 +163,12 @@ public class MyCartView extends VerticalLayout {
             dialog.open();
         });
 
-        Button removeBtn = new Button("Remove", new Icon(VaadinIcon.TRASH));
-        removeBtn.getStyle().set("color", "red");
         removeBtn.addClickListener(e -> presenter.removeFromCart(item.getId()));
 
         HorizontalLayout buttonLayout = new HorizontalLayout(changeQtyBtn, removeBtn);
-        card.add(buttonLayout);
+        buttonLayout.addClassName("btn-group");
 
+        card.add(buttonLayout);
         return card;
     }
 
@@ -173,24 +184,37 @@ public class MyCartView extends VerticalLayout {
             card.addClassName("bid-bg");
         }
 
-        card.add(createStyledLabel("📦 Product: " + item.getProductName()));
-        card.add(createStyledLabel("🏪 Store: " + item.storeName));
-        card.add(createStyledLabel("🎯 Type: " + item.getType()));
+        card.add(createInfoLine(VaadinIcon.PACKAGE, "Product: " + item.getProductName()));
+        card.add(createInfoLine(VaadinIcon.SHOP, "Store: " + item.storeName));
+        card.add(createInfoLine(VaadinIcon.TROPHY, "Type: " + item.getType()));
         if(item.getType()==SpecialType.Auction){
-            card.add(createStyledLabel("💰 my bid: " + (item.myBid)));
-            card.add(createStyledLabel("🏁" + (item.isEnded() ? "Ended!" : " Ends at "+item.dateEnd)));
-            card.add(createStyledLabel("🏆" + (item.onTop ? " You are on the top !" : " Some one bid with "+(item.maxBid))));
-            // if(!item.onTop) card.add(createStyledLabel("💰 current max bid: " + (item.maxBid)));
+           card.add(createInfoLine(VaadinIcon.MONEY, "My bid: " + item.myBid));
+            card.add(createInfoLine(VaadinIcon.CLOCK, item.isEnded() ? "Ended!" : "Ends at " + item.dateEnd));
+            card.add(createInfoLine(VaadinIcon.ARROW_UP, item.onTop ? "You are on top!" : "Someone bid with " + item.maxBid));
+           // card.add(createStyledLabel("\ud83c\udfc6" + (item.onTop ? " You are on the top !" : " Some one bid with "+(item.maxBid))));
         }
         return card;
     }
 
     private Span createStyledLabel(String text) {
         Span label = new Span(text);
-        label.getStyle()
-            .set("font-size", "0.95rem")
-            .set("color", "#333")
-            .set("font-family", "'Segoe UI', sans-serif");
+        label.addClassName("label");
         return label;
+    }
+
+    private Component createInfoLine(VaadinIcon icon, String text) {
+        Icon iconComponent = icon.create();
+        iconComponent.setSize("20px");
+        iconComponent.getStyle().set("color", "#be185d");
+
+        Span label = new Span(text);
+        label.getElement().getClassList().add("info-line");
+
+        HorizontalLayout line = new HorizontalLayout(iconComponent, label);
+        line.setAlignItems(FlexComponent.Alignment.CENTER);
+        line.setSpacing(true);
+        line.getElement().getClassList().add("info-line");
+
+        return line;
     }
 }

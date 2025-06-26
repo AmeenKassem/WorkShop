@@ -189,11 +189,12 @@ public class PurchaseView extends VerticalLayout implements HasUrlParameter<Stri
     private final PurchasePresenter presenter;
     private String mode = "regular"; // Default
 
-    public PurchaseView() {
+   public PurchaseView() {
         addClassName("purchase-view");
         presenter = new PurchasePresenter(this);
 
         H1 title = new H1("Complete Your Purchase");
+        purchaseButton.addClassName("form-button");
 
         purchaseButton.addClickListener(e -> {
             if (anyFieldEmpty()) {
@@ -209,8 +210,7 @@ public class PurchaseView extends VerticalLayout implements HasUrlParameter<Stri
                         getAddress(), getCity(), getState(), getZipCode());
             }
         });
-
-        add(
+        VerticalLayout formCard = new VerticalLayout(
                 title,
                 cardNumber,
                 cardHolderName,
@@ -220,7 +220,11 @@ public class PurchaseView extends VerticalLayout implements HasUrlParameter<Stri
                 city,
                 state,
                 zipCode,
-                purchaseButton);
+                purchaseButton
+        );
+        formCard.addClassName("form-card");
+
+        add(formCard);
     }
 
     private boolean anyFieldEmpty() {
