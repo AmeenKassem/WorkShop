@@ -8,6 +8,8 @@ public class ReceiptDTO {
     private String date;
     private List<ReceiptProduct> productsList;
     private double finalPrice;
+    private int paymentTransactionId;
+    private int supplyTransactionId;
 
     public ReceiptDTO() {
         // Default constructor
@@ -18,6 +20,15 @@ public class ReceiptDTO {
         this.date = date;
         this.productsList = productsList;
         this.finalPrice = finalPrice;
+    }
+    public ReceiptDTO(String storeName, String date, List<ReceiptProduct> productsList, double finalPrice,int paymentTransactionId
+    ,int supplyTransactionId) {
+        this.storeName = storeName;
+        this.date = date;
+        this.productsList = productsList;
+        this.finalPrice = finalPrice;
+        this.paymentTransactionId=paymentTransactionId;
+        this.supplyTransactionId=supplyTransactionId;
     }
 
     public String getStoreName() {
@@ -51,5 +62,21 @@ public class ReceiptDTO {
     public void setFinalPrice(double finalPrice) {
         this.finalPrice = finalPrice;
     }
+    public int getPaymentTransactionId() {
+        return paymentTransactionId;
+    }
+
+    public void setPaymentTransactionId(int paymentTransactionId) {
+        this.paymentTransactionId = paymentTransactionId;
+    }
+
+    public int getSupplyTransactionId() {
+        return supplyTransactionId;
+    }
+
+    public void setSupplyTransactionId(int supplyTransactionId) {
+        this.supplyTransactionId = supplyTransactionId;
+    }
+
 
 }

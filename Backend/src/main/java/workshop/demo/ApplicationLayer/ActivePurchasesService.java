@@ -12,13 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-
-import com.vaadin.flow.component.UI;
-
-import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.AuctionDTO;
-import workshop.demo.DTOs.AuctionStatus;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SpecialType;
@@ -32,11 +27,11 @@ import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.Random;
-import workshop.demo.DomainLayer.Stock.SingleBid;
+
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.UserAuctionBid;
 import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.StoreUserConnection.Node;
+
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
@@ -88,7 +83,7 @@ public class ActivePurchasesService {
                 if (!auction.isEnded()) {
                     auction.loadBids();
                     scheduleAuctionEnd(active, auction.getRestMS(), storeStock, auction.getId(), auction.getProductId(),
-                            auction.getAmount(), store, auction);
+                            auction.getAmount(), store);
                 }
             }
             for (Random random : active.getActiveRandoms()) {
@@ -120,7 +115,7 @@ public class ActivePurchasesService {
         // auction.end() + notify all paricipates . notify winner . notify onwers + if
         // the auction has no winner return back the stock
         Store store = storeJpaRepo.findById(storeId).orElse(null);
-        scheduleAuctionEnd(active, time, storeStock, auction.getId(), productId, quantity, store, auction);
+        scheduleAuctionEnd(active, time, storeStock, auction.getId(), productId, quantity, store);
         List<Integer> ownersIds = new ArrayList<>();
         suConnectionRepo.getOwnersInStore(storeId).forEach(user -> ownersIds.add(user.getMyId()));
         notifier.sendMessageForUsers(
@@ -179,7 +174,7 @@ public class ActivePurchasesService {
 
     @Transactional
     public void scheduleAuctionEnd(ActivePurcheses active, long time, StoreStock storeStock, int auctionId,
-            int productId, int quantity, Store store, Auction auction) {
+            int productId, int quantity, Store store) {
         if (time <= 0)
             time = 1;
         timer.schedule(new TimerTask() {
@@ -189,8 +184,10 @@ public class ActivePurchasesService {
             public void run() {
                 try {
                     logger.info("auction must be endddddddd! , auction id:" + auctionId);
+                    Auction auction = active.getAuctionById(auctionId);
                     auction.endAuction();
                     auction.setActivePurchases(active);
+                    String productName = stock.getProductById(auction.getProductId()).getName();
                     activePurchasesRepo.saveAndFlush(active);
                     if (auction.mustReturnToStock()) {
                         logger.info("must refund the quantity of auction!");
@@ -198,13 +195,15 @@ public class ActivePurchasesService {
                         storeStockRepo.saveAndFlush(storeStock);
                     }
                     List<Integer> paricpationIds = auction.getBidsUsersIds();
-                    notifier.sendMessageForUsers("Auction on store :" + store.getStoreName() + " has ended!",
+                    notifier.sendMessageForUsers(
+                            "Auction on store :" + store.getStoreName() + "with product " + " Auction on " + productName
+                                    + " has ended!" + " has ended!",
                             paricpationIds);
                     List<Integer> ownersIds = new ArrayList<>();
                     suConnectionRepo.getOwnersInStore(store.getstoreId())
                             .forEach(user -> ownersIds.add(user.getMyId()));
                     notifier.sendMessageForUsers(
-                            " Auction has ended!",
+                            " Auction on " + productName + " has ended!",
                             ownersIds);
 
                 } catch (UIException | DevException e) {
@@ -250,7 +249,15 @@ public class ActivePurchasesService {
         Store store = storeJpaRepo.findById(storeId).orElseThrow();
 
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
-        return active.getAuctions();
+        AuctionDTO[] auctions = active.getAuctions();
+        for (AuctionDTO auctionDTO : auctions) {
+            if (auctionDTO.winnerUserId != -1 ) {
+                auctionDTO.winnerUserName = userRepo.findById(auctionDTO.winnerUserId).orElse(new Registered()).getUsername();
+            }
+            auctionDTO.productName = stock.getProductById(auctionDTO.productId).getName();
+        }
+        logger.info("we have to return to te user an array of auctions. size: "+auctions.length);
+        return auctions;
     }
 
     // public AuctionDTO[] getAllAuctions(String token, int storeId) throws Exception {
@@ -300,9 +307,10 @@ public class ActivePurchasesService {
         int userLoosedTopId = active.getCurrAuctionTop(auctionId);
         UserAuctionBid bid = active.addUserBidToAuction(auctionId, userId, price);
         logger.info("Bid placed successfully by user: {} on auction: {}", userId, auctionId);
-        if (userLoosedTopId != userId)
+        if (userLoosedTopId != userId && userLoosedTopId!=-1)
             notifier.sendMessageToUser(userLoosedTopId, "You are loosing the top of auction!");
         activePurchasesRepo.flush();
+        logger.info(  "bid saved to user!");
         UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, auctionId, bid.getId(),
                 SpecialType.Auction, bid.getProductId());
         userRepo.findById(userId).get().addSpecialItemToCart(specialItem);

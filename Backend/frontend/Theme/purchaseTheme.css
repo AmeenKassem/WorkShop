@@ -2,35 +2,70 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 40px;
+    min-height: 90vh;
+    background: linear-gradient(135deg, #fff1f8, #fce7f3);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 2rem;
+}
+
+.purchase-view .form-card {
+    max-width: 420px;
+    width: 100%;
+    padding: 2.5rem;
+    background-color: #f3f4f6; /* ✨ אפור-כחול בהיר (tailwind gray-100) */
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06); /* רך יותר */
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
 }
 
 .purchase-view h1 {
-    font-size: 2em;
-    color: #333;
-    margin-bottom: 20px;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #111827; /* כהה יותר */
+    text-align: center;
+    margin-bottom: 0.5rem;
+    position: relative;
+    border-bottom: none;
+}
+
+.purchase-view h1::after {
+    content: "";
+    display: block;
+    width: 60%;
+    height: 2px;
+    background: #ec4899;
+    margin: 0.5rem auto 0;
 }
 
 .purchase-view vaadin-text-field {
-    width: 300px;
-    margin: 10px 0;
+    width: 100%;
+    background-color: #e5e7eb; /* אפור בהיר יותר */
+    border-radius: 8px;
+    padding: 0.3rem;
+    --vaadin-input-field-background-color: #e5e7eb;
 }
 
-.purchase-view vaadin-button {
-    background-color: #007bff;
-    color: white;
-    margin-top: 20px;
-    font-weight: bold;
-}
-
-.purchase-view vaadin-button:hover {
-    background-color: #0056b3;
-}
-
-.purchase-view vaadin-vertical-layout {
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    padding: 30px;
+.purchase-view vaadin-text-field::part(input-field) {
     border-radius: 10px;
-    background-color: #f9f9f9;
+}
+
+.purchase-view .form-button {
+    background: linear-gradient(90deg, #f472b6, #ec4899);
+    color: white;
+    font-weight: bold;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+    width: 100%;
+    box-shadow: 0 4px 14px rgba(236, 72, 153, 0.15);
+}
+
+.purchase-view .form-button:hover {
+    background: linear-gradient(90deg, #ec4899, #db2777);
+    transform: scale(1.03);
 }

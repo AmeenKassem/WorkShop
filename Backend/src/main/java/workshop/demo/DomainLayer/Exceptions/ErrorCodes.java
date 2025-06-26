@@ -38,6 +38,8 @@ public class ErrorCodes {
     public static final int INVALID_QUANTITY = 1034;
     public static final int STORE_EXIST = 1035;
     public static final int NO_POLICY = 1036;
-    public static final int AI_NOT_WORK=1037;
+    public static final int AI_NOT_WORK = 1037;
+    public static final int NO_INIT_SYSTEM = 1038;
+    public static final int NOT_ADMIN = 1039;
 
 }

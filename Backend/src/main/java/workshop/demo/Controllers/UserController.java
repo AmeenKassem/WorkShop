@@ -34,7 +34,6 @@ public class UserController {
     private UserService userService;
     @Autowired
     private UserSuspensionService userSuspensionService;
-    // private final AdminHandler adminHandler;
 
     @GetMapping("/generateGuest")
     public ResponseEntity<?> generateGuest() {
@@ -232,18 +231,6 @@ public class UserController {
         ApiResponse<SpecialCartItemDTO[]> res;
         try {
             SpecialCartItemDTO[] cartItems = userService.getSpecialCart(token);
-
-            // SpecialCartItemDTO special1 = new SpecialCartItemDTO();
-            // special1.setIds(201, 1001, 0, SpecialType.Random);
-            // special1.setValues("Mystery Box", false, false);
-            // SpecialCartItemDTO special2 = new SpecialCartItemDTO();
-            // special2.setIds(202, 1002, 0, SpecialType.Auction);
-            // special2.setValues("Rare Coin", true, true);
-            // SpecialCartItemDTO special3 = new SpecialCartItemDTO();
-            // special3.setIds(203, 1003, 10001, SpecialType.BID);
-            // special3.setValues("Gaming Chair", false, true);
-            // SpecialCartItemDTO[] cartItems = new SpecialCartItemDTO[] { special1,
-            // special2, special3 };
             res = new ApiResponse<>(cartItems, null);
             return ResponseEntity.ok(res);
 
@@ -261,17 +248,9 @@ public class UserController {
     @GetMapping("/getregularcart")
     public ResponseEntity<?> getRegularCart(@RequestParam String token) {
         try {
-            // ItemCartDTO item1 = new ItemCartDTO(1, 2, 101, 10, "Bananas", "Fresh
-            // bananas", Category.Beauty);
-            // ItemCartDTO item2 = new ItemCartDTO(2, 1, 102, 199, "Bluetooth Speaker",
-            // "Loud and portable",
-            // Category.Clothing);
-            // ItemCartDTO item3 = new ItemCartDTO(3, 3, 103, 15, "Pillow", "Soft pillow",
-            // Category.Home);
             ItemCartDTO[] cartItems = userService.getRegularCart(token);
-            // ItemCartDTO[] cartItems = new ItemCartDTO[] { item1, item2, item3 };
             ApiResponse<ItemCartDTO[]> res = new ApiResponse<>(cartItems, null);
-            return ResponseEntity.ok(res); // ✅ Return 200 OK
+            return ResponseEntity.ok(res);
         } catch (UIException ex) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)

@@ -48,33 +48,44 @@ public class UserService {
     // private IUserRepo userRepo;
     @Autowired
     private IAuthRepo authRepo;
+    
+    
     @Autowired
     private IStockRepoDB stockRepo;
     @Autowired
     private IStoreRepoDB storeRepo;
     @Autowired
     private AdminInitilizer adminInitilizer;
-    // private final AdminHandler adminHandler;
     @Autowired
     private Encoder encoder = new Encoder();
-
+    
     @Autowired
     private UserJpaRepository regJpaRepo;
     @Autowired
     private GuestJpaRepository guestJpaRepository;
-
+    
     @Autowired
     private IActivePurchasesRepo activePurchasesRepo;
+    
+    
+
+    public void setGuestJpaRepository(GuestJpaRepository guestJpaRepository) {
+        this.guestJpaRepository = guestJpaRepository;
+    }
+
+    public void setActivePurchasesRepo(IActivePurchasesRepo activePurchasesRepo) {
+        this.activePurchasesRepo = activePurchasesRepo;
+    }
 
     public String generateGuest() throws UIException, Exception {
         logger.info("generateGuest called");
         Guest guest = new Guest();
-        Guest savedGuest = guestJpaRepository.save(guest);
-        logger.info("Generated guest with ID={}", savedGuest.getId());
-        return authRepo.generateGuestToken(savedGuest.getId());
-
+        guestJpaRepository.save(guest);
+        logger.info("Generated guest with ID={}", guest.getId());
+        return authRepo.generateGuestToken(guest.getId());
+        
     }
-
+    
     public boolean register(String token, String username, String password, int age) throws UIException {
         logger.info("register called for username={}", username);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -94,6 +105,28 @@ public class UserService {
         regJpaRepo.save(userToAdd);
         logger.info("User {0} registered successfully,and persisted!", username);
         return userToAdd.getId();
+    }
+
+    public void registerAdminDirectly(String username, String password, int age) throws UIException {
+        if (regJpaRepo.findByUsername(username).isPresent()) {
+            throw new UIException("Admin user already exists", 1002);
+        }
+
+        String encryptedPassword = encoder.encodePassword(password);
+        Registered admin = new Registered(username, encryptedPassword, age);
+        admin.setAdmin();
+        regJpaRepo.save(admin);
+    }
+
+    public boolean isAdmin(String username, String password) {
+        Optional<Registered> reg = regJpaRepo.findByUsername(username);
+        if (!reg.isPresent()) {
+            return false;
+        }
+
+        Registered user = reg.get();
+        boolean passwordMatches = encoder.matches(password, user.getEncodedPass());
+        return user.isAdmin() && passwordMatches;
     }
 
     private boolean userExist(String username) {
@@ -197,9 +230,9 @@ public class UserService {
                 itemToAdd.getPrice(), itemToAdd.getProductName(), itemToAdd.getStoreName(), itemToAdd.getCategory());
         CartItem itemCart = new CartItem(item);
 
-        Guest user = getUser(userId); // Hibernate loads the Guest entity with lazy cart
+        Guest user = getUser(userId);
 
-        user.addToCart(itemCart); // ✅ cart is lazy, but safe because @Transactional keeps session open
+        user.addToCart(itemCart);
         guestJpaRepository.save(user);
         logger.info("Item added to user cart");
         return true;

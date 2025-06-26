@@ -5,10 +5,12 @@ import java.util.List;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
@@ -24,6 +26,7 @@ import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.Presenter.ManageStorePresenter;
 
 @Route(value = "manageStore", layout = MainLayout.class)
+@CssImport("./Theme/manageStore.css")
 public class ManageStoreView extends VerticalLayout implements HasUrlParameter<Integer> {
 
     private ManageStorePresenter presenter;
@@ -51,74 +54,102 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
 
     public void buildManageUI(StoreDTO store) {
         removeAll();
-        add(new H2("🛍️ " + store.getStoreName()));
+        H2 title = new H2("🛍️ " + store.getStoreName());
+        title.addClassName("store-title");
+        title.setWidthFull();  
+        setAlignItems(Alignment.CENTER);
+        add(title);
 
-        Button viewEmployeesBtn = new Button("👥 View Employees", e -> showEmployeesDialog(presenter.viewEmployees(myStoreId)));
-        Button viewHistoryBtn = new Button("📜 View Store's History", e -> presenter.fetchOrdersByStore(myStoreId));
-        Button viewReviewsBtn = new Button("📝 View Store Reviews", e -> presenter.viewStoreReviews(myStoreId));
-        Button manageProductsBtn = new Button("🛠 Manage store's products", e -> UI.getCurrent().navigate("manage-store-products/" + myStoreId));
-        Button makeOfferBtn = new Button("👤 Manage My Owners", e -> UI.getCurrent().navigate("manageMyOwners/" + myStoreId));
-        Button manageManagersBtn = new Button("👔 Manage My Managers", e -> UI.getCurrent().navigate("manage-store-managers/" + myStoreId));
-        Button BidBtn = new Button("🎯 Manage Special Purchases", e -> UI.getCurrent().navigate("manage-store-special-purchases/" + myStoreId));
-        Button managePolicyBtn = new Button("📋 Manage Store's Policy", e -> openPurchasePolicyDialog());
-        Button deactivateStoreBtn = new Button("📴 Deactivate Store", e -> presenter.deactivateStore(myStoreId));
+        List<Button> buttons = List.of(
+            new Button("👥 View Employees", e -> showEmployeesDialog(presenter.viewEmployees(myStoreId))),
+            new Button("📜 View Store's History", e -> presenter.fetchOrdersByStore(myStoreId)),
+            new Button("📝 View Store Reviews", e -> presenter.viewStoreReviews(myStoreId)),
+            new Button("🛠 Manage store's products", e -> UI.getCurrent().navigate("manage-store-products/" + myStoreId)),
+            new Button("👤 Manage My Owners", e -> UI.getCurrent().navigate("manageMyOwners/" + myStoreId)),
+            new Button("👔 Manage My Managers", e -> UI.getCurrent().navigate("manage-store-managers/" + myStoreId)),
+            new Button("🎯 Manage Special Purchases", e -> UI.getCurrent().navigate("manage-store-special-purchases/" + myStoreId)),
+            new Button("📋 Manage Store's Policy", e -> openPurchasePolicyDialog()),
+            new Button("📴 Deactivate Store", e -> presenter.deactivateStore(myStoreId))
+        );
 
-        List<Button> buttons = List.of(viewEmployeesBtn, viewHistoryBtn, viewReviewsBtn, manageProductsBtn, makeOfferBtn, manageManagersBtn, BidBtn, managePolicyBtn, deactivateStoreBtn);
-        buttons.forEach(this::styleManageButton);
+        FlexLayout buttonContainer = new FlexLayout();
+        buttonContainer.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+        buttonContainer.setJustifyContentMode(FlexLayout.JustifyContentMode.CENTER);
+        buttonContainer.addClassName("manage-button-container");
 
-        VerticalLayout leftColumn = new VerticalLayout(viewEmployeesBtn, viewHistoryBtn, viewReviewsBtn, manageProductsBtn);
-        VerticalLayout rightColumn = new VerticalLayout(makeOfferBtn, manageManagersBtn, BidBtn, managePolicyBtn, deactivateStoreBtn);
+        buttons.forEach(btn -> {
+            btn.addClassName("manage-button");
+            buttonContainer.add(btn);
+        });
 
-        leftColumn.setWidth("48%");
-        rightColumn.setWidth("48%");
-
-        HorizontalLayout splitLayout = new HorizontalLayout(leftColumn, rightColumn);
-        splitLayout.setWidthFull();
-        splitLayout.setJustifyContentMode(JustifyContentMode.CENTER);
-        splitLayout.setSpacing(true);
-        add(splitLayout);
+        add(buttonContainer);
     }
 
-    private void styleManageButton(Button btn) {
-        btn.getStyle()
-            .set("background-color", "#ff9900")
-            .set("color", "white")
-            .set("font-weight", "bold")
-            .set("border-radius", "6px")
-            .set("padding", "4px 8px")
-            .set("font-size", "0.75rem")
-            .set("font-family", "'Segoe UI', sans-serif")
-            .set("width", "100%")
-            .set("margin", "2px 0");
-    }
-
+   
+    
     public void showDialog(List<String> reviews) {
-        Dialog dialog = new Dialog();
+    Dialog dialog = new Dialog();
+    dialog.setHeaderTitle("⭐ Store Reviews");
 
-        VerticalLayout content = new VerticalLayout();
-        content.setPadding(false);
-        content.setSpacing(true);
-        content.setWidth("400px");
+    VerticalLayout content = new VerticalLayout();
+    content.addClassName("dialog-content");
+    content.setSpacing(true);
+    content.setPadding(true);
+    content.setWidth("400px");
 
-        if (reviews == null || reviews.isEmpty()) {
-            content.add(new Paragraph("There nothing here yet."));
-        } else {
-            for (String review : reviews) {
-                content.add(new Paragraph(review));
-            }
+    if (reviews == null || reviews.isEmpty()) {
+        content.add(new Paragraph("There are no reviews yet."));
+    } else {
+        for (String review : reviews) {
+            String name = extractValue(review, "name");
+            String msg = extractValue(review, "reviewMsg");
+
+            VerticalLayout reviewBox = new VerticalLayout();
+            reviewBox.getStyle()
+                .set("background-color", "white")
+                .set("border-radius", "10px")
+                .set("padding", "0.8rem")
+                .set("box-shadow", "0 2px 6px rgba(0,0,0,0.1)");
+            reviewBox.setSpacing(false);
+            reviewBox.setPadding(false);
+
+            Span nameSpan = new Span("👤 " + name);
+            nameSpan.getStyle().set("font-weight", "bold");
+
+            Span msgSpan = new Span("💬 " + msg);
+
+            reviewBox.add(nameSpan, msgSpan);
+            content.add(reviewBox);
         }
-        Button closeBtn = new Button("Close", e -> dialog.close());
-        dialog.getFooter().add(closeBtn);
-
-        dialog.add(content);
-        dialog.open();
     }
+
+    Button closeBtn = new Button("Close", e -> dialog.close());
+    closeBtn.addClassName("dialog-close-button");
+
+    dialog.add(content);
+    dialog.getFooter().add(closeBtn);
+    dialog.open();
+}
+
+private String extractValue(String raw, String key) {
+    try {
+        int start = raw.indexOf(key + "=");
+        if (start == -1) return "";
+        int end = raw.indexOf(",", start + key.length() + 1);
+        if (end == -1) end = raw.indexOf("}", start);
+        return raw.substring(start + key.length() + 1, end).trim();
+    } catch (Exception e) {
+        return "";
+    }
+}
+
 
     public void showEmployeesDialog(List<WorkerDTO> employees) {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("👥 Employees & Roles");
 
         VerticalLayout content = new VerticalLayout();
+        content.addClassName("dialog-content"); 
         content.setSpacing(false);
         content.setPadding(false);
 
@@ -166,7 +197,8 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
         Button closeBtn = new Button("Close", e -> dialog.close());
         closeBtn.getStyle().set("margin-top", "1rem");
 
-        dialog.add(content, closeBtn);
+        content.add(closeBtn);
+        dialog.add(content);
         dialog.open();
     }
 

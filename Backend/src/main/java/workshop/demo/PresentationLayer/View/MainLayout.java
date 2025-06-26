@@ -13,16 +13,17 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.PresentationLayer.Presenter.InitPresenter;
 
-@Route
+//@Route
 @CssImport("./Theme/main-layout.css")
 @JsModule("./notification.js")
-public class MainLayout extends AppLayout {
+public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
     private InitPresenter presenter;
     private VerticalLayout buttonColumn;
@@ -73,16 +74,43 @@ public class MainLayout extends AppLayout {
         }
     }
 
+    // @Override
+    // public void beforeEnter(BeforeEnterEvent event) {
+    //     System.out.println("in before enterrrrr main layout");
+    //     if (!presenter.isSiteInitialized()) {
+    //         String path = event.getLocation().getPath();
+    //         if (!path.equals("admin/init") && !path.equals("no-init")) {
+    //             event.forwardTo(NotInitializedView.class);
+    //         }
+    //     }
+    // }
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        System.out.println("in before enterrrrr main layout");
+        if (!presenter.isSiteInitialized()) {
+            String path = event.getLocation().getPath();
+
+            if (!path.equals("admin/init") && !path.equals("no-init")) {
+                event.forwardTo(NotInitializedView.class);
+            }
+        }
+    }
+
     private HorizontalLayout buttonRow;
 
     private void createHeader() {
-        H1 logo = new H1("🛒 Click Market");
+        H1 logo = new H1("🛒 ShopPoint");
         logo.addClassName("market-title");
+    logo.getStyle()
+        .set("font-size", "2rem")
+        .set("border-bottom", "2px solid #ce5290") // קו עדין מתחת לשם
+        .set("padding-bottom", "0.5rem")
+        .set("margin-bottom", "1rem"); // רווח בין שם החנות לכפתורים
 
         // Vertical layout for the full header: logo on top, buttons below
-        VerticalLayout headerLayout = new VerticalLayout();
+        HorizontalLayout headerLayout = new HorizontalLayout();
         headerLayout.setWidthFull();
-        headerLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        headerLayout.setAlignItems(Alignment.CENTER); // שומר על יישור למרכז
         headerLayout.setSpacing(false);
         headerLayout.setPadding(true);
         headerLayout.addClassName("app-header");
@@ -92,12 +120,11 @@ public class MainLayout extends AppLayout {
 
         // Prepare the horizontal layout for buttons
         buttonRow = new HorizontalLayout();
-        buttonRow.setSpacing(true);
+        buttonRow.setSpacing(false);
         buttonRow.setPadding(false);
+        buttonRow.getStyle().set("gap", "0.5rem"); // רווח קטן בין הכפתורים
         buttonRow.setAlignItems(Alignment.CENTER);
         buttonRow.addClassName("header-button-row");
-
-        // Add buttons (they'll be populated in addRightSideButtons)
         headerLayout.add(buttonRow);
 
         // Add everything to the top nav
@@ -105,13 +132,15 @@ public class MainLayout extends AppLayout {
     }
 
     private void addRightSideButtons() {
-        if (buttonRow == null)
+        if (buttonRow == null) {
             return;
+        }
         buttonRow.removeAll();
 
         String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
-        if (userType == null)
+        if (userType == null) {
             userType = "guest";
+        }
 
         // Shared buttons
         RouterLink myCart = new RouterLink("My Cart", MyCartView.class);
