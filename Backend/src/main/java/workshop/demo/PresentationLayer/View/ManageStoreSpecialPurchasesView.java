@@ -2,6 +2,7 @@ package workshop.demo.PresentationLayer.View;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
@@ -15,6 +16,7 @@ import workshop.demo.DTOs.*;
 import workshop.demo.PresentationLayer.Presenter.ManageStoreSpecialPurchasesPresenter;
 
 @Route(value = "manage-store-special-purchases", layout = MainLayout.class)
+@CssImport("./Theme/managespecialPurchase.css")
 public class ManageStoreSpecialPurchasesView extends VerticalLayout implements HasUrlParameter<Integer> {
 
     private final ManageStoreSpecialPurchasesPresenter presenter;
@@ -22,8 +24,11 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
 
     public ManageStoreSpecialPurchasesView() {
         this.presenter = new ManageStoreSpecialPurchasesPresenter(this);
+        H1 header = new H1("🛍️ Special Purchase Management");
+        header.addClassName("main-header");
+        header.getStyle().set("margin", "0 auto");
 
-        H1 header = new H1("Manage Store Special Purchases");
+        addClassName("admin-panel-wrapper");
         add(header);
 
     }
@@ -47,26 +52,34 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
         // add(new H3("Random Draws"));
         // add(createRandomSection(new RandomDTO[0]));
 
-        add(new H3("Auctions"));
+        H3 auctionHeader = new H3("📣 Auctions");
+        auctionHeader.addClassName("section-header");
+        add(auctionHeader);
         add(createAuctionSection(auctions));
 
-        add(new H3("Bids"));
-        // add(createBidSection(bids));
+        H3 randomHeader = new H3("🎲 Random Draws");
+        randomHeader.addClassName("section-header");
+        add(randomHeader);
+        add(createRandomSection(randoms));
+
+        H3 bidsHeader = new H3("🤝 Bids");
+        bidsHeader.addClassName("section-header");
+        add(bidsHeader);
+        add(createBidSection(bids));
     }
 
-    private HorizontalLayout createRandomSection(RandomDTO[] randoms) {
+   private HorizontalLayout createRandomSection(RandomDTO[] randoms) {
         HorizontalLayout layout = new HorizontalLayout();
         layout.setWidthFull();
-        layout.getStyle().set("overflow-x", "auto");
+        layout.addClassName("scroll-section");
 
         for (RandomDTO dto : randoms) {
             VerticalLayout card = new VerticalLayout();
-            card.setWidth("300px");
-            card.getStyle().set("border", "1px solid #ccc").set("margin-right", "10px").set("padding", "10px");
+            card.addClassName("special-card");
 
-            card.add(new Paragraph("Product: " + dto.productName));
-            card.add(new Paragraph("Amount Left: $" + dto.amountLeft));
-            card.add(new Paragraph("Winner: " + (dto.winner != null ? dto.winner.userId : "Not yet")));
+            card.add(new Paragraph("🎁 Product: " + dto.productName));
+            card.add(new Paragraph("🔢 Amount Left: " + dto.amountLeft));
+            card.add(new Paragraph("🏆 Winner: " + (dto.winner != null ? dto.winner.userId : "Not yet")));
 
             layout.add(card);
         }
@@ -74,56 +87,50 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
         return layout;
     }
 
-    private HorizontalLayout createAuctionSection(AuctionDTO[] auctions) {
+   private HorizontalLayout createAuctionSection(AuctionDTO[] auctions) {
         HorizontalLayout layout = new HorizontalLayout();
         layout.setWidthFull();
-        layout.getStyle().set("overflow-x", "auto");
+        layout.addClassName("scroll-section");
 
         for (AuctionDTO dto : auctions) {
             VerticalLayout card = new VerticalLayout();
-            card.setWidth("300px");
-            card.getStyle().set("border", "1px solid #ccc").set("margin-right", "10px").set("padding", "10px");
-            card.add(new Paragraph("Product: " + dto.productName));
+            card.addClassName("special-card");
 
-            // card.add(new Paragraph(
-            //         (dto.winnerUserName != null ? dto.winnerUserName + " has win this auction!" : "Not yet")));
+            card.add(new Paragraph("🛒 Product: " + dto.productName));
+
             if (dto.status == AuctionStatus.FINISH) {
                 if (dto.winnerId != -1) {
-                    card.add(new Paragraph(dto.winnerUserName + " has win this auction with bid " + dto.maxBid + "$"));
+                    card.add(new Paragraph("🏆 Winner: " + dto.winnerUserName + " with $" + dto.maxBid));
                 } else {
-                    card.add(new Paragraph("There is no winner on this bid!!"));
+                    card.add(new Paragraph("❌ No winner for this auction."));
                 }
             } else {
-                card.add(new Paragraph("Max Bid:" + dto.maxBid + "$"));
-                card.add(new Paragraph("The auction will end at " + dto.endDate));
+                card.add(new Paragraph("📈 Max Bid: $" + dto.maxBid));
+                card.add(new Paragraph("⏰ Ends at: " + dto.endDate));
             }
+
             layout.add(card);
         }
 
         return layout;
     }
-
-    private HorizontalLayout createBidSection(BidDTO[] bids) {
+   private HorizontalLayout createBidSection(BidDTO[] bids) {
         HorizontalLayout layout = new HorizontalLayout();
         layout.setWidthFull();
-        layout.getStyle().set("overflow-x", "auto").set("white-space", "nowrap");
+        layout.addClassName("scroll-section");
 
         for (BidDTO bid : bids) {
             VerticalLayout bidLayout = new VerticalLayout();
-            bidLayout.setWidth("300px");
-            bidLayout.setPadding(true);
-            bidLayout.setSpacing(true);
-            bidLayout.getStyle().set("border", "1px solid #ccc").set("margin-right", "10px").set("padding", "10px");
+            bidLayout.addClassName("special-card");
 
-            bidLayout.add(new H3("Bid: " + bid.productName));
+            bidLayout.add(new Paragraph("Bid: " + bid.productName));
             bidLayout.add(new Paragraph("Store: " + bid.storeName));
             bidLayout.add(new Paragraph("Quantity: " + bid.quantity));
 
             Button showOffers = new Button("Show User Offers");
             HorizontalLayout offersLayout = new HorizontalLayout();
             offersLayout.setVisible(false);
-            offersLayout.setWidthFull();
-            offersLayout.getStyle().set("overflow-x", "auto").set("white-space", "nowrap");
+            offersLayout.addClassName("scroll-section");
 
             showOffers.addClickListener(e -> {
                 offersLayout.setVisible(!offersLayout.isVisible());
@@ -133,22 +140,15 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
             if (bid.bids != null && bid.bids.length > 0) {
                 for (SingleBidDTO offer : bid.bids) {
                     VerticalLayout offerCard = new VerticalLayout();
-                    offerCard.setWidth("250px");
-                    offerCard.getStyle().set("border", "1px solid #eee").set("padding", "10px").set("margin-right",
-                            "10px");
+                    offerCard.addClassName("offer-card");
 
                     offerCard.add(new Paragraph("User ID: " + offer.userId));
                     offerCard.add(new Paragraph("Price: $" + offer.price));
                     offerCard.add(new Paragraph("Product ID: " + offer.productId));
-                    // offerCard.add(new Paragraph("Amount: " + offer.amount));
-                    // offerCard.add(new Paragraph("Accepted: " + offer.isAccepted));
-                    // offerCard.add(new Paragraph("Ended: " + offer.isEnded));
 
                     if (!offer.isAccepted && !offer.isEnded) {
-                        Button acceptBtn = new Button("Accept",
-                                ev -> presenter.respondToSingleBid(bid.bidId, offer.id, true));
-                        Button rejectBtn = new Button("Reject",
-                                ev -> presenter.respondToSingleBid(bid.bidId, offer.id, false));
+                        Button acceptBtn = new Button("Accept", ev -> presenter.respondToSingleBid(bid.bidId, offer.id, true));
+                        Button rejectBtn = new Button("Reject", ev -> presenter.respondToSingleBid(bid.bidId, offer.id, false));
                         HorizontalLayout buttons = new HorizontalLayout(acceptBtn, rejectBtn);
                         offerCard.add(buttons);
                     }
@@ -165,6 +165,7 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
 
         return layout;
     }
+
 
     public void refreshPage() {
         UI.getCurrent().getPage().reload();
