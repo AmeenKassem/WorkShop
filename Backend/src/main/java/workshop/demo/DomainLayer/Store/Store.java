@@ -6,23 +6,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import jakarta.persistence.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PostLoad;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Transient;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountEntity;
 
 @Entity
 public class Store {
@@ -52,6 +45,10 @@ public class Store {
 
     @Transient
     private Discount discount;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "discount_id")
+    private DiscountEntity discountEntity;
+
     @Transient
     private final List<PurchasePolicy> purchasePolicies = new ArrayList<>();
 
@@ -249,5 +246,13 @@ public class Store {
     public void setName(String storeName2) {
         this.storeName = storeName2;
     }
+    public DiscountEntity getDiscountEntity() {
+        return discountEntity;
+    }
+
+    public void setDiscountEntity(DiscountEntity discountEntity) {
+        this.discountEntity = discountEntity;
+    }
+
 
 }

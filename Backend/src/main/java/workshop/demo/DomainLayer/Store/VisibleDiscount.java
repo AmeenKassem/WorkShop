@@ -41,5 +41,11 @@ public class VisibleDiscount implements Discount {
 
         return dto;
     }
+    public double getPercent(){
+        return percent;
+    }
+    public Predicate<DiscountScope> getCondition(){
+        return condition;
+    }
 
 }

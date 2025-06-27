@@ -11,7 +11,9 @@ public abstract class DiscountEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    @Column(unique = true)
     private String name;
+
     private double percent;
     private String condition;
 

@@ -38,6 +38,9 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.StoreTreeEntity;
 import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountEntity;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountJpaRepository;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountMapper;
 import workshop.demo.InfrastructureLayer.IOrderRepoDB;
 import workshop.demo.InfrastructureLayer.IStoreRepoDB;
 import workshop.demo.InfrastructureLayer.IStoreStockRepo;
@@ -76,6 +79,9 @@ public class StoreService {
     private OfferJpaRepository offerJPARepo;
     @Autowired 
     private IActivePurchasesRepo activePurchasesRepo;
+    @Autowired
+    private DiscountJpaRepository discountRepo;
+
 
     @PostConstruct
     public void loadStoreTreesIntoMemory() {
@@ -435,6 +441,15 @@ public class StoreService {
         int userId = authRepo.getUserId(token);
         userService.checkUserRegisterOnline_ThrowException(userId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+        // Load discount from DB
+        DiscountEntity rootEntity = discountRepo.findByName("ROOT_" + storeId)
+                .orElseThrow(() -> new RuntimeException("ROOT discount not found for store " + storeId));
+
+        if (rootEntity != null) {
+            Discount discount = DiscountMapper.toDomain(rootEntity);
+            store.setDiscount(discount);
+        }
+
         return store.getStoreDTO();
     }
 
@@ -519,7 +534,11 @@ public class StoreService {
             }
             subDiscounts.forEach(comp::addDiscount);
         }
+
+
         store.addDiscount(discount);
+        DiscountEntity entity = DiscountMapper.toEntity(discount);
+        discountRepo.save(entity);
         logger.info("Discount '{}' added successfully to store {}", discount.getName(), storeId);
     }
 
@@ -541,6 +560,15 @@ public class StoreService {
         }
 
         // Store store =storeJpaRepo.findById(storeId).get();
+        Optional<DiscountEntity> optionalEntity = discountRepo.findByName(discountName);
+        if (optionalEntity.isPresent()) {
+            discountRepo.delete(optionalEntity.get());
+        } else {
+            // Optionally log or throw an exception
+            throw new RuntimeException("Discount not found: " + discountName);
+        }
+
+
         boolean removed = store.removeDiscountByName(discountName);
         if (!removed) {
             throw new UIException("Discount not found: " + discountName, ErrorCodes.DISCOUNT_NOT_FOUND);

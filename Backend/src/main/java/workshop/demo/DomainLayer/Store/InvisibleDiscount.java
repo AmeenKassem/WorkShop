@@ -47,4 +47,10 @@ public class InvisibleDiscount implements Discount {
         dto.setCondition(condition.toString()); // if overridden properly
         return dto;
     }
+    public double getPercent(){
+        return percent;
+    }
+    public Predicate<DiscountScope> getCondition(){
+        return condition;
+    }
 }
