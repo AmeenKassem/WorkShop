@@ -1,5 +1,6 @@
 package workshop.demo.DTOs;
 
+
 public class ParticipationInRandomDTO {
 
     public int userId;

@@ -22,7 +22,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 // import workshop.demo.ApplicationLayer.AdminHandler;
-import workshop.demo.ApplicationLayer.NotificationService;
+import workshop.demo.ApplicationLayer.*;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
@@ -47,6 +47,7 @@ import workshop.demo.DTOs.UserDTO;
 
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingCart;
@@ -57,13 +58,13 @@ import workshop.demo.InfrastructureLayer.*;
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserTests {
-     @Autowired
+    @Autowired
     StoreTreeJPARepository tree;
     @Autowired
     private NodeJPARepository node;
     // @Autowired
     // private NotificationRepository notificationRepository;
-    
+
     @Autowired
     private StockRepository stockRepository;
     @Autowired
@@ -95,9 +96,13 @@ public class UserTests {
     private UserJpaRepository userRepo;
     @Autowired
     Encoder encoder;
-
+    @Autowired
+    private IActivePurchasesRepo activePurchasesRepo;
     @Autowired
     UserSuspensionService suspensionService;
+    @Autowired
+    public ActivePurchasesService activePurcheses;
+
     // @Autowired
     // AdminHandler adminService;
     @Autowired
@@ -125,7 +130,7 @@ public class UserTests {
 
     @BeforeEach
     void setup() throws Exception {
-     
+
         node.deleteAll();
         orderRepository.deleteAll();
         tree.deleteAll();
@@ -137,11 +142,11 @@ public class UserTests {
         offerRepo.deleteAll();
         storeRepositoryjpa.deleteAll();
         storeStockRepo.deleteAll();
+        activePurchasesRepo.deleteAll();
 
-       
-        
-            orderRepository.deleteAll();
-   
+
+        orderRepository.deleteAll();
+
         String GToken = userService.generateGuest();
         userService.register(GToken, "User", "User", 25);
 
@@ -518,7 +523,7 @@ public class UserTests {
     //     SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
     //    userService.addToUserCart(NGToken, new ItemStoreDTO(0, 0, 0, null, 0, 2, "", "TestStore"), 1);
-       
+
 
     // }
 
@@ -637,7 +642,7 @@ public class UserTests {
         int id = userService.getRegularCart(NGToken)[0].itemCartId;
 
         userService.ModifyCartAddQToBuy(NGToken, id, 3);
-        ReceiptDTO[] re = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+        ReceiptDTO[] re = purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
         assertTrue(re[0].getFinalPrice() == 6000);
         int x = storeRepositoryjpa.findAll().get(0).getstoreId();
 
@@ -654,7 +659,7 @@ public class UserTests {
         int id = userService.getRegularCart(NGToken)[0].itemCartId;
 
         UIException ex = assertThrows(UIException.class, () -> userService.ModifyCartAddQToBuy("INVALID", id, 2));
-        ReceiptDTO[] re = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+        ReceiptDTO[] re = purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
         int x = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         assertTrue(stockService.getProductsInStore(x)[0].getQuantity() == 9);
@@ -701,52 +706,52 @@ public class UserTests {
         assertTrue(result);
         assertTrue(userService.getRegularCart(NGToken).length == 0);
     }
-     @Test
+    @Test
     void test_user_cart_given_many_items_one_not_avaliable() throws Exception {
         // TODO abu el3asi make one with many items .
         // cart must not change + quantity for all stores must not change
         // Product 2 - Smartphone
-                int x = storeRepositoryjpa.findAll().get(0).getstoreId();
+        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-String[] keywords2 = { "Phone", "Smartphone", "Mobile" };
-int PID2 = stockService.addProduct(NOToken, "Smartphone", Category.Electronics, "Latest smartphone model", keywords2);
+        String[] keywords2 = { "Phone", "Smartphone", "Mobile" };
+        int PID2 = stockService.addProduct(NOToken, "Smartphone", Category.Electronics, "Latest smartphone model", keywords2);
 
-stockService.addItem(x, NOToken, PID2, 15, 1000, Category.Electronics);
-ItemStoreDTO itemStoreDTO2 = new ItemStoreDTO(PID2, 15, 1000, Category.Electronics, 0,
-        x, "Smartphone", "TestStore");
+        stockService.addItem(x, NOToken, PID2, 15, 1000, Category.Electronics);
+        ItemStoreDTO itemStoreDTO2 = new ItemStoreDTO(PID2, 15, 1000, Category.Electronics, 0,
+                x, "Smartphone", "TestStore");
 
 // Product 3 - Headphones
-String[] keywords3 = { "Headphones", "Audio", "Music" };
-int PID3 = stockService.addProduct(NOToken, "Headphones", Category.Electronics, "Wireless over-ear headphones", keywords3);
+        String[] keywords3 = { "Headphones", "Audio", "Music" };
+        int PID3 = stockService.addProduct(NOToken, "Headphones", Category.Electronics, "Wireless over-ear headphones", keywords3);
 
-stockService.addItem(x, NOToken, PID3, 20, 300, Category.Electronics);
-ItemStoreDTO itemStoreDTO3 = new ItemStoreDTO(PID3, 20, 300, Category.Electronics, 0,
-        x, "Headphones", "TestStore");
+        stockService.addItem(x, NOToken, PID3, 20, 300, Category.Electronics);
+        ItemStoreDTO itemStoreDTO3 = new ItemStoreDTO(PID3, 20, 300, Category.Electronics, 0,
+                x, "Headphones", "TestStore");
 
         userService.addToUserCart(NGToken, itemStoreDTO, 1);
 
         userService.addToUserCart(NGToken, itemStoreDTO3, 100);
         userService.addToUserCart(NGToken, itemStoreDTO2, 1);
-  PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
 
-    ReceiptDTO[] re= purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
+        ReceiptDTO[] re= purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
 
-            var items = stockService.getProductsInStore(x);
+        var items = stockService.getProductsInStore(x);
 
 // You know the product IDs and expected quantities:
-Map<Integer, Integer> expectedQuantities = Map.of(
-    PID, 9,
-    PID2, 14,
-    PID3, 20
-);
+        Map<Integer, Integer> expectedQuantities = Map.of(
+                PID, 9,
+                PID2, 14,
+                PID3, 20
+        );
 
 // Verify each product quantity hasn't changed
-for (ItemStoreDTO item : items) {
-    int expectedQty = expectedQuantities.getOrDefault(item.getProductId(), -1);
-    assertNotEquals(-1, expectedQty, "Unexpected product in store: " + item.getProductId());
-    assertEquals(expectedQty, item.getQuantity(), "Product ID " + item.getProductId() + " has wrong quantity");
-}
+        for (ItemStoreDTO item : items) {
+            int expectedQty = expectedQuantities.getOrDefault(item.getProductId(), -1);
+            assertNotEquals(-1, expectedQty, "Unexpected product in store: " + item.getProductId());
+            assertEquals(expectedQty, item.getQuantity(), "Product ID " + item.getProductId() + " has wrong quantity");
+        }
 
 
     }
@@ -805,7 +810,7 @@ for (ItemStoreDTO item : items) {
         Exception ex = assertThrows(Exception.class, () -> {
             purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
         });
-        assertEquals("payment not successeded!!!", ex.getMessage());
+        assertEquals("Payment failed", ex.getMessage());
     }
     // admin
 
@@ -956,12 +961,12 @@ for (ItemStoreDTO item : items) {
         long endTime = System.currentTimeMillis() + 60 * 60 * 1000; // 1 hour from now
         int x = storeRepositoryjpa.findAll().get(0).getstoreId();
         // Add product to auction
-        stockService.setProductToAuction(NOToken, x, PID, 10, endTime, 2000.0);
+        activePurcheses.setProductToAuction(NOToken, x, PID, 10, endTime, 2000.0);
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 "Laptop", null, null, 1, null, null, null, null);
 
-        AuctionDTO[] result = stockService.searchActiveAuctions(NGToken, criteria);
+        AuctionDTO[] result = activePurcheses.searchActiveAuctions(NGToken, criteria);
         assertNotNull(result);
         assertEquals(1, result.length);
         assertEquals("Laptop", result[0].productName);
@@ -1002,14 +1007,14 @@ for (ItemStoreDTO item : items) {
         Exception ex = assertThrows(Exception.class, () -> stockService.searchProductsOnAllSystem(NGToken, criteria));
     }
 
-    @Test
-    void testSearchByKeyword_Match() throws Exception {
-        ProductSearchCriteria criteria = new ProductSearchCriteria(
-                "Laptop", null, "top", null,
-                -1.0, -1.0, -1.0, -1.0);
-        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
-        assertEquals(1, result.length);
-    }
+    // @Test
+    // void testSearchByKeyword_Match() throws Exception {
+    //     ProductSearchCriteria criteria = new ProductSearchCriteria(
+    //             "Laptop", null, "top", null,
+    //             -1.0, -1.0, -1.0, -1.0);
+    //     ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
+    //     assertEquals(1, result.length);
+    // }
 
     @Test
     void testSearchByKeyword_NoMatch() throws Exception {

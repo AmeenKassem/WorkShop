@@ -17,6 +17,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MapKey;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Transient;
+import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
@@ -25,7 +26,6 @@ import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Store.Random;
 
 @Entity
 public class ActivePurcheses {
@@ -38,10 +38,15 @@ public class ActivePurcheses {
     @OneToMany(mappedBy = "activePurcheses", cascade = CascadeType.ALL)
     @MapKey(name = "auctionId") // Use a field in Bid as the key
     private Map<Integer, Auction> activeAuction = new HashMap<>();
+
+
     @Transient
     private HashMap<Integer, BID> activeBid = new HashMap<>();
-    @Transient
-    private HashMap<Integer, Random> activeRandom = new HashMap<>();
+
+
+    @OneToMany(mappedBy = "activePurcheses", cascade = CascadeType.ALL)
+    @MapKey(name = "randomId") 
+    private Map<Integer, Random> activeRandom = new HashMap<>();
 
     @Transient
     private static AtomicInteger bidIdGen = new AtomicInteger();
@@ -52,8 +57,8 @@ public class ActivePurcheses {
     private HashMap<Integer, List<BID>> productIdToBids = new HashMap<>();
 
     // private Map<Integer, List<Integer>> productIdToAuctions = new HashMap<>();
-    @Transient
-    private HashMap<Integer, List<Random>> productIdToRandoms = new HashMap<>();
+    // @Transient
+    // private HashMap<Integer, List<Random>> productIdToRandoms = new HashMap<>();
 
     public ActivePurcheses(int storeId) {
         this.storeId = storeId;
@@ -175,7 +180,7 @@ public class ActivePurcheses {
 
     // ========== Random ==========
 
-    public int addProductToRandom(int productId, int quantity, double productPrice, int storeId, long randomTime)
+    public Random addProductToRandom(int productId, int quantity, double productPrice, int storeId, long randomTime)
             throws UIException {
         logger.debug("addProductToRandom called with productId={}, quantity={}, price={}, randomTime={}", productId,
                 quantity, productPrice, randomTime);
@@ -195,13 +200,14 @@ public class ActivePurcheses {
 
             throw new UIException("Random time must be positive!", ErrorCodes.INVALID_RANDOM_PARAMETERS);
         }
-        int id = randomIdGen.incrementAndGet();
-        Random random = new Random(productId, quantity, productPrice, id, storeId, randomTime);
-        activeRandom.put(id, random);
-        productIdToRandoms.computeIfAbsent(productId, k -> new ArrayList<>()).add(random);
-        logger.debug("Random created with id={}", id);
+        //int id = randomIdGen.incrementAndGet();
+        Random random = new Random(productId, quantity, productPrice, storeId, randomTime);
+        random.setActivePurchases(this);
+        activeRandom.put(random.getRandomId(), random);
+        //productIdToRandoms.computeIfAbsent(productId, k -> new ArrayList<>()).add(random);
+        logger.debug("Random created with id={}", random.getRandomId());
 
-        return id;
+        return random;
     }
 
     public ParticipationInRandomDTO participateInRandom(int userId, int randomId, double productPrice)
@@ -224,18 +230,7 @@ public class ActivePurcheses {
             activeRandom.remove(randomId);
             throw new UIException("Random has ended!", ErrorCodes.RANDOM_FINISHED);
         }
-        return activeRandom.get(randomId).participateInRandom(userId, productPrice);
-    }
-
-    public ParticipationInRandomDTO endRandom(int randomId) throws DevException {
-        logger.debug("endRandom: randomId={}", randomId);
-
-        if (!activeRandom.containsKey(randomId)) {
-            logger.error("Random ID {} not found on endRandom", randomId);
-
-            throw new DevException("Random ID not found in active randoms!");
-        }
-        return activeRandom.get(randomId).endRandom();
+        return activeRandom.get(randomId).participateInRandom(userId, productPrice).toDTO();
     }
 
     public RandomDTO[] getRandoms() {
@@ -275,7 +270,7 @@ public class ActivePurcheses {
     public ParticipationInRandomDTO getRandomCardforuser(int specialId, int userId) {
         if (activeRandom.containsKey(specialId)) {
             Random random = activeRandom.get(specialId);
-            return random.getCard(userId);
+            return random.getCard(userId).toDTO();
         } else
             return null;
     }
@@ -318,7 +313,7 @@ public class ActivePurcheses {
         if (activeRandom.containsKey(specialId)) {
             Random random = activeRandom.get(specialId);
             // if (random.userIsWinner())
-            return random.getCard(cardId);
+            return random.getCard(cardId).toDTO();
         }
         return null;
     }
@@ -336,13 +331,20 @@ public class ActivePurcheses {
         }
     }
 
-    public List<RandomDTO> getRandomsForProduct(int productId) {
+    public List<RandomDTO> getRandomsForProduct(int productId, String storeName, String productName) {
 
         List<RandomDTO> result = new ArrayList<>();
-        List<Random> randoms = productIdToRandoms.getOrDefault(productId, new ArrayList<>());
-        for (Random random : randoms) {
-            result.add(random.getDTO());
+        
+        for (Random random : activeRandom.values()) {
+            
+            if(random.isActive()){
+            RandomDTO dto = random.getDTO();
+            dto.storeName = storeName;
+            dto.productName = productName;
+            result.add(dto);
+            }
         }
+        
         return result;
     }
 
@@ -383,6 +385,7 @@ public class ActivePurcheses {
         randomIdGen.set(0);
     }
 
+    @Transactional
     public Auction getAuctionById(int res) {
         return activeAuction.get(res);
     }
@@ -391,9 +394,8 @@ public class ActivePurcheses {
         return storeId;
     }
 
-    public ParticipationInRandomDTO getRandomCard(int storeId2, int specialId, int bidId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getRandomCard'");
+    public ParticipationInRandomDTO getRandomCard(int storeId2, int specialId, int userId) throws DevException {
+       return getRandom(specialId).getCard(userId).toDTO();
     }
 
     public SingleBid getBid(int storeId2, int specialId, int bidId, SpecialType type) {
@@ -421,6 +423,15 @@ public class ActivePurcheses {
         List<Auction> res = new ArrayList<>();
         for (Auction iterable_element : activeAuction.values()) {
             if (!iterable_element.isEnded())
+                res.add(iterable_element);
+        }
+        return res;
+    }
+
+    public List<Random> getActiveRandoms() {
+        List<Random> res = new ArrayList<>();
+        for (Random iterable_element : activeRandom.values()) {
+            if (iterable_element.isActive())
                 res.add(iterable_element);
         }
         return res;

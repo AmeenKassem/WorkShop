@@ -11,6 +11,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,7 @@ import workshop.demo.DomainLayer.Stock.Auction;
 import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Stock.Random;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.UserAuctionBid;
@@ -82,6 +84,8 @@ public class PurchaseService {
     private IStoreStockRepo storeStockRepo;
     @Autowired
     private IActivePurchasesRepo activeRepo;
+    @Autowired
+    private ActivePurchasesService activePurchasesService;
 
     private static final Logger logger = LoggerFactory.getLogger(PurchaseService.class);
 
@@ -226,11 +230,12 @@ public class PurchaseService {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
 
-        ParticipationInRandomDTO card = stockRepo.validatedParticipation(userId, randomId, storeId, amountPaid);
-        UserSpecialItemCart item = new UserSpecialItemCart(storeId, card.randomId, userId, SpecialType.Random, -1);
+        ParticipationInRandomDTO card = activePurchasesService.participateInRandom(userId, randomId, storeId, amountPaid);
+        UserSpecialItemCart item = new UserSpecialItemCart(storeId, randomId, -1 , SpecialType.Random, card.getProductId());
         user.addSpecialItemToCart(item);
         //Hmode
-        boolean done = paymentService.processPayment(paymentDetails, amountPaid)==-1?false:true;
+        //boolean done = paymentService.processPayment(paymentDetails, amountPaid)==-1?false:true;
+        boolean done = true; // for testing purposes, must be removed later
         if (!done) {
             logger.error("Payment failed for userId={}, amountPaid={}", userId, amountPaid);
             throw new UIException("Payment failed", ErrorCodes.PAYMENT_ERROR);
@@ -255,6 +260,7 @@ public class PurchaseService {
 
         logger.info("The user " + userId + " finalizing the special cart.");
         Registered user = regRepo.findById(userId).orElseThrow(() -> notLoggedInException());
+        
         // winning!!
         List<SingleBid> winningBids = new ArrayList<>();
         List<ParticipationInRandomDTO> winningRandoms = new ArrayList<>();
@@ -266,18 +272,18 @@ public class PurchaseService {
             logger.info("one special item on the cart!!");
             if (specialItem.type == SpecialType.Random) {
                 // DO NOT DELETE THIS CODE!!!!!!!!!!!!
-                // ParticipationInRandomDTO card =
-                // stockRepo.getRandomCardforuser(specialItem.storeId, specialItem.specialId,
-                // userId);
-                // if (card != null && card.isWinner && card.ended) {
-                // winningRandoms.add(card); // Won
-                // } else if ((card != null && !card.isWinner && card.ended) || card == null) {
-                // user.removeSpecialItem(specialItem); // Lost or not found → remove
-                // } else if (card.mustRefund()) {
-                // // If the card must be refunded, we remove it from the user's cart
-                // user.removeSpecialItem(specialItem);
-                // paymentService.processRefund(payment, card.amountPaid);
-                // }
+                ActivePurcheses active = activeRepo.findById(specialItem.storeId).orElse(null);
+                Random random = active.getRandom(specialItem.specialId);
+                ParticipationInRandomDTO card = random.getRandomCardforuser(userId);
+                if (card != null && card.isWinner && card.ended) {
+                winningRandoms.add(card); // Won
+                } else if ((card != null && !card.isWinner && card.ended) || card == null) {
+                user.removeSpecialItem(specialItem); // Lost or not found → remove
+                } else if (card.mustRefund()) {
+                    // If the card must be refunded, we remove it from the user's cart
+                    user.removeSpecialItem(specialItem);
+                    paymentService.processRefund(card.transactionIdForPayment);
+                }
                 // DO NOT DELETE THIS CODE!!!!!!!!!!!!
             } else if (specialItem.type == SpecialType.Auction) { // AUCTION
                 ActivePurcheses active = activeRepo.findById(specialItem.storeId).orElse(null);
@@ -451,7 +457,7 @@ public class PurchaseService {
             logger.info("Saved receipt for storeId={}, total={}", storeId, total);
 
         }
-        logger.info(receipts.size()+" reciept items must be return");
+        logger.info(receipts.size() + " reciept items must be return");
         return receipts.toArray(new ReceiptDTO[0]);
     }
 

@@ -16,6 +16,8 @@ public class SupplyDetails {
         this.city = city;
         this.state = state;
         this.zipCode = zipCode;
+        this.name = "";
+        this.country = "";
     }
     public SupplyDetails(String address, String city, String state, String zipCode,String name,String country) {
         this.address = address;
