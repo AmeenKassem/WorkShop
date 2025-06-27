@@ -40,6 +40,5 @@ public class AdminInitView extends VerticalLayout {
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
         add(usernameField, passwordField, keyField, initButton);
-
     }
 }
