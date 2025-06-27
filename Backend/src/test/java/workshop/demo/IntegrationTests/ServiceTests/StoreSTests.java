@@ -1,5 +1,4 @@
 package workshop.demo.IntegrationTests.ServiceTests;
-package workshop.demo.IntegrationTests.ServiceTests;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

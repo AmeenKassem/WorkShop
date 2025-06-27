@@ -180,7 +180,7 @@ public class PurchaseTests {
   randomId=   activePurcheses.setProductToRandom(NOToken, productId_laptop, 1, 2000, createdStoreId, 1000);
         auctionId= activePurcheses.setProductToAuction(NOToken, createdStoreId, productId_laptop, 1, 1000, 2);
         assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId).length == 1);
-        assertTrue(activePurcheses.getAllRandoms_user(NOToken, createdStoreId).length == 1);
+        assertTrue(activePurcheses.getAllActiveRandoms_user(NOToken, createdStoreId).length == 1);
                         assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 8);
 
         // assertTrue(stockService.getAllBidsStatus(NOToken, createdStoreId).length ==
@@ -433,8 +433,8 @@ public class PurchaseTests {
 
         activePurcheses.participateInRandom(authRepo.getUserId(NGToken), randomId, createdStoreId, 2000);
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
-  assertTrue(activePurcheses.getAllRandoms_user(NOToken, createdStoreId)[0].participations.length == 1);
-        assertTrue(activePurcheses.getAllRandoms_user(NOToken, createdStoreId)[0].participations[0].won());
+  assertTrue(activePurcheses.getAllActiveRandoms_user(NOToken, createdStoreId)[0].participations.length == 1);
+        assertTrue(activePurcheses.getAllActiveRandoms_user(NOToken, createdStoreId)[0].participations[0].won());
 
         ReceiptDTO[] receipts = purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
 
@@ -471,15 +471,15 @@ public class PurchaseTests {
 
         activePurcheses.participateInRandom(authRepo.getUserId(NGToken), randomId, createdStoreId, 200);
         Thread.sleep(10000);
-    assertTrue(activePurcheses.getAllRandoms_user(NOToken, createdStoreId)[0].participations.length == 1);
-        assertFalse(activePurcheses.getAllRandoms_user(NOToken, createdStoreId)[0].participations[0].won());
+    assertTrue(activePurcheses.getAllActiveRandoms_user(NOToken, createdStoreId)[0].participations.length == 1);
+        assertFalse(activePurcheses.getAllActiveRandoms_user(NOToken, createdStoreId)[0].participations[0].won());
 
         ReceiptDTO[] receipts = purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
 
         assertNotNull(receipts);
         assertEquals(0, receipts.length);
 
-        assertTrue(activePurcheses.getAllRandoms_user(NOToken, createdStoreId)[0].participations[0].mustRefund);
+        assertTrue(activePurcheses.getAllActiveRandoms_user(NOToken, createdStoreId)[0].participations[0].mustRefund);
 
                 assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 10);
     }
@@ -496,8 +496,8 @@ public class PurchaseTests {
                 assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 8);
         activePurcheses.participateInRandom(authRepo.getUserId(NGToken), randomId, createdStoreId, 200);
         Thread.sleep(1000);
-        assertTrue(activePurcheses.getAllRandoms_user(NOToken, createdStoreId)[0].participations.length == 1);
-        assertFalse(activePurcheses.getAllRandoms_user(NOToken, createdStoreId)[0].participations[0].won());
+        assertTrue(activePurcheses.getAllActiveRandoms_user(NOToken, createdStoreId)[0].participations.length == 1);
+        assertFalse(activePurcheses.getAllActiveRandoms_user(NOToken, createdStoreId)[0].participations[0].won());
 
         assertThrows(Exception.class, () -> purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails));
 
@@ -515,10 +515,10 @@ activePurcheses.participateInRandom(authRepo.getUserId(NOToken), randomId, creat
        // purchaseService.participateInRandom(NGToken, randomId, createdStoreId, 1, paymentDetails);
      //   purchaseService.participateInRandom(NOToken, randomId, createdStoreId, 1999, paymentDetails);
 
-        assertTrue(activePurcheses.getAllRandoms_user(NOToken, createdStoreId)[0].participations.length == 2);
-        ParticipationInRandomDTO player1 = activePurcheses.getAllRandoms_user(NOToken,
+        assertTrue(activePurcheses.getAllActiveRandoms_user(NOToken, createdStoreId)[0].participations.length == 2);
+        ParticipationInRandomDTO player1 = activePurcheses.getAllActiveRandoms_user(NOToken,
                 createdStoreId)[0].participations[0];
-        ParticipationInRandomDTO player2 = activePurcheses.getAllRandoms_user(NOToken,
+        ParticipationInRandomDTO player2 = activePurcheses.getAllActiveRandoms_user(NOToken,
                 createdStoreId)[0].participations[1];
 assertFalse(player1.won());
 assertTrue(player2.won());
@@ -613,7 +613,7 @@ assertTrue(receipts2.length == 1);
     void testgetAllAuctions_userUser_Success() throws Exception {
                 createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-        AuctionDTO[] auctions = activePurcheses.getAllAuctions_user(NGToken, createdStoreId); // NGToken is a registered user in setup
+        AuctionDTO[] auctions = activePurcheses.getAllActiveAuctions_user(NGToken, createdStoreId); // NGToken is a registered user in setup
         assertNotNull(auctions);
         assertEquals(1, auctions.length); // 1 auction set up in setup()
         assertEquals(productId_laptop, auctions[0].productId); // or whatever name matches
@@ -813,7 +813,7 @@ assertTrue(receipts2.length == 1);
     void testGetAllRandomInStoreUser_Success() throws Exception {
                 createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-        RandomDTO[] randoms = activePurcheses.getAllRandoms_user(NGToken, createdStoreId);
+        RandomDTO[] randoms = activePurcheses.getAllActiveRandoms_user(NGToken, createdStoreId);
         assertNotNull(randoms);
         assertTrue(randoms.length >= 1); // setup contains 1 random sale
         assertEquals(itemStoreDTO.getProductId(), randoms[0].productId);
@@ -1023,7 +1023,7 @@ assertTrue(receipts2.length == 1);
     void test_getProductPrice_success() throws Exception {
                 createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-        var price = activePurcheses.getAllRandoms_user(NOToken, createdStoreId)[0].productPrice;
+        var price = activePurcheses.getAllActiveRandoms_user(NOToken, createdStoreId)[0].productPrice;
         assertEquals(2000, price);
     }
 
