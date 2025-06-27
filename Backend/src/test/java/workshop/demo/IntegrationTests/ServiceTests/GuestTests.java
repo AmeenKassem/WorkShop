@@ -23,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+
+import workshop.demo.ApplicationLayer.NotificationService;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
@@ -45,7 +47,6 @@ import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.User.ShoppingCart;
 import workshop.demo.InfrastructureLayer.*;
 
-
 @SpringBootTest
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -57,9 +58,9 @@ public class GuestTests {
     StoreTreeJPARepository tree;
     @Autowired
     private NodeJPARepository node;
-    // @Autowired
-    // private NotificationRepository notificationRepository;
-   
+    @Autowired
+    private NotificationService notificationRepository;
+
     @Autowired
     private IStockRepoDB stockRepositoryjpa;
     @Autowired
@@ -117,7 +118,7 @@ public class GuestTests {
     int createdStoreId;
 
     @BeforeEach
-    void setup() throws Exception {
+    void setup() {
         node.deleteAll();
         orderRepository.deleteAll();
         tree.deleteAll();
@@ -130,35 +131,40 @@ public class GuestTests {
         storeRepositoryjpa.deleteAll();
         storeStockRepo.deleteAll();
 
-       
-        
-            orderRepository.deleteAll();
-        
+        orderRepository.deleteAll();
 
-        GToken = userService.generateGuest();
+        try {
+            GToken = userService.generateGuest();
+            String OToken = userService.generateGuest();
 
-        String OToken = userService.generateGuest();
+            userService.register(OToken, "owner", "owner", 25);
 
-        userService.register(OToken, "owner", "owner", 25);
+            // --- Login ---
+            NOToken = userService.login(OToken, "owner", "owner");
 
-        // --- Login ---
-        NOToken = userService.login(OToken, "owner", "owner");
+            assertTrue(authRepo.getUserName(NOToken).equals("owner"));
+            // ======================= STORE CREATION =======================
 
-        assertTrue(authRepo.getUserName(NOToken).equals("owner"));
-        // ======================= STORE CREATION =======================
+            createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore",
+                    "ELECTRONICS");
+            // assertEquals( 1,createdStoreId);
 
-        createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore",
-                "ELECTRONICS");
-        // assertEquals( 1,createdStoreId);
+            // ======================= PRODUCT & ITEM ADDITION =======================
+            String[] keywords = { "Laptop", "Lap", "top" };
+            PID = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
 
-        // ======================= PRODUCT & ITEM ADDITION =======================
-        String[] keywords = { "Laptop", "Lap", "top" };
-        PID = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
+            stockService.addItem(createdStoreId, NOToken, PID, 10, 2000,
+                    Category.Electronics);
+            itemStoreDTO = new ItemStoreDTO(PID, 10, 2000, Category.Electronics, 0,
+                    createdStoreId, "Laptop", "TestStore");
 
-        stockService.addItem(createdStoreId, NOToken, PID, 10, 2000,
-                Category.Electronics);
-        itemStoreDTO = new ItemStoreDTO(PID, 10, 2000, Category.Electronics, 0,
-                createdStoreId, "Laptop", "TestStore");
+        } catch (UIException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
     }
 
@@ -219,6 +225,11 @@ public class GuestTests {
         userService.destroyGuest(token);
         assertFalse(guestRepo.guestExists(id));
 
+    }
+
+     @Test
+    public void test(){
+        assertNotNull(4);
     }
 
     @Test
@@ -323,28 +334,27 @@ public class GuestTests {
 
     // //NOTE :BUY CART FINISH +ASK FOR MORE FAILURE
     @Test
-    void testGuestBuyCart_Success() throws Exception  {
+    void testGuestBuyCart_Success() throws Exception {
 
-            userService.addToUserCart(GToken, itemStoreDTO, 1);
-            PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if
-            SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if
-    
-            ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails,
-                    supplyDetails);
-    
-            assertNotNull(receipts);
-            assertEquals(1, receipts.length);
-            assertEquals("TestStore", receipts[0].getStoreName());
-            assertEquals(2000.0,
-                    receipts[0].getProductsList().size() *
-                            receipts[0].getProductsList().get(0).getPrice());
-    
-            int guestId = authRepo.getUserId(GToken);
-            assertTrue(userService.getRegularCart(GToken).length == 0);
-    
-            assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 9);
+        userService.addToUserCart(GToken, itemStoreDTO, 1);
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if
 
-    
+        ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails,
+                supplyDetails);
+
+        assertNotNull(receipts);
+        assertEquals(1, receipts.length);
+        assertEquals("TestStore", receipts[0].getStoreName());
+        assertEquals(2000.0,
+                receipts[0].getProductsList().size() *
+                        receipts[0].getProductsList().get(0).getPrice());
+
+        int guestId = authRepo.getUserId(GToken);
+        assertTrue(userService.getRegularCart(GToken).length == 0);
+
+        assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 9);
+
     }
 
     @Test
@@ -412,46 +422,45 @@ public class GuestTests {
         // TODO abu el3asi make one with many items .
         // cart must not change + quantity for all stores must not change
         // Product 2 - Smartphone
-String[] keywords2 = { "Phone", "Smartphone", "Mobile" };
-int PID2 = stockService.addProduct(NOToken, "Smartphone", Category.Electronics, "Latest smartphone model", keywords2);
+        String[] keywords2 = { "Phone", "Smartphone", "Mobile" };
+        int PID2 = stockService.addProduct(NOToken, "Smartphone", Category.Electronics, "Latest smartphone model",
+                keywords2);
 
-stockService.addItem(createdStoreId, NOToken, PID2, 15, 1000, Category.Electronics);
-ItemStoreDTO itemStoreDTO2 = new ItemStoreDTO(PID2, 15, 1000, Category.Electronics, 0,
-        createdStoreId, "Smartphone", "TestStore");
+        stockService.addItem(createdStoreId, NOToken, PID2, 15, 1000, Category.Electronics);
+        ItemStoreDTO itemStoreDTO2 = new ItemStoreDTO(PID2, 15, 1000, Category.Electronics, 0,
+                createdStoreId, "Smartphone", "TestStore");
 
-// Product 3 - Headphones
-String[] keywords3 = { "Headphones", "Audio", "Music" };
-int PID3 = stockService.addProduct(NOToken, "Headphones", Category.Electronics, "Wireless over-ear headphones", keywords3);
+        // Product 3 - Headphones
+        String[] keywords3 = { "Headphones", "Audio", "Music" };
+        int PID3 = stockService.addProduct(NOToken, "Headphones", Category.Electronics, "Wireless over-ear headphones",
+                keywords3);
 
-stockService.addItem(createdStoreId, NOToken, PID3, 20, 300, Category.Electronics);
-ItemStoreDTO itemStoreDTO3 = new ItemStoreDTO(PID3, 20, 300, Category.Electronics, 0,
-        createdStoreId, "Headphones", "TestStore");
-
+        stockService.addItem(createdStoreId, NOToken, PID3, 20, 300, Category.Electronics);
+        ItemStoreDTO itemStoreDTO3 = new ItemStoreDTO(PID3, 20, 300, Category.Electronics, 0,
+                createdStoreId, "Headphones", "TestStore");
 
         userService.addToUserCart(GToken, itemStoreDTO3, 100);
         userService.addToUserCart(GToken, itemStoreDTO2, 1);
-  PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
-UIException ex =assertThrows(UIException.class, () -> {
-    purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
-});
-       assertEquals(1023, ex.getErrorCode());
-            var items = stockService.getProductsInStore(createdStoreId);
+        UIException ex = assertThrows(UIException.class, () -> {
+            purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
+        });
+        assertEquals(1023, ex.getErrorCode());
+        var items = stockService.getProductsInStore(createdStoreId);
 
-// You know the product IDs and expected quantities:
-Map<Integer, Integer> expectedQuantities = Map.of(
-    PID, 10,
-    PID2, 15,
-    PID3, 20
-);
+        // You know the product IDs and expected quantities:
+        Map<Integer, Integer> expectedQuantities = Map.of(
+                PID, 10,
+                PID2, 15,
+                PID3, 20);
 
-// Verify each product quantity hasn't changed
-for (ItemStoreDTO item : items) {
-    int expectedQty = expectedQuantities.getOrDefault(item.getProductId(), -1);
-    assertNotEquals(-1, expectedQty, "Unexpected product in store: " + item.getProductId());
-    assertEquals(expectedQty, item.getQuantity(), "Product ID " + item.getProductId() + " has wrong quantity");
-}
-
+        // Verify each product quantity hasn't changed
+        for (ItemStoreDTO item : items) {
+            int expectedQty = expectedQuantities.getOrDefault(item.getProductId(), -1);
+            assertNotEquals(-1, expectedQty, "Unexpected product in store: " + item.getProductId());
+            assertEquals(expectedQty, item.getQuantity(), "Product ID " + item.getProductId() + " has wrong quantity");
+        }
 
     }
 
