@@ -305,7 +305,7 @@ public class ActivePurchasesService {
         }
         return userId;
     }
-
+    @Transactional
     public AuctionDTO[] getAllAuctions_user(String token, int storeId) throws Exception {
         logger.info("User requesting all auctions in store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -414,7 +414,7 @@ public class ActivePurchasesService {
                 ownersIds);
         return random.getRandomId();
     }
-
+    @Transactional
     public RandomDTO[] getAllRandoms_user(String token, int storeId) throws Exception {
         logger.info("User requesting all randoms in store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -452,7 +452,7 @@ public class ActivePurchasesService {
         // System.out.println("all randoms size: " + allRandoms.size());
         return allRandoms.toArray(new RandomDTO[0]);
     }
-
+@Transactional
     public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
             throws UIException, DevException {
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();

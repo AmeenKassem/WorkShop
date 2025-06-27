@@ -248,7 +248,7 @@ public class PurchaseService {
         return card;
     }
 
-    // @Transactional
+     @Transactional
     public ReceiptDTO[] finalizeSpecialCart(String token, PaymentDetails payment, SupplyDetails supply)
             throws Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
