@@ -53,7 +53,7 @@ public class MyStoresView extends VerticalLayout {
     for (StoreDTO store : stores) {
         VerticalLayout card = new VerticalLayout();
         card.addClassName("store-card");
-        card.setWidth("220px"); // חשוב לקביעת גודל אחיד
+        card.setWidth("220px"); 
 
         Span name = new Span(store.getStoreName());
         name.addClassName("store-name");

@@ -1,42 +1,106 @@
-.status-online {
-    color: green;
+.main-header {
+    font-size: 2rem;
     font-weight: bold;
+    color: #be185d;
+    text-align: center;
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0 auto 2rem auto; 
 }
 
-.status-offline {
-    color: gray;
-    font-style: italic;
+
+.admin-panel-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+.admin-panel-card {
+    background-color: #fff5f9;
+    border: 1px solid #f9a8d4;
+    border-radius: 18px;
+    padding: 2.5rem 2rem;
+    box-shadow: 0 6px 18px rgba(244, 114, 182, 0.15);
+   
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    transition: all 0.3s ease-in-out;
+    margin: 0 auto;
+}
+.admin-panel-card .v-button {
+    width: 100%;
+    justify-content: flex-start;
+    font-size: 1rem;
+    padding: 0.85rem 1.2rem;
+    border-radius: 12px;
+    background-color: #fdf2f8;
+    color: #1e3a8a;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    font-weight: 600;
+    transition: transform 0.2s ease, background 0.3s ease;
 }
 
-/* סגנון למשתמש מושעה */
-.suspended-user {
-    background-color: #ffe6e6; /* אדום בהיר ברקע */
-    font-weight: bold;
-    color: #cc0000;
+.admin-panel-card .v-button:hover {
+    background-color: #fce7f3;
+    transform: scale(1.02);
 }
 
-/* כפתורים */
-.v-button {
-    border-radius: 5px;
-    padding: 6px 12px;
-    font-size: 0.9rem;
-}
-
-.v-button.primary {
-    background-color: #007bff;
+.admin-panel-card .v-button.primary {
+    background: linear-gradient(90deg, #60a5fa, #3b82f6);
     color: white;
 }
 
-.v-button.success {
-    background-color: #28a745;
+.admin-panel-card .v-button.danger {
+    background: linear-gradient(90deg, #fb7185, #ef4444);
     color: white;
 }
 
-.v-button.danger {
-    background-color: #dc3545;
-    color: white;
+.v-grid {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
 }
 
-.v-grid-cell {
-    padding: 10px;
+.admin-panel-card {
+    overflow-x: auto;
+}
+
+.v-grid .v-button {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.v-grid .v-button + .v-button {
+    margin-left: 0.25rem;
+}
+
+.v-grid {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    border-radius: 10px;
+    background-color: white;
+}
+
+.v-grid .actions-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    justify-content: flex-start;
+    max-width: 100%;
+}
+
+.v-grid .actions-wrapper .v-button {
+    flex: 1 1 45%;
+    min-width: 90px;
+}
+.v-grid th, .v-grid td {
+    white-space: normal !important;
+    word-break: break-word;
 }
