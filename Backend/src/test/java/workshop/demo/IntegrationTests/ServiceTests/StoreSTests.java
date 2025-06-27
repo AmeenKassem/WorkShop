@@ -39,7 +39,7 @@ import workshop.demo.ApplicationLayer.StockService;
 import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
-import workshop.demo.ApplicationLayer.UserSuspensionService;
+import workshop.demo.ApplicationLayer.*;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
@@ -58,7 +58,8 @@ import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.BaseNotifier;
-
+import workshop.demo.DomainLayer.Stock.ActivePurcheses;
+import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 
 import workshop.demo.DomainLayer.Store.PurchasePolicy;
@@ -79,7 +80,8 @@ public class StoreSTests {
     private NodeJPARepository node;
     // @Autowired
     // private NotificationRepository notificationRepository;
-    
+    @Autowired
+    private IActivePurchasesRepo activePurchasesRepo;
     @Autowired
     private StockRepository stockRepository;
     @Autowired
@@ -111,6 +113,8 @@ public class StoreSTests {
     private UserJpaRepository userRepo;
     @Autowired
     Encoder encoder;
+    @Autowired
+    public ActivePurchasesService activePurcheses;
 
     @Autowired
     UserSuspensionService suspensionService;
@@ -153,7 +157,8 @@ public class StoreSTests {
         offerRepo.deleteAll();
         storeRepositoryjpa.deleteAll();
         storeStockRepo.deleteAll();
-
+        activePurchasesRepo.deleteAll();
+    
        
         
             orderRepository.deleteAll();
@@ -680,16 +685,18 @@ public class StoreSTests {
         assertEquals("Item not found with ID 3", ex.getMessage());
         assertEquals(ErrorCodes.PRODUCT_NOT_FOUND, ex.getNumber());
     }
+    //public int setProductToAuction(String token, int storeId, int productId, int quantity, long time, double startPrice)
 
     @Test
     void testOwner_AddToAuction_Success() throws Exception {
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+activePurcheses.setProductToAuction(NOToken, createdStoreId, PID, 1, 5000, 2.0);
+       // activePurcheses.setProductToAuction(NOToken, createdStoreId, PID, 1, 5000, 2);
+    
+        assertTrue(activePurcheses.getAllAuctions(NOToken, createdStoreId).length == 1);
+        assertTrue(activePurcheses.getAllAuctions(NOToken, createdStoreId)[0].productId == 1);
 
-        stockService.setProductToAuction(NOToken, createdStoreId, PID, 1, 5000, 2);
-        assertTrue(stockService.getAllAuctions(NOToken, createdStoreId).length == 1);
-        assertTrue(stockService.getAllAuctions(NOToken, createdStoreId)[0].productId == 1);
-
-        assertTrue(stockService.getAllAuctions(NOToken, createdStoreId)[0].storeId == 1);
+        assertTrue(activePurcheses.getAllAuctions(NOToken, createdStoreId)[0].storeId == 1);
 
     }
 

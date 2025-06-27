@@ -72,22 +72,35 @@ public class ActivePurchasesService {
 
     @Transactional
     @EventListener(ApplicationReadyEvent.class)
-    public void scheduleSpecialPurchases() {
-        logger.info("loading all auctions !!!!");
-        List<ActivePurcheses> special = activePurchasesRepo.findAll();
-        for (ActivePurcheses active : special) {
-            StoreStock storeStock = storeStockRepo.findById(active.getStoreId()).orElseThrow();
-            Store store = storeJpaRepo.findById(active.getStoreId()).orElseThrow();
-            for (Auction auction : active.getActiveAuctions()) {
-                if (!auction.isEnded()) {
-                    auction.loadBids();
-                    scheduleAuctionEnd(active, auction.getRestMS(), storeStock, auction.getId(), auction.getProductId(),
-                            auction.getAmount(), store);
-                }
-            }
+public void scheduleSpecialPurchases() {
+    logger.info("loading all auctions !!!!");
+    List<ActivePurcheses> special = activePurchasesRepo.findAll();
+    for (ActivePurcheses active : special) {
+        StoreStock storeStock = storeStockRepo.findById(active.getStoreId()).orElse(null);
+        Store store = storeJpaRepo.findById(active.getStoreId()).orElse(null);
+        
+        if (storeStock == null || store == null) {
+            logger.warn("Skipping active purchase with storeId={} due to missing store or stock", active.getStoreId());
+            continue;
         }
 
+        for (Auction auction : active.getActiveAuctions()) {
+            if (!auction.isEnded()) {
+                auction.loadBids();
+                scheduleAuctionEnd(
+                    active,
+                    auction.getRestMS(),
+                    storeStock,
+                    auction.getId(),
+                    auction.getProductId(),
+                    auction.getAmount(),
+                    store
+                );
+            }
+        }
     }
+}
+
 
     @Transactional
     public int setProductToAuction(String token, int storeId, int productId, int quantity, long time, double startPrice)

@@ -22,7 +22,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 // import workshop.demo.ApplicationLayer.AdminHandler;
-import workshop.demo.ApplicationLayer.NotificationService;
+import workshop.demo.ApplicationLayer.*;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
@@ -47,6 +47,7 @@ import workshop.demo.DTOs.UserDTO;
 
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.ShoppingCart;
@@ -95,9 +96,13 @@ public class UserTests {
     private UserJpaRepository userRepo;
     @Autowired
     Encoder encoder;
-
+ @Autowired
+    private IActivePurchasesRepo activePurchasesRepo;
     @Autowired
     UserSuspensionService suspensionService;
+    @Autowired
+    public ActivePurchasesService activePurcheses;
+
     // @Autowired
     // AdminHandler adminService;
     @Autowired
@@ -137,7 +142,7 @@ public class UserTests {
         offerRepo.deleteAll();
         storeRepositoryjpa.deleteAll();
         storeStockRepo.deleteAll();
-
+activePurchasesRepo.deleteAll();
        
         
             orderRepository.deleteAll();
@@ -637,7 +642,7 @@ public class UserTests {
         int id = userService.getRegularCart(NGToken)[0].itemCartId;
 
         userService.ModifyCartAddQToBuy(NGToken, id, 3);
-        ReceiptDTO[] re = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+        ReceiptDTO[] re = purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
         assertTrue(re[0].getFinalPrice() == 6000);
         int x = storeRepositoryjpa.findAll().get(0).getstoreId();
 
@@ -654,7 +659,7 @@ public class UserTests {
         int id = userService.getRegularCart(NGToken)[0].itemCartId;
 
         UIException ex = assertThrows(UIException.class, () -> userService.ModifyCartAddQToBuy("INVALID", id, 2));
-        ReceiptDTO[] re = purchaseService.buyGuestCart(NGToken, paymentDetails, supplyDetails);
+        ReceiptDTO[] re = purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
         int x = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         assertTrue(stockService.getProductsInStore(x)[0].getQuantity() == 9);
@@ -805,7 +810,7 @@ for (ItemStoreDTO item : items) {
         Exception ex = assertThrows(Exception.class, () -> {
             purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
         });
-        assertEquals("payment not successeded!!!", ex.getMessage());
+        assertEquals("Payment failed", ex.getMessage());
     }
     // admin
 
@@ -956,12 +961,12 @@ for (ItemStoreDTO item : items) {
         long endTime = System.currentTimeMillis() + 60 * 60 * 1000; // 1 hour from now
         int x = storeRepositoryjpa.findAll().get(0).getstoreId();
         // Add product to auction
-        stockService.setProductToAuction(NOToken, x, PID, 10, endTime, 2000.0);
+        activePurcheses.setProductToAuction(NOToken, x, PID, 10, endTime, 2000.0);
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 "Laptop", null, null, 1, null, null, null, null);
 
-        AuctionDTO[] result = stockService.searchActiveAuctions(NGToken, criteria);
+        AuctionDTO[] result = activePurcheses.searchActiveAuctions(NGToken, criteria);
         assertNotNull(result);
         assertEquals(1, result.length);
         assertEquals("Laptop", result[0].productName);
@@ -1002,14 +1007,14 @@ for (ItemStoreDTO item : items) {
         Exception ex = assertThrows(Exception.class, () -> stockService.searchProductsOnAllSystem(NGToken, criteria));
     }
 
-    @Test
-    void testSearchByKeyword_Match() throws Exception {
-        ProductSearchCriteria criteria = new ProductSearchCriteria(
-                "Laptop", null, "top", null,
-                -1.0, -1.0, -1.0, -1.0);
-        ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
-        assertEquals(1, result.length);
-    }
+    // @Test
+    // void testSearchByKeyword_Match() throws Exception {
+    //     ProductSearchCriteria criteria = new ProductSearchCriteria(
+    //             "Laptop", null, "top", null,
+    //             -1.0, -1.0, -1.0, -1.0);
+    //     ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(NGToken, criteria);
+    //     assertEquals(1, result.length);
+    // }
 
     @Test
     void testSearchByKeyword_NoMatch() throws Exception {

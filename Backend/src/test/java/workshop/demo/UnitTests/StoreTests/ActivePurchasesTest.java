@@ -12,7 +12,9 @@ import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
+import workshop.demo.DomainLayer.Stock.Auction;
 import workshop.demo.DomainLayer.Stock.SingleBid;
+import workshop.demo.DomainLayer.Stock.UserAuctionBid;
 
 //@SpringBootTest
 @ActiveProfiles("test")
@@ -20,7 +22,7 @@ public class ActivePurchasesTest {
 
     private ActivePurcheses active = new ActivePurcheses(0); // or @Autowired if it's a Spring bean
 
-    public int setAuction() throws Exception {
+    public Auction setAuction() throws Exception {
         active = new ActivePurcheses(0);
         return active.addProductToAuction(0, 1, 1000,0);
     }
@@ -33,20 +35,20 @@ public class ActivePurchasesTest {
     @Test
     public void testAddAuction() {
         try {
-            int id = setAuction();
+            var id = setAuction();
             AuctionDTO[] auctions = active.getAuctions();
 
             Assertions.assertNotNull(auctions);
             Assertions.assertNotNull(auctions[0]);
             Assertions.assertEquals(id, auctions[0].auctionId);
 
-            SingleBid looserBid = active.addUserBidToAuction(id, 0, 10);
-            SingleBid winnerBid = active.addUserBidToAuction(id, 1, 11);
+            var looserBid = active.addUserBidToAuction(id.getId(), 0, 10.00);
+            var winnerBid = active.addUserBidToAuction(id.getId(), 1, 11.00);
 
             Thread.sleep(1100); // correct sleep usage
 
-            Assertions.assertFalse(looserBid.isWon());
-            Assertions.assertTrue(winnerBid.isWon());
+            Assertions.assertFalse(looserBid.isWinner());
+            Assertions.assertTrue(winnerBid.isWinner());
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -54,19 +56,19 @@ public class ActivePurchasesTest {
         }
     }
 
-    SingleBid loser;
-    SingleBid winner;
+    UserAuctionBid  loser;
+    UserAuctionBid  winner;
 
     @Test
     public void testConcurrencyAuction() {
         try {
             for (int i = 0; i < 10; i++) {
-                int id = setAuction();
+                var id = setAuction();
                 // SingleBid loser;
                 // SingleBid winner;
                 Thread t1 = new Thread(() -> {
                     try {
-                        loser = active.addUserBidToAuction(id, 0, 10);
+                        loser = active.addUserBidToAuction(id.getId(), 0, 10);
                     } catch (Exception e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
@@ -74,7 +76,7 @@ public class ActivePurchasesTest {
                 });
                 Thread t2 = new Thread(() -> {
                     try {
-                        winner = active.addUserBidToAuction(id, 1, 11);
+                        winner = active.addUserBidToAuction(id.getId(), 1, 11);
                     } catch (Exception e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
@@ -84,12 +86,12 @@ public class ActivePurchasesTest {
                     t1.start();
                     t2.start();
                     Thread.sleep(1100);
-                    Assertions.assertTrue(winner.isWon());
+                    Assertions.assertTrue(winner.isWinner());
                 } else {
                     t2.start();
                     t1.start();
                     Thread.sleep(1100);
-                    Assertions.assertTrue(winner.isWon());
+                    Assertions.assertTrue(winner.isWinner());
                 }
             }
 

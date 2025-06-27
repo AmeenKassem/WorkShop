@@ -51,7 +51,7 @@ import workshop.demo.InfrastructureLayer.*;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class GuestTests {
-
+    
     // ======================== Repositories ========================
     @Autowired
     StoreTreeJPARepository tree;
@@ -130,8 +130,7 @@ public class GuestTests {
         storeRepositoryjpa.deleteAll();
         storeStockRepo.deleteAll();
 
-       
-        
+        suspensionRepo.deleteAll();
             orderRepository.deleteAll();
         
 
