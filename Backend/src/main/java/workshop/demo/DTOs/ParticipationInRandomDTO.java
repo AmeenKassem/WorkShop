@@ -59,4 +59,8 @@ public class ParticipationInRandomDTO {
         return mustRefund;
     }
 
+    public boolean isEnded() {
+        return ended;
+    }
+
 }
