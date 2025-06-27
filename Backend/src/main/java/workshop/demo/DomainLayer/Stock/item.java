@@ -7,10 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.PostLoad;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Transient;
 import workshop.demo.DTOs.Category;
 
 @Embeddable
@@ -36,56 +32,27 @@ public class item {
     private int rank4;
     @Column(name = "rank_5_count")
     private int rank5;
-    @Transient
-    private AtomicInteger[] rank;// rank[x] is the number of people who ranked i+1
 
     // discounts ...
     public item() {
         productId = 1;
-        rank = new AtomicInteger[5];
-        for (int i = 0; i < 5; i++) {
-            rank[i] = new AtomicInteger(0);
-        }
     }
 
     public item(int produtId, int quantity, int price, Category category) {
         this.productId = produtId;
         this.price = price;
         this.quantity = quantity;
-
-        this.rank = new AtomicInteger[5];
-        for (int i = 0; i < 5; i++) {
-            rank[i] = new AtomicInteger(0);
-        }
         this.category = category;
-    }
-
-    @PostLoad
-    private void initRankArray() {
-        rank = new AtomicInteger[5];
-        rank[0] = new AtomicInteger(rank1);
-        rank[1] = new AtomicInteger(rank2);
-        rank[2] = new AtomicInteger(rank3);
-        rank[3] = new AtomicInteger(rank4);
-        rank[4] = new AtomicInteger(rank5);
-    }
-
-    @PrePersist
-    @PreUpdate
-    private void updateRankColumns() {
-        rank1 = rank[0].get();
-        rank2 = rank[1].get();
-        rank3 = rank[2].get();
-        rank4 = rank[3].get();
-        rank5 = rank[4].get();
     }
 
     public int getFinalRank() {
         logger.debug("Calculating final rank for productId={}", productId);
         int totalVotes = 0;
         int WRank = 0;
+        // Correctly gather votes from actual rank fields
+        int[] rank = {rank1, rank2, rank3, rank4, rank5};
         for (int i = 0; i < rank.length; i++) {
-            int count = rank[i].get(); // votes for rank (i+1)
+            int count = rank[i]; // votes for rank (i+1)
             totalVotes += count;
             WRank += (i + 1) * count;
         }
@@ -102,24 +69,21 @@ public class item {
     public boolean rankItem(int i) {
         if (i < 1 || i > 5) {
             logger.error("Invalid rank {} for productId={}", i, productId);
-
             return false;
         }
-
-        rank[i - 1].incrementAndGet();
         switch (i) {
             case 1 ->
-                rank1 = rank[0].get();
+                rank1++;
             case 2 ->
-                rank2 = rank[1].get();
+                rank2++;
             case 3 ->
-                rank3 = rank[2].get();
+                rank3++;
             case 4 ->
-                rank4 = rank[3].get();
+                rank4++;
             case 5 ->
-                rank5 = rank[4].get();
+                rank5++;
         }
-        logger.debug("Ranking productId={} with rank={}", productId, i);
+        logger.debug("Ranked productId={} with rank={}", productId, i);
         return true;
     }
 
@@ -140,9 +104,32 @@ public class item {
     }
 
     public AtomicInteger[] getRank() {
-        return rank;
+        return new AtomicInteger[]{
+            new AtomicInteger(rank1),
+            new AtomicInteger(rank2),
+            new AtomicInteger(rank3),
+            new AtomicInteger(rank4),
+            new AtomicInteger(rank5)
+        };
     }
 
+    public void setRank(AtomicInteger[] rank) {
+        if (rank == null || rank.length != 5) {
+            throw new IllegalArgumentException("Rank array must have exactly 5 elements");
+        }
+        this.rank1 = rank[0].get();
+        this.rank2 = rank[1].get();
+        this.rank3 = rank[2].get();
+        this.rank4 = rank[3].get();
+        this.rank5 = rank[4].get();
+
+        logger.debug("Ranks set for productId={}: [{} {} {} {} {}]",
+                rank1, rank2, rank3, rank4, rank5);
+    }
+
+    // public AtomicInteger[] getRank() {
+    //     return rank;
+    // }
     public int getProductId() {
         return productId;
     }
@@ -162,12 +149,10 @@ public class item {
     }
 
     // for tests:
-    public void setRank(AtomicInteger[] rank) {
-        logger.debug("Overwriting rank array for productId={}", productId);
-
-        this.rank = rank;
-    }
-
+    // public void setRank(AtomicInteger[] rank) {
+    //     logger.debug("Overwriting rank array for productId={}", productId);
+    //     this.rank = rank;
+    // }
     public int getStoreId() {
         return storeId;
     }
