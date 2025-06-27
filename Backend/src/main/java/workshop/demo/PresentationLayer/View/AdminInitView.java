@@ -30,7 +30,6 @@ public class AdminInitView extends VerticalLayout {
 
             presenter.initializeSystem(username, password, key);
         });
-
         String fieldWidth = "400px";
 
         usernameField.setWidth(fieldWidth);
@@ -41,6 +40,5 @@ public class AdminInitView extends VerticalLayout {
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
         add(usernameField, passwordField, keyField, initButton);
-
     }
 }

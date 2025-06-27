@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import jakarta.persistence.Id;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -17,6 +19,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKey;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Transient;
+import workshop.demo.ApplicationLayer.LockManager;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -25,30 +28,25 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 @Entity
 public class Random {
 
-    private int productId;
-    private int quantity;
-
-    @OneToMany(mappedBy = "random", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @MapKey(name = "userId")
-    private Map<Integer, ParticipationInRandom> usersParticipations;
-    private double amountLeft;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int randomId;
 
+    @OneToMany(mappedBy = "random", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @MapKey(name = "userId")
+    private Map<Integer, ParticipationInRandom> usersParticipations;
+
+    private int productId;
+    private int quantity;
+    private double amountLeft;
     private int storeId;
     private double productPrice;
-    @Transient
-    private ParticipationInRandom winner;
-
-    @Transient
-    private final Object lock = new Object();
-    // @Transient
-    // private Timer timer;
     private boolean isActive = true;
     private boolean canceled;
     private long endTimeMillis;
+
+    @Transient
+    private ParticipationInRandom winner;
 
     @ManyToOne
     @JoinColumn(name = "active_store_id")
@@ -91,31 +89,29 @@ public class Random {
     }
 
     public ParticipationInRandom participateInRandom(int userId, double amountPaid) throws UIException {
-        synchronized (lock) {
-            ParticipationInRandom card;
-            if (!isActive)
-                throw new UIException("Random event is over.", ErrorCodes.RANDOM_FINISHED);
-            if (amountPaid > amountLeft)
-                throw new UIException("Maximum amount you can pay is: " + amountLeft,
-                        ErrorCodes.INVALID_RANDOM_PARAMETERS);
-            if (amountPaid <= 0)
-                throw new UIException("Amount paid must be positive.", ErrorCodes.INVALID_RANDOM_PARAMETERS);
-            if (usersParticipations.containsKey(userId)) {
-                card = usersParticipations.get(userId);
-                card.setAmountPaid(card.getAmountPaid() + amountPaid);
-            } else {
-                card = new ParticipationInRandom(productId, storeId, userId, randomId, amountPaid);
-            }
-            card.setRandom(this);
-            usersParticipations.put(userId, card);
-            amountLeft -= amountPaid;
-
-            if (amountLeft == 0) {
-                endRandom();
-                // timer.cancel();
-            }
-            return usersParticipations.get(userId);
+        ParticipationInRandom card;
+        if (!isActive)
+            throw new UIException("Random event is over.", ErrorCodes.RANDOM_FINISHED);
+        if (amountPaid > amountLeft)
+            throw new UIException("Maximum amount you can pay is: " + amountLeft,
+                    ErrorCodes.INVALID_RANDOM_PARAMETERS);
+        if (amountPaid <= 0)
+            throw new UIException("Amount paid must be positive.", ErrorCodes.INVALID_RANDOM_PARAMETERS);
+        if (usersParticipations.containsKey(userId)) {
+            card = usersParticipations.get(userId);
+            card.setAmountPaid(card.getAmountPaid() + amountPaid);
+        } else {
+            card = new ParticipationInRandom(productId, storeId, userId, randomId, amountPaid);
         }
+        card.setRandom(this);
+        usersParticipations.put(userId, card);
+        amountLeft -= amountPaid;
+
+        if (amountLeft == 0) {
+            endRandom();
+            // timer.cancel();
+        }
+        return usersParticipations.get(userId);
     }
 
     public void setActivePurchases(ActivePurcheses active) {
@@ -127,26 +123,26 @@ public class Random {
     }
 
     public ParticipationInRandom endRandom() {
-        synchronized (lock) {
-            isActive = false;
-            double rand = new java.util.Random().nextDouble() * productPrice;
-            double cumulativeWeight = 0.0;
-            for (ParticipationInRandom participation : usersParticipations.values()) {
-                cumulativeWeight += participation.getAmountPaid();
-                if (rand <= cumulativeWeight) {
-                    winner = participation;
-                    break;
-                }
+
+        isActive = false;
+        double rand = new java.util.Random().nextDouble() * productPrice;
+        double cumulativeWeight = 0.0;
+        for (ParticipationInRandom participation : usersParticipations.values()) {
+            cumulativeWeight += participation.getAmountPaid();
+            if (rand <= cumulativeWeight) {
+                winner = participation;
+                participation.markAsWinner();
+                break;
             }
-            if (winner != null) {
-                winner.markAsWinner();
-                for (ParticipationInRandom card : usersParticipations.values()) {
-                    if (card.getUserId() != winner.getUserId())
-                        card.markAsLoser();
-                }
-            }
-            return winner;
         }
+        if (winner != null) {
+            winner.markAsWinner();
+            for (ParticipationInRandom card : usersParticipations.values()) {
+                if (card.getUserId() != winner.getUserId())
+                    card.markAsLoser();
+            }
+        }
+        return winner;
     }
 
     public RandomDTO getDTO() {
@@ -238,10 +234,10 @@ public class Random {
     }
 
     public void mustRefundAllParticipations() {
-        synchronized (lock) {
-            for (ParticipationInRandom participation : usersParticipations.values()) {
-                participation.setMustRefund(true);
-            }
+
+        for (ParticipationInRandom participation : usersParticipations.values()) {
+            participation.setMustRefund(true);
+
         }
     }
 
@@ -251,10 +247,6 @@ public class Random {
             return participation.toDTO();
         }
         return null;
-    }
-
-    public Object getLock() {
-        return lock;
     }
 
     public void setActive(boolean b) {

@@ -178,7 +178,7 @@ public class StockService {
         }
 
         SingleBid bid = stockRepo.bidOnBid(bitId, price, userId, storeId);
-        bid.ownersNum = suConnectionRepo.getOwnersInStore(storeId).size();
+        //bid.ownersNum = suConnectionRepo.getOwnersInStore(storeId).size();
         UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, bid.getSpecialId(), bid.getId(),
                 SpecialType.BID,-1);
         userRepo.findById(userId).get().addSpecialItemToCart(specialItem);
