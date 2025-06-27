@@ -333,7 +333,10 @@ public class UserService {
             dto.quantity = item.quantity;
             dto.price = item.price;
             dto.name = item.name;
-            dto.storeName = storeRepo.findById(item.storeId).orElseThrow().getStoreName();
+           dto.storeName = storeRepo.findById(item.storeId)
+    .orElseThrow(() -> new UIException("Store with ID " + item.storeId + " not found", -1))
+    .getStoreName();
+
             // this back
             dto.itemCartId = item.getId();
             dtos[i] = dto;
