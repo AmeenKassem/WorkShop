@@ -208,12 +208,10 @@ private String extractValue(String raw, String key) {
     /* ───────────────────────────────────────────────────────────────
      *  Purchase-Policy dialog  (add / remove)
      * ─────────────────────────────────────────────────────────────── */
-    private void openPurchasePolicyDialog() {
-
+   private void openPurchasePolicyDialog() {
         Dialog dlg = new Dialog();
         dlg.setHeaderTitle("Add / Remove Purchase Policies");
 
-        /* 1 · policy key selector — uses backend keys */
         ComboBox<String> keyBox = new ComboBox<>("Policy");
         keyBox.setItems("NO_ALCOHOL", "MIN_QTY");
         keyBox.setItemLabelGenerator(k -> switch (k) {
@@ -223,7 +221,6 @@ private String extractValue(String raw, String key) {
         });
         keyBox.setValue("NO_ALCOHOL");
 
-        /* 2 · optional numeric parameter */
         NumberField paramField = new NumberField("Minimum quantity");
         paramField.setMin(1); paramField.setStepButtonsVisible(true);
         paramField.setValue(1.0);
@@ -234,7 +231,6 @@ private String extractValue(String raw, String key) {
 
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
 
-        /* 3 · add policy */
         Button add = new Button("Add", e -> {
             try {
                 Integer p = paramField.isVisible() ? paramField.getValue().intValue() : null;
@@ -243,8 +239,8 @@ private String extractValue(String raw, String key) {
                 dlg.close();
             } catch (Exception ex) { ExceptionHandlers.handleException(ex); }
         });
+        add.addClassNames("dialog-button", "confirm");
 
-        /* 4 · remove policy */
         Button remove = new Button("Remove", e -> {
             try {
                 Integer p = paramField.isVisible() ? paramField.getValue().intValue() : null;
@@ -253,13 +249,16 @@ private String extractValue(String raw, String key) {
                 dlg.close();
             } catch (Exception ex) { ExceptionHandlers.handleException(ex); }
         });
+        remove.addClassNames("dialog-button", "confirm");
 
         Button cancel = new Button("Cancel", e -> dlg.close());
+        cancel.addClassNames("dialog-button", "cancel");
 
-        dlg.add(new VerticalLayout(
-                keyBox, paramField,
-                new HorizontalLayout(add, remove, cancel)
-        ));
+        VerticalLayout content = new VerticalLayout();
+        content.addClassName("dialog-content");
+        content.add(keyBox, paramField, new HorizontalLayout(add, remove, cancel));
+
+        dlg.add(content);
         dlg.open();
     }
 

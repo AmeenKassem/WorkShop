@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
@@ -20,6 +21,7 @@ import workshop.demo.DTOs.UserSuspensionDTO;
 import workshop.demo.PresentationLayer.Presenter.AdminPagePresenter;
 
 @Route(value = "admin", layout = MainLayout.class)
+@CssImport("./Theme/adminPage.css")
 public class AdminPageView extends VerticalLayout {
 
     private final AdminPagePresenter presenter;
@@ -30,27 +32,36 @@ public class AdminPageView extends VerticalLayout {
         setSpacing(true);
         setSizeFull();
 
-        add(new H2("Admin Control Panel"));
+        H2 title = new H2("🔧 Let’s Manage the System!");
+        title.addClassName("main-header"); 
+        title.getStyle().set("margin", "0 auto");
+        add(title);
 
         Button viewHistoryBtn = new Button("📊 View Purchase History", e -> UI.getCurrent().navigate("admin-purchase-history"));
 
         Button manageUsersBtn = new Button("👥 Manage Users", e -> showManageUsers());
         Button manageStoresBtn = new Button("👥 Manage Stores", e -> showManageStores());
         Button shutdownSystemBtn = new Button("❌ Shutdown System", e -> showShutdownConfirmation());
-
         VerticalLayout actionButtons = new VerticalLayout(viewHistoryBtn, manageUsersBtn, manageStoresBtn, shutdownSystemBtn);
+        actionButtons.setClassName("admin-panel-card");
+        addClassName("admin-panel-wrapper");
+        actionButtons.setAlignItems(Alignment.STRETCH);
         add(actionButtons);
     }
 
     private void showManageUsers() {
-        removeAll(); // Clear current content
-
-        add(new H2("User Suspension Management!"));
+        removeAll();
+        H2 header = new H2("🔒 User Suspension Management");
+        header.addClassName("main-header");
 
         Button viewSuspensionsBtn = new Button("👁️ View Suspensions", e -> showSuspensionsDialog());
-        add(viewSuspensionsBtn);
+        viewSuspensionsBtn.addClassName("v-button");
+        viewSuspensionsBtn.addClassName("secondary");
 
         Grid<UserDTO> userGrid = new Grid<>(UserDTO.class, false);
+        userGrid.setWidthFull();
+        userGrid.getStyle().set("overflow-x", "auto");
+        userGrid.addClassName("v-grid");
 
         userGrid.addColumn(user -> user.username != null ? user.username : "Guest")
                 .setHeader("Username");
@@ -63,9 +74,10 @@ public class AdminPageView extends VerticalLayout {
         userGrid.addComponentColumn(user -> {
             HorizontalLayout actions = new HorizontalLayout();
 
-            Button suspend = new Button("Suspend", click -> {
+            Button suspend = new Button("⏸ Suspend ", click -> {
                 Dialog dialog = new Dialog();
                 dialog.setHeaderTitle("Suspend User");
+                dialog.getElement().getClassList().add("dialog-content");
 
                 TextField minutesField = new TextField("Suspend for (minutes)");
                 Button confirm = new Button("OK", e -> {
@@ -81,15 +93,25 @@ public class AdminPageView extends VerticalLayout {
                 dialog.add(new VerticalLayout(minutesField, confirm));
                 dialog.open();
             });
+
             Button pause = new Button("Pause", click -> presenter.onPauseSuspension(user.getId()));
             Button resume = new Button("Resume", click -> presenter.onResumeSuspension(user.getId()));
             Button cancel = new Button("Cancel", click -> presenter.onCancelSuspension(user.getId()));
+
+            suspend.addClassName("v-button");
+            suspend.addClassName("danger");
+            pause.addClassName("v-button");
+            pause.addClassName("warning");
+            resume.addClassName("v-button");
+            resume.addClassName("success");
+            cancel.addClassName("v-button");
+            cancel.addClassName("danger");
+
             actions.add(suspend, cancel, pause, resume);
             return actions;
         }).setHeader("Actions")
-                .setAutoWidth(true)
-                .setFlexGrow(0);
-        setFlexGrow(0);
+          .setAutoWidth(true)
+          .setFlexGrow(0);
 
         try {
             List<UserDTO> users = presenter.getAllUsers();
@@ -103,61 +125,64 @@ public class AdminPageView extends VerticalLayout {
             return;
         }
 
-        add(userGrid);
+        VerticalLayout userPanel = new VerticalLayout();
+        userPanel.addClassName("admin-panel-card");
+        userPanel.setWidthFull();
+        userPanel.add(header, viewSuspensionsBtn, userGrid);
+
+        addClassName("admin-panel-wrapper");
+        add(userPanel);
     }
 
-    private void showSuspensionsDialog() {
+      private void showSuspensionsDialog() {
         List<UserSuspensionDTO> suspensions = presenter.onViewSuspensions();
 
         Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("Suspended Users");
-        dialog.setWidth("700px");
-        dialog.setHeight("400px");
+        dialog.getElement().getClassList().add("dialog-content");
+        dialog.setHeaderTitle("🚫 Suspended Users");
+        dialog.setWidth("850px");
+        dialog.setHeight("480px");
 
         if (suspensions.isEmpty()) {
-            dialog.add(new Paragraph("No suspended users."));
+            Paragraph emptyMsg = new Paragraph("No suspended users.");
+            emptyMsg.getStyle().set("padding", "1rem").set("color", "#6b7280");
+            dialog.add(emptyMsg);
         } else {
             Grid<UserSuspensionDTO> grid = new Grid<>(UserSuspensionDTO.class, false);
 
-            grid.addColumn(UserSuspensionDTO::getUserName)
-                    .setHeader("User Name");
-
-            grid.addColumn(s -> s.isPaused() ? "Yes" : "No")
-                    .setHeader("Paused");
-
+            grid.addColumn(UserSuspensionDTO::getUserName).setHeader("User Name");
+            grid.addColumn(s -> s.isPaused() ? "Yes" : "No").setHeader("Paused");
             grid.addColumn(s -> s.getSuspensionEndTime() != null ? s.getSuspensionEndTime().toString() : "N/A")
-                    .setHeader("End Time")
-                    .setAutoWidth(true)
-                    .setFlexGrow(0);
-
+                .setHeader("End Time").setAutoWidth(true).setFlexGrow(0);
             grid.addColumn(UserSuspensionDTO::getRemainingWhenPaused)
-                    .setHeader("Remaining Time ")
-                    .setAutoWidth(true)
-                    .setFlexGrow(0);
+                .setHeader("Remaining Time").setAutoWidth(true).setFlexGrow(0);
 
             grid.setItems(suspensions);
             grid.setWidthFull();
-            grid.setHeight("300px");
-
+            grid.setHeight("370px");
+            grid.addClassName("v-grid");
+            grid.getStyle().set("font-size", "0.95rem").set("background", "#fff");
             dialog.add(grid);
         }
 
         Button close = new Button("Close", e -> dialog.close());
+        close.addClassName("v-button");
+        close.addClassName("primary");
+        close.getStyle().set("margin-top", "1rem");
         dialog.getFooter().add(close);
 
         dialog.open();
     }
 
     private void showManageStores() {
-        removeAll(); // Clear current content
-        add(new H2("Manage Stores"));
-        List<StoreDTO> stores = presenter.getAllStores();
+        getChildren()
+            .filter(component -> component.getClass().equals(VerticalLayout.class))
+            .forEach(this::remove);
 
-        if (stores.isEmpty()) {
-            add(new Paragraph("❌ No stores available."));
-        }
+        H2 header = new H2("🏬 Store Management");
+        header.addClassName("main-header");
+
         Grid<StoreDTO> storeGrid = new Grid<>(StoreDTO.class, false);
-
         storeGrid.addColumn(store -> store.storeName).setHeader("Name");
         storeGrid.addColumn(store -> store.category).setHeader("Category");
         storeGrid.addColumn(store -> store.finalRating).setHeader("Rating");
@@ -165,29 +190,51 @@ public class AdminPageView extends VerticalLayout {
 
         storeGrid.addComponentColumn(store -> {
             Button closeBtn = new Button("❌ Close Store", e -> presenter.onCloseStore(store.storeId));
+            closeBtn.addClassName("v-button");
+            closeBtn.addClassName("danger");
             return closeBtn;
         }).setHeader("Action");
 
-        storeGrid.setItems(stores);
-        add(storeGrid);
+        storeGrid.setWidthFull();
+        storeGrid.addClassName("v-grid");
 
+        List<StoreDTO> stores = presenter.getAllStores();
+
+        if (stores.isEmpty()) {
+            add(new Paragraph("❌ No stores available."));
+        } else {
+            storeGrid.setItems(stores);
+        }
+
+        VerticalLayout storePanel = new VerticalLayout();
+        storePanel.addClassName("admin-panel-card");
+        storePanel.setWidthFull();
+        storePanel.add(header, storeGrid);
+
+        add(storePanel);
     }
 
     private void showShutdownConfirmation() {
         Dialog confirmDialog = new Dialog();
-        confirmDialog.setHeaderTitle("Confirm Shutdown");
+        confirmDialog.getElement().getClassList().add("dialog-content");
+        confirmDialog.setHeaderTitle("⚠️ Confirm System Shutdown");
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(true);
+        layout.setPadding(true);
+        layout.getStyle().set("background-color", "#fff5f9");
 
-        Paragraph warning = new Paragraph("Are you sure you want to shutdown the system? This will mark the site as NOT initialized.");
+        Paragraph warning = new Paragraph("⚠️ Are you sure you want to shutdown the system? This will mark the site as NOT initialized.");
+        warning.getStyle().set("color", "#b91c1c");
+
         IntegerField keyField = new IntegerField("Enter Admin Key");
-        keyField.setPlaceholder("Enter the shutdown key...");
+        keyField.setPlaceholder("Admin shutdown key...");
+        keyField.setWidthFull();
 
         layout.add(warning, keyField);
         confirmDialog.add(layout);
 
-        Button confirmBtn = new Button("Shutdown", e -> {
+        Button confirmBtn = new Button("🔥 Shutdown", e -> {
             Integer key = keyField.getValue();
             if (key == null) {
                 NotificationView.showError("Please enter the Admin Key.");
@@ -196,7 +243,7 @@ public class AdminPageView extends VerticalLayout {
             try {
                 boolean result = presenter.shutdownSystem(key);
                 if (result) {
-                    NotificationView.showSuccess("System has been successfully shutdown.");
+                    NotificationView.showSuccess("✅ System has been successfully shutdown.");
                     UI.getCurrent().navigate("/404");
                 }
             } catch (Exception ex) {
@@ -207,9 +254,17 @@ public class AdminPageView extends VerticalLayout {
         });
 
         Button cancelBtn = new Button("Cancel", e -> confirmDialog.close());
+        confirmBtn.addClassName("v-button");
+        confirmBtn.addClassName("danger");
 
-        confirmDialog.getFooter().add(confirmBtn, cancelBtn);
+        cancelBtn.addClassName("v-button");
+        cancelBtn.addClassName("secondary");
+
+        HorizontalLayout footer = new HorizontalLayout(confirmBtn, cancelBtn);
+        footer.setSpacing(true);
+        footer.setJustifyContentMode(JustifyContentMode.END);
+
+        confirmDialog.getFooter().add(footer);
         confirmDialog.open();
     }
-
 }
