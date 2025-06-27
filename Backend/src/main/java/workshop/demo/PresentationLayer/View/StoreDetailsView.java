@@ -14,6 +14,7 @@ import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -150,36 +151,26 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
             }
 
             //random:
-            boolean isRandom = randomProductIds.stream()
-                    .anyMatch(r -> r.productId == item.getProductId());
-            if (isRandom) {
-                RandomDTO matchingRandom = randomProductIds.stream()
-                        .filter(r -> r.productId == item.getProductId())
-                        .findFirst()
-                        .orElse(null);
+            List<RandomDTO> matchingRandoms = randomProductIds.stream()
+                    .filter(r -> r.productId == item.getProductId())
+                    .collect(Collectors.toList());
 
-                if (matchingRandom != null) {
-                    Button randomButton = new Button("🎲 Buy Random Card", e -> showRandomParticipationDialog(matchingRandom));
-                    randomButton.setWidthFull();
-                    actions.add(randomButton);
-                }
+            if (!matchingRandoms.isEmpty()) {
+                Button showRandomsButton = new Button("🎲 Show Random Cards", e -> openAllRandomsDialog(matchingRandoms, item.getProductId()));
+                showRandomsButton.setWidthFull();
+                actions.add(showRandomsButton);
             }
             //bid:
-            boolean isBid = bidProductIds.stream()
-                    .anyMatch(b -> b.productId == item.getProductId());
+            List<BidDTO> matchingBids = bidProductIds.stream()
+                    .filter(b -> b.productId == item.getProductId())
+                    .collect(Collectors.toList());
 
-            if (isBid) {
-                BidDTO matchingBid = bidProductIds.stream()
-                        .filter(b -> b.productId == item.getProductId())
-                        .findFirst()
-                        .orElse(null);
-
-                if (matchingBid != null) {
-                    Button bidButton = new Button("💰 Make a Bid", e -> showBidDialog(matchingBid, storeId));
-                    bidButton.setWidthFull();
-                    actions.add(bidButton);
-                }
+            if (!matchingBids.isEmpty()) {
+                Button showBidsButton = new Button("💰 Show Bids", e -> openAllBidsDialog(matchingBids, item.getProductId(), storeId));
+                showBidsButton.setWidthFull();
+                actions.add(showBidsButton);
             }
+
         }
 
         //other:
@@ -505,7 +496,12 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("🎲 Participate in Random Draw");
-
+        // Info paragraphs
+        Paragraph amountLeftInfo = new Paragraph("Amount Left: " + random.amountLeft);
+        long currentTimeMillis = System.currentTimeMillis();
+        long timeLeftMillis = random.endTimeMillis - currentTimeMillis;
+        long timeLeftMinutes = Math.max(0, timeLeftMillis / (1000 * 60));
+        Paragraph timeLeftInfo = new Paragraph("Ending Time: " + timeLeftMinutes + " minutes");
         // Input fields for payment
         TextField cardNumber = new TextField("Card Number");
         TextField cardHolder = new TextField("Cardholder Name");
@@ -516,7 +512,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         amountPaid.setValue(random.productPrice);
         amountPaid.setMin(0.1);
 
-        VerticalLayout form = new VerticalLayout(
+        VerticalLayout form = new VerticalLayout(amountLeftInfo, timeLeftInfo,
                 cardNumber, cardHolder, expiration, cvv, amountPaid
         );
 
@@ -813,34 +809,130 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Dialog auctionDialog = new Dialog();
 
         auctionDialog.setHeaderTitle("Available Auctions In This Product");
-
-        VerticalLayout layout = new VerticalLayout();
-        layout.setSpacing(true);
+        VerticalLayout mainLayout = new VerticalLayout();
+        mainLayout.setSpacing(true);
+        mainLayout.setPadding(true);
+        mainLayout.setWidthFull();
 
         for (AuctionDTO auction : auctions) {
             if (auction.productId == productId) {
-                HorizontalLayout row = new HorizontalLayout();
-                row.setWidthFull();
+                VerticalLayout auctionDetailsLayout = new VerticalLayout();
+                auctionDetailsLayout.setSpacing(false);
+                auctionDetailsLayout.setPadding(false);
+                auctionDetailsLayout.getStyle().set("line-height", "1.4");
+                Paragraph productName = new Paragraph("🛒 Product: " + auction.productName);
+                Paragraph highestBid = new Paragraph("💰 Highest Offer: " + auction.maxBid);
 
-                Paragraph auctionInfo = new Paragraph(
-                        "Product Name: " + auction.productName + " | Highest Offer: " + auction.maxBid);
+                auctionDetailsLayout.add(productName, highestBid);
 
                 Button joinButton = new Button("Join Auction", e -> {
                     auctionDialog.close();
                     showAuctionBidDialog(auction);
                 });
+                joinButton.setWidth("150px");
 
-                row.add(auctionInfo, joinButton);
+                HorizontalLayout row = new HorizontalLayout(auctionDetailsLayout, joinButton);
+                row.setWidthFull();
+                row.setAlignItems(FlexComponent.Alignment.CENTER);
+                row.getStyle().set("justify-content", "space-between");
+                row.getStyle().set("border-bottom", "1px solid #e0e0e0");
+                row.getStyle().set("padding", "10px 0");
+
+                mainLayout.add(row);
+            }
+        }
+        if (mainLayout.getComponentCount() == 0) {
+            mainLayout.add(new Paragraph("No auctions available for this product."));
+        }
+
+        auctionDialog.add(mainLayout);
+        auctionDialog.setWidth("400px");
+        auctionDialog.open();
+
+    }
+
+    private void openAllRandomsDialog(List<RandomDTO> randoms, int productId) {
+        Dialog randomDialog = new Dialog();
+        randomDialog.setHeaderTitle("Available Random Cards In This Product");
+
+        VerticalLayout layout = new VerticalLayout();
+        layout.setSpacing(true);
+        layout.setPadding(true);
+        layout.setWidthFull();
+
+        for (RandomDTO random : randoms) {
+            if (random.productId == productId) {
+                VerticalLayout randomInfoLayout = new VerticalLayout();
+                randomInfoLayout.setSpacing(false);
+                randomInfoLayout.setPadding(false);
+                randomInfoLayout.getStyle().set("line-height", "1.4");
+                Paragraph productName = new Paragraph("🛒 Product: " + random.productName);
+                Paragraph participationPrice = new Paragraph("💰 Participation Price: " + random.productPrice);
+
+                randomInfoLayout.add(productName, participationPrice);
+
+                Button buyButton = new Button("Buy Random Card", e -> {
+                    randomDialog.close();
+                    showRandomParticipationDialog(random);
+                });
+
+                buyButton.setWidth("150px");
+
+                HorizontalLayout row = new HorizontalLayout(randomInfoLayout, buyButton);
+                row.setWidthFull();
+                row.setAlignItems(FlexComponent.Alignment.CENTER);
+                row.getStyle().set("justify-content", "space-between");
+                row.getStyle().set("border-bottom", "1px solid #e0e0e0");
+                row.getStyle().set("padding", "10px 0");
+
                 layout.add(row);
             }
         }
+
         if (layout.getComponentCount() == 0) {
-            layout.add(new Paragraph("No auctions available for this product."));
+            layout.add(new Paragraph("No random cards available for this product."));
         }
 
-        auctionDialog.add(layout);
-        auctionDialog.setWidth("400px");
-        auctionDialog.open();
+        randomDialog.add(layout);
+        randomDialog.setWidth("400px");
+        randomDialog.open();
+    }
+
+    private void openAllBidsDialog(List<BidDTO> bids, int productId, int storeId) {
+        Dialog bidDialog = new Dialog();
+        bidDialog.setHeaderTitle("Available Bids In This Product");
+
+        VerticalLayout layout = new VerticalLayout();
+        layout.setSpacing(true);
+        layout.setPadding(true);
+        layout.setWidthFull();
+
+        for (BidDTO bid : bids) {
+            if (bid.productId == productId) {
+                HorizontalLayout row = new HorizontalLayout();
+                row.setWidthFull();
+
+                String bidDetails = "Product Name: " + bid.productName;
+
+                Paragraph bidInfo = new Paragraph(bidDetails);
+
+                Button makeBidButton = new Button("Make a Bid", e -> {
+                    bidDialog.close();
+                    showBidDialog(bid, storeId);
+                });
+
+                row.add(bidInfo, makeBidButton);
+                layout.add(row);
+            }
+        }
+
+        if (layout.getComponentCount() == 0) {
+            layout.add(new Paragraph("No bids available for this product."));
+        }
+
+        bidDialog.add(layout);
+        bidDialog.setWidth("400px");
+        bidDialog.open();
     }
 
 }
