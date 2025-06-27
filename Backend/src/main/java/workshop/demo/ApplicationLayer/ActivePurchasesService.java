@@ -81,24 +81,29 @@ public class ActivePurchasesService {
         logger.info("loading all auctions !!!!");
         List<ActivePurcheses> special = activePurchasesRepo.findAll();
         for (ActivePurcheses active : special) {
-            StoreStock storeStock = storeStockRepo.findById(active.getStoreId()).orElseThrow();
-            Store store = storeJpaRepo.findById(active.getStoreId()).orElseThrow();
+            StoreStock storeStock = storeStockRepo.findById(active.getStoreId()).orElse(null);
+            Store store = storeJpaRepo.findById(active.getStoreId()).orElse(null);
+
+            if (storeStock == null || store == null) {
+                logger.warn("Skipping active purchase with storeId={} due to missing store or stock", active.getStoreId());
+                continue;
+            }
+
             for (Auction auction : active.getActiveAuctions()) {
                 if (!auction.isEnded()) {
                     auction.loadBids();
-                    scheduleAuctionEnd(active, auction.getRestMS(), storeStock, auction.getId(), auction.getProductId(),
-                            auction.getAmount(), store);
-                }
-            }
-            for (Random random : active.getActiveRandoms()) {
-                if (random.isActive()) {
-                    scheduleRandomEnd(active, random.getRestMS(), storeStock, random.getRandomId(),
-                            random.getProductId(),
-                            random.getQuantity(), store, random);
+                    scheduleAuctionEnd(
+                            active,
+                            auction.getRestMS(),
+                            storeStock,
+                            auction.getId(),
+                            auction.getProductId(),
+                            auction.getAmount(),
+                            store
+                    );
                 }
             }
         }
-
     }
 
     @Transactional
