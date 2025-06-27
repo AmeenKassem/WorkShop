@@ -88,6 +88,8 @@ public class ManageOwnersView extends VerticalLayout implements HasUrlParameter<
 
     private void showDeleteDialog(WorkerDTO owner) {
         Dialog dialog = new Dialog();
+        VerticalLayout layout = new VerticalLayout();
+        layout.addClassName("dialog-content"); 
         dialog.add(new Paragraph("Are you sure you want to delete owner: " + owner.getUsername() + "?"));
 
         Button confirm = new Button("Delete", e -> {
@@ -107,7 +109,7 @@ public class ManageOwnersView extends VerticalLayout implements HasUrlParameter<
     private void showOfferOwnerDialog() {
         Dialog dialog = new Dialog();
         VerticalLayout layout = new VerticalLayout();
-        layout.addClassName("manager-form-container");
+        layout.addClassName( "dialog-content");
 
         VerticalLayout inputSection = new VerticalLayout();
         inputSection.addClassName("input-section");

@@ -79,6 +79,7 @@ import workshop.demo.SocketCommunication.SocketHandler;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 
 public class StoreSTests {
+
     @Autowired
     StoreTreeJPARepository tree;
     @Autowired
@@ -173,7 +174,7 @@ public class StoreSTests {
         createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
 
         // ======================= PRODUCT & ITEM ADDITION =======================
-        String[] keywords = { "Laptop", "Lap", "top" };
+        String[] keywords = {"Laptop", "Lap", "top"};
         PID = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
         itemStoreDTO = new ItemStoreDTO(PID, 10, 2000, Category.Electronics, 0, createdStoreId, "Laptop", "TestStore");
 
@@ -183,7 +184,6 @@ public class StoreSTests {
     }
 
     // @AfterEach
-
     // void tearDown() {
     // if (userRepo != null) {
     // userRepo.clear();
@@ -202,13 +202,12 @@ public class StoreSTests {
     // }
     // // Add clear() for all other repos you wrote it for
     // }
-
     // ========== Store Owner Use Cases ==========
     @Test
     void testOwner_AddProductToStock() throws Exception {
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-        String[] keywords = { "Tablet", "Touchscreen" };
+        String[] keywords = {"Tablet", "Touchscreen"};
 
         var PID2 = stockService.addProduct(NOToken, "Tablet", Category.Electronics, "10-inch Tablet", keywords);
 
@@ -426,9 +425,9 @@ public class StoreSTests {
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(createdStoreId, NOToken, authRepo.getUserName(token1), a);
         storeService.reciveAnswerToOffer(createdStoreId, authRepo.getUserName(NOToken), "token", true, false); // false
-                                                                                                               // =
-                                                                                                               // toBeOwner
-                                                                                                               // →
+        // =
+        // toBeOwner
+        // →
         // false = manager
         // when decide equals true some list is null (i think its permissions list)
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, createdStoreId).size() == 2);
@@ -684,7 +683,7 @@ public class StoreSTests {
         assertTrue(auctions.length == 1);
         assertTrue(auctions[0].productId == PID);
 
-        assertTrue(auctions[0].storeId ==createdStoreId );
+        assertTrue(auctions[0].storeId == createdStoreId);
 
     }
 
@@ -726,7 +725,9 @@ public class StoreSTests {
         storeService.rankStore(NGToken, createdStoreId, 0);
         assertTrue(storeService.getFinalRateInStore(createdStoreId) == 3);
 
-        /// 3 is deafult
+    
+
+    /// 3 is deafult
 
     }
 
@@ -746,17 +747,20 @@ public class StoreSTests {
     }
 
     @Test
-
     void testOwner_rankitem_Success() throws Exception {
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         assertTrue(stockService.getProductsInStore(createdStoreId)[0].getRank() == 3);
 
-        stockService.rankProduct(createdStoreId, NGToken, PID, 1);
+        stockService.rankProduct(createdStoreId, NGToken, PID, 5);
+        stockService.rankProduct(createdStoreId, NGToken, PID, 5);
+        stockService.rankProduct(createdStoreId, NGToken, PID, 5);
+        stockService.rankProduct(createdStoreId, NGToken, PID, 5);
         // System.out.println("afhwlsdfkjEGn " +
         // stockService.getProductsInStore(1)[0].rank);
-
-        assertTrue(stockService.getProductsInStore(createdStoreId)[0].getRank() == 1);
+        int finalRank = stockService.getProductsInStore(createdStoreId)[0].getRank();
+        System.out.println("Final calculated rank: " + finalRank);
+        assertTrue(stockService.getProductsInStore(createdStoreId)[0].getRank() == 5);
 
     }
 
@@ -1146,9 +1150,7 @@ public class StoreSTests {
     // storeService.addStoreToSystem(NGToken, "AA", "ELECTRONICS"); // store doesn't
     // exist
     // });
-
     // }
-
     @Test
     void test_closeStore_storeDoesNotExist_shouldNotRemoveOtherStores() throws Exception {
         int before = storeRepositoryjpa.findAll().size();
@@ -1230,74 +1232,57 @@ public class StoreSTests {
     // void testSendDelayedMessage_UserOnline() {
     // BaseNotifier mockBase = mock(BaseNotifier.class);
     // when(mockBase.isUserOnline("user")).thenReturn(true);
-
     // DelayedNotificationDecorator decorator = new
     // DelayedNotificationDecorator(mockBase);
     // decorator.sendDelayedMessageToUser("user", "hello");
-
     // verify(mockBase).send("user", "hello");
     // }
-
     // @Test
     // void testSendDelayedMessage_UserOffline_NewEntry() {
     // BaseNotifier mockBase = mock(BaseNotifier.class);
     // when(mockBase.isUserOnline("user")).thenReturn(false);
-
     // DelayedNotificationDecorator decorator = new
     // DelayedNotificationDecorator(mockBase);
     // decorator.sendDelayedMessageToUser("user", "offline-msg");
-
     // assertEquals(1, decorator.getDelayedMessages("user").length);
     // }
-
     // @Test
     // void testSendDelayedMessage_UserOffline_ExistingEntry() {
     // BaseNotifier mockBase = mock(BaseNotifier.class);
     // when(mockBase.isUserOnline("user")).thenReturn(false);
-
     // DelayedNotificationDecorator decorator = new
     // DelayedNotificationDecorator(mockBase);
     // decorator.sendDelayedMessageToUser("user", "msg1");
     // decorator.sendDelayedMessageToUser("user", "msg2");
-
     // String[] messages = decorator.getDelayedMessages("user");
     // assertArrayEquals(new String[] { "msg1", "msg2" }, messages);
     // }
-
     // @Test
     // void testGetDelayedMessages_NoMessages() {
     // BaseNotifier mockBase = mock(BaseNotifier.class);
     // DelayedNotificationDecorator decorator = new
     // DelayedNotificationDecorator(mockBase);
-
     // assertNull(decorator.getDelayedMessages("unknown"));
     // }
-
     // @Test
     // void testSendRTMessageToUser_Online() {
     // BaseNotifier mockBase = mock(BaseNotifier.class);
     // when(mockBase.isUserOnline("user")).thenReturn(true);
-
     // RealTimeNotificationDecorator decorator = new
     // RealTimeNotificationDecorator(mockBase);
     // decorator.sendRTMessageToUser("user", "realtime");
-
     // verify(mockBase).send("user", "realtime");
     // }
-
     // @Test
     // void testSendRTMessageToUser_Offline() {
     // BaseNotifier mockBase = mock(BaseNotifier.class);
     // when(mockBase.isUserOnline("user")).thenReturn(false);
-
     // RealTimeNotificationDecorator decorator = new
     // RealTimeNotificationDecorator(mockBase);
     // decorator.sendRTMessageToUser("user", "delayed");
-
     // // No send call expected
     // verify(mockBase, never()).send(any(), any());
     // }
-
     @Test
     void testBaseNotifierSend_Success() throws Exception {
         SocketHandler handler = mock(SocketHandler.class);

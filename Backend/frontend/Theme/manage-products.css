@@ -1,7 +1,6 @@
 .manage-products-container {
     background-color: white;
     padding: 2rem 1rem;
-    min-height: auto; 
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -15,7 +14,6 @@
     color: #1f2937;
     border-bottom: 2px solid #e11d48;
     padding-bottom: 0.5rem;
-    margin-bottom: 0.5rem;
 }
 
 .products-section {
@@ -27,103 +25,115 @@
 
 .product-list {
     width: 100%;
-    max-width: 700px;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    align-items: center;
+    max-width: 1000px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
 }
 
 .product-card {
-    background: linear-gradient(90deg, #fdf2f8, #e0f7fa);
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 6px 20px rgba(249, 168, 212, 0.3);
-    width: 100%;
-    max-width: 650px;
+    background: linear-gradient(to right, #fdf2f8, #e0f7fa);
+    border-radius: 20px;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    box-sizing: border-box;
 }
 
-.button-row {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.6rem;
-    flex-wrap: wrap;
-    margin-top: 1rem;
+.product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
 }
+
+.product-card span {
+    font-size: 1rem;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 
 .button-row button {
-    font-weight: bold;
+    max-width: 180px;
+    white-space: nowrap;
+}
+.button-row button {
     border: none;
     border-radius: 12px;
-    padding: 0.6rem 1.3rem;
+    padding: 0.6rem 1.2rem;
+    font-weight: bold;
     color: white;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.button-row button:nth-child(1) { background-color: #10b981; } /* Edit */
-.button-row button:nth-child(2) { background-color: #f59e0b; } /* Auction */
-.button-row button:nth-child(3) { background-color: #3b82f6; } /* Bidding */
-.button-row button:nth-child(4) { background-color: #8b5cf6; } /* Random */
-.button-row button:nth-child(5) { background-color: #ef4444; } /* Delete */
+
+.button-row button:nth-child(1) { background-color: #10b981; }  /* Edit */
+.button-row button:nth-child(2) { background-color: #f59e0b; }  /* Auction */
+.button-row button:nth-child(3) { background-color: #3b82f6; }  /* Bidding */
+.button-row button:nth-child(4) { background-color: #8b5cf6; }  /* Random */
+.button-row button:nth-child(5) { background-color: #ef4444; }  /* Delete */
 
 .button-row button:hover {
-    transform: scale(1.05);
     opacity: 0.9;
+    transform: scale(1.05);
 }
+
 
 .footer-buttons {
     display: flex;
     justify-content: space-between;
     padding: 1rem 2rem;
     width: 100%;
-    max-width: 700px;
+    max-width: 1000px;
 }
 
 .add-product-btn, .back-btn {
-    font-weight: bold;
+    border: none;
     border-radius: 12px;
     padding: 0.6rem 1.4rem;
-    border: none;
-    box-shadow: 0 4px 8px rgba(249, 168, 212, 0.4);
+    font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
 .add-product-btn {
-    background: linear-gradient(90deg, #ce5290, #f472b6);
+    background: linear-gradient(to right, #f472b6, #ec4899);
     color: white;
 }
 
 .add-product-btn:hover {
-    background: linear-gradient(90deg, #f472b6, #ec4899);
+    background: linear-gradient(to right, #ec4899, #f472b6);
     transform: scale(1.03);
 }
 
 .back-btn {
-    background-color: #e5e7eb;
+    background-color: #f3f4f6;
     color: #374151;
 }
 
 .back-btn:hover {
-    background-color: #d1d5db;
+    background-color: #e5e7eb;
+    transform: scale(1.02);
 }
 
+/* שגיאות */
 .error-message {
     color: red;
     font-weight: bold;
 }
 
+/* דיאלוגים */
 .dialog-content {
     padding: 2rem;
     background-color: #f9fafb;
     border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -135,55 +145,60 @@
 .dialog-content h3 {
     font-size: 1.5rem;
     color: #1f2937;
-    margin-bottom: 1rem;
     text-align: center;
-}
-
-.dialog-field {
-    width: 100%;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #e11d48;
+    padding-bottom: 0.3rem;
 }
 
 .dialog-button-row {
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
-    margin-top: 1.5rem;
     flex-wrap: wrap;
+    margin-top: 1.2rem;
 }
 
 .dialog-button.confirm {
-    background: linear-gradient(90deg, #ce5290, #f472b6);
+    background: linear-gradient(to right, #f472b6, #ec4899);
     color: white;
+    border: none;
+    padding: 0.6rem 1.4rem;
     font-weight: bold;
     border-radius: 12px;
-    padding: 0.6rem 1.4rem;
-    border: none;
-    box-shadow: 0 4px 8px rgba(249, 168, 212, 0.4);
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .dialog-button.confirm:hover {
-    background: linear-gradient(90deg, #f472b6, #ec4899);
+    background: linear-gradient(to right, #ec4899, #f472b6);
     transform: scale(1.03);
 }
 
 .dialog-button.cancel {
-    background-color: #e5e7eb;
+    background-color: #f3f4f6;
     color: #374151;
+    border: none;
+    padding: 0.6rem 1.4rem;
+    font-weight: bold;
+    border-radius: 12px;
+    cursor: pointer;
 }
 
 .dialog-button.cancel:hover {
-    background-color: #d1d5db;
-}
-
-.dialog-content h2 {
-    border-bottom: 2px solid #e11d48;
-    padding-bottom: 0.3rem;
-    margin-bottom: 1rem;
-}
-
-.dialog-button.cancel:hover {
-    background-color: #d1d5db;
+    background-color: #e5e7eb;
     transform: scale(1.03);
+}
+
+.button-row {
+    display: flex;
+    flex-wrap: nowrap; 
+    justify-content: center;
+    gap: 0.8rem;
+    overflow-x: auto; 
+}
+
+.button-row button {
+    width: auto !important;
+    flex: 0 0 auto;
 }
