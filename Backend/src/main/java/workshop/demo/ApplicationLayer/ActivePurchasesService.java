@@ -306,6 +306,7 @@ public class ActivePurchasesService {
         return userId;
     }
 
+    @Transactional
     public AuctionDTO[] getAllAuctions_user(String token, int storeId) throws Exception {
         logger.info("User requesting all auctions in store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
