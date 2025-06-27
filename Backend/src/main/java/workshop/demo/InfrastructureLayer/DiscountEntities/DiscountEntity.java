@@ -14,7 +14,9 @@ public abstract class DiscountEntity {
     @Column(unique = true)
     private String name;
 
+    @Column(name = "discount_percent", nullable = false)
     private double percent;
+    @Column(name = "discount_condition")
     private String condition;
 
     public String getName() { return name; }
@@ -26,4 +28,5 @@ public abstract class DiscountEntity {
     public void setCondition(String condition) { this.condition = condition; }
 
     public int getId() { return id; }
+    protected DiscountEntity() { }
 }
