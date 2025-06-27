@@ -46,58 +46,58 @@ import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 
 public class TestTest {
 
-    @Autowired
-    private StoreTreeJPARepository tree;
-    @Autowired
-    private NodeJPARepository node;
-    @Autowired
-    private NotificationService notificationRepository;
+    // @Autowired
+    // private StoreTreeJPARepository tree;
+    // @Autowired
+    // private NodeJPARepository node;
+    // @Autowired
+    // private NotificationService notificationRepository;
 
-    @Autowired
-    private IStockRepoDB stockRepositoryjpa;
-    @Autowired
-    private IStoreRepoDB storeRepositoryjpa;
-    @Autowired
-    private IOrderRepoDB orderRepository;
-    @Autowired
-    private PurchaseRepository purchaseRepository;
-    @Autowired
-    private UserSuspensionJpaRepository suspensionRepo;
-    @Autowired
-    private AuthenticationRepo authRepo;
-    @Autowired
-    private UserJpaRepository userRepo;
-    @Autowired
-    private SUConnectionRepository sIsuConnectionRepo;
-    @Autowired
-    private GuestJpaRepository guestRepo;
-    @Autowired
-    private IStoreStockRepo storeStockRepo;
-    @Autowired
-    private OfferJpaRepository offerRepo;
-    // ======================== Services ========================
+    // @Autowired
+    // private IStockRepoDB stockRepositoryjpa;
+    // @Autowired
+    // private IStoreRepoDB storeRepositoryjpa;
+    // @Autowired
+    // private IOrderRepoDB orderRepository;
+    // @Autowired
+    // private PurchaseRepository purchaseRepository;
+    // @Autowired
+    // private UserSuspensionJpaRepository suspensionRepo;
+    // @Autowired
+    // private AuthenticationRepo authRepo;
+    // @Autowired
+    // private UserJpaRepository userRepo;
+    // @Autowired
+    // private SUConnectionRepository sIsuConnectionRepo;
+    // @Autowired
+    // private GuestJpaRepository guestRepo;
+    // @Autowired
+    // private IStoreStockRepo storeStockRepo;
+    // @Autowired
+    // private OfferJpaRepository offerRepo;
+    // // ======================== Services ========================
     @Autowired
     public UserService userService;
-    @Autowired
-    private StoreService storeService;
-    @Autowired
-    private StockService stockService;
-    @Autowired
-    private PurchaseService purchaseService;
-    @Autowired
-    private OrderService orderService;
-    @Autowired
-    private UserSuspensionService suspensionService;
+    // @Autowired
+    // private StoreService storeService;
+    // @Autowired
+    // private StockService stockService;
+    // @Autowired
+    // private PurchaseService purchaseService;
+    // @Autowired
+    // private OrderService orderService;
+    // @Autowired
+    // private UserSuspensionService suspensionService;
 
-    // ======================== Payment / Supply ========================
-    @Autowired
-    private PaymentServiceImp payment;
-    @Autowired
-    private SupplyServiceImp serviceImp;
+    // // ======================== Payment / Supply ========================
+    // @Autowired
+    // private PaymentServiceImp payment;
+    // @Autowired
+    // private SupplyServiceImp serviceImp;
 
-    // ======================== Utility ========================
-    @Autowired
-    private Encoder encoder;
+    // // ======================== Utility ========================
+    // @Autowired
+    // private Encoder encoder;
 
     // ======================== Test Data ========================
     String NOToken;
