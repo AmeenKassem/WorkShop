@@ -381,7 +381,7 @@ public class PurchaseService {
 
         // Handle Auction & Accepted Bids
         for (SingleBid bid : winningBids) {
-            Product product = stockJpaRepo.findById(bid.productId()).orElse(null);
+            Product product = stockJpaRepo.findById(bid.getProductId()).orElse(null);
             if (product == null) {
                 logger.warn("Product not found in finalizeSpecialCart for productId={}", bid.getId());
                 throw new UIException("Product not available", ErrorCodes.PRODUCT_NOT_FOUND);
@@ -397,7 +397,7 @@ public class PurchaseService {
                     storeName,
                     bid.getAmount(),
                     (int) bid.getBidPrice(),
-                    bid.productId(),
+                    bid.getProductId(),
                     product.getCategory(), bid.getStoreId());
 
             res.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);

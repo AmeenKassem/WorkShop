@@ -131,6 +131,7 @@ public class Random {
             cumulativeWeight += participation.getAmountPaid();
             if (rand <= cumulativeWeight) {
                 winner = participation;
+                participation.markAsWinner();
                 break;
             }
         }

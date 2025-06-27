@@ -1,6 +1,7 @@
 package workshop.demo.DomainLayer.Stock;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,13 +53,15 @@ public class BID {
     @Transient
     Object lock = new Object();
 
-    public BID(int productId, int quantity, int id, int storeId) {
+    public BID(int productId, int quantity, int storeId) {
         this.productId = productId;
         this.quantity = quantity;
         this.isAccepted = false;
-        this.bidId = id;
         this.bids = new HashMap<>();
         this.storeId = storeId;
+    }
+
+    public BID() {
     }
 
     public void setActivePurcheses(ActivePurcheses activePurcheses) {
@@ -90,12 +93,13 @@ public class BID {
                 throw new UIException("This bid is already closed!", ErrorCodes.BID_FINISHED);
 
             SingleBid bid = new SingleBid(productId, quantity, userId, price, SpecialType.BID, storeId, bidId);
+            bid.setBid(this);
             bids.put(bid.getId(), bid);
             return bid;
         }
     }
 
-    public SingleBid acceptBid(int userBidId) throws DevException, UIException {
+    public SingleBid acceptBid(int userBidId, List<Integer> ownersIds, int userId) throws DevException, UIException {
         synchronized (lock) {
             SingleBid curr = null;
             if (isAccepted)
@@ -103,7 +107,7 @@ public class BID {
 
             for (Integer id : bids.keySet()) {
                 if (id == userBidId) {
-                    bids.get(id).acceptBid();
+                    bids.get(id).acceptBid(ownersIds, userId);
                     curr = bids.get(id);
                     if (bids.get(id).isWinner()) {
                         winner = bids.get(id);
@@ -161,5 +165,30 @@ public class BID {
 
     public int getProductId() {
         return productId;
+    }
+
+    public int getBidId() {
+        return bidId;
+    }
+
+	public boolean isAccepted() {
+		return isAccepted;
+	}
+
+    public List<Integer> getLosersIdsIfAccepted() {
+        if (isAccepted) {
+            return bids.values().stream()
+                    .filter(bid -> !bid.isAccepted())
+                    .map(SingleBid::getUserId)
+                    .toList();
+        }
+        return List.of();
+    }
+
+    public void setActivePurchases(ActivePurcheses activePurcheses2) {
+        if (activePurcheses2 == null) {
+            throw new IllegalArgumentException("ActivePurchases cannot be null");
+        }
+        this.activePurcheses = activePurcheses2;
     }
 }

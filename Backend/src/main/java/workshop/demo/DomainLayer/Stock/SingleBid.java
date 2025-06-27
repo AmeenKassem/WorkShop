@@ -1,6 +1,10 @@
 package workshop.demo.DomainLayer.Stock;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.annotation.Generated;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -19,6 +23,9 @@ public class SingleBid {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    @ElementCollection(fetch = FetchType.EAGER) 
+    private List<Integer> voteIds = new ArrayList<>();
+
     private int amount;
     private double price;
     private SpecialType type;
@@ -27,8 +34,6 @@ public class SingleBid {
     private int storeId;
     private int userId;
     private int productId;
-    public int ownersNum;// number of owners at the time i added my bid
-    private int acceptCounter;
     
     @ManyToOne
     @JoinColumn(name = "bid_id")
@@ -41,9 +46,7 @@ public class SingleBid {
         this.price = price;
         this.type = type;
         this.storeId = storeId;
-        this.id = id;
         this.specialId = specialId;
-        this.acceptCounter = 0;
         if (type == SpecialType.Auction) {
             status = Status.AUCTION_PENDING;
         } else {
@@ -92,10 +95,12 @@ public class SingleBid {
         return this.id;
     }
 
-    public void acceptBid() {
-        acceptCounter++;
-        if (acceptCounter == ownersNum) {
+    public void acceptBid(List<Integer> ownersIds, int ownerId) {
+        this.voteIds.add(ownerId);
+        if(this.voteIds.containsAll(ownersIds)){
             this.status = Status.BID_ACCEPTED;
+        } else {
+            this.status = Status.BID_PENDING;
         }
     }
 
@@ -145,7 +150,7 @@ public class SingleBid {
 
     }
 
-    public int productId() {
+    public int getProductId() {
         return productId;
 
     }
