@@ -24,6 +24,7 @@ import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.Auction;
 import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
+import workshop.demo.DomainLayer.Stock.ParticipationInRandom;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.UserAuctionBid;
@@ -276,7 +277,7 @@ public class UserService {
         return true;
     }
 
-    public SpecialCartItemDTO[] getSpecialCart(String token) throws UIException {
+    public SpecialCartItemDTO[] getSpecialCart(String token) throws UIException , Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(userId);
@@ -290,10 +291,15 @@ public class UserService {
             itemToSend.setIds(item.storeId, item.specialId, item.bidId, item.type);
             ActivePurcheses activePurcheses = activePurchasesRepo.findById(item.storeId).orElse(null);
             Store store = storeRepo.findById(item.storeId).orElse(null);
+            //System.out.println(store.getStoreName());
             itemToSend.storeName = store.getStoreName();
+            //System.out.println("product id is " + item.getProductId());
             Product product = stockRepo.findById(item.getProductId()).orElse(null);
+            // if (product == null) {
+            //     System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadddddddddddddddddddddddddddddddddddddddiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiinnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
+            // }
             if (item.type == SpecialType.Random) {
-                ParticipationInRandomDTO card = activePurcheses.getRandomCard(item.storeId, item.specialId, item.bidId);
+                ParticipationInRandomDTO card = activePurcheses.getRandomCard(item.storeId, item.specialId, item.user.getId());
                 itemToSend.setValues(product.getName(), card.isWinner, card.ended);
             } else if (item.type == SpecialType.BID) {
                 SingleBid bid = activePurcheses.getBid(item.storeId, item.specialId, item.bidId, item.type);
@@ -327,7 +333,10 @@ public class UserService {
             dto.quantity = item.quantity;
             dto.price = item.price;
             dto.name = item.name;
-            dto.storeName = storeRepo.findById(item.storeId).orElseThrow().getStoreName();
+           dto.storeName = storeRepo.findById(item.storeId)
+    .orElseThrow(() -> new UIException("Store with ID " + item.storeId + " not found", -1))
+    .getStoreName();
+
             // this back
             dto.itemCartId = item.getId();
             dtos[i] = dto;

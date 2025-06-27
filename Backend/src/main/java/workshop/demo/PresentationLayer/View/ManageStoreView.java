@@ -209,12 +209,10 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
  /* ───────────────────────────────────────────────────────────────
      *  Purchase-Policy dialog  (add / remove)
      * ─────────────────────────────────────────────────────────────── */
-    private void openPurchasePolicyDialog() {
-
+   private void openPurchasePolicyDialog() {
         Dialog dlg = new Dialog();
         dlg.setHeaderTitle("Add / Remove Purchase Policies");
 
-        /* 1 · policy key selector — uses backend keys */
         ComboBox<String> keyBox = new ComboBox<>("Policy");
         keyBox.setItems("NO_ALCOHOL", "MIN_QTY");
         keyBox.setItemLabelGenerator(k -> switch (k) {
@@ -227,7 +225,6 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
         });
         keyBox.setValue("NO_ALCOHOL");
 
-        /* 2 · optional numeric parameter */
         NumberField paramField = new NumberField("Minimum quantity");
         paramField.setMin(1);
         paramField.setStepButtonsVisible(true);
@@ -239,7 +236,6 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
 
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
 
-        /* 3 · add policy */
         Button add = new Button("Add", e -> {
             try {
                 Integer p = paramField.isVisible() ? paramField.getValue().intValue() : null;
@@ -250,8 +246,8 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
                 ExceptionHandlers.handleException(ex);
             }
         });
+        add.addClassNames("dialog-button", "confirm");
 
-        /* 4 · remove policy */
         Button remove = new Button("Remove", e -> {
             try {
                 Integer p = paramField.isVisible() ? paramField.getValue().intValue() : null;
@@ -262,13 +258,16 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
                 ExceptionHandlers.handleException(ex);
             }
         });
+        remove.addClassNames("dialog-button", "confirm");
 
         Button cancel = new Button("Cancel", e -> dlg.close());
+        cancel.addClassNames("dialog-button", "cancel");
 
-        dlg.add(new VerticalLayout(
-                keyBox, paramField,
-                new HorizontalLayout(add, remove, cancel)
-        ));
+        VerticalLayout content = new VerticalLayout();
+        content.addClassName("dialog-content");
+        content.add(keyBox, paramField, new HorizontalLayout(add, remove, cancel));
+
+        dlg.add(content);
         dlg.open();
     }
 
