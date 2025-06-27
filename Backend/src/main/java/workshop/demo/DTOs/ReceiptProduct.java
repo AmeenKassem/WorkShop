@@ -1,4 +1,5 @@
 package workshop.demo.DTOs;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -29,6 +30,7 @@ public class ReceiptProduct {
 
     @ManyToOne
     @JoinColumn(name = "order_id")
+    @JsonIgnore
     private Order order;
 
     public ReceiptProduct(String productName, String storename, int quantity, int price, int productId,
