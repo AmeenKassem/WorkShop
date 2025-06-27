@@ -30,7 +30,7 @@ public class SingleBid {
     public int ownersNum;// number of owners at the time i added my bid
     private int acceptCounter;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "bid_id")
     private BID bid;
 

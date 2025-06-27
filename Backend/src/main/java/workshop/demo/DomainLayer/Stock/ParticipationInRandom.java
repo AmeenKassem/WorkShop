@@ -28,7 +28,7 @@ public class ParticipationInRandom {
     private boolean mustRefund;
     private int transactionIdForPayment = 0;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "random_id")
     private Random random;
 

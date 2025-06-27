@@ -48,9 +48,9 @@ public class BID {
     @ManyToOne
     @JoinColumn(name = "active_store_id")
     private ActivePurcheses activePurcheses;
-    
-    @Autowired
-    private LockManager lockManager;
+
+    @Transient
+    Object lock = new Object();
 
     public BID(int productId, int quantity, int id, int storeId) {
         this.productId = productId;
@@ -85,7 +85,7 @@ public class BID {
     }
 
     public SingleBid bid(int userId, double price) throws UIException {
-        synchronized (lockManager.getBidLock(bidId)) {
+        synchronized (lock) {
             if (isAccepted)
                 throw new UIException("This bid is already closed!", ErrorCodes.BID_FINISHED);
 
@@ -96,7 +96,7 @@ public class BID {
     }
 
     public SingleBid acceptBid(int userBidId) throws DevException, UIException {
-        synchronized (lockManager.getBidLock(bidId)) {
+        synchronized (lock) {
             SingleBid curr = null;
             if (isAccepted)
                 throw new UIException("This bid is already closed!", ErrorCodes.BID_FINISHED);
@@ -124,7 +124,7 @@ public class BID {
     }
 
     public boolean rejectBid(int userBidId) throws DevException, UIException {
-        synchronized (lockManager.getBidLock(bidId)) {
+        synchronized (lock) {
             if (isAccepted)
                 throw new UIException("The bid is already closed!", ErrorCodes.BID_FINISHED);
             if (!bids.containsKey(userBidId))
@@ -136,7 +136,7 @@ public class BID {
     }
 
     public boolean isOpen() {
-        synchronized (lockManager.getBidLock(bidId)) {
+        synchronized (lock) {
             return !isAccepted;
         }
     }

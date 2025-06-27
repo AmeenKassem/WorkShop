@@ -325,7 +325,7 @@ public class ActivePurchasesService {
     @Transactional
     public boolean addBidOnAucction(String token, int auctionId, int storeId, double price)
             throws UIException, DevException {
-                synchronized
+                synchronized (lockManager.getAuctionLock(auctionId)) {
         logger.info("User trying to bid on auction: {}, store: {}", auctionId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
@@ -348,6 +348,7 @@ public class ActivePurchasesService {
                 SpecialType.Auction, bid.getProductId());
         userRepo.findById(userId).get().addSpecialItemToCart(specialItem);
         return true;
+    }
 
     }
 

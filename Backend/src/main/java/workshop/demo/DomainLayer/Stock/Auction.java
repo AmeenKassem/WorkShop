@@ -115,35 +115,35 @@ public class Auction {
     }
 
     public UserAuctionBid bid(int userId, double price) throws UIException {
-        synchronized (lockManager.getAuctionLock(auctionId)) {
-            if (status == AuctionStatus.FINISH || System.currentTimeMillis() > endTimeMillis) {
-                throw new UIException("This auction has ended!", ErrorCodes.AUCTION_FINISHED);
-            }
-            if (price <= maxBid) {
-                throw new UIException("Your bid must be higher than the current maximum bid!", ErrorCodes.BID_TOO_LOW);
-            }
-            for (UserAuctionBid userAuctionBid : bids) {
-                if (userAuctionBid.getUserId() != userId)
-                    userAuctionBid.markAsLosedTop();
-            }
-            for (UserAuctionBid userAuctionBid : bids) {
-                if (userAuctionBid.getUserId() == userId) {
-                    maxBid = price;
-                    userAuctionBid.setPrice(price);
-                    userAuctionBid.markAsCurrTop();
-                    return userAuctionBid;
-                }
-            }
 
-            maxBid = price;
-            UserAuctionBid bid = new UserAuctionBid();
-            bid.setUserId(userId);
-            bid.setPrice(price);
-            bid.setAuction(this);
-            bid.markAsCurrTop();
-            bids.add(bid);
-            return bid;
+        if (status == AuctionStatus.FINISH || System.currentTimeMillis() > endTimeMillis) {
+            throw new UIException("This auction has ended!", ErrorCodes.AUCTION_FINISHED);
         }
+        if (price <= maxBid) {
+            throw new UIException("Your bid must be higher than the current maximum bid!", ErrorCodes.BID_TOO_LOW);
+        }
+        for (UserAuctionBid userAuctionBid : bids) {
+            if (userAuctionBid.getUserId() != userId)
+                userAuctionBid.markAsLosedTop();
+        }
+        for (UserAuctionBid userAuctionBid : bids) {
+            if (userAuctionBid.getUserId() == userId) {
+                maxBid = price;
+                userAuctionBid.setPrice(price);
+                userAuctionBid.markAsCurrTop();
+                return userAuctionBid;
+            }
+        }
+
+        maxBid = price;
+        UserAuctionBid bid = new UserAuctionBid();
+        bid.setUserId(userId);
+        bid.setPrice(price);
+        bid.setAuction(this);
+        bid.markAsCurrTop();
+        bids.add(bid);
+        return bid;
+
     }
 
     public AuctionDTO getDTO() {
