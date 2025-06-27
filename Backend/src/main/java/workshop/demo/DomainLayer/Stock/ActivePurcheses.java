@@ -334,9 +334,9 @@ public class ActivePurcheses {
     public List<RandomDTO> getRandomsForProduct(int productId, String storeName, String productName) {
 
         List<RandomDTO> result = new ArrayList<>();
-        System.out.println("randoms found : " + activeRandom.size());
+        
         for (Random random : activeRandom.values()) {
-            System.out.println("randomid: " + random.getRandomId() + " isActive: " + random.isActive());
+            
             if(random.isActive()){
             RandomDTO dto = random.getDTO();
             dto.storeName = storeName;
@@ -344,7 +344,7 @@ public class ActivePurcheses {
             result.add(dto);
             }
         }
-        System.out.println("getRandomsForProduct: " + result.size() + " randoms found for product: " + productName);
+        
         return result;
     }
 

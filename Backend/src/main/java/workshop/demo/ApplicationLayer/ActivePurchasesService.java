@@ -404,7 +404,7 @@ public class ActivePurchasesService {
                         product.getName()));
             }
         }
-        System.out.println("all randoms size: " + allRandoms.size());
+        //System.out.println("all randoms size: " + allRandoms.size());
         return allRandoms.toArray(new RandomDTO[0]);
     }
 
