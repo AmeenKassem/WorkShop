@@ -55,7 +55,7 @@ public class InitPresenter {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<ApiResponse<String>>() {
-            });
+                    });
             ApiResponse body = response.getBody();
             if (body != null && body.getErrorMsg() == null) {
                 String guestToken = (String) body.getData();
@@ -141,14 +141,16 @@ public class InitPresenter {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<ApiResponse<List<ReceiptDTO>>>() {
-            });
+                    });
 
             ApiResponse<List<ReceiptDTO>> responseBody = response.getBody();
 
             if (responseBody != null && responseBody.getErrNumber() == -1) {
                 List<ReceiptDTO> receiptList = responseBody.getData();
                 ReceiptDTO[] receipts = receiptList.toArray(new ReceiptDTO[0]);
-
+                for (ReceiptDTO receiptDTO : receipts) {
+                    System.out.println(receiptDTO.getFinalPrice() + "-final price for " + receiptDTO.getStoreName());
+                }
                 System.out.println("ok2");
                 PurchaseView.showReceiptDialog(receipts);
             } else {
@@ -169,7 +171,7 @@ public class InitPresenter {
                     HttpMethod.GET,
                     null,
                     new ParameterizedTypeReference<ApiResponse<Boolean>>() {
-            });
+                    });
             ApiResponse<Boolean> body = response.getBody();
             System.out.println("[InitPresenter] isSiteInitialized " + body.getData());
             return body != null && body.getData() != null && body.getData();

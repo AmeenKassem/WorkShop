@@ -24,16 +24,18 @@ public class DatabaseCleaner {
 
         sqlBuilder.append("""
                 DELETE FROM dbo.[authorization_permissions];
+                DELETE FROM dbo.[authorization];
                 DELETE FROM dbo.[cart_item];
                 DELETE FROM dbo.[user_special_item_cart];
                 DELETE FROM dbo.[user_suspensions];
                 DELETE FROM dbo.[shopping_cart];
+                DELETE FROM dbo.[registered];
+                DELETE FROM dbo.[guest];
                 DELETE FROM dbo.[offer_permissions];
                 DELETE FROM dbo.[offer];
                 DELETE FROM dbo.[user_auction_bid];
                 DELETE FROM dbo.[auction];
                 DELETE FROM dbo.[node];
-                DELETE FROM dbo.[authorization];
                 DELETE FROM dbo.[receipt_product];
                 DELETE FROM dbo.[product];
                 DELETE FROM dbo.[review];
@@ -47,14 +49,15 @@ public class DatabaseCleaner {
                 DELETE FROM dbo.[app_settings_entity];
                 DELETE FROM dbo.[delayed_notification];
                 DELETE FROM dbo.[orders];
-                DELETE FROM dbo.[registered];
-                DELETE FROM dbo.[guest];
                                 """);
-
+            
         // Execute all in one call
         String finalSql = sqlBuilder.toString();
         entityManager.createNativeQuery(finalSql).executeUpdate();
     }
+
+
+    
 
 
     

@@ -87,7 +87,7 @@ public class RandomTests {
     void setUp() {
         active = new ActivePurcheses(storeId);
 
-        bid = new BID(123, 2, 1, 10); // productId=123, quantity=2, bidId=1, storeId=10
+        bid = new BID(123, 2,  10); // productId=123, quantity=2, bidId=1, storeId=10
         storeStock = new StoreStock(1);
         testItem = new item(1, 10, 1000, Category.Electronics);
         storeStock.addItem(testItem);
@@ -103,9 +103,9 @@ public class RandomTests {
         scope = new DiscountScope(items);
         String[] keywords = {"gaming", "laptop", "performance"};
         product = new Product("Laptop", Category.Electronics, "High-end laptop", keywords);
-        auctionBid = new SingleBid(1, 2, 100, 999.99, SpecialType.Auction, 10, 1, 11);
-        standardBid = new SingleBid(2, 3, 200, 499.49, SpecialType.BID, 20, 2, 22);
-        standardBid.ownersNum = 2;
+        auctionBid = new SingleBid(1, 2, 100, 999.99, SpecialType.Auction, 10, 1);
+        standardBid = new SingleBid(2, 3, 200, 499.49, SpecialType.BID, 20, 2);
+        // standardBid.ownersNum = 2;
     }
 
     @Test

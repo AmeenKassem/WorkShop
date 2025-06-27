@@ -254,7 +254,7 @@ public class Auction {
     public int getTopId() {
         for (UserAuctionBid userAuctionBid : bids) {
             if (userAuctionBid.isCurrTop())
-                return userAuctionBid.getId();
+                return userAuctionBid.getUserId();
         }
         return -1;
     }

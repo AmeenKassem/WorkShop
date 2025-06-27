@@ -3,7 +3,35 @@ package workshop.demo.IntegrationTests.ServiceTests;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
+import javax.xml.crypto.Data;
+
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -64,7 +92,15 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.BaseNotifier;
 
 import workshop.demo.DomainLayer.Stock.SingleBid;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 
+import workshop.demo.DomainLayer.Store.PurchasePolicy;
+import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.StoreUserConnection.Offer;
+import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
+import workshop.demo.InfrastructureLayer.*;
+import workshop.demo.SocketCommunication.SocketHandler;
 import workshop.demo.DomainLayer.Store.PurchasePolicy;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Offer;
@@ -679,7 +715,7 @@ public class StoreSTests {
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         activePurcheses.setProductToAuction(NOToken, createdStoreId, PID, 1, 5000, 2);
-        AuctionDTO[] auctions = activePurcheses.getAllAuctions_user(NOToken, createdStoreId);
+        AuctionDTO[] auctions = activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId);
         assertTrue(auctions.length == 1);
         assertTrue(auctions[0].productId == PID);
 

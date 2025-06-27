@@ -29,6 +29,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.AuctionStatus;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
@@ -824,7 +825,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         mainLayout.setWidthFull();
 
         for (AuctionDTO auction : auctions) {
-            if (auction.productId == productId) {
+            if (auction.status==AuctionStatus.IN_PROGRESS && auction.productId == productId) {
                 VerticalLayout auctionDetailsLayout = new VerticalLayout();
                 auctionDetailsLayout.setSpacing(false);
                 auctionDetailsLayout.setPadding(false);
