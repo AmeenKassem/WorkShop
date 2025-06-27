@@ -443,7 +443,7 @@ public class StoreService {
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         // Load discount from DB
         DiscountEntity rootEntity = discountRepo.findByName("ROOT_" + storeId)
-                .orElseThrow(() -> new RuntimeException("ROOT discount not found for store " + storeId));
+                .orElse(null);
 
         if (rootEntity != null) {
             Discount discount = DiscountMapper.toDomain(rootEntity);
