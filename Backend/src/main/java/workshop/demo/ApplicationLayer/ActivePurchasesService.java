@@ -386,6 +386,16 @@ public class ActivePurchasesService {
             logger.info("User {} trying to participate in random: {}, store: {}", userId, randomId, storeId);
             ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();
             ParticipationInRandomDTO res = active.participateInRandom(userId, randomId, amountPaid);
+            if(res.isEnded()) {
+                logger.info("Random {} has ended, no participation allowed", randomId);
+                List<Integer> participationsIds = new ArrayList<>();
+                active.getRandom(randomId).getParticipationsUsersIds()
+                        .forEach(participationId -> participationsIds.add(participationId));
+                
+                    notifier.sendMessageForUsers(
+                            "Random on store: " + storeJpaRepo.findById(storeId).get().getStoreName() + ", on product: " + stock.getProductById(res.getProductId()).getName() +" has ended.", participationsIds);
+                
+            }
             return res;
         }
     }
