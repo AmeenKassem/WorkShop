@@ -9,18 +9,18 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Purchase.IPaymentService;
 import org.springframework.http.*;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+// import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import org.apache.hc.client5.http.classic.HttpClient;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.TrustAllStrategy;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.ssl.*;
-import org.apache.tomcat.jni.SSLContext;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
+// import org.apache.hc.client5.http.classic.HttpClient;
+// import org.apache.http.conn.ssl.NoopHostnameVerifier;
+// import org.apache.http.conn.ssl.TrustAllStrategy;
+// import org.apache.http.impl.client.CloseableHttpClient;
+// import org.apache.http.ssl.*;
+// import org.apache.tomcat.jni.SSLContext;
+// import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+// import org.springframework.web.client.RestTemplate;
 
 
 @Service

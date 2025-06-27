@@ -75,36 +75,36 @@ public class ActivePurchasesService {
 
     // private Timer timer = new Timer();
 
-    @Transactional
-    @EventListener(ApplicationReadyEvent.class)
-    public void scheduleSpecialPurchases() {
-        logger.info("loading all auctions !!!!");
-        List<ActivePurcheses> special = activePurchasesRepo.findAll();
-        for (ActivePurcheses active : special) {
-            StoreStock storeStock = storeStockRepo.findById(active.getStoreId()).orElse(null);
-            Store store = storeJpaRepo.findById(active.getStoreId()).orElse(null);
+    // @Transactional
+    // @EventListener(ApplicationReadyEvent.class)
+    // public void scheduleSpecialPurchases() {
+    //     logger.info("loading all auctions !!!!");
+    //     List<ActivePurcheses> special = activePurchasesRepo.findAll();
+    //     for (ActivePurcheses active : special) {
+    //         StoreStock storeStock = storeStockRepo.findById(active.getStoreId()).orElse(null);
+    //         Store store = storeJpaRepo.findById(active.getStoreId()).orElse(null);
 
-            if (storeStock == null || store == null) {
-                logger.warn("Skipping active purchase with storeId={} due to missing store or stock", active.getStoreId());
-                continue;
-            }
+    //         if (storeStock == null || store == null) {
+    //             logger.warn("Skipping active purchase with storeId={} due to missing store or stock", active.getStoreId());
+    //             continue;
+    //         }
 
-            for (Auction auction : active.getActiveAuctions()) {
-                if (!auction.isEnded()) {
-                    auction.loadBids();
-                    scheduleAuctionEnd(
-                            active,
-                            auction.getRestMS(),
-                            storeStock,
-                            auction.getId(),
-                            auction.getProductId(),
-                            auction.getAmount(),
-                            store
-                    );
-                }
-            }
-        }
-    }
+    //         for (Auction auction : active.getActiveAuctions()) {
+    //             if (!auction.isEnded()) {
+    //                 auction.loadBids();
+    //                 scheduleAuctionEnd(
+    //                         active,
+    //                         auction.getRestMS(),
+    //                         storeStock,
+    //                         auction.getId(),
+    //                         auction.getProductId(),
+    //                         auction.getAmount(),
+    //                         store
+    //                 );
+    //             }
+    //         }
+    //     }
+    // }
 
     @Transactional
     public int setProductToAuction(String token, int storeId, int productId, int quantity, long time, double startPrice)
@@ -139,20 +139,20 @@ public class ActivePurchasesService {
         if (time <= 0)
             time = 1;
         Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    // instead of directly calling `runAuctionEndTask(...)`
-                    // get the proxy of the current bean from Spring context
-                    ActivePurchasesService self = context.getBean(ActivePurchasesService.class);
-                    self.runRandomEndTask(active,storeStock, randomId, productId, quantity, store, random);
-                } catch (UIException | DevException e) {
-                    e.printStackTrace();
-                }
-            }
+        // timer.schedule(new TimerTask() {
+        //     @Override
+        //     public void run() {
+        //         try {
+        //             // instead of directly calling `runAuctionEndTask(...)`
+        //             // get the proxy of the current bean from Spring context
+        //             ActivePurchasesService self = context.getBean(ActivePurchasesService.class);
+        //             self.runRandomEndTask(active,storeStock, randomId, productId, quantity, store, random);
+        //         } catch (UIException | DevException e) {
+        //             e.printStackTrace();
+        //         }
+        //     }
 
-        }, time);
+        // }, time);
     }
 
     public void scheduleAuctionEnd(ActivePurcheses active, long time, StoreStock storeStock, int auctionId,
@@ -160,20 +160,20 @@ public class ActivePurchasesService {
         if (time <= 0)
             time = 1;
         Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    // instead of directly calling `runAuctionEndTask(...)`
-                    // get the proxy of the current bean from Spring context
-                    ActivePurchasesService self = context.getBean(ActivePurchasesService.class);
-                    self.runAuctionEndTask(active, auctionId, storeStock, productId, store);
-                } catch (UIException | DevException e) {
-                    e.printStackTrace();
-                }
-            }
+        // timer.schedule(new TimerTask() {
+        //     @Override
+        //     public void run() {
+        //         try {
+        //             // instead of directly calling `runAuctionEndTask(...)`
+        //             // get the proxy of the current bean from Spring context
+        //             ActivePurchasesService self = context.getBean(ActivePurchasesService.class);
+        //             self.runAuctionEndTask(active, auctionId, storeStock, productId, store);
+        //         } catch (UIException | DevException e) {
+        //             e.printStackTrace();
+        //         }
+        //     }
 
-        }, time);
+        // }, time);
     }
 
     @Transactional
