@@ -140,28 +140,6 @@ public class ActivePurchasesService {
         return auction.getId();
     }
 
-    public void scheduleRandomEnd(ActivePurcheses active, long time, StoreStock storeStock, int randomId,
-            int productId, int quantity, Store store, Random random) {
-        if (time <= 0)
-            time = 1;
-        Timer timer = new Timer();
-        // timer.schedule(new TimerTask() {
-        // @Override
-        // public void run() {
-        // try {
-        // // instead of directly calling `runAuctionEndTask(...)`
-        // // get the proxy of the current bean from Spring context
-        // ActivePurchasesService self = context.getBean(ActivePurchasesService.class);
-        // self.runRandomEndTask(active,storeStock, randomId, productId, quantity,
-        // store, random);
-        // } catch (UIException | DevException e) {
-        // e.printStackTrace();
-        // }
-        // }
-
-        // }, time);
-    }
-
     public void scheduleAuctionEnd(ActivePurcheses active, long time, StoreStock storeStock, int auctionId,
             int productId, int quantity, Store store) {
         if (time <= 0)
@@ -182,49 +160,6 @@ public class ActivePurchasesService {
 
         }, time);
     }
-
-    @Transactional
-    public void runRandomEndTask(ActivePurcheses active, StoreStock storeStock, int randomId,
-            int productId, int quantity, Store store, Random random) throws UIException, DevException {
-        synchronized (random.getLock()) {
-            try {
-                StoreStock tempStoreStock = storeStockRepo.findById(storeStock.getStoreStockId()).orElseThrow();
-                ActivePurcheses tempActivePurchases = activePurchasesRepo.findById(active.getStoreId()).orElseThrow();
-                Random tempRandom = tempActivePurchases.getRandom(randomId);
-                logger.info("random must be endddddddd! , random id:" + tempRandom.getRandomId());
-                // random.endRandom();
-                tempRandom.setActivePurchases(tempActivePurchases);
-
-                if (tempRandom.isActive()) {
-                    tempRandom.setActive(false);
-                    tempRandom.setCancel(true);
-                    logger.info("must refund the quantity of random!");
-                    tempStoreStock.IncreaseQuantitytoBuy(productId, quantity);
-                    storeStockRepo.saveAndFlush(tempStoreStock);
-                    tempRandom.mustRefundAllParticipations();
-                } else {
-                    logger.info("random already ended, no need to refund quantity");
-                }
-
-                activePurchasesRepo.saveAndFlush(tempActivePurchases);
-                List<Integer> paricpationIds = tempRandom.getParticipationsUsersIds();
-                notifier.sendMessageForUsers(
-                        "Random on store :" + store.getStoreName() + ", on product:" + productId + " has ended!",
-                        paricpationIds);
-                List<Integer> ownersIds = new ArrayList<>();
-                suConnectionRepo.getOwnersInStore(store.getstoreId())
-                        .forEach(user -> ownersIds.add(user.getMyId()));
-                notifier.sendMessageForUsers(
-                        " Random has ended!",
-                        ownersIds);
-
-            } catch (UIException | DevException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-    }
-
     // @Transactional
     // public void runAuctionEndTask(ActivePurcheses active, int auctionId,
     // StoreStock storeStock, int productId,
@@ -350,7 +285,7 @@ public class ActivePurchasesService {
         }
         return auctions.toArray(new AuctionDTO[0]);
     }
-    
+
     @Transactional
     public AuctionDTO[] searchActiveAuctions(String token, ProductSearchCriteria criteria) throws Exception {
         logger.info("Starting searchAuctions with criteria: {}", criteria);
