@@ -1,13 +1,25 @@
 package workshop.demo.DomainLayer.Stock;
 
+import jakarta.annotation.Generated;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import workshop.demo.DTOs.SingleBidDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.Status;
 
+@Entity
 public class SingleBid {
 
-    private int amount;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    private int amount;
     private double price;
     private SpecialType type;
     private int specialId;
@@ -18,8 +30,11 @@ public class SingleBid {
     public int ownersNum;// number of owners at the time i added my bid
     private int acceptCounter;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bid_id")
+    private BID bid;
 
-    public SingleBid(int productId, int amount, int userId, double price, SpecialType type, int storeId, int id, int specialId) {
+    public SingleBid(int productId, int amount, int userId, double price, SpecialType type, int storeId, int specialId) {
         this.productId = productId;
         this.amount = amount;
         this.userId = userId;
@@ -39,6 +54,10 @@ public class SingleBid {
     public SingleBid(){
         
     }
+
+    public void setBid(BID bid) {
+        this.bid = bid;
+    }   
 
     public SingleBidDTO convertToDTO() {
         return new SingleBidDTO(

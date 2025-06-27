@@ -73,6 +73,9 @@ public class ActivePurchasesService {
     @Autowired
     private StockService stock;
 
+    @Autowired
+    private LockManager lockManager;
+
     // private Timer timer = new Timer();
 
     @Transactional
@@ -141,7 +144,7 @@ public class ActivePurchasesService {
                     // instead of directly calling `runAuctionEndTask(...)`
                     // get the proxy of the current bean from Spring context
                     ActivePurchasesService self = context.getBean(ActivePurchasesService.class);
-                    self.runRandomEndTask(active,storeStock, randomId, productId, quantity, store, random);
+                    self.runRandomEndTask(active, storeStock, randomId, productId, quantity, store, random);
                 } catch (UIException | DevException e) {
                     e.printStackTrace();
                 }
@@ -173,8 +176,8 @@ public class ActivePurchasesService {
 
     @Transactional
     public void runRandomEndTask(ActivePurcheses active, StoreStock storeStock, int randomId,
-            int productId, int quantity, Store store, Random random) throws UIException, DevException{
-        synchronized (random.getLock()) {
+            int productId, int quantity, Store store, Random random) throws UIException, DevException {
+        synchronized (lockManager.getRandomLock(randomId)) {
             try {
                 StoreStock tempStoreStock = storeStockRepo.findById(storeStock.getStoreStockId()).orElseThrow();
                 ActivePurcheses tempActivePurchases = activePurchasesRepo.findById(active.getStoreId()).orElseThrow();
@@ -322,6 +325,7 @@ public class ActivePurchasesService {
     @Transactional
     public boolean addBidOnAucction(String token, int auctionId, int storeId, double price)
             throws UIException, DevException {
+                synchronized
         logger.info("User trying to bid on auction: {}, store: {}", auctionId, storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
@@ -404,14 +408,17 @@ public class ActivePurchasesService {
                         product.getName()));
             }
         }
-        //System.out.println("all randoms size: " + allRandoms.size());
+        // System.out.println("all randoms size: " + allRandoms.size());
         return allRandoms.toArray(new RandomDTO[0]);
     }
 
     public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
             throws UIException, DevException {
-        ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();
-        Random random = active.getRandom(randomId);
-        return random.participateInRandom(userId, amountPaid).toDTO();
+        synchronized (lockManager.getRandomLock(randomId)) {
+            logger.info("User {} trying to participate in random: {}, store: {}", userId, randomId, storeId);
+            ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();
+            ParticipationInRandomDTO res = active.participateInRandom(userId, randomId ,amountPaid);
+            return res;
+        }
     }
 }

@@ -1,7 +1,22 @@
 package workshop.demo.DomainLayer.Stock;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
+import workshop.demo.ApplicationLayer.LockManager;
 
 // import org.hibernate.validator.internal.util.logging.Log_.logger;
 
@@ -12,17 +27,30 @@ import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
+@Entity
 public class BID {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int bidId;
+
+    @OneToMany(mappedBy = "bid", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    public Map<Integer, SingleBid> bids;
+
     private int productId;
     private int quantity;
     private boolean isAccepted;
-    private int bidId;
-    private SingleBid winner;
     private int storeId;
 
-    private final Object lock = new Object();
-    private static AtomicInteger idGen = new AtomicInteger();
-    public HashMap<Integer, SingleBid> bids;
+    @Transient
+    private SingleBid winner;
+    
+    @ManyToOne
+    @JoinColumn(name = "active_store_id")
+    private ActivePurcheses activePurcheses;
+    
+    @Autowired
+    private LockManager lockManager;
 
     public BID(int productId, int quantity, int id, int storeId) {
         this.productId = productId;
@@ -31,6 +59,10 @@ public class BID {
         this.bidId = id;
         this.bids = new HashMap<>();
         this.storeId = storeId;
+    }
+
+    public void setActivePurcheses(ActivePurcheses activePurcheses) {
+        this.activePurcheses = activePurcheses;
     }
 
     public BidDTO getDTO() {
@@ -53,19 +85,18 @@ public class BID {
     }
 
     public SingleBid bid(int userId, double price) throws UIException {
-        synchronized (lock) {
+        synchronized (lockManager.getBidLock(bidId)) {
             if (isAccepted)
                 throw new UIException("This bid is already closed!", ErrorCodes.BID_FINISHED);
 
-            SingleBid bid = new SingleBid(productId, quantity, userId, price, SpecialType.BID, storeId,
-                    idGen.incrementAndGet(), bidId);
+            SingleBid bid = new SingleBid(productId, quantity, userId, price, SpecialType.BID, storeId, bidId);
             bids.put(bid.getId(), bid);
             return bid;
         }
     }
 
     public SingleBid acceptBid(int userBidId) throws DevException, UIException {
-        synchronized (lock) {
+        synchronized (lockManager.getBidLock(bidId)) {
             SingleBid curr = null;
             if (isAccepted)
                 throw new UIException("This bid is already closed!", ErrorCodes.BID_FINISHED);
@@ -93,7 +124,7 @@ public class BID {
     }
 
     public boolean rejectBid(int userBidId) throws DevException, UIException {
-        synchronized (lock) {
+        synchronized (lockManager.getBidLock(bidId)) {
             if (isAccepted)
                 throw new UIException("The bid is already closed!", ErrorCodes.BID_FINISHED);
             if (!bids.containsKey(userBidId))
@@ -105,7 +136,7 @@ public class BID {
     }
 
     public boolean isOpen() {
-        synchronized (lock) {
+        synchronized (lockManager.getBidLock(bidId)) {
             return !isAccepted;
         }
     }
