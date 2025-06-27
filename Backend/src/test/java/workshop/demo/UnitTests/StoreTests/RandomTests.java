@@ -91,12 +91,12 @@ public class RandomTests {
         storeStock = new StoreStock(1);
         testItem = new item(1, 10, 1000, Category.Electronics);
         storeStock.addItem(testItem);
-        auction = new Auction(1, 5, 2000, 100, 10,0);
-      //  random = new Random(1, 5, 100.0, 10, 200, 2000);
+        auction = new Auction(1, 5, 2000, 100, 10, 0);
+        //  random = new Random(1, 5, 100.0, 10, 200, 2000);
         store = new Store("TechStore", "ELECTRONICS");
         superDS = new SuperDataStructure();
-        owner = new Node(1,  -1,false,null); // root owner
-        manager = new Node(2, 1,false,owner); // manager added by owner
+        owner = new Node(1, -1, false, null); // root owner
+        manager = new Node(2, 1, false, owner); // manager added by owner
         items = new ArrayList<>();
         items.add(new ItemStoreDTO(1, 1, 1000, Category.Electronics, 0, 1, "Laptop", "test"));
         items.add(new ItemStoreDTO(1, 1, 50, Category.Electronics, 0, 1, "Laptop1", "test"));
@@ -314,7 +314,6 @@ public class RandomTests {
 //        });
 //        assertTrue(e.getMessage().contains("already participated"));
 //    }
-
 //    @Test
 //    void testFullParticipationTriggersEnd() throws Exception {
 //        random.participateInRandom(1, 30.0);
@@ -323,7 +322,6 @@ public class RandomTests {
 //        assertFalse(random.isActive());
 //        assertNotNull(random.getWinner());
 //    }
-
 //    @Test
 //    void testEndRandomMarksWinnerAndLosers() throws Exception {
 //        random.participateInRandom(101, 40.0);
@@ -365,7 +363,6 @@ public class RandomTests {
 //        ParticipationInRandomDTO win = random.endRandom();
 //        assertFalse(random.userIsWinner(win.getUserId() == 1 ? 2 : 1));
 //    }
-
     @Test
     void testConstructorAndGetters() {
         assertEquals("TechStore", store.getStoreName());
@@ -475,18 +472,11 @@ public class RandomTests {
         assertFalse(store.removeDiscountByName("NoMatch"));
     }
 
-
-
-
-
-
     @Test
     void testAddChildAndGetNode_NotFound() {
         Node found = owner.getNode(99);
         assertNull(found);
     }
-
-
 
     @Test
     void testAddAuthorization_NotManager() {
@@ -498,13 +488,10 @@ public class RandomTests {
         assertThrows(UIException.class, () -> owner.updateAuthorization(List.of(), -1));
     }
 
-
     @Test
     void testDeleteNode_NotFound() {
         assertFalse(owner.deleteNode(999));
     }
-
-
 
     @Test
     void testGetChildNotFound() {
@@ -512,17 +499,12 @@ public class RandomTests {
         assertNull(result);
     }
 
-
-
     @Test
     void testGetChildren() {
         owner.addChild(manager);
         List<Node> children = owner.getChildren();
         assertEquals(1, children.size());
     }
-
-
-
 
     @Test
     void testAddNewOwner_StoreDoesNotExist_ThrowsException() {
@@ -532,10 +514,6 @@ public class RandomTests {
         assertEquals("store does not exist in superDS", ex.getMessage());
     }
 
-
-
-
-
     @Test
     void testDeleteOwnership_StoreDoesNotExist() {
         DevException ex = assertThrows(DevException.class, () -> {
@@ -543,9 +521,6 @@ public class RandomTests {
         });
         assertEquals("store does not exist in superDS", ex.getMessage());
     }
-
-
-
 
     @Test
     void testAddNewManager_StoreDoesNotExist_ThrowsException() {
@@ -555,10 +530,6 @@ public class RandomTests {
         assertEquals("store does not exist in superDS", ex.getMessage());
     }
 
-
-
-
-
     @Test
     void testChangeAutho_StoreNotExist_ThrowsDevException() {
         DevException ex = assertThrows(DevException.class, () -> {
@@ -566,9 +537,6 @@ public class RandomTests {
         });
         assertEquals("store does not exist in superDS", ex.getMessage());
     }
-
-
-
 
     @Test
     public void testMatchesForStore_AllFiltersMatch() {
@@ -674,7 +642,7 @@ public class RandomTests {
 
     @Test
     public void testProductIsMatch_AllFiltersMatch() {
-        Product product = new Product("Fresh Milk",  Category.Sports, "Healthy and Cold", new String[]{"cold", "fresh"});
+        Product product = new Product("Fresh Milk", Category.Sports, "Healthy and Cold", new String[]{"cold", "fresh"});
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, // productNameFilter
                 Category.Sports, // categoryFilter
@@ -690,7 +658,7 @@ public class RandomTests {
 
     @Test
     public void testProductIsMatch_NameFilterFails() {
-        Product product = new Product("Bread",  Category.Sports, "Healthy and Cold", new String[]{"cold", "fresh"});
+        Product product = new Product("Bread", Category.Sports, "Healthy and Cold", new String[]{"cold", "fresh"});
         ProductSearchCriteria criteria = new ProductSearchCriteria(
                 null, // productNameFilter
                 Category.Sports, // categoryFilter
@@ -750,47 +718,47 @@ public class RandomTests {
 
     @Test
     void testEquals_SameReference() {
-        UserSpecialItemCart cart = new UserSpecialItemCart(1, 2, 3, SpecialType.BID,1);
+        UserSpecialItemCart cart = new UserSpecialItemCart(1, 2, 3, SpecialType.BID, 1);
         assertTrue(cart.equals(cart)); // Line 20
     }
 
     @Test
     void testEquals_NullObject() {
-        UserSpecialItemCart cart = new UserSpecialItemCart(1, 2, 3, SpecialType.BID,1);
+        UserSpecialItemCart cart = new UserSpecialItemCart(1, 2, 3, SpecialType.BID, 1);
         assertFalse(cart.equals(null)); // Line 21
     }
 
     @Test
     void testEquals_DifferentClass() {
-        UserSpecialItemCart cart = new UserSpecialItemCart(1, 2, 3, SpecialType.BID,1);
+        UserSpecialItemCart cart = new UserSpecialItemCart(1, 2, 3, SpecialType.BID, 1);
         assertFalse(cart.equals("not a cart")); // Line 21
     }
 
     @Test
     void testEquals_DifferentStoreId() {
-        UserSpecialItemCart c1 = new UserSpecialItemCart(1, 2, 3, SpecialType.BID,1);
-        UserSpecialItemCart c2 = new UserSpecialItemCart(99, 2, 3, SpecialType.BID,1);
+        UserSpecialItemCart c1 = new UserSpecialItemCart(1, 2, 3, SpecialType.BID, 1);
+        UserSpecialItemCart c2 = new UserSpecialItemCart(99, 2, 3, SpecialType.BID, 1);
         assertFalse(c1.equals(c2));
     }
 
     @Test
     void testEquals_DifferentSpecialId() {
-        UserSpecialItemCart c1 = new UserSpecialItemCart(1, 2, 3, SpecialType.BID,1);
-        UserSpecialItemCart c2 = new UserSpecialItemCart(1, 99, 3, SpecialType.BID,1);
+        UserSpecialItemCart c1 = new UserSpecialItemCart(1, 2, 3, SpecialType.BID, 1);
+        UserSpecialItemCart c2 = new UserSpecialItemCart(1, 99, 3, SpecialType.BID, 1);
         assertFalse(c1.equals(c2));
     }
 
     @Test
     void testEquals_DifferentType() {
-        UserSpecialItemCart c1 = new UserSpecialItemCart(1, 2, 3, SpecialType.BID,1);
-        UserSpecialItemCart c2 = new UserSpecialItemCart(1, 2, 3, SpecialType.Auction,1);
+        UserSpecialItemCart c1 = new UserSpecialItemCart(1, 2, 3, SpecialType.BID, 1);
+        UserSpecialItemCart c2 = new UserSpecialItemCart(1, 2, 3, SpecialType.Auction, 1);
         assertFalse(c1.equals(c2));
     }
 
     @Test
     void testEquals_ExactMatch() {
-        UserSpecialItemCart c1 = new UserSpecialItemCart(1, 2, 3, SpecialType.Random,1);
-        UserSpecialItemCart c2 = new UserSpecialItemCart(1, 2, 999, SpecialType.Random,1); // bidId ignored
+        UserSpecialItemCart c1 = new UserSpecialItemCart(1, 2, 3, SpecialType.Random, 1);
+        UserSpecialItemCart c2 = new UserSpecialItemCart(1, 2, 999, SpecialType.Random, 1); // bidId ignored
         assertTrue(c1.equals(c2));
     }
 
@@ -995,11 +963,6 @@ public class RandomTests {
         assertEquals(2, electronics.size());
     }
 
-
-
-
-
-
     @Test
     void testChangeQuantityBatch_GuestFailsOnInsufficient() {
         ItemCartDTO dto = new ItemCartDTO(1, 1, 9999, 1000, "Phone", "Store", Category.Electronics);
@@ -1093,7 +1056,6 @@ public class RandomTests {
 //        double price = active.getProductPrice(randomId);
 //        assertEquals(123.45, price);
 //    }
-
     @Test
     void testGetProductPrice_NotFound_Throws() {
         assertThrows(DevException.class, () -> active.getProductPrice(999));
@@ -1106,7 +1068,6 @@ public class RandomTests {
 //        assertNotNull(result);
 //        assertEquals(2, result.getProductId());
 //    }
-
     @Test
     void testGetRandom_NotFound_Throws() {
         assertThrows(DevException.class, () -> active.getRandom(888));
@@ -1121,7 +1082,6 @@ public class RandomTests {
 //        ParticipationInRandomDTO result = active.getRandomCardforuser(randomId, dto.userId);
 //        assertNotNull(result);
 //    }
-
     @Test
     void testgetRandomCardforuser_ReturnsNull_IfNotWinnerOrNotExist() throws Exception {
         assertNull(active.getRandomCardforuser(777, 5));
@@ -1129,7 +1089,7 @@ public class RandomTests {
 
     @Test
     void testGetBidIfWinner_Auction_Winner() throws Exception {
-        var auctionId = active.addProductToAuction(1, 1, 99999,0);
+        var auctionId = active.addProductToAuction(1, 1, 99999, 0);
         var bid = active.addUserBidToAuction(auctionId.getId(), 99, 300.0);
         active.getBidIfWinner(auctionId.getId(), bid.getId(), SpecialType.Auction); // triggers isWinner() check
 
@@ -1154,7 +1114,7 @@ public class RandomTests {
 
     @Test
     void testGetBidWithId_Auction() throws Exception {
-        var auctionId = active.addProductToAuction(1, 1, 100000,0);
+        var auctionId = active.addProductToAuction(1, 1, 100000, 0);
         var bid = active.addUserBidToAuction(auctionId.getId(), 66, 300);
         SingleBid result = active.getBidWithId(auctionId.getId(), bid.getId(), SpecialType.Auction);
         assertEquals(bid, result);
@@ -1181,7 +1141,7 @@ public class RandomTests {
 
     @Test
     void testGetProductIdForSpecial_Auction() throws Exception {
-        var id = active.addProductToAuction(42, 1, 99999,0);
+        var id = active.addProductToAuction(42, 1, 99999, 0);
         assertEquals(42, active.getProductIdForSpecial(id.getId(), SpecialType.Auction));
     }
 
@@ -1196,22 +1156,21 @@ public class RandomTests {
 //        int id = active.addProductToRandom(55, 1, 300, storeId, 99999);
 //        assertEquals(55, active.getProductIdForSpecial(id, SpecialType.Random));
 //    }
-
     @Test
     void testGetWinner_WhenNoWinner_ReturnsNull() {
-        Auction auction = new Auction(1, 1, 5000, 1, 10,0);
+        Auction auction = new Auction(1, 1, 5000, 1, 10, 0);
         assertNull(auction.getWinner()); // Timer hasn't ended, so no winner
     }
 
     @Test
     void testBidIsWinner_WhenNoWinner_ReturnsFalse() {
-        Auction auction = new Auction(1, 1, 5000, 1, 10,0);
+        Auction auction = new Auction(1, 1, 5000, 1, 10, 0);
         assertFalse(auction.bidIsWinner(999));
     }
 
     @Test
     void testBidIsWinner_MatchingWinner_ReturnsTrue() throws UIException, InterruptedException {
-        Auction auction = new Auction(1, 1, 100, 1, 10,0);
+        Auction auction = new Auction(1, 1, 100, 1, 10, 0);
         var bid = auction.bid(5, 300.0);
 
         Thread.sleep(150); // let auction finish
