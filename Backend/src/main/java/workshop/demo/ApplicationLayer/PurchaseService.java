@@ -234,8 +234,8 @@ public class PurchaseService {
         UserSpecialItemCart item = new UserSpecialItemCart(storeId, randomId, -1 , SpecialType.Random, card.getProductId());
         user.addSpecialItemToCart(item);
         //Hmode
-        //boolean done = paymentService.processPayment(paymentDetails, amountPaid)==-1?false:true;
-        boolean done = true; // for testing purposes, must be removed later
+        boolean done = paymentService.processPayment(paymentDetails, amountPaid)==-1?false:true;
+        //boolean done = true; // for testing purposes, must be removed later
         if (!done) {
             logger.error("Payment failed for userId={}, amountPaid={}", userId, amountPaid);
             throw new UIException("Payment failed", ErrorCodes.PAYMENT_ERROR);
