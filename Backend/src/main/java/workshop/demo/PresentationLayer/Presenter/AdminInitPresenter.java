@@ -1,15 +1,12 @@
 package workshop.demo.PresentationLayer.Presenter;
 
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriUtils;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
@@ -48,8 +45,12 @@ public class AdminInitPresenter {
 
             if (res != null && res.getErrorMsg() == null) {
                 NotificationView.showSuccess("Site has been successfully initialized.");
-                // Optionally, redirect to the Home page
-                UI.getCurrent().getPage().setLocation("/");
+
+                //UI.getCurrent().getPage().setLocation("/");
+                // Reset user session to guest so MainLayout will show guest buttons
+                VaadinSession.getCurrent().setAttribute("auth-token", null);
+                VaadinSession.getCurrent().setAttribute("user-type", "guest");
+                UI.getCurrent().getPage().executeJs("window.location.href='/'");
             }
         } catch (Exception e) {
             ExceptionHandlers.handleException(e);

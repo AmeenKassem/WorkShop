@@ -1,7 +1,23 @@
 package workshop.demo.DomainLayer.Stock;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
+import workshop.demo.ApplicationLayer.LockManager;
 
 // import org.hibernate.validator.internal.util.logging.Log_.logger;
 
@@ -12,25 +28,44 @@ import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
+@Entity
 public class BID {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int bidId;
+
+    @OneToMany(mappedBy = "bid", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    public Map<Integer, SingleBid> bids;
+
     private int productId;
     private int quantity;
     private boolean isAccepted;
-    private int bidId;
-    private SingleBid winner;
     private int storeId;
 
-    private final Object lock = new Object();
-    private static AtomicInteger idGen = new AtomicInteger();
-    public HashMap<Integer, SingleBid> bids;
+    @Transient
+    private SingleBid winner;
+    
+    @ManyToOne
+    @JoinColumn(name = "active_store_id")
+    private ActivePurcheses activePurcheses;
 
-    public BID(int productId, int quantity, int id, int storeId) {
+    @Transient
+    Object lock = new Object();
+
+    public BID(int productId, int quantity, int storeId) {
         this.productId = productId;
         this.quantity = quantity;
         this.isAccepted = false;
-        this.bidId = id;
         this.bids = new HashMap<>();
         this.storeId = storeId;
+    }
+
+    public BID() {
+    }
+
+    public void setActivePurcheses(ActivePurcheses activePurcheses) {
+        this.activePurcheses = activePurcheses;
     }
 
     public BidDTO getDTO() {
@@ -57,14 +92,14 @@ public class BID {
             if (isAccepted)
                 throw new UIException("This bid is already closed!", ErrorCodes.BID_FINISHED);
 
-            SingleBid bid = new SingleBid(productId, quantity, userId, price, SpecialType.BID, storeId,
-                    idGen.incrementAndGet(), bidId);
+            SingleBid bid = new SingleBid(productId, quantity, userId, price, SpecialType.BID, storeId, bidId);
+            bid.setBid(this);
             bids.put(bid.getId(), bid);
             return bid;
         }
     }
 
-    public SingleBid acceptBid(int userBidId) throws DevException, UIException {
+    public SingleBid acceptBid(int userBidId, List<Integer> ownersIds, int userId) throws DevException, UIException {
         synchronized (lock) {
             SingleBid curr = null;
             if (isAccepted)
@@ -72,7 +107,7 @@ public class BID {
 
             for (Integer id : bids.keySet()) {
                 if (id == userBidId) {
-                    bids.get(id).acceptBid();
+                    bids.get(id).acceptBid(ownersIds, userId);
                     curr = bids.get(id);
                     if (bids.get(id).isWinner()) {
                         winner = bids.get(id);
@@ -130,5 +165,30 @@ public class BID {
 
     public int getProductId() {
         return productId;
+    }
+
+    public int getBidId() {
+        return bidId;
+    }
+
+	public boolean isAccepted() {
+		return isAccepted;
+	}
+
+    public List<Integer> getLosersIdsIfAccepted() {
+        if (isAccepted) {
+            return bids.values().stream()
+                    .filter(bid -> !bid.isAccepted())
+                    .map(SingleBid::getUserId)
+                    .toList();
+        }
+        return List.of();
+    }
+
+    public void setActivePurchases(ActivePurcheses activePurcheses2) {
+        if (activePurcheses2 == null) {
+            throw new IllegalArgumentException("ActivePurchases cannot be null");
+        }
+        this.activePurcheses = activePurcheses2;
     }
 }

@@ -39,13 +39,12 @@ public class ActivePurcheses {
     @MapKey(name = "auctionId") // Use a field in Bid as the key
     private Map<Integer, Auction> activeAuction = new HashMap<>();
 
-
-    @Transient
-    private HashMap<Integer, BID> activeBid = new HashMap<>();
-
+    @OneToMany(mappedBy = "activePurcheses", cascade = CascadeType.ALL)
+    @MapKey(name = "bidId") // Use a field in BID as the key
+    private Map<Integer, BID> activeBid = new HashMap<>();
 
     @OneToMany(mappedBy = "activePurcheses", cascade = CascadeType.ALL)
-    @MapKey(name = "randomId") 
+    @MapKey(name = "randomId")
     private Map<Integer, Random> activeRandom = new HashMap<>();
 
     @Transient
@@ -53,8 +52,8 @@ public class ActivePurcheses {
     @Transient
     private static AtomicInteger randomIdGen = new AtomicInteger();
 
-    @Transient
-    private HashMap<Integer, List<BID>> productIdToBids = new HashMap<>();
+    // @Transient
+    // private HashMap<Integer, List<BID>> productIdToBids = new HashMap<>();
 
     // private Map<Integer, List<Integer>> productIdToAuctions = new HashMap<>();
     // @Transient
@@ -124,13 +123,14 @@ public class ActivePurcheses {
 
         if (quantity <= 0)
             throw new UIException("Quantity must be positive!", ErrorCodes.INVALID_BID_PARAMETERS);
-        int id = bidIdGen.incrementAndGet();
-        BID bid = new BID(productId, quantity, id, storeId);
-        activeBid.put(id, bid);
-        productIdToBids.computeIfAbsent(productId, k -> new ArrayList<>()).add(bid);
-        logger.debug("Bid created with id={}", id);
+        // int id = bidIdGen.incrementAndGet();
+        BID bid = new BID(productId, quantity, storeId);
+        activeBid.put(bid.getBidId(), bid);
+        bid.setActivePurchases(this);
+        // productIdToBids.computeIfAbsent(productId, k -> new ArrayList<>()).add(bid);
+        logger.debug("Bid created with id={}", bid.getBidId());
 
-        return id;
+        return bid.getBidId();
     }
 
     public SingleBid addUserBidToBid(int bidId, int userId, double price) throws DevException, UIException {
@@ -156,7 +156,8 @@ public class ActivePurcheses {
         return bidDTOs;
     }
 
-    public SingleBid acceptBid(int userBidId, int bidId) throws DevException, UIException {
+    public SingleBid acceptBid(int userBidId, int bidId, List<Integer> ownersIds, int userId)
+            throws DevException, UIException {
         logger.debug("acceptBid called with userBidId={}, bidId={}", userBidId, bidId);
 
         if (!activeBid.containsKey(bidId)) {
@@ -164,7 +165,7 @@ public class ActivePurcheses {
 
             throw new DevException("Bid ID not found in active bids!");
         }
-        return activeBid.get(bidId).acceptBid(userBidId);
+        return activeBid.get(bidId).acceptBid(userBidId, ownersIds, userId);
     }
 
     public boolean rejectBid(int userBidId, int bidId) throws DevException, UIException {
@@ -200,11 +201,12 @@ public class ActivePurcheses {
 
             throw new UIException("Random time must be positive!", ErrorCodes.INVALID_RANDOM_PARAMETERS);
         }
-        //int id = randomIdGen.incrementAndGet();
+        // int id = randomIdGen.incrementAndGet();
         Random random = new Random(productId, quantity, productPrice, storeId, randomTime);
         random.setActivePurchases(this);
         activeRandom.put(random.getRandomId(), random);
-        //productIdToRandoms.computeIfAbsent(productId, k -> new ArrayList<>()).add(random);
+        // productIdToRandoms.computeIfAbsent(productId, k -> new
+        // ArrayList<>()).add(random);
         logger.debug("Random created with id={}", random.getRandomId());
 
         return random;
@@ -334,25 +336,31 @@ public class ActivePurcheses {
     public List<RandomDTO> getRandomsForProduct(int productId, String storeName, String productName) {
 
         List<RandomDTO> result = new ArrayList<>();
-        
+
         for (Random random : activeRandom.values()) {
-            
-            if(random.isActive()){
-            RandomDTO dto = random.getDTO();
-            dto.storeName = storeName;
-            dto.productName = productName;
-            result.add(dto);
+
+            if (random.isActive() && random.getProductId() == productId) {
+                RandomDTO dto = random.getDTO();
+                dto.storeName = storeName;
+                dto.productName = productName;
+                result.add(dto);
             }
         }
-        
+
         return result;
     }
 
-    public List<BidDTO> getBidsForProduct(int productId) {
+    public List<BidDTO> getBidsForProduct(int productId, String storeName, String productName) {
         List<BidDTO> result = new ArrayList<>();
-        List<BID> bids = productIdToBids.getOrDefault(productId, new ArrayList<>());
-        for (BID bid : bids) {
-            result.add(bid.getDTO());
+        // List<BID> bids = productIdToBids.getOrDefault(productId, new ArrayList<>());
+        for (BID bid : activeBid.values()) {
+            if (bid.getProductId() == productId && !bid.isAccepted()) {
+
+                BidDTO bidDto = bid.getDTO();
+                bidDto.storeName = storeName;
+                bidDto.productName = productName;
+                result.add(bidDto);
+            }
         }
         return result;
     }
@@ -390,17 +398,21 @@ public class ActivePurcheses {
         return activeAuction.get(res);
     }
 
+    @Transactional
+    public BID getBidById(int res) {
+        return activeBid.get(res);
+    }
+
     public Integer getStoreId() {
         return storeId;
     }
 
     public ParticipationInRandomDTO getRandomCard(int storeId2, int specialId, int userId) throws DevException {
-       return getRandom(specialId).getCard(userId).toDTO();
+        return getRandom(specialId).getCard(userId).toDTO();
     }
 
     public SingleBid getBid(int storeId2, int specialId, int bidId, SpecialType type) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getBid'");
+        return activeBid.get(specialId).getBid(bidId);
     }
 
     public void endAuction(int randomId) {
@@ -432,6 +444,15 @@ public class ActivePurcheses {
         List<Random> res = new ArrayList<>();
         for (Random iterable_element : activeRandom.values()) {
             if (iterable_element.isActive())
+                res.add(iterable_element);
+        }
+        return res;
+    }
+
+    public List<BID> getActiveBids() {
+        List<BID> res = new ArrayList<>();
+        for (BID iterable_element : activeBid.values()) {
+            if (!iterable_element.isAccepted())
                 res.add(iterable_element);
         }
         return res;

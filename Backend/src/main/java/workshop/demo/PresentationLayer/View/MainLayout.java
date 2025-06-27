@@ -9,7 +9,6 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -38,7 +37,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-
+        //when finishing must change it to user-role
         Object roleAttr = VaadinSession.getCurrent().getAttribute("auth-role");
         String role = roleAttr != null ? roleAttr.toString() : "guest";
 
@@ -101,11 +100,11 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
     private void createHeader() {
         H1 logo = new H1("🛒 ShopPoint");
         logo.addClassName("market-title");
-    logo.getStyle()
-        .set("font-size", "2rem")
-        .set("border-bottom", "2px solid #ce5290") // קו עדין מתחת לשם
-        .set("padding-bottom", "0.5rem")
-        .set("margin-bottom", "1rem"); // רווח בין שם החנות לכפתורים
+        logo.getStyle()
+                .set("font-size", "2rem")
+                .set("border-bottom", "2px solid #ce5290") // קו עדין מתחת לשם
+                .set("padding-bottom", "0.5rem")
+                .set("margin-bottom", "1rem"); // רווח בין שם החנות לכפתורים
 
         // Vertical layout for the full header: logo on top, buttons below
         HorizontalLayout headerLayout = new HorizontalLayout();
