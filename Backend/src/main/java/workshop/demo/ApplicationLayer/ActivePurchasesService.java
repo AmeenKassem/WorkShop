@@ -75,36 +75,36 @@ public class ActivePurchasesService {
 
     // private Timer timer = new Timer();
 
-    // @Transactional
-    // @EventListener(ApplicationReadyEvent.class)
-    // public void scheduleSpecialPurchases() {
-    //     logger.info("loading all auctions !!!!");
-    //     List<ActivePurcheses> special = activePurchasesRepo.findAll();
-    //     for (ActivePurcheses active : special) {
-    //         StoreStock storeStock = storeStockRepo.findById(active.getStoreId()).orElse(null);
-    //         Store store = storeJpaRepo.findById(active.getStoreId()).orElse(null);
+    @Transactional
+    @EventListener(ApplicationReadyEvent.class)
+    public void scheduleSpecialPurchases() {
+        logger.info("loading all auctions !!!!");
+        List<ActivePurcheses> special = activePurchasesRepo.findAll();
+        for (ActivePurcheses active : special) {
+            StoreStock storeStock = storeStockRepo.findById(active.getStoreId()).orElse(null);
+            Store store = storeJpaRepo.findById(active.getStoreId()).orElse(null);
 
-    //         if (storeStock == null || store == null) {
-    //             logger.warn("Skipping active purchase with storeId={} due to missing store or stock", active.getStoreId());
-    //             continue;
-    //         }
+            if (storeStock == null || store == null) {
+                logger.warn("Skipping active purchase with storeId={} due to missing store or stock",
+                        active.getStoreId());
+                continue;
+            }
 
-    //         for (Auction auction : active.getActiveAuctions()) {
-    //             if (!auction.isEnded()) {
-    //                 auction.loadBids();
-    //                 scheduleAuctionEnd(
-    //                         active,
-    //                         auction.getRestMS(),
-    //                         storeStock,
-    //                         auction.getId(),
-    //                         auction.getProductId(),
-    //                         auction.getAmount(),
-    //                         store
-    //                 );
-    //             }
-    //         }
-    //     }
-    // }
+            for (Auction auction : active.getActiveAuctions()) {
+                if (!auction.isEnded()) {
+                    auction.loadBids();
+                    scheduleAuctionEnd(
+                            active,
+                            auction.getRestMS(),
+                            storeStock,
+                            auction.getId(),
+                            auction.getProductId(),
+                            auction.getAmount(),
+                            store);
+                }
+            }
+        }
+    }
 
     @Transactional
     public int setProductToAuction(String token, int storeId, int productId, int quantity, long time, double startPrice)
@@ -140,17 +140,18 @@ public class ActivePurchasesService {
             time = 1;
         Timer timer = new Timer();
         // timer.schedule(new TimerTask() {
-        //     @Override
-        //     public void run() {
-        //         try {
-        //             // instead of directly calling `runAuctionEndTask(...)`
-        //             // get the proxy of the current bean from Spring context
-        //             ActivePurchasesService self = context.getBean(ActivePurchasesService.class);
-        //             self.runRandomEndTask(active,storeStock, randomId, productId, quantity, store, random);
-        //         } catch (UIException | DevException e) {
-        //             e.printStackTrace();
-        //         }
-        //     }
+        // @Override
+        // public void run() {
+        // try {
+        // // instead of directly calling `runAuctionEndTask(...)`
+        // // get the proxy of the current bean from Spring context
+        // ActivePurchasesService self = context.getBean(ActivePurchasesService.class);
+        // self.runRandomEndTask(active,storeStock, randomId, productId, quantity,
+        // store, random);
+        // } catch (UIException | DevException e) {
+        // e.printStackTrace();
+        // }
+        // }
 
         // }, time);
     }
@@ -160,25 +161,25 @@ public class ActivePurchasesService {
         if (time <= 0)
             time = 1;
         Timer timer = new Timer();
-        // timer.schedule(new TimerTask() {
-        //     @Override
-        //     public void run() {
-        //         try {
-        //             // instead of directly calling `runAuctionEndTask(...)`
-        //             // get the proxy of the current bean from Spring context
-        //             ActivePurchasesService self = context.getBean(ActivePurchasesService.class);
-        //             self.runAuctionEndTask(active, auctionId, storeStock, productId, store);
-        //         } catch (UIException | DevException e) {
-        //             e.printStackTrace();
-        //         }
-        //     }
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    // instead of directly calling `runAuctionEndTask(...)`
+                    // get the proxy of the current bean from Spring context
+                    ActivePurchasesService self = context.getBean(ActivePurchasesService.class);
+                    self.runAuctionEndTask(active, auctionId, storeStock, productId, store);
+                } catch (UIException | DevException e) {
+                    e.printStackTrace();
+                }
+            }
 
-        // }, time);
+        }, time);
     }
 
     @Transactional
     public void runRandomEndTask(ActivePurcheses active, StoreStock storeStock, int randomId,
-            int productId, int quantity, Store store, Random random) throws UIException, DevException{
+            int productId, int quantity, Store store, Random random) throws UIException, DevException {
         synchronized (random.getLock()) {
             try {
                 StoreStock tempStoreStock = storeStockRepo.findById(storeStock.getStoreStockId()).orElseThrow();
@@ -219,32 +220,36 @@ public class ActivePurchasesService {
     }
 
     // @Transactional
-    // public void runAuctionEndTask(ActivePurcheses active, int auctionId, StoreStock storeStock, int productId,
-    //         Store store) throws UIException, DevException {
-    //     logger.info("Running auction end task for auction id: {}", auctionId);
-    //     ActivePurcheses a = activePurchasesRepo.findById(active.getStoreId()).orElseThrow();
-    //     Auction auction = a.getAuctionById(auctionId);
-    //     auction.loadBids();
-    //     auction.endAuction();
-    //     auction.setActivePurchases(a);
+    // public void runAuctionEndTask(ActivePurcheses active, int auctionId,
+    // StoreStock storeStock, int productId,
+    // Store store) throws UIException, DevException {
+    // logger.info("Running auction end task for auction id: {}", auctionId);
+    // ActivePurcheses a =
+    // activePurchasesRepo.findById(active.getStoreId()).orElseThrow();
+    // Auction auction = a.getAuctionById(auctionId);
+    // auction.loadBids();
+    // auction.endAuction();
+    // auction.setActivePurchases(a);
 
-    //     String productName = stock.getProductById(auction.getProductId()).getName();
-    //     activePurchasesRepo.saveAndFlush(a);
+    // String productName = stock.getProductById(auction.getProductId()).getName();
+    // activePurchasesRepo.saveAndFlush(a);
 
-    //     if (auction.mustReturnToStock()) {
-    //         logger.info("Refunding auction quantity to stock");
-    //         storeStock.IncreaseQuantitytoBuy(productId, auction.getAmount());
-    //         storeStockRepo.saveAndFlush(storeStock);
-    //     }
+    // if (auction.mustReturnToStock()) {
+    // logger.info("Refunding auction quantity to stock");
+    // storeStock.IncreaseQuantitytoBuy(productId, auction.getAmount());
+    // storeStockRepo.saveAndFlush(storeStock);
+    // }
 
-    //     List<Integer> participants = auction.getBidsUsersIds();
-    //     notifier.sendMessageForUsers(
-    //             "Auction on store: " + store.getStoreName() + " with product " + productName + " has ended!",
-    //             participants);
+    // List<Integer> participants = auction.getBidsUsersIds();
+    // notifier.sendMessageForUsers(
+    // "Auction on store: " + store.getStoreName() + " with product " + productName
+    // + " has ended!",
+    // participants);
 
-    //     List<Integer> owners = suConnectionRepo.getOwnersInStore(store.getstoreId())
-    //             .stream().map(user -> user.getMyId()).toList();
-    //     notifier.sendMessageForUsers("Auction on " + productName + " has ended!", owners);
+    // List<Integer> owners = suConnectionRepo.getOwnersInStore(store.getstoreId())
+    // .stream().map(user -> user.getMyId()).toList();
+    // notifier.sendMessageForUsers("Auction on " + productName + " has ended!",
+    // owners);
     // }
 
     @Transactional
@@ -329,6 +334,7 @@ public class ActivePurchasesService {
     // return active.getAuctions();
     // }
 
+    @Transactional
     public AuctionDTO[] searchActiveAuctions(String token, ProductSearchCriteria criteria) throws Exception {
         logger.info("Starting searchAuctions with criteria: {}", criteria);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -337,11 +343,15 @@ public class ActivePurchasesService {
         List<AuctionDTO> allAuctions = new ArrayList<>();
         List<ActivePurcheses> actives = new ArrayList<>();
         if (criteria.specificStore()) {
+            logger.info ("we have to find active purchases with id :"+criteria.getStoreId());
             actives.add(activePurchasesRepo.findById(criteria.getStoreId()).orElseThrow());
         } else {
             actives.addAll(activePurchasesRepo.findAll());
         }
         for (ActivePurcheses activePurcheses : actives) {
+            if (activePurcheses == null) {
+                logger.info("something went wrong with it loading auctions");
+            }
             Store store = storeJpaRepo.findById(activePurcheses.getStoreId()).orElse(null);
             if (store == null || !store.isActive())
                 continue;
@@ -417,6 +427,7 @@ public class ActivePurchasesService {
         return active.getRandoms();
     }
 
+    @Transactional
     public RandomDTO[] searchActiveRandoms(String token, ProductSearchCriteria criteria) throws Exception {
         logger.info("Starting searchActiveRandoms with criteria: {}", criteria);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -438,7 +449,7 @@ public class ActivePurchasesService {
                         product.getName()));
             }
         }
-        //System.out.println("all randoms size: " + allRandoms.size());
+        // System.out.println("all randoms size: " + allRandoms.size());
         return allRandoms.toArray(new RandomDTO[0]);
     }
 

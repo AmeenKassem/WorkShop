@@ -284,6 +284,7 @@ public class StockService {
         stockRepo.rejectBid(storeId, bidId, bidTorejectId);
     }
 
+    @Transactional
     public int setProductToRandom(String token, int productId, int quantity, double productPrice, int storeId,
             long RandomTime) throws UIException, DevException {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
