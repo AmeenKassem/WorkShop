@@ -72,7 +72,10 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
         HorizontalLayout layout = new HorizontalLayout();
         layout.setWidthFull();
         layout.addClassName("scroll-section");
-
+        if (randoms == null || randoms.length == 0) {
+            layout.add(new Paragraph("No random draws available."));
+            return layout;
+        }
         for (RandomDTO dto : randoms) {
             VerticalLayout card = new VerticalLayout();
             card.addClassName("special-card");
@@ -91,8 +94,11 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
         HorizontalLayout layout = new HorizontalLayout();
         layout.setWidthFull();
         layout.addClassName("scroll-section");
-
-        for (AuctionDTO dto : auctions) {
+        if (auctions == null || auctions.length == 0) {
+            layout.add(new Paragraph("No auctions available."));
+            return layout;
+        }
+            for (AuctionDTO dto : auctions) {
             VerticalLayout card = new VerticalLayout();
             card.addClassName("special-card");
 
@@ -101,8 +107,10 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
             if (dto.status == AuctionStatus.FINISH) {
                 if (dto.winnerId != -1) {
                     card.add(new Paragraph("🏆 Winner: " + dto.winnerUserName + " with $" + dto.maxBid));
+                    card.add(new Paragraph("⏰ Ended at: " + dto.endDate));
                 } else {
                     card.add(new Paragraph("❌ No winner for this auction."));
+                    card.add(new Paragraph("⏰ Ended at: " + dto.endDate));
                 }
             } else {
                 card.add(new Paragraph("📈 Max Bid: $" + dto.maxBid));
@@ -118,6 +126,10 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
         HorizontalLayout layout = new HorizontalLayout();
         layout.setWidthFull();
         layout.addClassName("scroll-section");
+        if (bids == null || bids.length == 0) {
+            layout.add(new Paragraph("No bids available."));
+            return layout;
+        }
 
         for (BidDTO bid : bids) {
             VerticalLayout bidLayout = new VerticalLayout();
