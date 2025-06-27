@@ -679,7 +679,7 @@ public class StoreSTests {
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         activePurcheses.setProductToAuction(NOToken, createdStoreId, PID, 1, 5000, 2);
-        AuctionDTO[] auctions = activePurcheses.getAllAuctions_user(NOToken, createdStoreId);
+        AuctionDTO[] auctions = activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId);
         assertTrue(auctions.length == 1);
         assertTrue(auctions[0].productId == PID);
 
