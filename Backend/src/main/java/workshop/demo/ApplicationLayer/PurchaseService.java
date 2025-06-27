@@ -179,7 +179,7 @@ public class PurchaseService {
                 logger.error("Supply failed");
                 // Auto-refund
                 paymentService.processRefund(paymentTxId);
-                throw new UIException("Supply failed", ErrorCodes.SUPPLY_ERROR);
+                throw new UIException("Supply failed11", ErrorCodes.SUPPLY_ERROR);
             }
         } catch (Exception e) {
             logger.error("Supply exception — refunding payment");
