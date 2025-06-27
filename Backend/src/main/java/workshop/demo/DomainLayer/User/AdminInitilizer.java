@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-//@ConfigurationProperties(prefix = "app.admin")
 public class AdminInitilizer {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminInitilizer.class);

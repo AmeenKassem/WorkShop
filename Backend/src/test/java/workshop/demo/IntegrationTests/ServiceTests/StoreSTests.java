@@ -1,5 +1,9 @@
 package workshop.demo.IntegrationTests.ServiceTests;
+package workshop.demo.IntegrationTests.ServiceTests;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,9 +33,35 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import workshop.demo.ApplicationLayer.ActivePurchasesService;
 import workshop.demo.ApplicationLayer.DatabaseCleaner;
 //import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.OrderService;
@@ -63,7 +93,15 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.BaseNotifier;
 
 import workshop.demo.DomainLayer.Stock.SingleBid;
+import workshop.demo.DomainLayer.Stock.SingleBid;
 
+import workshop.demo.DomainLayer.Store.PurchasePolicy;
+import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.StoreUserConnection.Offer;
+import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
+import workshop.demo.InfrastructureLayer.*;
+import workshop.demo.SocketCommunication.SocketHandler;
 import workshop.demo.DomainLayer.Store.PurchasePolicy;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Offer;
@@ -74,17 +112,18 @@ import workshop.demo.SocketCommunication.SocketHandler;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+// @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+
 public class StoreSTests {
-      @Autowired
-    DatabaseCleaner databaseCleaner;
+
     @Autowired
     StoreTreeJPARepository tree;
     @Autowired
     private NodeJPARepository node;
     // @Autowired
     // private NotificationRepository notificationRepository;
-    
+
     @Autowired
     private StockRepository stockRepository;
     @Autowired
@@ -133,6 +172,8 @@ public class StoreSTests {
     OrderService orderService;
     @Autowired
     ReviewService reviewService;
+    @Autowired
+    public ActivePurchasesService activePurcheses;
 
     // ======================== Test Data ========================
     String NOToken;
@@ -144,24 +185,13 @@ public class StoreSTests {
 
     int createdStoreId;
 
+    @Autowired
+    DatabaseCleaner databaseCleaner;
+
     @BeforeEach
     void setup() throws Exception {
-     
-        // node.deleteAll();
-        // orderRepository.deleteAll();
-        // tree.deleteAll();
-        // userRepo.deleteAll();
-
-        // guestRepo.deleteAll();
-
-        // stockRepositoryjpa.deleteAll();
-        // offerRepo.deleteAll();
-        // storeRepositoryjpa.deleteAll();
-        // storeStockRepo.deleteAll();
 
         databaseCleaner.wipeDatabase();
-        
-       //     orderRepository.deleteAll();
         GToken = userService.generateGuest();
         userService.register(GToken, "User", "User", 16);
         NGToken = userService.login(GToken, "User", "User");
@@ -181,7 +211,7 @@ public class StoreSTests {
         createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
 
         // ======================= PRODUCT & ITEM ADDITION =======================
-        String[] keywords = { "Laptop", "Lap", "top" };
+        String[] keywords = {"Laptop", "Lap", "top"};
         PID = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
         itemStoreDTO = new ItemStoreDTO(PID, 10, 2000, Category.Electronics, 0, createdStoreId, "Laptop", "TestStore");
 
@@ -191,7 +221,6 @@ public class StoreSTests {
     }
 
     // @AfterEach
-
     // void tearDown() {
     // if (userRepo != null) {
     // userRepo.clear();
@@ -210,13 +239,12 @@ public class StoreSTests {
     // }
     // // Add clear() for all other repos you wrote it for
     // }
-
     // ========== Store Owner Use Cases ==========
     @Test
     void testOwner_AddProductToStock() throws Exception {
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-        String[] keywords = { "Tablet", "Touchscreen" };
+        String[] keywords = {"Tablet", "Touchscreen"};
 
         var PID2 = stockService.addProduct(NOToken, "Tablet", Category.Electronics, "10-inch Tablet", keywords);
 
@@ -434,9 +462,9 @@ public class StoreSTests {
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(createdStoreId, NOToken, authRepo.getUserName(token1), a);
         storeService.reciveAnswerToOffer(createdStoreId, authRepo.getUserName(NOToken), "token", true, false); // false
-                                                                                                               // =
-                                                                                                               // toBeOwner
-                                                                                                               // →
+        // =
+        // toBeOwner
+        // →
         // false = manager
         // when decide equals true some list is null (i think its permissions list)
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, createdStoreId).size() == 2);
@@ -571,7 +599,7 @@ public class StoreSTests {
 
     @Test
     void testDeleteManager_Failure_StoreNotActive() throws Exception {
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         String token = userService.generateGuest();
         userService.register(token, "token", "token", 0);
@@ -582,7 +610,8 @@ public class StoreSTests {
         a.add(Permission.DeleteFromStock);
         storeService.MakeOfferToAddManagerToStore(createdStoreId, NOToken, "token", a);
 
-        int result = storeService.AddManagerToStore(createdStoreId, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
+        int result = storeService.AddManagerToStore(createdStoreId, authRepo.getUserId(NOToken),
+                authRepo.getUserId(token1), true);
         // dunno why it doesnt work with true ????
         storeService.deactivateteStore(createdStoreId, NOToken);
 
@@ -607,7 +636,6 @@ public class StoreSTests {
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         int result = storeService.deactivateteStore(createdStoreId, NOToken);
-     
 
         assertFalse(storeRepositoryjpa.findById(createdStoreId).get().isActive());
     }
@@ -617,12 +645,10 @@ public class StoreSTests {
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         int result = storeService.deactivateteStore(createdStoreId, NOToken);
-    
 
         UIException ex1 = assertThrows(UIException.class, () -> {
             int result1 = storeService.deactivateteStore(1, NOToken);
         });
-
 
         assertEquals(" store does not exist.", ex1.getMessage());
     }
@@ -635,8 +661,7 @@ public class StoreSTests {
         ReceiptDTO[] receipts = purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails);
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
-        List<OrderDTO> history = orderService.getAllOrderByStore(createdStoreId)
-;
+        List<OrderDTO> history = orderService.getAllOrderByStore(createdStoreId);
         assertTrue(history.get(0).getStoreId() == createdStoreId);
         assertTrue(history.get(0).getFinalPrice() == 2000);
         assertTrue(history.get(0).getUserId() == authRepo.getUserId(GToken));
@@ -648,7 +673,7 @@ public class StoreSTests {
 
         // Assert exception is thrown
         UIException ex = assertThrows(UIException.class, () -> {
-           orderService.getAllOrderByStore(2);
+            orderService.getAllOrderByStore(2);
         });
 
         assertEquals("Store not found", ex.getMessage());
@@ -686,21 +711,22 @@ public class StoreSTests {
         assertEquals(ErrorCodes.PRODUCT_NOT_FOUND, ex.getNumber());
     }
 
-    // @Test
-    // void testOwner_AddToAuction_Success() throws Exception {
-    //     createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+    @Test
+    void testOwner_AddToAuction_Success() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-    //     stockService.setProductToAuction(NOToken, createdStoreId, PID, 1, 5000, 2);
-    //     assertTrue(stockService.getAllAuctions(NOToken, createdStoreId).length == 1);
-    //     assertTrue(stockService.getAllAuctions(NOToken, createdStoreId)[0].productId == 1);
+        activePurcheses.setProductToAuction(NOToken, createdStoreId, PID, 1, 5000, 2);
+        AuctionDTO[] auctions = activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId);
+        assertTrue(auctions.length == 1);
+        assertTrue(auctions[0].productId == PID);
 
-    //     assertTrue(stockService.getAllAuctions(NOToken, createdStoreId)[0].storeId == 1);
+        assertTrue(auctions[0].storeId == createdStoreId);
 
-    // }
+    }
 
     @Test
     void testOwner_AddToBID_Success() throws Exception {
-                createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         stockService.setProductToBid(NOToken, createdStoreId, PID, 1);
         assertTrue(stockService.getAllBidsStatus(NOToken, createdStoreId).length == 1);
@@ -736,7 +762,9 @@ public class StoreSTests {
         storeService.rankStore(NGToken, createdStoreId, 0);
         assertTrue(storeService.getFinalRateInStore(createdStoreId) == 3);
 
-        /// 3 is deafult
+    
+
+    /// 3 is deafult
 
     }
 
@@ -756,17 +784,20 @@ public class StoreSTests {
     }
 
     @Test
-  
     void testOwner_rankitem_Success() throws Exception {
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         assertTrue(stockService.getProductsInStore(createdStoreId)[0].getRank() == 3);
 
-        stockService.rankProduct(createdStoreId, NGToken, PID, 1);
+        stockService.rankProduct(createdStoreId, NGToken, PID, 5);
+        stockService.rankProduct(createdStoreId, NGToken, PID, 5);
+        stockService.rankProduct(createdStoreId, NGToken, PID, 5);
+        stockService.rankProduct(createdStoreId, NGToken, PID, 5);
         // System.out.println("afhwlsdfkjEGn " +
         // stockService.getProductsInStore(1)[0].rank);
-    
-        assertTrue(stockService.getProductsInStore(createdStoreId)[0].getRank() == 1   );
+        int finalRank = stockService.getProductsInStore(createdStoreId)[0].getRank();
+        System.out.println("Final calculated rank: " + finalRank);
+        assertTrue(stockService.getProductsInStore(createdStoreId)[0].getRank() == 5);
 
     }
 
@@ -868,9 +899,9 @@ public class StoreSTests {
     @Test
     void testCloseStore_Fail_NotAdmin() throws UIException, Exception {
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
-String T=userService.generateGuest();
+        String T = userService.generateGuest();
         Exception ex = assertThrows(Exception.class, () -> {
-            storeService.closeStore(createdStoreId, T); 
+            storeService.closeStore(createdStoreId, T);
         });
 
         // assertEquals(ErrorCodes., ((UIException) ex).getCode());
@@ -1156,9 +1187,7 @@ String T=userService.generateGuest();
     // storeService.addStoreToSystem(NGToken, "AA", "ELECTRONICS"); // store doesn't
     // exist
     // });
-
     // }
-
     @Test
     void test_closeStore_storeDoesNotExist_shouldNotRemoveOtherStores() throws Exception {
         int before = storeRepositoryjpa.findAll().size();
@@ -1174,7 +1203,7 @@ String T=userService.generateGuest();
 
     @Test
     void test_rankStore_storeDoesNotExist_throwsException() {
-        UIException exception = assertThrows(UIException.class, () -> storeService.rankStore(NGToken,999, 5));
+        UIException exception = assertThrows(UIException.class, () -> storeService.rankStore(NGToken, 999, 5));
         assertEquals(ErrorCodes.STORE_NOT_FOUND, exception.getErrorCode());
     }
 
@@ -1183,20 +1212,13 @@ String T=userService.generateGuest();
         Exception exception = assertThrows(Exception.class, () -> storeService.getFinalRateInStore(999));
     }
 
- 
-
     @Test
     void test_getStoreDTO_storeNotFound_throwsUIException() {
         UIException exception = assertThrows(UIException.class, () -> {
-            storeService.getStoreDTO(NOToken,999); // 999 does not exist
+            storeService.getStoreDTO(NOToken, 999); // 999 does not exist
         });
         assertEquals(ErrorCodes.STORE_NOT_FOUND, exception.getErrorCode());
     }
-
-
-
-
-
 
     @Test
     void test_validatedParticipation_storeNotInitialized_throwsDevException() {
@@ -1245,70 +1267,59 @@ String T=userService.generateGuest();
 
     // @Test
     // void testSendDelayedMessage_UserOnline() {
-    //     BaseNotifier mockBase = mock(BaseNotifier.class);
-    //     when(mockBase.isUserOnline("user")).thenReturn(true);
-
-    //     DelayedNotificationDecorator decorator = new DelayedNotificationDecorator(mockBase);
-    //     decorator.sendDelayedMessageToUser("user", "hello");
-
-    //     verify(mockBase).send("user", "hello");
+    // BaseNotifier mockBase = mock(BaseNotifier.class);
+    // when(mockBase.isUserOnline("user")).thenReturn(true);
+    // DelayedNotificationDecorator decorator = new
+    // DelayedNotificationDecorator(mockBase);
+    // decorator.sendDelayedMessageToUser("user", "hello");
+    // verify(mockBase).send("user", "hello");
     // }
-
     // @Test
     // void testSendDelayedMessage_UserOffline_NewEntry() {
-    //     BaseNotifier mockBase = mock(BaseNotifier.class);
-    //     when(mockBase.isUserOnline("user")).thenReturn(false);
-
-    //     DelayedNotificationDecorator decorator = new DelayedNotificationDecorator(mockBase);
-    //     decorator.sendDelayedMessageToUser("user", "offline-msg");
-
-    //     assertEquals(1, decorator.getDelayedMessages("user").length);
+    // BaseNotifier mockBase = mock(BaseNotifier.class);
+    // when(mockBase.isUserOnline("user")).thenReturn(false);
+    // DelayedNotificationDecorator decorator = new
+    // DelayedNotificationDecorator(mockBase);
+    // decorator.sendDelayedMessageToUser("user", "offline-msg");
+    // assertEquals(1, decorator.getDelayedMessages("user").length);
     // }
-
     // @Test
     // void testSendDelayedMessage_UserOffline_ExistingEntry() {
-    //     BaseNotifier mockBase = mock(BaseNotifier.class);
-    //     when(mockBase.isUserOnline("user")).thenReturn(false);
-
-    //     DelayedNotificationDecorator decorator = new DelayedNotificationDecorator(mockBase);
-    //     decorator.sendDelayedMessageToUser("user", "msg1");
-    //     decorator.sendDelayedMessageToUser("user", "msg2");
-
-    //     String[] messages = decorator.getDelayedMessages("user");
-    //     assertArrayEquals(new String[] { "msg1", "msg2" }, messages);
+    // BaseNotifier mockBase = mock(BaseNotifier.class);
+    // when(mockBase.isUserOnline("user")).thenReturn(false);
+    // DelayedNotificationDecorator decorator = new
+    // DelayedNotificationDecorator(mockBase);
+    // decorator.sendDelayedMessageToUser("user", "msg1");
+    // decorator.sendDelayedMessageToUser("user", "msg2");
+    // String[] messages = decorator.getDelayedMessages("user");
+    // assertArrayEquals(new String[] { "msg1", "msg2" }, messages);
     // }
-
     // @Test
     // void testGetDelayedMessages_NoMessages() {
-    //     BaseNotifier mockBase = mock(BaseNotifier.class);
-    //     DelayedNotificationDecorator decorator = new DelayedNotificationDecorator(mockBase);
-
-    //     assertNull(decorator.getDelayedMessages("unknown"));
+    // BaseNotifier mockBase = mock(BaseNotifier.class);
+    // DelayedNotificationDecorator decorator = new
+    // DelayedNotificationDecorator(mockBase);
+    // assertNull(decorator.getDelayedMessages("unknown"));
     // }
-
     // @Test
     // void testSendRTMessageToUser_Online() {
-    //     BaseNotifier mockBase = mock(BaseNotifier.class);
-    //     when(mockBase.isUserOnline("user")).thenReturn(true);
-
-    //     RealTimeNotificationDecorator decorator = new RealTimeNotificationDecorator(mockBase);
-    //     decorator.sendRTMessageToUser("user", "realtime");
-
-    //     verify(mockBase).send("user", "realtime");
+    // BaseNotifier mockBase = mock(BaseNotifier.class);
+    // when(mockBase.isUserOnline("user")).thenReturn(true);
+    // RealTimeNotificationDecorator decorator = new
+    // RealTimeNotificationDecorator(mockBase);
+    // decorator.sendRTMessageToUser("user", "realtime");
+    // verify(mockBase).send("user", "realtime");
     // }
-
     // @Test
     // void testSendRTMessageToUser_Offline() {
-    //     BaseNotifier mockBase = mock(BaseNotifier.class);
-    //     when(mockBase.isUserOnline("user")).thenReturn(false);
-
-    //     RealTimeNotificationDecorator decorator = new RealTimeNotificationDecorator(mockBase);
-    //     decorator.sendRTMessageToUser("user", "delayed");
-
-    //     // No send call expected
-    //     verify(mockBase, never()).send(any(), any());
+    // BaseNotifier mockBase = mock(BaseNotifier.class);
+    // when(mockBase.isUserOnline("user")).thenReturn(false);
+    // RealTimeNotificationDecorator decorator = new
+    // RealTimeNotificationDecorator(mockBase);
+    // decorator.sendRTMessageToUser("user", "delayed");
+    // // No send call expected
+    // verify(mockBase, never()).send(any(), any());
     // }
-
     @Test
     void testBaseNotifierSend_Success() throws Exception {
         SocketHandler handler = mock(SocketHandler.class);

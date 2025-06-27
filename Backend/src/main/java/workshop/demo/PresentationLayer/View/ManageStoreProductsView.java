@@ -157,8 +157,14 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                     -> showAuctionDialog(storeId, token, item.getProductId()));
             Button bidButton = new Button("💸 Enable Bidding", e -> showBidDialog(storeId, token, item.getProductId()));
             Button randomButton = new Button("🎲 Start Random Draw", e -> showRandomDialog(storeId, token, item.getProductId()));
-            VerticalLayout actions = new VerticalLayout(edit, auctionButton, bidButton, randomButton, delete);
-            actions.addClassName("button-row");
+            HorizontalLayout row1 = new HorizontalLayout(edit, auctionButton, delete);
+            HorizontalLayout row2 = new HorizontalLayout(bidButton, randomButton); 
+            row1.addClassName("button-row");
+            row2.addClassName("button-row");
+  
+           VerticalLayout actions = new VerticalLayout(row1, row2);
+            actions.setSpacing(true);
+            actions.setJustifyContentMode(JustifyContentMode.END);
 
             card.add(actions);
             productList.add(card);
@@ -322,7 +328,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         dialog.setHeaderTitle("🎲 Set Product to Random Draw");
 
         NumberField quantityField = new NumberField("Quantity");
-        NumberField priceField = new NumberField("Price per Ticket");
+        NumberField priceField = new NumberField("Full Price");
         NumberField timeField = new NumberField("Duration (minutes)");
 
         quantityField.setValue(1.0);
@@ -537,14 +543,16 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         Button cancel = new Button("Cancel", e -> dlg.close());
 
         /* ── assemble dialog ───────────────────────────────────── */
-        dlg.add(new VerticalLayout(
-                nameField, percent,
-                new HorizontalLayout(predBox, opBox, valueWrapper),
-                new HorizontalLayout(typeBox, logicBox),
-                subs,
-                deleteBtn,
-                new HorizontalLayout(save, cancel)
-        ));
+        VerticalLayout content = new VerticalLayout(
+            nameField, percent,
+            new HorizontalLayout(predBox, opBox, valueWrapper),
+            new HorizontalLayout(typeBox, logicBox),
+            subs,
+            deleteBtn,
+            new HorizontalLayout(save, cancel)
+        );
+        content.addClassName("dialog-content");
+        dlg.add(content);
         dlg.open();
     }
 

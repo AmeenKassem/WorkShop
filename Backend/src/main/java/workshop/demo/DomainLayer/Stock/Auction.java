@@ -10,6 +10,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.beans.factory.annotation.Autowired;
 // import org.hibernate.engine.jdbc.env.internal.LobCreationLogging_.logger;
 import org.springframework.security.access.method.P;
 
@@ -27,6 +28,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Transient;
 import jakarta.transaction.Transactional;
+import workshop.demo.ApplicationLayer.LockManager;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.AuctionStatus;
 import workshop.demo.DTOs.SingleBidDTO;
@@ -37,25 +39,18 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 @Entity
 public class Auction {
 
-    private int productId;
-
-    private int quantity;
-    private AuctionStatus status;
-    @Transient
-    private Timer timer;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int auctionId;// -->auction_id
 
     @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserAuctionBid> bids = new ArrayList<>();
-    private double maxBid;
-    // @Transient
-    private int winnerId = -1;
-    // private int storeId;
 
-    @Transient
-    private final Object lock = new Object();
+    private int productId;
+    private int quantity;
+    private AuctionStatus status;
+    private double maxBid;
+    private int winnerId = -1;
     private long endTimeMillis;
 
     @ManyToOne
@@ -65,9 +60,7 @@ public class Auction {
     public Auction(int productId, int quantity, long time, int id, int storeId, double min) {
         this.productId = productId;
         this.quantity = quantity;
-        this.timer = new Timer();
         bids = new ArrayList<>();
-        // this.storeId = storeId;
         this.auctionId = id;
         this.status = AuctionStatus.IN_PROGRESS;
         this.endTimeMillis = System.currentTimeMillis() + time;
@@ -122,35 +115,35 @@ public class Auction {
     }
 
     public UserAuctionBid bid(int userId, double price) throws UIException {
-        synchronized (lock) {
-            if (status == AuctionStatus.FINISH || System.currentTimeMillis() > endTimeMillis) {
-                throw new UIException("This auction has ended!", ErrorCodes.AUCTION_FINISHED);
-            }
-            if (price <= maxBid) {
-                throw new UIException("Your bid must be higher than the current maximum bid!", ErrorCodes.BID_TOO_LOW);
-            }
-            for (UserAuctionBid userAuctionBid : bids) {
-                if (userAuctionBid.getUserId() != userId)
-                    userAuctionBid.markAsLosedTop();
-            }
-            for (UserAuctionBid userAuctionBid : bids) {
-                if (userAuctionBid.getUserId() == userId) {
-                    maxBid = price;
-                    userAuctionBid.setPrice(price);
-                    userAuctionBid.markAsCurrTop();
-                    return userAuctionBid;
-                }
-            }
 
-            maxBid = price;
-            UserAuctionBid bid = new UserAuctionBid();
-            bid.setUserId(userId);
-            bid.setPrice(price);
-            bid.setAuction(this);
-            bid.markAsCurrTop();
-            bids.add(bid);
-            return bid;
+        if (status == AuctionStatus.FINISH || System.currentTimeMillis() > endTimeMillis) {
+            throw new UIException("This auction has ended!", ErrorCodes.AUCTION_FINISHED);
         }
+        if (price <= maxBid) {
+            throw new UIException("Your bid must be higher than the current maximum bid!", ErrorCodes.BID_TOO_LOW);
+        }
+        for (UserAuctionBid userAuctionBid : bids) {
+            if (userAuctionBid.getUserId() != userId)
+                userAuctionBid.markAsLosedTop();
+        }
+        for (UserAuctionBid userAuctionBid : bids) {
+            if (userAuctionBid.getUserId() == userId) {
+                maxBid = price;
+                userAuctionBid.setPrice(price);
+                userAuctionBid.markAsCurrTop();
+                return userAuctionBid;
+            }
+        }
+
+        maxBid = price;
+        UserAuctionBid bid = new UserAuctionBid();
+        bid.setUserId(userId);
+        bid.setPrice(price);
+        bid.setAuction(this);
+        bid.markAsCurrTop();
+        bids.add(bid);
+        return bid;
+
     }
 
     public AuctionDTO getDTO() {
@@ -261,7 +254,7 @@ public class Auction {
     public int getTopId() {
         for (UserAuctionBid userAuctionBid : bids) {
             if (userAuctionBid.isCurrTop())
-                return userAuctionBid.getId();
+                return userAuctionBid.getUserId();
         }
         return -1;
     }
@@ -278,5 +271,9 @@ public class Auction {
         for (UserAuctionBid userAuctionBid : bids) {
 
         }
+    }
+
+    public int getWinnenId() {
+        return winnerId;
     }
 }

@@ -29,6 +29,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.AuctionStatus;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
@@ -58,6 +59,8 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
 
         Button showReviewsBtn = new Button("📖 Show Store Reviews", e -> showStoreReviewsDialog());
         Button addReviewBtn = new Button("📝 Add Review to Store", e -> openStoreReviewDialog());
+        Button addStoreRankBtn = new Button("⭐ Add Store Rank", e -> openStoreRankDialog());
+        addStoreRankBtn.addClassName("store-action-button");
         showReviewsBtn.addClassName("store-action-button");
         addReviewBtn.addClassName("store-action-button");
 
@@ -75,7 +78,14 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 .set("border-radius", "12px")
                 .set("padding", "8px 18px");
 
-        storeActions.add(showReviewsBtn, addReviewBtn);
+        addStoreRankBtn.getStyle()
+        .set("background-color", "#10b981")
+        .set("color", "white")
+        .set("font-weight", "bold")
+        .set("border-radius", "12px")
+        .set("padding", "8px 18px");
+
+        storeActions.add(showReviewsBtn, addReviewBtn, addStoreRankBtn);
         add(storeActions);
         productContainer.setJustifyContentMode(FlexLayout.JustifyContentMode.START);
         productContainer.setAlignItems(FlexLayout.Alignment.START);
@@ -815,7 +825,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         mainLayout.setWidthFull();
 
         for (AuctionDTO auction : auctions) {
-            if (auction.productId == productId) {
+            if (auction.status==AuctionStatus.IN_PROGRESS && auction.productId == productId) {
                 VerticalLayout auctionDetailsLayout = new VerticalLayout();
                 auctionDetailsLayout.setSpacing(false);
                 auctionDetailsLayout.setPadding(false);
@@ -935,4 +945,52 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         bidDialog.open();
     }
 
+    private void openStoreRankDialog() {
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("⭐ Rank This Store");
+        dialog.setCloseOnOutsideClick(true);
+
+        VerticalLayout layout = new VerticalLayout();
+        layout.setSpacing(true);
+        layout.setPadding(false);
+        layout.setWidth("300px");
+
+        com.vaadin.flow.component.select.Select<Integer> rankSelect = new com.vaadin.flow.component.select.Select<>();
+        rankSelect.setLabel("Select a rank");
+        rankSelect.setItems(1, 2, 3, 4, 5);
+        rankSelect.setPlaceholder("Choose...");
+        rankSelect.setWidthFull();
+
+        Button submit = new Button("Submit", e -> {
+            Integer rank = rankSelect.getValue();
+            if (rank == null) {
+                Notification.show("⚠️ Please select a rank.");
+                return;
+            }
+            presenter.rankStore(token, myStoreId, rank);
+            Notification.show("✅ Store ranked successfully!");
+            dialog.close();
+        });
+
+        Button cancel = new Button("Cancel", e -> dialog.close());
+
+        submit.getStyle()
+                .set("background", "linear-gradient(90deg, #10b981, #059669)")
+                .set("color", "white")
+                .set("font-weight", "bold")
+                .set("border-radius", "8px")
+                .set("padding", "6px 12px");
+
+        cancel.getStyle()
+                .set("background-color", "#e5e7eb")
+                .set("color", "#374151")
+                .set("border-radius", "8px")
+                .set("padding", "6px 12px");
+
+        HorizontalLayout buttons = new HorizontalLayout(submit, cancel);
+        layout.add(rankSelect, buttons);
+        dialog.add(layout);
+        dialog.open();
+    }
 }

@@ -49,7 +49,7 @@
 }
 
 .input-section {
-    background-color: #b5d5f4;
+    background-color: #fff6f3;
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
@@ -58,7 +58,7 @@
 }
 
 .permission-section {
-    background-color: #c4c4c4;
+    background-color: #fff6f3;
     padding: 1.5rem;
     border-radius: 10px;
     display: flex;
@@ -143,4 +143,122 @@
     color: #6b7280;
     font-style: italic;
     margin-top: 1rem;
+}
+
+.dialog-content,
+.manager-form-container {
+    background-color: #fffaf9;
+    border-radius: 18px;
+    padding: 2rem;
+    color: #5c3d2e;
+    font-family: 'Segoe UI', sans-serif;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 550px;
+    width: 100%;
+}
+
+.dialog-content h2,
+.dialog-content h3,
+.manager-form-container h2,
+.manager-form-container h3 {
+    font-size: 1.6rem;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    text-align: center;
+    border-bottom: 2px solid #ec4899;
+    padding-bottom: 0.4rem;
+}
+
+.dialog-field {
+    width: 100%;
+    font-family: inherit;
+}
+
+.dialog-button-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.dialog-button.confirm,
+.add-manager-button {
+     background: linear-gradient(90deg, #fef8f6, #fae9df);
+    color: #5c3d2e;
+    font-weight: bold;
+    border-radius: 12px;
+    padding: 0.6rem 1.4rem;
+    border: none;
+    box-shadow: 0 4px 12px rgba(249, 168, 212, 0.3);
+    transition: all 0.3s ease;
+}
+
+.dialog-button.confirm:hover,
+.add-manager-button:hover {
+    background: linear-gradient(90deg, #fae9df, #f5d6c7);
+    transform: scale(1.03);
+}
+
+.dialog-button.cancel {
+    background-color: #f0ebe9;
+    color: #374151;
+    border-radius: 12px;
+    padding: 0.6rem 1.4rem;
+    font-weight: 600;
+    border: none;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.dialog-button.cancel:hover {
+    background-color: #e6dcd7;
+    transform: scale(1.03);
+}
+
+.dialog-content label,
+.dialog-content .vaadin-combo-box,
+.dialog-content .vaadin-text-field,
+.dialog-content .vaadin-number-field,
+.manager-form-container label,
+.manager-form-container .vaadin-combo-box,
+.manager-form-container .vaadin-text-field,
+.manager-form-container .vaadin-number-field {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 0.95rem;
+    color: #3e2f27;
+}
+
+.dialog-content .vaadin-checkbox-group,
+.manager-form-container .vaadin-checkbox-group {
+    margin-top: 1rem;
+    background-color: #fff3ee;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.dialog-content .vaadin-checkbox-group label,
+.manager-form-container .vaadin-checkbox-group label {
+    font-weight: 500;
+    color: #3e2f27;
+    padding-left: 0.5rem;
+}
+
+.dialog-content .vaadin-button svg,
+.dialog-content button svg,
+.manager-form-container .vaadin-button svg,
+.manager-form-container button svg {
+    fill: #ec4899 !important;
+    stroke: #ec4899 !important;
+    transition: fill 0.3s ease;
+}
+
+.dialog-content .vaadin-button:hover svg,
+.dialog-content button:hover svg,
+.manager-form-container .vaadin-button:hover svg,
+.manager-form-container button:hover svg {
+    filter: drop-shadow(0 0 2px #f9a8d4);
 }

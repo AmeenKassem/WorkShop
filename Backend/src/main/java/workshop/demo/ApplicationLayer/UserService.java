@@ -48,8 +48,7 @@ public class UserService {
     // private IUserRepo userRepo;
     @Autowired
     private IAuthRepo authRepo;
-    
-    
+
     @Autowired
     private IStockRepoDB stockRepo;
     @Autowired
@@ -58,16 +57,14 @@ public class UserService {
     private AdminInitilizer adminInitilizer;
     @Autowired
     private Encoder encoder = new Encoder();
-    
+
     @Autowired
     private UserJpaRepository regJpaRepo;
     @Autowired
     private GuestJpaRepository guestJpaRepository;
-    
+
     @Autowired
     private IActivePurchasesRepo activePurchasesRepo;
-    
-    
 
     public void setGuestJpaRepository(GuestJpaRepository guestJpaRepository) {
         this.guestJpaRepository = guestJpaRepository;
@@ -83,9 +80,9 @@ public class UserService {
         guestJpaRepository.save(guest);
         logger.info("Generated guest with ID={}", guest.getId());
         return authRepo.generateGuestToken(guest.getId());
-        
+
     }
-    
+
     public boolean register(String token, String username, String password, int age) throws UIException {
         logger.info("register called for username={}", username);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -277,7 +274,7 @@ public class UserService {
         return true;
     }
 
-    public SpecialCartItemDTO[] getSpecialCart(String token) throws UIException , Exception {
+    public SpecialCartItemDTO[] getSpecialCart(String token) throws UIException, Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         checkUserRegisterOnline_ThrowException(userId);
@@ -286,20 +283,21 @@ public class UserService {
         List<UserSpecialItemCart> specialIds = user.getSpecialCart();
         List<SpecialCartItemDTO> result = new ArrayList<>();
         for (UserSpecialItemCart item : specialIds) {
-            logger.info("one special item found "+item.specialId);
+            logger.info("one special item found " + item.specialId);
             SpecialCartItemDTO itemToSend = new SpecialCartItemDTO();
             itemToSend.setIds(item.storeId, item.specialId, item.bidId, item.type);
             ActivePurcheses activePurcheses = activePurchasesRepo.findById(item.storeId).orElse(null);
             Store store = storeRepo.findById(item.storeId).orElse(null);
-            //System.out.println(store.getStoreName());
+            // System.out.println(store.getStoreName());
             itemToSend.storeName = store.getStoreName();
-            //System.out.println("product id is " + item.getProductId());
+            // System.out.println("product id is " + item.getProductId());
             Product product = stockRepo.findById(item.getProductId()).orElse(null);
             // if (product == null) {
-            //     System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadddddddddddddddddddddddddddddddddddddddiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiinnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
+            // System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadddddddddddddddddddddddddddddddddddddddiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiinnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
             // }
             if (item.type == SpecialType.Random) {
-                ParticipationInRandomDTO card = activePurcheses.getRandomCard(item.storeId, item.specialId, item.user.getId());
+                ParticipationInRandomDTO card = activePurcheses.getRandomCard(item.storeId, item.specialId,
+                        item.user.getId());
                 itemToSend.setValues(product.getName(), card.isWinner, card.ended);
             } else if (item.type == SpecialType.BID) {
                 SingleBid bid = activePurcheses.getBid(item.storeId, item.specialId, item.bidId, item.type);
@@ -309,7 +307,7 @@ public class UserService {
                 itemToSend.setValues(product.getName(), auction.bidIsWinner(item.bidId), auction.isEnded());
                 itemToSend.myBid = auction.getBid(item.bidId).getBidPrice();
                 itemToSend.maxBid = auction.getMaxBid();
-                itemToSend.onTop= auction.bidIsTop(item.bidId);
+                itemToSend.onTop = auction.bidIsTop(item.bidId);
                 itemToSend.dateEnd = auction.getDateOfEnd();
             }
             result.add(itemToSend);
@@ -333,7 +331,10 @@ public class UserService {
             dto.quantity = item.quantity;
             dto.price = item.price;
             dto.name = item.name;
-            dto.storeName = storeRepo.findById(item.storeId).orElseThrow().getStoreName();
+            dto.storeName = storeRepo.findById(item.storeId)
+                    .orElseThrow(() -> new UIException("Store with ID " + item.storeId + " not found", -1))
+                    .getStoreName();
+
             // this back
             dto.itemCartId = item.getId();
             dtos[i] = dto;
@@ -376,5 +377,4 @@ public class UserService {
         }
     }
 
-    
 }

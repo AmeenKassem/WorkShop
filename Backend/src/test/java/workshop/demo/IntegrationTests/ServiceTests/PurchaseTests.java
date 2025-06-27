@@ -179,7 +179,7 @@ public class PurchaseTests {
         // not ready
   randomId=   activePurcheses.setProductToRandom(NOToken, productId_laptop, 1, 2000, createdStoreId, 1000);
         auctionId= activePurcheses.setProductToAuction(NOToken, createdStoreId, productId_laptop, 1, 1000, 2);
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId).length == 1);
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId).length == 1);
         assertTrue(activePurcheses.getAllRandoms_user(NOToken, createdStoreId).length == 1);
                         assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 8);
 
@@ -310,18 +310,18 @@ public class PurchaseTests {
     @Test
     void Add_AuctionBidToSpecialCart_Success_won() throws Exception {
         activePurcheses.addBidOnAucction(NGToken, 1, createdStoreId, 10);
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId).length == 1);
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId)[0].bids.length == 1);
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId)[0].bids[0].status.equals(Status.AUCTION_PENDING));
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId).length == 1);
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId)[0].bids.length == 1);
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId)[0].bids[0].status.equals(Status.AUCTION_PENDING));
 
         Thread.sleep(500);
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId)[0].status.equals(AuctionStatus.IN_PROGRESS));
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId)[0].bids[0].status.equals(Status.AUCTION_PENDING));
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId)[0].status.equals(AuctionStatus.IN_PROGRESS));
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId)[0].bids[0].status.equals(Status.AUCTION_PENDING));
 
         Thread.sleep(500);
 
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId)[0].status.equals(AuctionStatus.FINISH));
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId)[0].bids[0].status.equals(Status.AUCTION_WON));
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId)[0].status.equals(AuctionStatus.FINISH));
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId)[0].bids[0].status.equals(Status.AUCTION_WON));
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
@@ -357,21 +357,21 @@ public class PurchaseTests {
     @Test
     void Add_AuctionBidToSpecialCart_Success_lost() throws Exception {
         activePurcheses.addBidOnAucction(NGToken, 1, createdStoreId, 10);
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId).length == 1);
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId)[0].bids.length == 1);
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId)[0].bids[0].status.equals(Status.AUCTION_PENDING));
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId).length == 1);
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId)[0].bids.length == 1);
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId)[0].bids[0].status.equals(Status.AUCTION_PENDING));
 
         Thread.sleep(500);
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId)[0].status.equals(AuctionStatus.IN_PROGRESS));
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId)[0].bids[0].status.equals(Status.AUCTION_PENDING));
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId)[0].status.equals(AuctionStatus.IN_PROGRESS));
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId)[0].bids[0].status.equals(Status.AUCTION_PENDING));
         activePurcheses.addBidOnAucction(NOToken, 1, createdStoreId, 20);
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId)[0].bids.length == 2);
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId)[0].bids.length == 2);
 
         Thread.sleep(500);
 
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId)[0].status.equals(AuctionStatus.FINISH));
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId)[0].bids[0].status.equals(Status.AUCTION_LOSED));
-        assertTrue(activePurcheses.getAllAuctions_user(NOToken, createdStoreId)[0].bids[1].status.equals(Status.AUCTION_WON));
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId)[0].status.equals(AuctionStatus.FINISH));
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId)[0].bids[0].status.equals(Status.AUCTION_LOSED));
+        assertTrue(activePurcheses.getAllActiveAuctions_user(NOToken, createdStoreId)[0].bids[1].status.equals(Status.AUCTION_WON));
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
@@ -620,24 +620,24 @@ assertTrue(receipts2.length == 1);
     }
 
     @Test
-    void testgetAllAuctions_userUser_InvalidToken() {
+    void testgetAllActiveAuctions_userUser_InvalidToken() {
         UIException ex = assertThrows(UIException.class, () -> {
-            activePurcheses.getAllAuctions_user("bad-token", createdStoreId);
+            activePurcheses.getAllActiveAuctions_user("bad-token", createdStoreId);
         });
     }
 
     @Test
-    void testgetAllAuctions_userUser_NotRegisteredOnline() throws Exception {
+    void testgetAllActiveAuctions_userUser_NotRegisteredOnline() throws Exception {
         String guestToken = userService.generateGuest(); // not registered
         UIException ex = assertThrows(UIException.class, () -> {
-            activePurcheses.getAllAuctions_user(guestToken, createdStoreId);
+            activePurcheses.getAllActiveAuctions_user(guestToken, createdStoreId);
         });
     }
 
     @Test
-    void testgetAllAuctions_userUser_StoreNotFound() {
+    void testgetAllActiveAuctions_userUser_StoreNotFound() {
         Exception ex = assertThrows(Exception.class, () -> {
-            activePurcheses.getAllAuctions_user(NGToken, 9999); // non-existent store
+            activePurcheses.getAllActiveAuctions_user(NGToken, 9999); // non-existent store
         });
     }
 
