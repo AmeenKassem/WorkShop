@@ -277,7 +277,7 @@ public class PurchaseView extends VerticalLayout implements HasUrlParameter<Stri
         Dialog dialog = new Dialog();
         dialog.setCloseOnEsc(true);
         dialog.setCloseOnOutsideClick(false);
-
+        System.out.println("showing my reciepts dialog!");
         Div content = new Div();
         content.getStyle().set("max-height", "400px").set("overflow", "auto");
 

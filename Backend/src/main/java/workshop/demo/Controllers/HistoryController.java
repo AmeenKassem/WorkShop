@@ -29,6 +29,9 @@ public class HistoryController {
         try {
             System.out.println("Fetching receipts for user with token: " + token);
             ReceiptDTO[] receipts = orderService.getReceiptDTOsByUser(token).toArray(new ReceiptDTO[0]);
+            for (ReceiptDTO receiptDTO : receipts) {
+                System.out.println(receiptDTO.getFinalPrice()+"-final price for "+receiptDTO.getStoreName());
+            }
             response = new ApiResponse<>(receipts, null);
             return ResponseEntity.ok(response);
 
