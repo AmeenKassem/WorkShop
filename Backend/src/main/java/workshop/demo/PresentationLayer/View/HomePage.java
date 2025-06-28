@@ -11,7 +11,6 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
@@ -272,13 +271,13 @@ public class HomePage extends VerticalLayout {
             try {
                 int quantity = Integer.parseInt(quantityField.getValue());
                 if (quantity <= 0) {
-                    Notification.show("Quantity must be positive.");
+                    NotificationView.showError("Quantity must be positive.");
                     return;
                 }
                 homePagePresenter.addToCart(token, item, quantity);
                 dialog.close();
             } catch (NumberFormatException ex) {
-                Notification.show("Please enter a valid number.");
+                NotificationView.showError("Please enter a valid number.");
             }
         });
 
