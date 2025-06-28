@@ -395,10 +395,12 @@ public class ActivePurchasesService {
         List<RandomDTO> randoms = new ArrayList<>();
         for (RandomDTO randomDTO : active.getRandoms()) {
 
-            randoms.add(randomDTO.setStoreNameAndProductName(
+            randomDTO.setStoreNameAndProductName(
                     stock.getProductById(randomDTO.getProductId()).getName(),
-                    storeJpaRepo.findById(storeId).orElseThrow().getStoreName()));
-
+                    storeJpaRepo.findById(storeId).orElseThrow().getStoreName());
+            if (randomDTO.winner != null)
+                randomDTO.userName = randomDTO.winner.userName;
+            randoms.add(randomDTO);
         }
         return randoms.toArray(new RandomDTO[0]);
     }
