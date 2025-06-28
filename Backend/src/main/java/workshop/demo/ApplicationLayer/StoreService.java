@@ -538,7 +538,7 @@ public class StoreService {
 
         store.addDiscount(discount);
         DiscountEntity entity = DiscountMapper.toEntity(discount);
-        discountRepo.save(entity);
+        //discountRepo.save(entity);
         store.setDiscountEntity(entity);
         storeJpaRepo.save(store);
         logger.info("Discount '{}' added successfully to store {}", discount.getName(), storeId);

@@ -53,7 +53,6 @@ public class DiscountMapper {
                     DiscountConditions.fromString(vd.getCondition())
             );
 
-
         } else if (entity instanceof InvisibleDiscountEntity id) {
             return new InvisibleDiscount(
                     id.getName(),
@@ -62,7 +61,17 @@ public class DiscountMapper {
             );
 
         } else if (entity instanceof CompositeDiscountEntity comp) {
-            MaxDiscount result = new MaxDiscount(comp.getName());
+            CompositeDiscount result;
+
+            switch (comp.getLogic()) {
+                case MAX -> result = new MaxDiscount(comp.getName());
+                case AND -> result = new AndDiscount(comp.getName());
+                case OR -> result = new OrDiscount(comp.getName());
+                case XOR -> result = new XorDiscount(comp.getName());
+                case MULTIPLY -> result = new MultiplyDiscount(comp.getName());
+                default -> throw new IllegalArgumentException("Unsupported logic: " + comp.getLogic());
+            }
+
             for (DiscountEntity sub : comp.getSubDiscounts()) {
                 result.addDiscount(toDomain(sub));
             }
@@ -71,4 +80,5 @@ public class DiscountMapper {
 
         throw new IllegalArgumentException("Unknown DiscountEntity type: " + entity.getClass());
     }
+
 }

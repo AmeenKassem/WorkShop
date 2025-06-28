@@ -1,6 +1,7 @@
 package workshop.demo.InfrastructureLayer.DiscountEntities;
 
 import jakarta.persistence.*;
+import workshop.demo.DomainLayer.Store.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,4 +30,41 @@ public class CompositeDiscountEntity extends DiscountEntity {
 
     public List<DiscountEntity> getSubDiscounts() { return subDiscounts; }
     public void setSubDiscounts(List<DiscountEntity> subDiscounts) { this.subDiscounts = subDiscounts; }
+    public static Discount toDomain(DiscountEntity entity) {
+        if (entity instanceof VisibleDiscountEntity vd) {
+            return new VisibleDiscount(
+                    vd.getName(),
+                    vd.getPercent(),
+                    DiscountConditions.fromString(vd.getCondition())
+            );
+
+        } else if (entity instanceof InvisibleDiscountEntity id) {
+            return new InvisibleDiscount(
+                    id.getName(),
+                    id.getPercent(),
+                    DiscountConditions.fromString(id.getCondition())
+            );
+
+        } else if (entity instanceof CompositeDiscountEntity comp) {
+            CompositeDiscount result;
+
+            // 🧠 THIS is what was missing:
+            switch (comp.getLogic()) {
+                case MAX -> result = new MaxDiscount(comp.getName());
+                case AND -> result = new AndDiscount(comp.getName());
+                case OR -> result = new OrDiscount(comp.getName());
+                case XOR -> result = new XorDiscount(comp.getName());
+                case MULTIPLY -> result = new MultiplyDiscount(comp.getName());
+                default -> throw new IllegalArgumentException("Unsupported logic: " + comp.getLogic());
+            }
+
+            for (DiscountEntity sub : comp.getSubDiscounts()) {
+                result.addDiscount(toDomain(sub));
+            }
+            return result;
+        }
+
+        throw new IllegalArgumentException("Unknown DiscountEntity type: " + entity.getClass());
+    }
+
 }

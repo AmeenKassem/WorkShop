@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.persistence.*;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,7 @@ import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountEntity;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountMapper;
 
 @Entity
 public class Store {
@@ -77,6 +79,7 @@ public class Store {
         rank[3] = new AtomicInteger(rank4);
         rank[4] = new AtomicInteger(rank5);
     }
+
 
 
     @PrePersist
@@ -160,8 +163,13 @@ public class Store {
     }
 
     public Discount getDiscount() {
+        if (discount == null && discountEntity != null) {
+            DiscountEntity unproxied = (DiscountEntity) Hibernate.unproxy(discountEntity);
+            discount = DiscountMapper.toDomain(unproxied);
+        }
         return discount;
     }
+
 
     public void setDiscount(Discount discount) {
         this.discount = discount;
