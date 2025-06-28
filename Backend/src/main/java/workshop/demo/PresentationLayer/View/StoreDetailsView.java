@@ -13,7 +13,6 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -79,11 +78,11 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 .set("padding", "8px 18px");
 
         addStoreRankBtn.getStyle()
-        .set("background-color", "#10b981")
-        .set("color", "white")
-        .set("font-weight", "bold")
-        .set("border-radius", "12px")
-        .set("padding", "8px 18px");
+                .set("background-color", "#10b981")
+                .set("color", "white")
+                .set("font-weight", "bold")
+                .set("border-radius", "12px")
+                .set("padding", "8px 18px");
 
         storeActions.add(showReviewsBtn, addReviewBtn, addStoreRankBtn);
         add(storeActions);
@@ -219,7 +218,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Button submit = new Button("Submit", e -> {
             Integer rank = rankSelect.getValue();
             if (rank == null) {
-                Notification.show("⚠️ Please select a rank.");
+                NotificationView.showError("⚠️ Please select a rank.");
                 return;
             }
             presenter.rankProduct(item.getStoreId(), token, item.getProductId(), rank);
@@ -374,7 +373,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Button submit = new Button("Submit", e -> {
             String review = input.getValue();
             if (review == null || review.isBlank()) {
-                Notification.show("⚠️ Please enter a review.");
+                NotificationView.showError("⚠️ Please enter a review.");
                 return;
             }
             try {
@@ -420,14 +419,13 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
             try {
                 int quantity = Integer.parseInt(quantityField.getValue());
                 if (quantity <= 0) {
-                    Notification.show("⚠️ Quantity must be positive.");
+                    NotificationView.showError("⚠️ Quantity must be positive.");
                     return;
                 }
                 presenter.addToCart(token, item, quantity);
-                Notification.show("✅ Added to cart successfully!");
                 dialog.close();
             } catch (NumberFormatException ex) {
-                Notification.show("⚠️ Please enter a valid number.");
+                NotificationView.showError("⚠️ Please enter a valid number.");
             }
         });
         submit.getStyle()
@@ -965,11 +963,11 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Button submit = new Button("Submit", e -> {
             Integer rank = rankSelect.getValue();
             if (rank == null) {
-                Notification.show("⚠️ Please select a rank.");
+                NotificationView.showError("⚠️ Please select a rank.");
                 return;
             }
             presenter.rankStore(token, myStoreId, rank);
-            Notification.show("✅ Store ranked successfully!");
+            NotificationView.showSuccess(" Store ranked successfully!");
             dialog.close();
         });
 
