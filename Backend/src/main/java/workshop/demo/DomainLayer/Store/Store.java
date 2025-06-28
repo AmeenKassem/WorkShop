@@ -62,18 +62,9 @@ public class Store {
 
     }
 
-    public Store() {
+    public Store() {}
 
-    @PrePersist
-    @PreUpdate
-    private void updateRankColumns() {
-        rank1 = rank[0].get();
-        rank2 = rank[1].get();
-        rank3 = rank[2].get();
-        rank4 = rank[3].get();
-        rank5 = rank[4].get();
 
-    }
 
     public int getstoreId() {
         return storeId;
