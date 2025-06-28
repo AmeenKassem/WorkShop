@@ -13,9 +13,6 @@ public class RandomDTO {
     public double amountLeft;
     public String productName;
     public long endTimeMillis;
-
-    
-    public String userName;
     public String endDate;
     
     public RandomDTO() {

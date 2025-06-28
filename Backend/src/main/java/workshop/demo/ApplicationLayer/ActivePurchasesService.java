@@ -428,7 +428,9 @@ public class ActivePurchasesService {
         synchronized (lockManager.getRandomLock(randomId)) {
             logger.info("User {} trying to participate in random: {}, store: {}", userId, randomId, storeId);
             ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();
-            ParticipationInRandomDTO res = active.participateInRandom(userId, randomId, amountPaid);
+            String userName = userRepo.findById(userId)
+                    .orElseThrow(() -> new UIException("User not found", ErrorCodes.USER_NOT_FOUND)).getUsername();
+            ParticipationInRandomDTO res = active.participateInRandom(userId, randomId, amountPaid, userName);
             if(res.isEnded()) {
                 logger.info("Random {} has ended, no participation allowed", randomId);
                 List<Integer> participationsIds = new ArrayList<>();
