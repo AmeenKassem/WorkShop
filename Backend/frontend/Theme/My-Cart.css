@@ -1,88 +1,163 @@
-.my-cart-view {
-    padding: 2rem;
-    background-color: #f9fafb;
-    font-family: 'Segoe UI', sans-serif;
-    font-size: 1rem;
-    line-height: 1.6;
-}
-
-.cart-header {
-    text-align: center;
-    font-size: 2rem;
-    color: #2c3e50;
-    margin-bottom: 1.5rem;
-}
-
-.cart-column {
+.cart-wrapper {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
     padding: 1rem;
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    overflow-y: auto;
-    max-height: 500px;
+    flex-wrap: wrap; 
 }
 
-.item-card {
+.cart-section {
+    flex: 1;
     background-color: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-left: 5px solid #ff9900;
-    border-radius: 12px;
-    padding: 1rem;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 6px 16px rgba(244, 114, 182, 0.2); 
+    border: 1px solid #f9a8d4;
+    transition: transform 0.3s;
+    min-width: 300px;
+}
+
+.cart-section:hover {
+    transform: translateY(-4px);
+}
+
+.cart-section h3 {
+    font-size: 1.4rem;
     margin-bottom: 1rem;
-    transition: box-shadow 0.3s ease;
+    color: #be185d; 
+    text-align: center;
+    border-bottom: 2px solid #fce7f3;
+    padding-bottom: 0.5rem;
+    font-family: 'Segoe UI', sans-serif;
+    letter-spacing: 0.5px;
 }
 
-.item-card:hover {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-}
-
-.cart-buttons {
-    margin-top: 2rem;
-    justify-content: center;
-    gap: 1rem;
-}
-
-.cart-buttons vaadin-button {
-    font-weight: 600;
-    background-color: #ff9900;
+.cart-btn {
+    background: linear-gradient(90deg, #7d939a, #89a4b5);
     color: white;
-    border-radius: 8px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    font-weight: bold;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+    min-width: 160px;
 }
 
-.cart-buttons vaadin-button:hover {
-    background-color: #e88e00;
+.cart-btn:hover {
+    background: linear-gradient(90deg, #739298, #70a4c2);
     transform: scale(1.03);
 }
 
-.random-bg {
-    background: linear-gradient(135deg, #fdfbfb, #ebedee);
+.cart-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding: 0 1rem;
 }
 
+.cart-buttons button {
+    background: linear-gradient(90deg, #f472b6, #ec4899);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    font-weight: bold;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.cart-buttons button:hover {
+    background: linear-gradient(90deg, #ec4899, #db2777);
+    transform: scale(1.03);
+}
+.item-card {
+    background-color: #fff0f5;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin: 12px auto;
+    box-shadow: 0 4px 14px rgba(236, 72, 153, 0.1);
+    max-width: 420px;
+    font-size: 15px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.item-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(236, 72, 153, 0.15);
+}
+
+.item-card .info-line {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.4rem;
+    color: #374151;
+    font-weight: 500;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.item-card vaadin-icon {
+    color: #be185d;
+    width: 20px;
+    height: 20px;
+}
+
+.item-card .btn-group {
+    display: flex;
+    justify-content: start;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.item-card button {
+    font-weight: 600;
+    background-color: #fce7f3;
+    color: #9d174d;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.item-card button:hover {
+    background-color: #fbcfe8;
+    transform: scale(1.03);
+}
+
+
 .auction-bg {
-    background: linear-gradient(135deg, #ffe6e6, #ffb3b3);
+    background: linear-gradient(135deg, #fff1f8, #fbcfe8);
+}
+
+.random-bg {
+    background: linear-gradient(135deg, #fdf2f8, #f3e8ff);
 }
 
 .bid-bg {
-    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+    background: linear-gradient(135deg, #fce7f3, #e0f2fe);
 }
 
-/* Make the columns scrollable */
-.cart-column::-webkit-scrollbar {
-    width: 8px;
-}
-.cart-column::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
-}
-
-/* Responsive layout */
-@media (max-width: 1024px) {
-    .v-horizontal-layout {
+@media (max-width: 800px) {
+    .cart-wrapper {
         flex-direction: column;
     }
 
-    .v-vertical-layout {
-        width: 100% !important;
+    .cart-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .cart-buttons button {
+        width: 100%;
+        max-width: 320px;
     }
 }

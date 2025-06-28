@@ -2,15 +2,12 @@ package workshop.demo.DomainLayer.Store;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.persistence.*;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.StoreDTO;
@@ -18,6 +15,12 @@ import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountEntity;
 import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountMapper;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 
 @Entity
 public class Store {
@@ -31,8 +34,6 @@ public class Store {
     private String storeName;
     private String category;
     private boolean active;
-    @Transient
-    private AtomicInteger[] rank;// rank[x] is the number of people who ranked i+1
     //in the db: 5 coulmns each is a counter
     @Column(name = "rank_1_count")
     private int rank1;
@@ -58,29 +59,10 @@ public class Store {
         this.storeName = storeName;
         this.category = cat;
         this.active = true;
-        this.rank = new AtomicInteger[5];
-        for (int i = 0; i < 5; i++) {
-            rank[i] = new AtomicInteger(0);
-        }
+
     }
 
     public Store() {
-        this.rank = new AtomicInteger[5];
-        for (int i = 0; i < 5; i++) {
-            rank[i] = new AtomicInteger(0);
-        }
-    }
-
-    @PostLoad
-    private void initRankArray() {
-        rank[0] = new AtomicInteger(rank1);
-        rank[1] = new AtomicInteger(rank2);
-        rank[2] = new AtomicInteger(rank3);
-        rank[3] = new AtomicInteger(rank4);
-        rank[4] = new AtomicInteger(rank5);
-    }
-
-
 
     @PrePersist
     @PreUpdate
@@ -90,6 +72,7 @@ public class Store {
         rank3 = rank[2].get();
         rank4 = rank[3].get();
         rank5 = rank[4].get();
+
     }
 
     public int getstoreId() {
@@ -117,25 +100,22 @@ public class Store {
     // rank store:
     public boolean rankStore(int i) {
         if (i < 1 || i > 5) {
-            logger.error("Invalid store rank: {}", i);
-
+            logger.error("Invalid rank {} forstore ", i);
             return false;
         }
-        rank[i - 1].incrementAndGet();
         switch (i) {
             case 1 ->
-                rank1 = rank[0].get();
+                rank1++;
             case 2 ->
-                rank2 = rank[1].get();
+                rank2++;
             case 3 ->
-                rank3 = rank[2].get();
+                rank3++;
             case 4 ->
-                rank4 = rank[3].get();
+                rank4++;
             case 5 ->
-                rank5 = rank[4].get();
+                rank5++;
         }
-        logger.debug("Ranking store {} with {}", storeId, i);
-
+        logger.debug("Ranked store= with rank={}", i);
         return true;
     }
 
@@ -144,8 +124,9 @@ public class Store {
 
         int totalVotes = 0;
         int WRank = 0;
+        int[] rank = {rank1, rank2, rank3, rank4, rank5};
         for (int i = 0; i < rank.length; i++) {
-            int count = rank[i].get(); // votes for rank (i+1)
+            int count = rank[i]; // votes for rank (i+1)
             totalVotes += count;
             WRank += (i + 1) * count;
         }
@@ -215,7 +196,7 @@ public class Store {
             throw new Exception("Policy must not be null");
         }
         purchasePolicies.add(p);
-        
+
     }
 
     public void removePurchasePolicy(PurchasePolicy p) {

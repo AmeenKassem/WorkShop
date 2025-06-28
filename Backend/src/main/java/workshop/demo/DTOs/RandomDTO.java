@@ -15,4 +15,12 @@ public class RandomDTO {
     public long endTimeMillis;
     public RandomDTO() {
     }
+    public RandomDTO setStoreNameAndProductName(String productName, String storeName) {
+        this.productName = productName;
+        this.storeName = storeName;
+        return this;
+    }
+    public int getProductId() {
+        return productId;
+    }
 }

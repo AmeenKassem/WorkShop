@@ -1,32 +1,55 @@
 .add-manager-view {
-    background-color: #f4f6fb;
-    padding: 2rem;
+    background-color: white;
+    padding: 2rem 1rem;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 2rem;
 }
+
+.title {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    color: #1f2937;
+    border-bottom: 2px solid #e11d48;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.add-manager-button {
+    background: linear-gradient(90deg, #ce5290, #f472b6);
+    color: white;
+    font-weight: bold;
+    border-radius: 12px;
+    padding: 0.6rem 1.4rem;
+    border: none;
+    box-shadow: 0 4px 8px rgba(249, 168, 212, 0.4);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.add-manager-button:hover {
+     background: linear-gradient(90deg, #f472b6, #ec4899);
+    transform: scale(1.03);
+}
+
 
 .manager-form-container {
     background-color: white;
+    border-radius: 16px;
+    border: 1px solid #f9a8d4;
+    box-shadow: 0 6px 20px rgba(249, 168, 212, 0.3);
     padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     width: 700px;
     display: flex;
     flex-direction: column;
     gap: 2rem;
 }
 
-.title {
-    font-size: 1.8rem;
-    font-weight: bold;
-    text-align: center;
-    color: #222;
-}
-
 .input-section {
-    background-color: #b5d5f4;
+    background-color: #fff6f3;
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
@@ -35,7 +58,7 @@
 }
 
 .permission-section {
-    background-color: #c4c4c4;
+    background-color: #fff6f3;
     padding: 1.5rem;
     border-radius: 10px;
     display: flex;
@@ -45,41 +68,11 @@
 
 .button-row {
     display: flex;
-    justify-content: space-between;
-    gap: 1.5rem;
-    margin-top: 2rem;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
     flex-wrap: wrap;
     width: 100%;
-}
-
-.add-manager-button {
-    background-color: #3b82f6;
-    color: white;
-    font-weight: bold;
-    border-radius: 8px;
-    padding: 0.6rem 1.4rem;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.add-manager-button:hover {
-    background-color: #2563eb;
-}
-
-.back-to-manager-home-button {
-    background-color: #3b82f6;
-    color: white;
-    font-weight: bold;
-    border-radius: 8px;
-    padding: 0.6rem 1.4rem;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.back-to-manager-home-button:hover {
-    background-color: #2563eb;
 }
 
 .save-permissions-button {
@@ -110,4 +103,162 @@
 
 .delete-manager-button:hover {
     background-color: #dc2626;
+}
+
+.back-to-manager-home-button {
+    background-color: #3b82f6;
+    color: white;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 0.6rem 1.4rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.back-to-manager-home-button:hover {
+    background-color: #2563eb;
+}
+
+.manager-card {
+    background: linear-gradient(90deg, #f3f4f6, #e0f7fa);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.2rem;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
+}
+
+.manager-card p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+.manager-name {
+    font-weight: bold;
+    margin-bottom: 0.8rem;
+    font-size: 1.1rem;
+    color: #1e293b;
+}
+.empty-managers-message {
+    color: #6b7280;
+    font-style: italic;
+    margin-top: 1rem;
+}
+
+.dialog-content,
+.manager-form-container {
+    background-color: #fffaf9;
+    border-radius: 18px;
+    padding: 2rem;
+    color: #5c3d2e;
+    font-family: 'Segoe UI', sans-serif;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 550px;
+    width: 100%;
+}
+
+.dialog-content h2,
+.dialog-content h3,
+.manager-form-container h2,
+.manager-form-container h3 {
+    font-size: 1.6rem;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    text-align: center;
+    border-bottom: 2px solid #ec4899;
+    padding-bottom: 0.4rem;
+}
+
+.dialog-field {
+    width: 100%;
+    font-family: inherit;
+}
+
+.dialog-button-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.dialog-button.confirm,
+.add-manager-button {
+     background: linear-gradient(90deg, #fef8f6, #fae9df);
+    color: #5c3d2e;
+    font-weight: bold;
+    border-radius: 12px;
+    padding: 0.6rem 1.4rem;
+    border: none;
+    box-shadow: 0 4px 12px rgba(249, 168, 212, 0.3);
+    transition: all 0.3s ease;
+}
+
+.dialog-button.confirm:hover,
+.add-manager-button:hover {
+    background: linear-gradient(90deg, #fae9df, #f5d6c7);
+    transform: scale(1.03);
+}
+
+.dialog-button.cancel {
+    background-color: #f0ebe9;
+    color: #374151;
+    border-radius: 12px;
+    padding: 0.6rem 1.4rem;
+    font-weight: 600;
+    border: none;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.dialog-button.cancel:hover {
+    background-color: #e6dcd7;
+    transform: scale(1.03);
+}
+
+.dialog-content label,
+.dialog-content .vaadin-combo-box,
+.dialog-content .vaadin-text-field,
+.dialog-content .vaadin-number-field,
+.manager-form-container label,
+.manager-form-container .vaadin-combo-box,
+.manager-form-container .vaadin-text-field,
+.manager-form-container .vaadin-number-field {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 0.95rem;
+    color: #3e2f27;
+}
+
+.dialog-content .vaadin-checkbox-group,
+.manager-form-container .vaadin-checkbox-group {
+    margin-top: 1rem;
+    background-color: #fff3ee;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.dialog-content .vaadin-checkbox-group label,
+.manager-form-container .vaadin-checkbox-group label {
+    font-weight: 500;
+    color: #3e2f27;
+    padding-left: 0.5rem;
+}
+
+.dialog-content .vaadin-button svg,
+.dialog-content button svg,
+.manager-form-container .vaadin-button svg,
+.manager-form-container button svg {
+    fill: #ec4899 !important;
+    stroke: #ec4899 !important;
+    transition: fill 0.3s ease;
+}
+
+.dialog-content .vaadin-button:hover svg,
+.dialog-content button:hover svg,
+.manager-form-container .vaadin-button:hover svg,
+.manager-form-container button:hover svg {
+    filter: drop-shadow(0 0 2px #f9a8d4);
 }

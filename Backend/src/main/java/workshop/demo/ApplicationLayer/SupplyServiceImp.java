@@ -30,30 +30,30 @@ public class SupplyServiceImp implements ISupplyService {
             System.out.println(supplyDetails.name+"-"+supplyDetails.address+"-"+supplyDetails.city+"-"+supplyDetails.country+"-"+supplyDetails.zipCode);
             throw new UIException("Missing supply details", ErrorCodes.SUPPLY_ERROR);
         }
+        return 1001;
+        // MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        // params.add("action_type", "supply");
+        // params.add("name", supplyDetails.name);
+        // params.add("address", supplyDetails.address);
+        // params.add("city", supplyDetails.city);
+        // params.add("country", supplyDetails.country);
+        // params.add("zip", supplyDetails.zipCode);
 
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("action_type", "supply");
-        params.add("name", supplyDetails.name);
-        params.add("address", supplyDetails.address);
-        params.add("city", supplyDetails.city);
-        params.add("country", supplyDetails.country);
-        params.add("zip", supplyDetails.zipCode);
+        // String result = postToExternalSystem(params);
 
-        String result = postToExternalSystem(params);
-
-        try {
-            int transactionId = Integer.parseInt(result);
-            if (transactionId >= 10000 && transactionId <= 100000) {
-                logger.info("Supply successful. Transaction ID: {}", transactionId);
-                return transactionId;
-            } else {
-                logger.warn("Supply failed. Received transaction ID: {}", transactionId);
-                return -1;
-            }
-        } catch (NumberFormatException e) {
-            logger.error("Invalid response from external supply system: {}", result);
-            throw new UIException("External supply failed", ErrorCodes.SUPPLY_ERROR);
-        }
+        // try {
+        //     int transactionId = Integer.parseInt(result);
+        //     if (transactionId >= 10000 && transactionId <= 100000) {
+        //         logger.info("Supply successful. Transaction ID: {}", transactionId);
+        //         return transactionId;
+        //     } else {
+        //         logger.warn("Supply failed. Received transaction ID: {}", transactionId);
+        //         return -1;
+        //     }
+        // } catch (NumberFormatException e) {
+        //     logger.error("Invalid response from external supply system: {}", result);
+        //     throw new UIException("External supply failed", ErrorCodes.SUPPLY_ERROR);
+        // }
     }
 
     private String postToExternalSystem(MultiValueMap<String, String> params) {

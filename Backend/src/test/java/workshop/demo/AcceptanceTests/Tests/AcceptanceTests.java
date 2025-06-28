@@ -3,6 +3,8 @@ package workshop.demo.AcceptanceTests.Tests;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,53 +36,53 @@ import static org.mockito.Mockito.*;
 @ActiveProfiles("test")
 public class AcceptanceTests {
 
-    // Replace manual mocks with Spring's @MockBean
-    @MockBean
+    // Replace manual mocks with Spring's @Mock
+    @Mock
     protected AuthenticationRepo mockAuthRepo;
-    @MockBean
+    @Mock
     protected UserJpaRepository mockUserRepo;
-    @MockBean
+    @Mock
     protected GuestJpaRepository mockGuestRepo;
-    @MockBean
+    @Mock
     protected IStoreRepoDB mockStoreRepo;
-    @MockBean
+    @Mock
     protected IStockRepoDB mockStockRepo1;
-    @MockBean
+    @Mock
     protected IStoreStockRepo mockStoreStock;
-    @MockBean
+    @Mock
     protected NodeJPARepository mockNodeRepo;
-    @MockBean
+    @Mock
     protected IStockRepo mockStockRepo;
-    @MockBean
+    @Mock
     protected PurchaseRepository mockPurchaseRepo;
-    @MockBean
+    @Mock
     protected IOrderRepoDB mockOrderRepo;
-    @MockBean
+    @Mock
     protected DelayedNotificationRepository mockNotiRepo;
-    @MockBean
+    @Mock
     protected ReviewJpaRepository mockReviewRepo;
-    @MockBean
+    @Mock
     protected UserSuspensionJpaRepository mockSusRepo;
-    // @MockBean
+    // @Mock
     // protected ISUConnectionRepo mockIOSrepo;
-    // @MockBean
+    // @Mock
     // protected SUConnectionRepository suConnectionRepo;
 
     protected Encoder encoder = new Encoder();
 
-    @Autowired
+    @InjectMocks
     protected UserService userService;
-    @Autowired
+    @InjectMocks
     protected StoreService storeService;
-    @Autowired
+    @InjectMocks
     protected StockService stockService;
-    @Autowired
+    @InjectMocks
     protected PurchaseService purchaseService;
-    @Autowired
+    @InjectMocks
     protected OrderService orderService;
-    @Autowired
+    @InjectMocks
     protected NotificationService notificationService;
-    @Autowired
+    @InjectMocks
     protected ReviewService reviewService;
 
     @BeforeEach

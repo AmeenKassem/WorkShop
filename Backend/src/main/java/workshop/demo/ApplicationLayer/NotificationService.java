@@ -67,8 +67,11 @@ public class NotificationService {
     }
 
     public void sendMessageToUser(int id, String string) {
+        logger.info("we have to send to user : v");
         Registered user = userRepo.findById(id).orElseThrow();
+        logger.info("username:"+user.getUsername());
         sendDelayedMessageToUser(user.getUsername(), string);
+        logger.info("message must be sended !");
     }
 
 }

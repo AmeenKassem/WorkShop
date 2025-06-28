@@ -30,9 +30,10 @@ import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.Presenter.ManageStoreDiscountsPresenter;
 import workshop.demo.PresentationLayer.Presenter.ManageStoreProductsPresenter;
+import com.vaadin.flow.component.dependency.CssImport;
 
 @Route(value = "manage-store-products", layout = MainLayout.class)
-// @CssImport("./Theme/manage-products.css")
+@CssImport("./Theme/manage-products.css")
 public class ManageStoreProductsView extends VerticalLayout implements HasUrlParameter<Integer> {
 
     private final ManageStoreProductsPresenter presenter;
@@ -59,6 +60,8 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
         Button addProductBtn = new Button("+ Add Item", e -> openAddItemDialog());
         Button manageDiscBtn = new Button("⚙️ Manage Discounts", e -> openDiscountDialog());
+        addProductBtn.addClassName("add-product-btn");
+        manageDiscBtn.addClassName("back-btn");
 
         HorizontalLayout footer = new HorizontalLayout(addProductBtn, manageDiscBtn);
         footer.addClassName("footer-buttons");
@@ -78,7 +81,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         presenter.loadProducts(storeId, token);
     }
 
-    private void openAddItemDialog() {
+ private void openAddItemDialog() {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("Add Item to Your Store");
 
@@ -88,7 +91,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         TextField priceField = new TextField("Price");
         TextField quantityField = new TextField("Quantity");
 
-        Button addBtn = new Button(" Add", e -> {
+        Button addBtn = new Button("Add", e -> {
             ProductDTO selected = productSelect.getValue();
             if (selected == null || priceField.isEmpty() || quantityField.isEmpty()) {
                 NotificationView.showInfo("Please fill in all fields.");
@@ -104,24 +107,28 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                     dialog
             );
         });
+        addBtn.addClassNames("dialog-button", "confirm");
 
         Button newProductBtn = new Button("Add New Product", e -> {
             dialog.close();
             openAddNewProductDialog();
         });
+        newProductBtn.addClassNames("dialog-button", "cancel");
 
         VerticalLayout layout = new VerticalLayout(
                 productSelect,
                 priceField,
-                quantityField,
-                new HorizontalLayout(addBtn, newProductBtn)
+                quantityField
         );
+        layout.addClassName("dialog-content");
 
         dialog.add(layout);
+        dialog.getFooter().add(new HorizontalLayout(addBtn, newProductBtn));
         dialog.open();
 
         presenter.loadAllProducts(token, productSelect, storeId);
     }
+
 
     public void showProducts(Map<ItemStoreDTO, ProductDTO> products) {
         this.currentProducts = (products == null ? Map.of() : products);
@@ -153,8 +160,14 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                     -> showAuctionDialog(storeId, token, item.getProductId()));
             Button bidButton = new Button("💸 Enable Bidding", e -> showBidDialog(storeId, token, item.getProductId()));
             Button randomButton = new Button("🎲 Start Random Draw", e -> showRandomDialog(storeId, token, item.getProductId()));
-            VerticalLayout actions = new VerticalLayout(edit, auctionButton, bidButton, randomButton, delete);
-            actions.addClassName("button-row");
+            HorizontalLayout row1 = new HorizontalLayout(edit, auctionButton, delete);
+            HorizontalLayout row2 = new HorizontalLayout(bidButton, randomButton); 
+            row1.addClassName("button-row");
+            row2.addClassName("button-row");
+  
+           VerticalLayout actions = new VerticalLayout(row1, row2);
+            actions.setSpacing(true);
+            actions.setJustifyContentMode(JustifyContentMode.END);
 
             card.add(actions);
             productList.add(card);
@@ -178,21 +191,26 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                     description);
             dialog.close();
         });
+        save.addClassNames("dialog-button", "confirm");
 
-        dialog.add(quantityField, priceField, save);
+        VerticalLayout layout = new VerticalLayout(quantityField, priceField);
+        layout.addClassName("dialog-content");
+
+        dialog.add(layout);
+        dialog.getFooter().add(new HorizontalLayout(save));
         dialog.open();
     }
 
-    private void openAddNewProductDialog() {
+
+        private void openAddNewProductDialog() {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("Add Product to Store");
 
-        // Fields
         TextField name = new TextField("Product Name");
         TextField description = new TextField("Description");
-        //keyword:
         TextField keyword = new TextField("Keyword");
         keyword.setPlaceholder("e.g. summer, electronics, sport...");
+
         Label keywordHelp = new Label("Enter a keyword that best describes the product (required)");
 
         ComboBox<Category> category = new ComboBox<>("Category");
@@ -200,7 +218,6 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         TextField price = new TextField("Price");
         TextField quantity = new TextField("Quantity");
 
-        // Add button
         Button add = new Button("Add to Store", e -> {
             if (name.isEmpty() || description.isEmpty() || keyword.isEmpty() || category.isEmpty()
                     || price.isEmpty() || quantity.isEmpty()) {
@@ -220,11 +237,18 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                     dialog
             );
         });
+        add.addClassNames("dialog-button", "confirm");
 
-        VerticalLayout layout = new VerticalLayout(name, description, keyword, category, price, quantity, add);
+        VerticalLayout layout = new VerticalLayout(
+                name, description, keywordHelp, keyword, category, price, quantity
+        );
+        layout.addClassName("dialog-content");
+
         dialog.add(layout);
+        dialog.getFooter().add(new HorizontalLayout(add));
         dialog.open();
     }
+
 
     public void showEmptyPage(String msg) {
         productList.removeAll();
@@ -260,13 +284,21 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             dialog.close();
         });
 
-        Button cancel = new Button("Cancel", e -> dialog.close());
 
+        Button cancel = new Button("Cancel", e -> dialog.close());
+        confirm.addClassName("dialog-button");
+        confirm.addClassName("confirm");
+
+        cancel.addClassName("dialog-button");
+        cancel.addClassName("cancel");
         HorizontalLayout buttons = new HorizontalLayout(confirm, cancel);
+        buttons.addClassName("dialog-button-row");
+
         dialog.getFooter().add(buttons);
 
         dialog.open();
     }
+
 
     private void showBidDialog(int storeId, String token, int productId) {
         Dialog dialog = new Dialog();
@@ -277,6 +309,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         quantityField.setMin(1.0);
 
         VerticalLayout form = new VerticalLayout(quantityField);
+        form.addClassName("dialog-content");
         dialog.add(form);
 
         Button confirm = new Button("Set Bid", event -> {
@@ -284,8 +317,11 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             presenter.setProductToBid(storeId, token, productId, quantity);
             dialog.close();
         });
+        confirm.addClassNames("dialog-button", "confirm");
 
         Button cancel = new Button("Cancel", e -> dialog.close());
+        cancel.addClassNames("dialog-button", "cancel");
+
         dialog.getFooter().add(new HorizontalLayout(confirm, cancel));
         dialog.open();
     }
@@ -295,7 +331,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         dialog.setHeaderTitle("🎲 Set Product to Random Draw");
 
         NumberField quantityField = new NumberField("Quantity");
-        NumberField priceField = new NumberField("Price per Ticket");
+        NumberField priceField = new NumberField("Full Price");
         NumberField timeField = new NumberField("Duration (minutes)");
 
         quantityField.setValue(1.0);
@@ -306,6 +342,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         timeField.setMin(1.0);
 
         VerticalLayout form = new VerticalLayout(quantityField, priceField, timeField);
+        form.addClassName("dialog-content");
         dialog.add(form);
 
         Button confirm = new Button("Set Random Draw", event -> {
@@ -316,8 +353,11 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             presenter.setProductToRandom(storeId, token, productId, quantity, price, timeInMillis);
             dialog.close();
         });
+        confirm.addClassNames("dialog-button", "confirm");
 
         Button cancel = new Button("Cancel", e -> dialog.close());
+        cancel.addClassNames("dialog-button", "cancel");
+
         dialog.getFooter().add(new HorizontalLayout(confirm, cancel));
         dialog.open();
     }
@@ -525,7 +565,6 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
         Button cancel = new Button("Cancel", e -> dlg.close());
 
-        /* ── assemble dialog ───────────────────────────────────── */
         dlg.add(new VerticalLayout(
                 nameField, percent,
                 new HorizontalLayout(predBox, opBox, valueWrapper),
@@ -536,6 +575,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                 grid,
                 new HorizontalLayout(save, cancel)
         ));
+
         dlg.open();
     }
 

@@ -1,5 +1,6 @@
 package workshop.demo.DTOs;
 
+
 public class ParticipationInRandomDTO {
 
     public int userId;
@@ -56,6 +57,10 @@ public class ParticipationInRandomDTO {
 
     public boolean mustRefund() {
         return mustRefund;
+    }
+
+    public boolean isEnded() {
+        return ended;
     }
 
 }

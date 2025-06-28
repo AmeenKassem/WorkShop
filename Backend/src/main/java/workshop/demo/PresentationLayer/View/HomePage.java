@@ -44,7 +44,6 @@ public class HomePage extends VerticalLayout {
         this.homePagePresenter = new HomePagePresenter(this);
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
 
-        // בדיקת השעיה
         LocalDateTime suspensionEnd = this.homePagePresenter.fetchSuspensionEndTime(token);
         if (suspensionEnd != null) {
             String formatted = suspensionEnd.format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy - HH:mm"));
@@ -64,7 +63,6 @@ public class HomePage extends VerticalLayout {
         searchBarContainer.addClassName("search-bar-container");
         add(searchBarContainer);
 
-        // תוצאות חיפוש
         resultsContainer.setWidthFull();
         resultsContainer.getStyle().set("max-width", "1100px");
         add(resultsContainer);
@@ -215,12 +213,12 @@ public class HomePage extends VerticalLayout {
         HorizontalLayout row = new HorizontalLayout();
         row.setSpacing(true);
         row.getStyle()
-            .set("display", "flex")
-            .set("flex-wrap", "wrap")
-            .set("justify-content", "center")
-            .set("gap", "8px");
+                .set("display", "flex")
+                .set("flex-wrap", "wrap")
+                .set("justify-content", "center")
+                .set("gap", "8px");
 
-        row.setDefaultVerticalComponentAlignment(Alignment.BASELINE); 
+        row.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
 
         searchField.setWidth("150px");
         categoryCombo.setWidth("130px");
@@ -235,11 +233,8 @@ public class HomePage extends VerticalLayout {
         } else {
             row.add(searchField, categoryCombo, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
         }
-
-
         layout.add(row);
         return layout;
-
     }
 
     private Div createItemCard(ItemStoreDTO item) {

@@ -31,10 +31,10 @@ import workshop.demo.DomainLayer.Stock.Auction;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
+import workshop.demo.DomainLayer.Stock.Random;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
-import workshop.demo.DomainLayer.Store.Random;
 import workshop.demo.DomainLayer.User.CartItem;
 
 @Repository
@@ -197,10 +197,10 @@ public class StockRepository implements IStockRepo {
     public int addProductToRandom(int productId, int quantity, double productPrice, int storeId,
             long RandomTime) throws UIException, DevException {
         checkQuantity(productId, quantity, storeId);
-        int res = getActivePurchases(storeId).addProductToRandom(productId, quantity, productPrice, storeId,
+        Random res = getActivePurchases(storeId).addProductToRandom(productId, quantity, productPrice, storeId,
                 RandomTime);
         this.decreaseQuantitytoBuy(storeId, productId, quantity);
-        return res;
+        return res.getRandomId();
     }
 
     public void returnProductToStock(int storeId, int productId, int quantity, int specialId)
@@ -225,11 +225,6 @@ public class StockRepository implements IStockRepo {
     public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
             throws UIException, DevException {
         return getActivePurchases(storeId).participateInRandom(userId, randomId, amountPaid);
-    }
-
-    @Override
-    public ParticipationInRandomDTO endRandom(int storeId, int randomId) throws Exception {
-        return getActivePurchases(storeId).endRandom(randomId);
     }
 
     @Override
@@ -513,11 +508,11 @@ public class StockRepository implements IStockRepo {
         for (ItemStoreDTO item : storeItems) {
             int productId = item.getProductId();
             ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
-            List<RandomDTO> randoms = active.getRandomsForProduct(productId);
-            for (RandomDTO random : randoms) {
-                random.productName = item.getProductName();
-                result.add(random);
-            }
+            //List<RandomDTO> randoms = active.getRandomsForProduct(productId);
+            // for (RandomDTO random : randoms) {
+            //     random.productName = item.getProductName();
+            //     result.add(random);
+            // }
         }
         return result.toArray(new RandomDTO[0]);
     }

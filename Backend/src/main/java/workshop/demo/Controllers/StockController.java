@@ -214,7 +214,7 @@ public class StockController {
             @RequestParam(required = false) Double maxProductRating) {
         try {
             ProductSearchCriteria criteria = new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter, storeId, minPrice, maxPrice, minProductRating, maxProductRating);
-            RandomDTO[] results = stockService.searchActiveRandoms(token, criteria);
+            RandomDTO[] results = activeService.searchActiveRandoms(token, criteria);
             return ResponseEntity.ok(new ApiResponse<>(results, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
@@ -236,7 +236,7 @@ public class StockController {
             @RequestParam(required = false) Double maxProductRating) {
         try {
             ProductSearchCriteria criteria = new ProductSearchCriteria(productNameFilter, categoryFilter, keywordFilter, storeId, minPrice, maxPrice, minProductRating, maxProductRating);
-            BidDTO[] results = stockService.searchActiveBids(token, criteria);
+            BidDTO[] results = activeService.searchActiveBids(token, criteria);
             return ResponseEntity.ok(new ApiResponse<>(results, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
@@ -272,7 +272,7 @@ public class StockController {
     public ResponseEntity<?> acceptBid(@RequestParam String token,
             @RequestParam int storeId, @RequestParam int bidId, @RequestParam int bidToAcceptId) {
         try {
-            stockService.acceptBid(token, storeId, bidId, bidToAcceptId);
+            activeService.acceptBid(token, storeId, bidId, bidToAcceptId);
             return ResponseEntity.ok(new ApiResponse<>("Bid accepted", null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
@@ -286,7 +286,7 @@ public class StockController {
     @GetMapping("/getAllAuctions")
     public ResponseEntity<?> getAllAuctions(@RequestParam String token, @RequestParam int storeId) {
         try {
-            AuctionDTO[] auctions = activeService.getAllAuctions_user(token, storeId);
+            AuctionDTO[] auctions = activeService.getAllAuctions(token, storeId);
             return ResponseEntity.ok(new ApiResponse<>(auctions, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
@@ -318,7 +318,7 @@ public class StockController {
             @RequestParam int storeId,
             @RequestParam double price) {
         try {
-            stockService.addRegularBid(token, bitId, storeId, price);
+            activeService.addUserBidToBid(token, bitId, storeId, price);
             return ResponseEntity.ok(new ApiResponse<>("Bid placed successfully", null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
@@ -349,7 +349,7 @@ public class StockController {
     @PostMapping("/setProductToBid")
     public ResponseEntity<?> setProductToBid(@RequestParam String token, @RequestParam int storeId, @RequestParam int productId, @RequestParam int quantity) {
         try {
-            int id = stockService.setProductToBid(token, storeId, productId, quantity);
+            int id = activeService.setProductToBid(token, storeId, productId, quantity);
             return ResponseEntity.ok(new ApiResponse<>(id, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
@@ -363,7 +363,7 @@ public class StockController {
     @GetMapping("/getAllBidsStatus")
     public ResponseEntity<?> getAllBidsStatus(@RequestParam String token, @RequestParam int storeId) {
         try {
-            BidDTO[] bids = stockService.getAllBidsStatus(token, storeId);
+            BidDTO[] bids = activeService.getAllBids(token, storeId);
             return ResponseEntity.ok(new ApiResponse<>(bids, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
@@ -377,7 +377,7 @@ public class StockController {
     @GetMapping("/getAllBidsInStore")
     public ResponseEntity<?> getAllBids(@RequestParam String token, @RequestParam int storeId) {
         try {
-            BidDTO[] bids = stockService.getAllBidsInStore(token, storeId);
+            BidDTO[] bids = activeService.getAllBids(token, storeId);
             return ResponseEntity.ok(new ApiResponse<>(bids, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
@@ -388,24 +388,24 @@ public class StockController {
         }
     }
 
-    @PostMapping("/endRandom")
-    public ResponseEntity<?> endRandom(@RequestParam String token, @RequestParam int storeId, @RequestParam int randomId) {
-        try {
-            ParticipationInRandomDTO result = stockService.endBid(token, storeId, randomId);
-            return ResponseEntity.ok(new ApiResponse<>(result, null));
-        } catch (UIException ex) {
-            return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(null, e.getMessage(), -1));
-        }
-    }
+    // @PostMapping("/endRandom")
+    // public ResponseEntity<?> endRandom(@RequestParam String token, @RequestParam int storeId, @RequestParam int randomId) {
+    //     try {
+    //         ParticipationInRandomDTO result = stockService.endBid(token, storeId, randomId);
+    //         return ResponseEntity.ok(new ApiResponse<>(result, null));
+    //     } catch (UIException ex) {
+    //         return ResponseEntity.badRequest()
+    //                 .body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+    //     } catch (Exception e) {
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //                 .body(new ApiResponse<>(null, e.getMessage(), -1));
+    //     }
+    // }
 
     @GetMapping("/getAllRandomInStore")
     public ResponseEntity<?> getAllRandomInStore(@RequestParam String token, @RequestParam int storeId) {
         try {
-            RandomDTO[] randoms = stockService.getAllRandomInStoreToUser(token, storeId);
+            RandomDTO[] randoms = activeService.getAllRandoms(token, storeId);
             return ResponseEntity.ok(new ApiResponse<>(randoms, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
@@ -420,7 +420,7 @@ public class StockController {
     public ResponseEntity<?> setProductToRandom(@RequestParam String token, @RequestParam int productId, @RequestParam int quantity,
             @RequestParam double productPrice, @RequestParam int storeId, @RequestParam long randomTime) {
         try {
-            int result = stockService.setProductToRandom(token, productId, quantity, productPrice, storeId, randomTime);
+            int result = activeService.setProductToRandom(token, productId, quantity, productPrice, storeId, randomTime);
             return ResponseEntity.ok(new ApiResponse<>(result, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()
@@ -446,9 +446,9 @@ public class StockController {
     }
 
     @PostMapping("/rejectBid")
-    public ResponseEntity<?> rejectBid(@RequestParam String token, @RequestParam int storeId, @RequestParam int bidId, @RequestParam int bidToRejectId) {
+    public ResponseEntity<?> rejectBid(@RequestParam String token, @RequestParam int storeId, @RequestParam int bidId, @RequestParam int bidToRejectId, @RequestParam(required = false) int ownerOffer) {
         try {
-            stockService.rejectBid(token, storeId, bidId, bidToRejectId);
+            activeService.rejectBid(token, storeId, bidId, bidToRejectId, ownerOffer);
             return ResponseEntity.ok(new ApiResponse<>("Bid rejected successfully", null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest()

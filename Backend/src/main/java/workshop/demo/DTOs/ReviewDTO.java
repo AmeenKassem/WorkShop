@@ -28,6 +28,7 @@ public class ReviewDTO {
     }
 
     public String getName() {
+        if(name==null) return "Guest";
         return name;
     }
 
