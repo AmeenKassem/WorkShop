@@ -194,6 +194,7 @@ public class StoreController {
     @PostMapping("/close")
     public ResponseEntity<?> closeStore(@RequestParam int storeId,
             @RequestParam String token) {
+            
         try {
             storeService.closeStore(storeId, token);
             return ResponseEntity.ok(new ApiResponse<>("Store closed successfully", null));

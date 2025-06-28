@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import workshop.demo.DTOs.OrderDTO;
+import workshop.demo.DTOs.PurchaseHistoryDTO;
 import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -71,6 +73,33 @@ public class OrderService {
             dtos.add(new OrderDTO(o.getUserId(), storeId, o.getDate(), o.getProductsList(), o.getFinalPrice()));
         }
         return dtos;
+    }
+
+
+    public List<PurchaseHistoryDTO> viewPurchaseHistory(String token) throws Exception {
+        if (!authRepo.validToken(token)) {
+            throw new UIException("Invalid Token!", ErrorCodes.INVALID_TOKEN);
+        }
+
+        List<Order> allOrders = orderJpaRepo.findAll();
+        List<PurchaseHistoryDTO> historyEntries = new ArrayList<>();
+
+        for (Order order : allOrders) {
+            int buyerId = order.getUserId();
+            String storeName = order.getStoreName();
+
+            String buyerName = userRepo.findById(buyerId)
+                    .map(u -> u.getUsername())
+                    .orElse("Unknown buyer");
+
+            List<ReceiptProduct> items = order.getProductsList();
+            String timeStamp = order.getDate();
+            double totalPrice = order.getFinalPrice();
+
+            PurchaseHistoryDTO record = new PurchaseHistoryDTO(buyerName, storeName, items, timeStamp, totalPrice);
+            historyEntries.add(record);
+        }
+        return historyEntries;
     }
 
 }
