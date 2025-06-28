@@ -131,15 +131,15 @@ public class StockService {
         return randoms;
     }
 
-    public BidDTO[] searchActiveBids(String token, ProductSearchCriteria criteria) throws Exception {
-        logger.info("Starting searchBids with criteria: {}", criteria);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
-        BidDTO[] bids = stockRepo.searchActiveBids(criteria);
-        // storeRepo.fillWithStoreName(bids);
-        // -> must be jpa
-        return bids;
-    }
+    // public BidDTO[] searchActiveBids(String token, ProductSearchCriteria criteria) throws Exception {
+    //     logger.info("Starting searchBids with criteria: {}", criteria);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
+    //     BidDTO[] bids = stockRepo.searchActiveBids(criteria);
+    //     // storeRepo.fillWithStoreName(bids);
+    //     // -> must be jpa
+    //     return bids;
+    // }
 
 
 
@@ -240,32 +240,32 @@ public class StockService {
         return stockRepo.getAllBids(storeId);
     }
 
-    public SingleBid acceptBid(String token, int storeId, int bidId, int bidToAcceptId) throws Exception, DevException {
-        logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidToAcceptId, bidId, storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
-        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
-        }
-        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-            throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
-        }
+    // public SingleBid acceptBid(String token, int storeId, int bidId, int bidToAcceptId) throws Exception, DevException {
+    //     logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidToAcceptId, bidId, storeId);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
+    //     checkUserRegisterOnline_ThrowException(userId);
+    //     Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+    //     UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+    //     if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+    //         throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+    //     }
+    //     if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+    //         throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
+    //     }
 
-        SingleBid bidAccepted = stockRepo.acceptBid(storeId, bidId, bidToAcceptId);
-        if (!bidAccepted.isWinner()) {
-            notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
-                    "Owner " + userRepo.findById(userId).get().getUsername() + " accepted your bid");
-        } else {
-            notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
-                    "Owner " + userRepo.findById(userId).get().getUsername()
-                            + " accepted your bid and you are the winner!");
-        }
-        logger.info("Bid accepted. User: {} is the winner.", bidAccepted.getUserId());
-        return bidAccepted;
-    }
+    //     SingleBid bidAccepted = stockRepo.acceptBid(storeId, bidId, bidToAcceptId);
+    //     if (!bidAccepted.isWinner()) {
+    //         notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
+    //                 "Owner " + userRepo.findById(userId).get().getUsername() + " accepted your bid");
+    //     } else {
+    //         notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
+    //                 "Owner " + userRepo.findById(userId).get().getUsername()
+    //                         + " accepted your bid and you are the winner!");
+    //     }
+    //     logger.info("Bid accepted. User: {} is the winner.", bidAccepted.getUserId());
+    //     return bidAccepted;
+    // }
 
     public void rejectBid(String token, int storeId, int bidId, int bidTorejectId) throws Exception, DevException {
         logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidTorejectId, bidId, storeId);
