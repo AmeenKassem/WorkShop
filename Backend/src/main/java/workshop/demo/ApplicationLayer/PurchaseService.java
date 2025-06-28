@@ -163,12 +163,17 @@ public class PurchaseService {
                     throw new UIException(store.getStoreName(), ErrorCodes.INSUFFICIENT_STOCK);
                 }
             }
-            UserDTO buyer = regRepo.getReferenceById(userId).getUserDTO();            // policy check
-            store.assertPurchasePolicies(buyer, itemStoreDTOS);
+            if(!isGuest) {
+                UserDTO buyer = regRepo.getReferenceById(userId).getUserDTO();            // policy check
+                store.assertPurchasePolicies(buyer, itemStoreDTOS);
+            }else{
+                UserDTO buyer = guestRepo.getReferenceById(userId).getUserDTO();
+                store.assertPurchasePolicies(buyer, itemStoreDTOS);
+            }
 
             Discount discount     = store.getDiscount();
             double   discountAmt  = 0.0;
-            System.out.println("Hmode is"+discount.toDTO().getCondition().toString());
+            //System.out.println("Hmode is"+discount.toDTO().getCondition().toString());
             if (discount != null) {
                 discountAmt = discount.apply(new DiscountScope(itemStoreDTOS));
             }
