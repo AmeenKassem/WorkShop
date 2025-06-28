@@ -1,6 +1,7 @@
 package workshop.demo.InfrastructureLayer.DiscountEntities;
 
 import jakarta.persistence.*;
+import workshop.demo.DomainLayer.Store.Store;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -18,6 +19,8 @@ public abstract class DiscountEntity {
     private double percent;
     @Column(name = "discount_condition")
     private String condition;
+    @OneToOne(mappedBy = "discountEntity")
+    private Store store;
 
     public String getName() { return name; }
     public double getPercent() { return percent; }
@@ -29,4 +32,5 @@ public abstract class DiscountEntity {
 
     public int getId() { return id; }
     protected DiscountEntity() { }
+    public void setStore(Store s) { this.store = s; }
 }

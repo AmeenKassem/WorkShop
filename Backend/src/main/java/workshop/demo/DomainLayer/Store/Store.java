@@ -45,7 +45,7 @@ public class Store {
 
     @Transient
     private Discount discount;
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "discount_id")
     private DiscountEntity discountEntity;
 
@@ -77,6 +77,7 @@ public class Store {
         rank[3] = new AtomicInteger(rank4);
         rank[4] = new AtomicInteger(rank5);
     }
+
 
     @PrePersist
     @PreUpdate
@@ -252,6 +253,7 @@ public class Store {
 
     public void setDiscountEntity(DiscountEntity discountEntity) {
         this.discountEntity = discountEntity;
+        if(discountEntity!=null){discountEntity.setStore(this);}
     }
 
 
