@@ -2,10 +2,10 @@ package workshop.demo.PresentationLayer.View;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+
 import workshop.demo.PresentationLayer.Presenter.OpenStorePresenter;
 
 @Route(value = "open-store", layout = MainLayout.class)
@@ -16,7 +16,7 @@ public class OpenStoreView extends VerticalLayout {
     private final TextField storeNameField;
     private final TextField categoryField;
 
-   public OpenStoreView() {
+    public OpenStoreView() {
         this.presenter = new OpenStorePresenter(this);
 
         VerticalLayout formContainer = new VerticalLayout();
@@ -43,6 +43,7 @@ public class OpenStoreView extends VerticalLayout {
         setJustifyContentMode(JustifyContentMode.CENTER);
         setAlignItems(Alignment.CENTER);
     }
+
     public String getStoreName() {
         return storeNameField.getValue();
     }
@@ -52,10 +53,10 @@ public class OpenStoreView extends VerticalLayout {
     }
 
     public void showSuccess(String msg) {
-        Notification.show("✅ " + msg, 3000, Notification.Position.BOTTOM_CENTER);
+        NotificationView.showSuccess(msg);
     }
 
     public void showError(String msg) {
-        Notification.show("❌ " + msg, 5000, Notification.Position.BOTTOM_CENTER);
+        NotificationView.showError(msg);
     }
 }
