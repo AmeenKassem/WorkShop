@@ -20,6 +20,7 @@ public class ParticipationInRandom {
     private int userId;
     private int storeId;
     private int productId;
+    private String userName;
     // public int numberOfCards;
     private double amountPaid;
     private boolean isWinner;
@@ -32,8 +33,9 @@ public class ParticipationInRandom {
     @JoinColumn(name = "random_id")
     private Random random;
 
-    public ParticipationInRandom(int productId, int storeId, int userId, int randomId, double amountPaid) {
+    public ParticipationInRandom(int productId, int storeId, int userId, int randomId, double amountPaid, String userName) {
         this.amountPaid = amountPaid;
+        this.userName = userName;
         this.userId = userId;
         this.storeId = storeId;
         this.productId = productId;
@@ -52,6 +54,7 @@ public class ParticipationInRandom {
         dto.randomId = this.random != null ? this.random.getRandomId() : -1;
         dto.mustRefund = this.mustRefund;
         dto.transactionIdForPayment = this.transactionIdForPayment;
+        dto.userName = this.userName;
         return dto;
     }
 
@@ -117,5 +120,9 @@ public class ParticipationInRandom {
             throw new IllegalArgumentException("Amount paid cannot be negative");
         }
         this.amountPaid = d;
+    }
+
+    public String getUserName() {
+        return userName;
     }
 }

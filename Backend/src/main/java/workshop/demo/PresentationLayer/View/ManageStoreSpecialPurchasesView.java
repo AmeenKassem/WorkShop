@@ -12,7 +12,12 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
-import workshop.demo.DTOs.*;
+
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.AuctionStatus;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.SingleBidDTO;
 import workshop.demo.PresentationLayer.Presenter.ManageStoreSpecialPurchasesPresenter;
 
 @Route(value = "manage-store-special-purchases", layout = MainLayout.class)
@@ -49,7 +54,7 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
     }
 
     public void showAllSpecials(RandomDTO[] randoms, AuctionDTO[] auctions, BidDTO[] bids) {
-    
+
 
         H3 auctionHeader = new H3("📣 Auctions");
         auctionHeader.addClassName("section-header");
@@ -67,25 +72,43 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
         add(createBidSection(bids));
     }
 
-   private HorizontalLayout createRandomSection(RandomDTO[] randoms) {
+    private HorizontalLayout createRandomSection(RandomDTO[] randoms) {
         HorizontalLayout layout = new HorizontalLayout();
         layout.setWidthFull();
         layout.addClassName("scroll-section");
+
         if (randoms == null || randoms.length == 0) {
             layout.add(new Paragraph("No random draws available."));
             return layout;
         }
+
         for (RandomDTO dto : randoms) {
             VerticalLayout card = new VerticalLayout();
             card.addClassName("special-card");
 
             card.add(new Paragraph("🎁 Product: " + dto.productName));
+            card.add(new Paragraph("🏬 Store: " + dto.storeName));
+            card.add(new Paragraph("📦 Quantity: " + dto.quantity));
             card.add(new Paragraph("🔢 Amount Left: " + dto.amountLeft));
-            card.add(new Paragraph("🏆 Winner: " + (dto.winner != null ? dto.winner.userId : "Not yet")));
+            card.add(new Paragraph("💵 Price: $" + dto.productPrice));
+
+            long now = System.currentTimeMillis();
+            if (now >= dto.endTimeMillis) {
+                if (dto.userName != null) {
+                    card.add(new Paragraph("🏆 Winner: " + dto.userName));
+                } else {
+                    card.add(new Paragraph("❌ No winner"));
+                }
+                card.add(new Paragraph("⏰ Ended at: " + dto.endDate));
+            } else {
+                long secondsLeft = (dto.endTimeMillis - now) / 1000;
+                long minutes = secondsLeft / 60;
+                long seconds = secondsLeft % 60;
+                card.add(new Paragraph("⌛ Ends in: " + minutes + "m " + seconds + "s"));
+            }
 
             layout.add(card);
         }
-
         return layout;
     }
 
@@ -102,6 +125,7 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
             card.addClassName("special-card");
 
             card.add(new Paragraph("🛒 Product: " + dto.productName));
+            card.add(new Paragraph("📦 Quantity: " + dto.quantity));
 
             if (dto.status == AuctionStatus.FINISH) {
                 if (dto.winnerId != -1) {
@@ -121,61 +145,75 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
 
         return layout;
     }
-   private HorizontalLayout createBidSection(BidDTO[] bids) {
-        HorizontalLayout layout = new HorizontalLayout();
-        layout.setWidthFull();
-        layout.addClassName("scroll-section");
-        if (bids == null || bids.length == 0) {
-            layout.add(new Paragraph("No bids available."));
-            return layout;
-        }
+    private HorizontalLayout createBidSection(BidDTO[] bids) {
+    HorizontalLayout layout = new HorizontalLayout();
+    layout.setWidthFull();
+    layout.addClassName("scroll-section");
 
-        for (BidDTO bid : bids) {
-            VerticalLayout bidLayout = new VerticalLayout();
-            bidLayout.addClassName("special-card");
+    if (bids == null || bids.length == 0) {
+        layout.add(new Paragraph("No bids available."));
+        return layout;
+    }
 
-            bidLayout.add(new Paragraph("Bid: " + bid.productName));
-            bidLayout.add(new Paragraph("Store: " + bid.storeName));
-            bidLayout.add(new Paragraph("Quantity: " + bid.quantity));
+    for (BidDTO bid : bids) {
+        VerticalLayout card = new VerticalLayout();
+        card.addClassName("special-card");
 
-            Button showOffers = new Button("Show User Offers");
-            HorizontalLayout offersLayout = new HorizontalLayout();
-            offersLayout.setVisible(false);
-            offersLayout.addClassName("scroll-section");
+        card.add(new Paragraph("🛍️ Product: " + bid.productName));
+        card.add(new Paragraph("🏬 Store: " + bid.storeName));
+        card.add(new Paragraph("📦 Quantity: " + bid.quantity));
 
-            showOffers.addClickListener(e -> {
-                offersLayout.setVisible(!offersLayout.isVisible());
-                showOffers.setText(offersLayout.isVisible() ? "Hide User Offers" : "Show User Offers");
-            });
+        Button showOffers = new Button("📜 Show User Offers");
+        showOffers.getStyle().set("margin-top", "0.5rem");
 
-            if (bid.bids != null && bid.bids.length > 0) {
-                for (SingleBidDTO offer : bid.bids) {
-                    VerticalLayout offerCard = new VerticalLayout();
-                    offerCard.addClassName("offer-card");
+        VerticalLayout offersLayout = new VerticalLayout();
+        offersLayout.setVisible(false);
+        offersLayout.setPadding(false);
+        offersLayout.setSpacing(true);
+        offersLayout.addClassName("scroll-section");
 
-                    offerCard.add(new Paragraph("User ID: " + offer.userId));
-                    offerCard.add(new Paragraph("Price: $" + offer.price));
-                    offerCard.add(new Paragraph("Product ID: " + offer.productId));
+        showOffers.addClickListener(e -> {
+            offersLayout.setVisible(!offersLayout.isVisible());
+            showOffers.setText(offersLayout.isVisible() ? "🔽 Hide User Offers" : "📜 Show User Offers");
+        });
+
+        if (bid.bids != null && bid.bids.length > 0) {
+            for (SingleBidDTO offer : bid.bids) {
+                VerticalLayout offerCard = new VerticalLayout();
+                offerCard.addClassName("offer-card");
+                offerCard.getStyle()
+                        .set("background-color", "#fdf2f8")
+                        .set("border", "1px solid #f9a8d4")
+                        .set("border-radius", "10px")
+                        .set("padding", "0.8rem")
+                        .set("margin-bottom", "0.5rem")
+                        .set("box-shadow", "0 2px 6px rgba(0,0,0,0.05)");
+
+                offerCard.add(new Paragraph("👤 UserName: " + offer.userName));
+                offerCard.add(new Paragraph("💵 Price: $" + offer.price));
+                offerCard.add(new Paragraph("🧾 Quantity: " + offer.amount));
+                offerCard.add(new Paragraph("🆔 Product ID: " + offer.productId));
 
                     if (!offer.isAccepted && !offer.isEnded) {
-                        Button acceptBtn = new Button("Accept", ev -> presenter.respondToSingleBid(bid.bidId, offer.id, true));
-                        Button rejectBtn = new Button("Reject", ev -> presenter.respondToSingleBid(bid.bidId, offer.id, false));
+                        Button acceptBtn = new Button("Accept", ev -> presenter.respondToSingleBid(bid.bidId, offer.userId, true));
+                        Button rejectBtn = new Button("Reject", ev -> presenter.respondToSingleBid(bid.bidId, offer.userId, false));
                         HorizontalLayout buttons = new HorizontalLayout(acceptBtn, rejectBtn);
                         offerCard.add(buttons);
                     }
 
-                    offersLayout.add(offerCard);
-                }
-            } else {
-                offersLayout.add(new Paragraph("No user offers yet."));
+                offersLayout.add(offerCard);
             }
-
-            bidLayout.add(showOffers, offersLayout);
-            layout.add(bidLayout);
+        } else {
+            offersLayout.add(new Paragraph("No user offers yet."));
         }
 
-        return layout;
+        card.add(showOffers, offersLayout);
+        layout.add(card);
     }
+
+    return layout;
+}
+
 
 
     public void refreshPage() {
