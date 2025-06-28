@@ -538,10 +538,10 @@ public class StoreService {
 
         store.addDiscount(discount);
         DiscountEntity entity = DiscountMapper.toEntity(discount);
+        storeJpaRepo.save(store);
         discountRepo.save(entity);
         logger.info("Discount '{}' added successfully to store {}", discount.getName(), storeId);
     }
-
     public void removeDiscountFromStore(String token, int storeId, String discountName)
             throws UIException, DevException {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);

@@ -45,7 +45,7 @@ public class Store {
 
     @Transient
     private Discount discount;
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "discount_id")
     private DiscountEntity discountEntity;
 
