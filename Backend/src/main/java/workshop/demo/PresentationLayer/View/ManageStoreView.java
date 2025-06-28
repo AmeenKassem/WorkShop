@@ -89,6 +89,7 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("⭐ Store Reviews");
 
+<<<<<<< HEAD
     VerticalLayout content = new VerticalLayout();
     content.addClassName("dialog-content");
     content.setSpacing(true);
@@ -96,6 +97,13 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
     content.setWidth("400px");
     content.setMaxHeight("400px");
     content.getStyle().set("overflow", "auto");
+=======
+        VerticalLayout content = new VerticalLayout();
+        content.addClassName("dialog-content");
+        content.setSpacing(true);
+        content.setPadding(true);
+        content.setWidth("400px");
+>>>>>>> persist-auth
 
         if (reviews == null || reviews.isEmpty()) {
             content.add(new Paragraph("Nothing here yet."));
@@ -211,7 +219,7 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
  /* ───────────────────────────────────────────────────────────────
      *  Purchase-Policy dialog  (add / remove)
      * ─────────────────────────────────────────────────────────────── */
-   private void openPurchasePolicyDialog() {
+    private void openPurchasePolicyDialog() {
         Dialog dlg = new Dialog();
         dlg.setHeaderTitle("Add / Remove Purchase Policies");
 
@@ -273,6 +281,7 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
         dlg.open();
     }
 
+<<<<<<< HEAD
 
 
    public void showStoreOrdersDialog(List<String> orders) {
@@ -315,4 +324,6 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
         dialog.add(content);
         dialog.open();
     }
+=======
+>>>>>>> persist-auth
 }

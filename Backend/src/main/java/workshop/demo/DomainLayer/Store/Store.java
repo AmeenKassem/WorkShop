@@ -4,18 +4,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import jakarta.persistence.*;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import workshop.demo.DTOs.ItemCartDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountEntity;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountMapper;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Transient;
-import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.StoreDTO;
-import workshop.demo.DTOs.UserDTO;
 
 @Entity
 public class Store {
@@ -43,6 +48,10 @@ public class Store {
 
     @Transient
     private Discount discount;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "discount_id")
+    private DiscountEntity discountEntity;
+
     @Transient
     private final List<PurchasePolicy> purchasePolicies = new ArrayList<>();
 
@@ -53,9 +62,9 @@ public class Store {
 
     }
 
-    public Store() {
+    public Store() {}
 
-    }
+
 
     public int getstoreId() {
         return storeId;
@@ -126,8 +135,13 @@ public class Store {
     }
 
     public Discount getDiscount() {
+        if (discount == null && discountEntity != null) {
+            DiscountEntity unproxied = (DiscountEntity) Hibernate.unproxy(discountEntity);
+            discount = DiscountMapper.toDomain(unproxied);
+        }
         return discount;
     }
+
 
     public void setDiscount(Discount discount) {
         this.discount = discount;
@@ -150,14 +164,23 @@ public class Store {
     }
 
     public boolean removeDiscountByName(String name) {
-        if (discount instanceof CompositeDiscount composite) {
-            return composite.removeDiscountByName(name);
-        } else if (discount != null && discount.getName().equals(name)) {
+        Discount root = getDiscount(); // reconstructs if null
+
+        if (root instanceof CompositeDiscount composite) {
+            boolean removed = composite.removeDiscountByName(name);
+            if (removed && composite.getDiscounts().isEmpty()) {
+                this.discount = null;  // fully remove empty composite
+            }
+            return removed;
+        } else if (root != null && root.getName().equals(name)) {
             this.discount = null;
             return true;
         }
+
         return false;
     }
+
+
 
     public void addPurchasePolicy(PurchasePolicy p) throws Exception {
         if (p == null) {
@@ -213,5 +236,14 @@ public class Store {
     public void setName(String storeName2) {
         this.storeName = storeName2;
     }
+    public DiscountEntity getDiscountEntity() {
+        return discountEntity;
+    }
+
+    public void setDiscountEntity(DiscountEntity discountEntity) {
+        this.discountEntity = discountEntity;
+        if(discountEntity!=null){discountEntity.setStore(this);}
+    }
+
 
 }

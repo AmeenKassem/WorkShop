@@ -1,3 +1,4 @@
+
 package workshop.demo.IntegrationTests.ServiceTests;
 
 import java.util.ArrayList;
@@ -123,8 +124,8 @@ public class StoreSTests {
     // @Autowired
     // private NotificationRepository notificationRepository;
 
-    @Autowired
-    private StockRepository stockRepository;
+    // @Autowired
+    // private StockRepository stockRepository;
     @Autowired
     private IStockRepoDB stockRepositoryjpa;
     @Autowired

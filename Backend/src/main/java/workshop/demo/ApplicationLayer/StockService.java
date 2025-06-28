@@ -10,29 +10,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
-import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.ProductDTO;
-import workshop.demo.DTOs.RandomDTO;
-import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
-import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.Registered;
-import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 import workshop.demo.InfrastructureLayer.AISearch;
 import workshop.demo.InfrastructureLayer.IStockRepoDB;
@@ -45,8 +37,7 @@ import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 public class StockService {
 
     private static final Logger logger = LoggerFactory.getLogger(StockService.class);
-    @Autowired
-    private IStockRepo stockRepo;
+
     @Autowired
     private IAuthRepo authRepo;
     @Autowired
@@ -99,15 +90,15 @@ public class StockService {
         return res.toArray(new ItemStoreDTO[0]);
     }
 
-    public List<Product> getMatchProducts(ProductSearchCriteria criteria) throws UIException{
+    public List<Product> getMatchProducts(ProductSearchCriteria criteria) throws UIException {
         List<Product> products = null;
         if (criteria.keywordSearch() && aiSearch.isActive()) {
             List<Integer> ids = aiSearch.getSameProduct(criteria.getKeyword(),
                     criteria.specificCategory() ? criteria.getCategory().hashCode() : -1, 0.35);
             if (ids == null || ids.isEmpty()) {
                 logger.info("No product IDs found from AI search. Returning empty list."); // if we dont find any
-                                                                                           // matches we return empty
-                                                                                           // list
+                // matches we return empty
+                // list
                 return new ArrayList<>();
             }
             products = stockJpaRepo.findAllById(ids);
@@ -120,6 +111,7 @@ public class StockService {
         }
         return products;
     }
+
 
     public RandomDTO[] searchActiveRandoms(String token, ProductSearchCriteria criteria) throws Exception {
         logger.info("Starting searchRandoms with criteria: {}", criteria);
@@ -141,8 +133,6 @@ public class StockService {
     //     return bids;
     // }
 
-
-
     public ProductDTO getProductInfo(String token, int productId) throws UIException {
         logger.info("Fetching product info for ID {}", productId);
 
@@ -157,8 +147,6 @@ public class StockService {
         logger.info("Successfully retrieved product info: {}", dto.getName());
         return dto;
     }
-
-
 
     private void checkUserRegisterOnline_ThrowException(int userId) throws UIException {
         Optional<Registered> user = userRepo.findById(userId);
@@ -261,7 +249,11 @@ public class StockService {
     //     } else {
     //         notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
     //                 "Owner " + userRepo.findById(userId).get().getUsername()
+
+    //                 + " accepted your bid and you are the winner!");
+
     //                         + " accepted your bid and you are the winner!");
+
     //     }
     //     logger.info("Bid accepted. User: {} is the winner.", bidAccepted.getUserId());
     //     return bidAccepted;
@@ -301,12 +293,10 @@ public class StockService {
         }
         return stockRepo.addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
     }
-
     // public ParticipationInRandomDTO endBid(String token, int storeId, int randomId) throws Exception, DevException {
     //     logger.info("Ending random bid {} in store {}", randomId, storeId);
     //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
     //     int userId = authRepo.getUserId(token);
-
     //     checkUserRegisterOnline_ThrowException(userId);
     //     UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
     //     if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
@@ -314,38 +304,33 @@ public class StockService {
     //     }
     //     return stockRepo.endRandom(storeId, randomId);
     // }
-
-    public RandomDTO[] getAllRandomInStore(String token, int storeId) throws Exception, DevException {
-        logger.info("Fetching all randoms in store {}", storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-            throw new UIException("you have no permession to see random info.", ErrorCodes.NO_PERMISSION);
-        }
-        return stockRepo.getRandomsInStore(storeId);
-    }
-
-    public RandomDTO[] getAllRandomInStoreToUser(String token, int storeId) throws Exception, DevException {
-        logger.info("Fetching all randoms in store {}", storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        return stockRepo.getRandomsInStore(storeId);
-    }
-
-    public RandomDTO[] getAllRandomInStore_user(String token, int storeId) throws Exception, DevException {
-        logger.info("Fetching all randoms in store {}", storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-
-        return stockRepo.getRandomsInStore(storeId);
-    }
-
+    // public RandomDTO[] getAllRandomInStore(String token, int storeId) throws Exception, DevException {
+    //     logger.info("Fetching all randoms in store {}", storeId);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
+    //     checkUserRegisterOnline_ThrowException(userId);
+    //     Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+    //     if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+    //         throw new UIException("you have no permession to see random info.", ErrorCodes.NO_PERMISSION);
+    //     }
+    //     return stockRepo.getRandomsInStore(storeId);
+    // }
+    // public RandomDTO[] getAllRandomInStoreToUser(String token, int storeId) throws Exception, DevException {
+    //     logger.info("Fetching all randoms in store {}", storeId);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
+    //     checkUserRegisterOnline_ThrowException(userId);
+    //     Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+    //     return stockRepo.getRandomsInStore(storeId);
+    // }
+    // public RandomDTO[] getAllRandomInStore_user(String token, int storeId) throws Exception, DevException {
+    //     logger.info("Fetching all randoms in store {}", storeId);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
+    //     checkUserRegisterOnline_ThrowException(userId);
+    //     Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+    //     return stockRepo.getRandomsInStore(storeId);
+    // }
     // stock managment:
     public ItemStoreDTO[] getProductsInStore(int storeId) throws UIException, DevException {
         logger.info("Fetching all products in store: {}", storeId);
@@ -524,17 +509,14 @@ public class StockService {
     // susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
     // return stockRepo.participateInRandom(userId, randomId, storeId, price);
     // }
-    public BidDTO[] getAllBidsStatus_user(String token, int storeId) throws Exception, DevException {
-        logger.info("Fetching bid status for store: {}", storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-
-        return stockRepo.getAllBids(storeId);
-    }
-
+    // public BidDTO[] getAllBidsStatus_user(String token, int storeId) throws Exception, DevException {
+    //     logger.info("Fetching bid status for store: {}", storeId);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
+    //     checkUserRegisterOnline_ThrowException(userId);
+    //     Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+    //     return stockRepo.getAllBids(storeId);
+    // }
     public Product getProductById(int productId) {
         return stockJpaRepo.findById(productId).orElse(null);
     }

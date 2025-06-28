@@ -41,8 +41,9 @@ public class DiscountFactory {
 
     private static Discount createLeaf(CreateDiscountDTO dto, Predicate<DiscountScope> condition) {
         return switch (dto.getType()) {
-            case VISIBLE -> new VisibleDiscount(dto.getName(), dto.getPercent(), condition);
-            case INVISIBLE -> new InvisibleDiscount(dto.getName(), dto.getPercent(), condition);
+            case VISIBLE -> new VisibleDiscount(dto.getName(), dto.getPercent(), condition, dto.getCondition());
+            case INVISIBLE -> new InvisibleDiscount(dto.getName(), dto.getPercent(), condition, dto.getCondition());
         };
     }
+
 }
