@@ -11,7 +11,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +21,6 @@ import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
-import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Order.Order;
@@ -32,13 +30,11 @@ import workshop.demo.DomainLayer.Purchase.ISupplyService;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.Auction;
 import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.Random;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.UserAuctionBid;
-import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
@@ -59,8 +55,6 @@ public class PurchaseService {
 
     @Autowired
     private IAuthRepo authRepo;
-    @Autowired
-    private IStockRepo stockRepo;
     @Autowired
     private IOrderRepoDB orderJpaRepo;
     // private final IUserRepo userRepo;
@@ -488,7 +482,7 @@ public class PurchaseService {
             ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, discountedTotal);
             receipt.setPaymentTransactionId(paymentTxId);
             receipt.setSupplyTransactionId(supplyTxId);
-            
+
             receipts.add(receipt);
             // orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
             Order order = new Order(userId, receipt, storeName);

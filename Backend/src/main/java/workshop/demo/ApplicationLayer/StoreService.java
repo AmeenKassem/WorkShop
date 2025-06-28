@@ -23,7 +23,6 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Store.CompositeDiscount;
 import workshop.demo.DomainLayer.Store.Discount;
@@ -59,8 +58,6 @@ public class StoreService {
     private IOrderRepoDB orderRepo;
     @Autowired
     private ISUConnectionRepo suConnectionRepo;
-    @Autowired
-    private IStockRepo stockRepo;
     @Autowired
     private UserSuspensionJpaRepository suspensionJpaRepo;
     private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
