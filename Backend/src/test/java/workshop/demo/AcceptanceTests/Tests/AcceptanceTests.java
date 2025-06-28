@@ -3,8 +3,6 @@ package workshop.demo.AcceptanceTests.Tests;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,6 +15,7 @@ import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.BaseNotifier;
 import workshop.demo.DomainLayer.Stock.*;
+import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.Guest;
@@ -36,59 +35,106 @@ import static org.mockito.Mockito.*;
 @ActiveProfiles("test")
 public class AcceptanceTests {
 
-    // Replace manual mocks with Spring's @Mock
-    @Mock
+    // Replace manual mocks with Spring's @MockBean
+    @MockBean
     protected AuthenticationRepo mockAuthRepo;
-    @Mock
+
+    @MockBean
     protected UserJpaRepository mockUserRepo;
-    @Mock
+
+    @MockBean
     protected GuestJpaRepository mockGuestRepo;
-    @Mock
+
+    @MockBean
     protected IStoreRepoDB mockStoreRepo;
-    @Mock
+
+    @MockBean
     protected IStockRepoDB mockStockRepo1;
-    @Mock
+
+    @MockBean
     protected IStoreStockRepo mockStoreStock;
-    @Mock
+
+    @MockBean
     protected NodeJPARepository mockNodeRepo;
-    @Mock
-    protected IStockRepo mockStockRepo;
-    @Mock
+
+    @MockBean
     protected PurchaseRepository mockPurchaseRepo;
-    @Mock
+
+    @MockBean
     protected IOrderRepoDB mockOrderRepo;
-    @Mock
+
+    @MockBean
     protected DelayedNotificationRepository mockNotiRepo;
-    @Mock
+
+    @MockBean
     protected ReviewJpaRepository mockReviewRepo;
-    @Mock
+
+    @MockBean
     protected UserSuspensionJpaRepository mockSusRepo;
-    // @Mock
-    // protected ISUConnectionRepo mockIOSrepo;
-    // @Mock
-    // protected SUConnectionRepository suConnectionRepo;
 
-    protected Encoder encoder = new Encoder();
+    ISUConnectionRepo mockiosRepo = Mockito.mock(ISUConnectionRepo.class);
 
-    @InjectMocks
+    @MockBean
+    protected SUConnectionRepository suConnectionRepo;
+
+    @MockBean
+    protected StoreTreeJPARepository mockStoreTreeRepo;
+
+    @MockBean
+    protected OfferJpaRepository mockOfferRepo;
+
+
+    @MockBean
+    protected IActivePurchasesRepo mockActivePurchases;
+
+    //    @MockBean
+//    protected CartRepo mockCartRepo;
+//
+//    @MockBean
+//    protected AISearch mockAISearch;
+    @MockBean
+    protected Encoder encoder;
+    @MockBean
+    protected AdminInitilizer adminInitilizer;
+    @Autowired
     protected UserService userService;
-    @InjectMocks
+
+    @Autowired
     protected StoreService storeService;
-    @InjectMocks
+
+    @Autowired
     protected StockService stockService;
-    @InjectMocks
+
+    @Autowired
     protected PurchaseService purchaseService;
-    @InjectMocks
+
+    @Autowired
     protected OrderService orderService;
-    @InjectMocks
+
+    @Autowired
     protected NotificationService notificationService;
-    @InjectMocks
+
+    @Autowired
     protected ReviewService reviewService;
+
+    @Autowired
+    protected ActivePurchasesService activePurchesesService;
+
+
+
+    @Autowired
+    protected PaymentServiceImp paymentServiceImp;
+
+    @Autowired
+    protected SupplyServiceImp supplyServiceImp;
+
+    @Autowired
+    protected UserSuspensionService userSuspensionService;
 
     @BeforeEach
     public void init() {
         // Optional: configure behaviors for mocks
-        when(mockUserRepo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        //when(mockUserRepo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     protected void saveUserRepo(Registered R) {
@@ -113,6 +159,36 @@ public class AcceptanceTests {
 
     protected void mockExistsByUsernameFailure() {
         when(mockUserRepo.existsByUsername(any())).thenReturn(0);
+    }
+
+    protected void forceId(Object obj, int id) throws Exception {
+        Field idField = getFieldRecursively(obj.getClass(), "id");
+        idField.setAccessible(true);
+        idField.set(obj, id);
+    }
+
+    private Field getFieldRecursively(Class<?> clazz, String fieldName) throws NoSuchFieldException {
+        while (clazz != null) {
+            try {
+                return clazz.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+                clazz = clazz.getSuperclass(); // חיפוש במחלקת־אב
+            }
+        }
+        throw new NoSuchFieldException("Field '" + fieldName + "' not found in class hierarchy.");
+    }
+
+
+    protected void forceStoreId(Store store, int id) throws Exception {
+        Field idField = Store.class.getDeclaredField("storeId");
+        idField.setAccessible(true);
+        idField.set(store, id);
+    }
+
+    protected void forceField(Object obj, String fieldName, int value) throws Exception {
+        Field field = getFieldRecursively(obj.getClass(), fieldName);
+        field.setAccessible(true);
+        field.set(obj, value);
     }
 
 }

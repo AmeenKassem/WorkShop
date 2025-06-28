@@ -110,6 +110,11 @@ public class Guest {
         }
     }
 
-    
+    public void setCart(ShoppingCart cart) {
+        this.cart = cart;
+        if (cart != null) {
+            cart.setGuest(this); // maintain bidirectional link
+        }
+    }
 
 }

@@ -1,1028 +1,1071 @@
-// package workshop.demo.AcceptanceTests.Tests;
+ package workshop.demo.AcceptanceTests.Tests;
 
-// import java.lang.reflect.Field;
-// import java.util.HashMap;
-// import java.util.LinkedList;
-// import java.util.List;
-// import java.util.Optional;
+ import java.lang.reflect.Field;
+ import java.util.*;
 
-// import org.junit.jupiter.api.BeforeEach;
-// import org.junit.jupiter.api.Test;
+ import org.junit.jupiter.api.BeforeEach;
+ import org.junit.jupiter.api.Test;
 
-// import org.mockito.Mockito;
+ import org.mockito.Mockito;
 
-// import static org.junit.jupiter.api.Assertions.*;
-// import static org.mockito.ArgumentMatchers.*;
-// import static org.mockito.Mockito.doCallRealMethod;
-// import static org.mockito.Mockito.doNothing;
-// import static org.mockito.Mockito.doThrow;
-// import static org.mockito.Mockito.verify;
-// import static org.mockito.Mockito.when;
+ import static org.junit.jupiter.api.Assertions.*;
+ import static org.mockito.ArgumentMatchers.*;
+ import static org.mockito.Mockito.doCallRealMethod;
+ import static org.mockito.Mockito.doNothing;
+ import static org.mockito.Mockito.doThrow;
+ import static org.mockito.Mockito.verify;
+ import static org.mockito.Mockito.when;
 
-// import org.slf4j.Logger;
-// import org.slf4j.LoggerFactory;
-// import org.springframework.boot.test.context.SpringBootTest;
-// import org.springframework.test.context.ActiveProfiles;
-// import java.util.List;
-// import java.util.LinkedList;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ import org.springframework.boot.test.context.SpringBootTest;
+ import org.springframework.test.context.ActiveProfiles;
+ import java.util.List;
+ import java.util.LinkedList;
 
-// import workshop.demo.ApplicationLayer.PaymentServiceImp;
-// import workshop.demo.ApplicationLayer.UserService;
-// import workshop.demo.DTOs.Category;
-// import workshop.demo.DTOs.ItemCartDTO;
-// import workshop.demo.DTOs.ItemStoreDTO;
-// import workshop.demo.DTOs.PaymentDetails;
-// import workshop.demo.DTOs.ProductDTO;
-// import workshop.demo.DTOs.ReceiptDTO;
-// import workshop.demo.DTOs.ReceiptProduct;
-// import workshop.demo.DTOs.SupplyDetails;
-// import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
-// import workshop.demo.DomainLayer.Exceptions.UIException;
-// import workshop.demo.DomainLayer.Stock.Product;
-// import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-// import workshop.demo.DomainLayer.Stock.item;
-// import workshop.demo.DomainLayer.Store.Store;
-// import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-// import workshop.demo.DomainLayer.User.*;
-// import workshop.demo.InfrastructureLayer.Encoder;
+ import workshop.demo.ApplicationLayer.PaymentServiceImp;
+ import workshop.demo.ApplicationLayer.UserService;
+ import workshop.demo.DTOs.*;
+ import workshop.demo.DomainLayer.Exceptions.DevException;
+ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
+ import workshop.demo.DomainLayer.Exceptions.UIException;
+ import workshop.demo.DomainLayer.Order.Order;
+ import workshop.demo.DomainLayer.Review.Review;
+ import workshop.demo.DomainLayer.Stock.Product;
+ import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
+ import workshop.demo.DomainLayer.Stock.StoreStock;
+ import workshop.demo.DomainLayer.Stock.item;
+ import workshop.demo.DomainLayer.Store.Store;
+ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+ import workshop.demo.DomainLayer.User.*;
+ import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+ import workshop.demo.InfrastructureLayer.Encoder;
 
-// @SpringBootTest
-// @ActiveProfiles("test")
-// public class UserTests extends AcceptanceTests {
+ @SpringBootTest
+ @ActiveProfiles("test")
+ public class UserTests extends AcceptanceTests {
 
-//     private static final Logger logger = LoggerFactory.getLogger(UserTests.class);
+     private static final Logger logger = LoggerFactory.getLogger(UserTests.class);
 
-//     private Registered user;
-//     private List<Registered> repo_results;
+     private String user1Token;
+     private String user2Token;
 
-// //    public UserTests() {
-// //        // Logical ID consistent with AtomicInteger usage
-// //        this.user = new Registered("bashar", "encoded", 20);
-// //        setId(user, 1); // ID 1 is realistic for first registered user
-// //        this.repo_results = List.of(user);
-// //    }
-// //
-// //    @BeforeEach
-// //    void setup() throws Exception {
-// //        mockGuestRepo.deleteAll();
-// //        mockUserRepo.deleteAll();
-// //
-// //        // Inject mocked encoder using reflection
-// //        Field encoderField = UserService.class.getDeclaredField("encoder");
-// //        encoderField.setAccessible(true);
-// //        encoderField.set(userService, encoder);
-// //
-// //        // Logical behavior for password validation
-// //        when(encoder.matches("pass123", "encoded")).thenReturn(true);
-// //    }
-// //
-// //    @Test
-// //    void testUser_LogIn_Success() throws Exception {
-// //        mockSaveGuestSuccess();
-// //        mockExistsByUsernameFailure();
-// //
-// //
-// //        saveUserRepo(user);
-// //        when(mockUserRepo.findRegisteredUsersByUsername("bashar")).thenReturn(repo_results);
-// //        String guestToken = userService.generateGuest();
-// //        assertTrue(userService.register(guestToken, "bashar", "pass123", 20));
-// //
-// //        String userToken = userService.login(guestToken, "bashar", "pass123");
-// //
-// //        assertNotNull(userToken);
-// //        assertFalse(userToken.isEmpty());
-// //    }
+     // Entities
+     private Registered user1;
+     private Registered user2;
+     private Store store;
+     private Product product;
+
+     // Constants
+     private static final String USER1_USERNAME = "user1";
+     private static final String USER2_USERNAME = "user2";
+     private static final String PASSWORD = "pass123";
+     private static final String ENCODED_PASSWORD = "encodedPass123";
+
+     private static final int USER1_ID = 1;
+     private static final int USER2_ID = 2;
+
+     private static final String STORE_NAME = "CoolStore";
+     private static final String STORE_CATEGORY = "Electronics";
+
+     private static final String PRODUCT_NAME = "Phone";
+     private static final double PRODUCT_PRICE = 100.0;
+     private static final String PRODUCT_DESC = "SMART PHONE";
+     private static final String[] KEYWORD = {"Phone"};
+
+     public UserTests() {
+
+     }
+
+     @BeforeEach
+     void setup() throws Exception {
+         mockGuestRepo.deleteAll();
+         mockUserRepo.deleteAll();
+
+         // ===== ENCODER =====
+         Field encoderField = UserService.class.getDeclaredField("encoder");
+         encoderField.setAccessible(true);
+         encoderField.set(userService, encoder);
+
+         when(encoder.encodePassword(PASSWORD)).thenReturn(ENCODED_PASSWORD);
+         when(encoder.matches(PASSWORD, ENCODED_PASSWORD)).thenReturn(true);
+
+         // ===== USER1 נרשם דרך guest =====
+         Guest guest = new Guest();
+         saveGuestRepo(guest);
+         when(mockAuthRepo.generateGuestToken(0)).thenReturn("guest-token");
+         when(mockAuthRepo.getUserId("guest-token")).thenReturn(0);
+         userService.generateGuest();
+
+         when(mockUserRepo.existsByUsername(USER1_USERNAME)).thenReturn(0);
+         when(mockUserRepo.save(any(Registered.class))).thenAnswer(inv -> {
+             Registered registered = inv.getArgument(0);
+             forceField(registered, "id", USER1_ID);
+             return registered;
+         });
+         userService.register("guest-token", USER1_USERNAME, PASSWORD, 20);
+
+         user1 = new Registered(USER1_ID, USER1_USERNAME, ENCODED_PASSWORD, 20);
+         saveUserRepo(user1);
+         when(mockUserRepo.findRegisteredUsersByUsername(USER1_USERNAME)).thenReturn(List.of(user1));
+         when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+
+         when(mockAuthRepo.generateUserToken(USER1_ID, USER1_USERNAME)).thenReturn("user1Token");
+         when(mockAuthRepo.getUserId("user1Token")).thenReturn(USER1_ID);
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException("user1Token", logger);
+         user1Token = userService.login("guest-token", USER1_USERNAME, PASSWORD);
+
+         // ===== USER2 נוצר ישירות =====
+         user2 = new Registered(USER2_ID, USER2_USERNAME, ENCODED_PASSWORD, 22);
+         saveUserRepo(user2);
+         when(mockUserRepo.findRegisteredUsersByUsername(USER2_USERNAME)).thenReturn(List.of(user2));
+         when(mockUserRepo.findById(USER2_ID)).thenReturn(Optional.of(user2));
+
+         when(mockAuthRepo.generateUserToken(USER2_ID, USER2_USERNAME)).thenReturn("user2Token");
+         when(mockAuthRepo.getUserId("user2Token")).thenReturn(USER2_ID);
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException("user2Token", logger);
+         user2Token = userService.login("guest-token", USER2_USERNAME, PASSWORD);
+
+         // ===== STORE =====
+         store = new Store(STORE_NAME, STORE_CATEGORY);
+         forceStoreId(store, 0);
+         when(mockStoreRepo.save(any(Store.class))).thenReturn(store);
+         when(mockStoreRepo.findById(0)).thenReturn(Optional.of(store));
+         when(mockiosRepo.addNewStoreOwner(0, USER1_ID)).thenReturn(true);
+         when(mockActivePurchases.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+         int storeId = storeService.addStoreToSystem(user1Token, STORE_NAME, STORE_CATEGORY);
+         assertEquals(0, storeId);
+
+         // ===== PRODUCT =====
+         product = new Product(PRODUCT_NAME, Category.Electronics, PRODUCT_DESC, KEYWORD);
+         forceField(product, "productId", 0);
+         when(mockStockRepo1.save(any(Product.class))).thenReturn(product);
+         when(mockStockRepo1.findById(0)).thenReturn(Optional.of(product));
+
+         int productId = stockService.addProduct(user1Token, PRODUCT_NAME, Category.Electronics, PRODUCT_DESC, KEYWORD);
+         assertEquals(0, productId);
+
+         // ===== ITEM =====
+         StoreStock stock = new StoreStock(storeId);
+         when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+         when(mockStoreRepo.findById(0)).thenReturn(Optional.of(store));
+         when(suConnectionRepo.manipulateItem(USER1_ID, 0, Permission.AddToStock)).thenReturn(true);
+         when(mockStoreStock.findById(0)).thenReturn(Optional.of(stock));
+         when(mockStoreStock.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+         int itemId = stockService.addItem(0, user1Token, 0, 10, 200, Category.Electronics);
+         assertEquals(0, itemId);
+     }
+
+
+
+     @Test
+     void testUser_LogIn_Success() throws Exception {
+         // Act
+         String token = userService.login("guest-token", USER1_USERNAME, PASSWORD);
+
+         // Assert
+         assertNotNull(token);
+         assertEquals(user1Token, token);
+     }
 
 
 
 
-//     @Test
-//     void testUser_LogOut_Success() throws Exception {
-//     }
 
-//     @Test
-//     void testUser_LogIn_Failure_Invalid_UserName() {
-//         when(mockAuthRepo.validToken("guest-token")).thenReturn(true);
-//         when(mockUserRepo.findRegisteredUsersByUsername("notfound"))
-//                 .thenReturn(List.of());
 
-//         UIException ex = assertThrows(UIException.class, () -> {
-//             userService.login("guest-token", "notfound", "1234");
-//         });
+     @Test
+     void testUser_LogOut_Success() throws Exception {
+         // Arrange
+         when(mockAuthRepo.getUserName(user1Token)).thenReturn(USER1_USERNAME);
+         when(mockAuthRepo.generateGuestToken(USER1_ID)).thenReturn("guest-token");
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockUserRepo.findRegisteredUsersByUsername(USER1_USERNAME)).thenReturn(List.of(user1));
+         when(mockUserRepo.save(any(Registered.class))).thenAnswer(inv -> inv.getArgument(0));
 
-//         assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getNumber());
-//     }
-// //
-// //    @Test
-// //    void testUser_LogOut_Failure() {
-// //        doThrow(new RuntimeException("logout error"))
-// //                .when(mockAuthRepo).logout("token_user");
-// //
-// //        Exception ex = assertThrows(Exception.class, () -> {
-// //            userService.logout("token_user");
-// //        });
-// //
-// //        assertTrue(ex.getMessage().contains("logout error"));
-// //    }
+         // Act
+         String result = userService.logoutUser(user1Token);
 
-// //    @Test
-// //    void testUserLogin_Failure_InvalidToken() throws UIException {
-// //        mockValidTokenFailure("bad-token");
-// //
-// //        UIException ex = assertThrows(UIException.class, () -> {
-// //            userService.getUser("bad-token");
-// //        });
-// //
-// //        assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
-// //    }
-// //
-// //    @Test
-// //    void testUserLogin_Failure_UserNotFound() throws Exception {
-// //        when(mockAuthRepo.validToken("some-token")).thenReturn(true);
-// //        when(mockAuthRepo.getUserId("some-token")).thenReturn(100);
-// //        when(mockUserRepo.findById(100)).thenReturn(null);
-// //
-// //        Exception ex = assertThrows(Exception.class, () -> {
-// //            userService.getUser("some-token");
-// //        });
-// //
-// //        assertTrue(ex.getMessage().contains("User not found"));
-// //    }
-// //
-// //    @Test
-// //    void testUserLogout_Failure_UserNotFound() throws Exception {
-// //        doThrow(new RuntimeException("user not found"))
-// //                .when(mockAuthRepo).logout("unknown-token");
-// //
-// //        Exception ex = assertThrows(Exception.class, () -> {
-// //            userService.logout("unknown-token");
-// //        });
-// //
-// //        assertTrue(ex.getMessage().contains("user not found"));
-// //    }
-// //
-// //    @Test
-// //    void testUserLogout_Failure_GuestTokenGenerationError() throws Exception {
-// //        doThrow(new RuntimeException("token error"))
-// //                .when(mockAuthRepo).logout("guest-token");
-// //
-// //        Exception ex = assertThrows(Exception.class, () -> {
-// //            userService.logout("guest-token");
-// //        });
-// //
-// //        assertTrue(ex.getMessage().contains("token error"));
-// //    }
-// //
-// //    @Test
-// //    void testUser_setAdmin_Success() throws Exception {
-// //        mockValidToken("admin-token", true);
-// //        mockGetUserIdFromToken("admin-token", 1);
-// //        when(mockUserRepo.existsById(7)).thenReturn(true);
-// //
-// //        boolean result = userService.setAdmin("admin-token", 7);
-// //
-// //        assertTrue(result);
-// //    }
-// //
-// //    @Test
-// //    void testUser_setAdmin_Failure_InvalidToken() throws UIException {
-// //        mockValidTokenFailure("bad-admin-token");
-// //
-// //        UIException ex = assertThrows(UIException.class, () -> {
-// //            userService.setAdmin("bad-admin-token", 7);
-// //        });
-// //
-// //        assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
-// //    }
+         // Assert
+         assertEquals("guest-token", result);
+     }
 
-// //     @Test
-// //     void testUser_CheckPurchaseHistory_Success() throws Exception {
-// //         int userId = 20;
-// //         String token = "user-token-2";
-// //         int storeId = 100;
-// //         String storeName = "TestStore";
-// //         String date = "2025-05-10";
-// //         List<ReceiptProduct> products = List.of(
-// //                 new ReceiptProduct("Keyboard", "TestStore", 1, 100, 1, Category.Electronics),
-// //                 new ReceiptProduct("Mouse", "TestStore", 1, 100, 2, Category.Electronics)
-// //         );
-// //         int totalPrice = 200;
-// //
-// //         ReceiptDTO receipt = new ReceiptDTO(storeName, date, products, totalPrice);
-// //         List<ReceiptDTO> receipts = new LinkedList<>();
-// //         receipts.add(receipt);
-// //         real.mockOrderRepo.setOrderToStore(storeId, userId, receipt, storeName);
-// //         when(real.mockOrderRepo.getReceiptDTOsByUser(userId)).thenReturn(receipts);
-// //         List<ReceiptDTO> result = real.testUser_CheckPurchaseHistory(token);
-// //
-// //         assertEquals(1, result.size());
-// //         ReceiptDTO r = result.get(0);
-// //         assertEquals(storeName, r.getStoreName());
-// //         assertEquals(date, r.getDate());
-// //         assertEquals(products, r.getProductsList());
-// //         assertEquals(totalPrice, r.getFinalPrice());
-// //     }
-// //
-// //     @Test
-// //     void testUser_CheckPurchaseHistory_Failure_InvalidToken() {
-// //         String token = "guest-registered-token";
-// //
-// //         when(real.mockAuthRepo.validToken(token)).thenReturn(false);
-// //
-// //         UIException ex = assertThrows(UIException.class, () -> {
-// //             real.testUser_CheckPurchaseHistory(token);
-// //         });
-// //         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
-// //         assertEquals("Invalid token!", ex.getMessage());
-// //     }
-// //
-// //     @Test
-// //     void testUser_CheckPurchaseHistory_Failure_GetUserNameThrows() throws UIException {
-// //         String token = "guest-registered-token";
-// //
-// //         when(real.mockAuthRepo.validToken(token)).thenReturn(true);
-// //         when(real.mockAuthRepo.getUserName(token)).thenThrow(new RuntimeException("getUserName failed"));
-// //
-// //         UIException ex = assertThrows(UIException.class, () -> {
-// //             real.testUser_CheckPurchaseHistory(token);
-// //         });
-// //
-// //         assertTrue(ex.getMessage().contains("is not registered to the system!"));
-// //     }
-// //
-// //     @Test
-// //     void testUser_CheckPurchaseHistory_Failure_NoReceipts() throws Exception {
-// //         String token = "user-token-2";
-// //
-// //         when(real.mockAuthRepo.validToken(token)).thenReturn(true);
-// //         when(real.mockAuthRepo.getUserName(token)).thenReturn("user2");
-// //         when(real.mockAuthRepo.getUserId("user2")).thenReturn(20);
-// //         when(real.mockUserRepo.isRegistered(20)).thenReturn(true);
-// //
-// //         when(real.mockOrderRepo.getReceiptDTOsByUser(20))
-// //                 .thenThrow(new UIException("User has no receipts.", ErrorCodes.RECEIPT_NOT_FOUND));
-// //
-// //         UIException ex = assertThrows(UIException.class, () -> {
-// //             real.testUser_CheckPurchaseHistory(token);
-// //         });
-// //
-// //         assertEquals(ErrorCodes.RECEIPT_NOT_FOUND, ex.getNumber());
-// //         assertEquals("User has no receipts.", ex.getMessage());
-// //     }
-// //
-// //     @Test
-// //     void testUserGetStoreProducts() throws Exception {
-// //         int userId = 20;
-// //         String userToken = "user-token-2";
-// //         int storeId = 100;
-// //         int productId = 111;
-// //
-// //         ItemStoreDTO[] mockProducts = new ItemStoreDTO[]{
-// //             new ItemStoreDTO(productId, 5, 1500, Category.Electronics, 0, 4, "Laptop", "TestStore")};
-// //         when(real.mockStockRepo.getProductsInStore(storeId)).thenReturn(mockProducts);
-// //
-// //         ItemStoreDTO[] products = real.stockService.getProductsInStore(storeId);
-// //         assertNotNull(products);
-// //
-// //     }
-// //
-// //     @Test
-// //     void testUserViewEmptyStore() throws Exception {
-// //         int storeId = 100;
-// //         String userToken = "user-token-2";
-// //
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
-// //
-// //         when(real.mockStockRepo.getProductsInStore(storeId)).thenReturn(new ItemStoreDTO[0]);
-// //
-// //         ItemStoreDTO[] products = real.stockService.getProductsInStore(storeId);
-// //
-// //         assertNotNull(products, "Products list should not be null");
-// //     }
-// //
-// //     @Test
-// //     void testUserViewInvalidStore() throws Exception {
-// //         int invalidStoreId = 999;
-// //         String userToken = "user-token-2";
-// //
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
-// //
-// //         when(real.mockStockRepo.getProductsInStore(invalidStoreId))
-// //                 .thenThrow(new RuntimeException("Store not found"));
-// //
-// //         ItemStoreDTO[] products = null;
-// //         try {
-// //             products = real.stockService.getProductsInStore(invalidStoreId);
-// //         } catch (Exception e) {
-// //             assertNull(products);
-// //             assertEquals("Store not found", e.getMessage());
-// //         }
-// //     }
-// //
-// //     @Test
-// //     void testUserViewStoreWithoutToken() throws Exception {
-// //         int storeId = 10;
-// //
-// //         when(real.mockStockRepo.getProductsInStore(storeId))
-// //                 .thenReturn(new ItemStoreDTO[]{
-// //             new ItemStoreDTO(1, 5, 1500, Category.Electronics, 0, 4, "Laptop", "TestStore")
-// //         });
-// //
-// //         ItemStoreDTO[] products = real.stockService.getProductsInStore(storeId);
-// //
-// //         assertNotNull(products);
-// //     }
-// //
-// //     @Test
-// //     void testUserGetProductInfo() throws Exception {
-// //         int userId = 20;
-// //         int storeId = 100;
-// //         int productId = 111;
-// //         String userToken = "user-token-2";
-// //
-// //         when(real.mockIOSrepo.manipulateItem(userId, storeId, Permission.AddToStock)).thenReturn(true);
-// //         when(real.mockStockRepo.addItem(storeId, productId, 5, 200, Category.Electronics))
-// //                 .thenReturn(new item(productId, 5, 200, Category.Electronics));
-// //
-// //         int addItemResult = real.stockService.addItem(storeId, userToken, productId, 5, 200, Category.Electronics);
-// //         assertEquals(addItemResult, productId);
-// //
-// //         ProductDTO mockProduct = new ProductDTO(productId, "Phone", Category.Electronics, "Smart device");
-// //         when(real.mockStockRepo.GetProductInfo(productId)).thenReturn(mockProduct);
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
-// //
-// //         String info = real.testGuest_GetProductInfo(userToken, productId);
-// //
-// //         assertNotNull(info);
-// //         assertTrue(info.contains("Phone"), "Expected product name in info");
-// //         assertTrue(info.contains("Smart device"), "Expected product description in info");
-// //         assertTrue(info.contains("Electronics"), "Expected product category in info");
-// //     }
-// //
-// //     @Test
-// //     void testUserGetProductInfo_ProductNotFound() throws Exception {
-// //         int productId = 999;
-// //         String userToken = "user-token-2";
-// //
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
-// //         when(real.mockStockRepo.GetProductInfo(productId)).thenReturn(null);
-// //
-// //         UIException exception = assertThrows(UIException.class, () -> {
-// //             real.testGuest_GetProductInfo(userToken, productId);
-// //         });
-// //
-// //         assertEquals("Product not found.", exception.getMessage());
-// //     }
-// //
-// //     @Test
-// //     void testUserAddProductToCart_Success() throws Exception {
-// //         int userId = 20;
-// //         String userToken = "user-token-2";
-// //         int storeId = 10;
-// //         int productId = 100;
-// //
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
-// //         when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
-// //
-// //         ItemStoreDTO itemStoreDTO = new ItemStoreDTO(productId, 5, 1500, Category.Electronics, 0, 4, "Laptop", "TestStore");
-// //         ItemCartDTO itemCartDTO = new ItemCartDTO(4, productId, 5, 1500, "Laptop", "TestStore", Category.Electronics);
-// //         //int storeId, int productId, int quantity, int price, String name, String storeName,Category category
-// //         doNothing().when(real.mockUserRepo).addItemToGeustCart(userId, itemCartDTO);
-// //
-// //         assertDoesNotThrow(() -> {
-// //             real.testGuest_AddProductToCart(userToken, itemStoreDTO, 3);
-// //         });
-// //     }
-// //
-// //     @Test
-// //     void testUserAddProductToCart_InvalidToken() throws Exception {
-// //         String userToken = "user-token-2";
-// //         int storeId = 10;
-// //         int productId = 100;
-// //
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(false);
-// //
-// //         ItemStoreDTO itemStoreDTO = new ItemStoreDTO(productId, 5, 1500, Category.Electronics, 0, 4, "Laptop", "TestStore");
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(false);
-// //
-// //         doCallRealMethod()
-// //                 .when(real.mockAuthRepo)
-// //                 .checkAuth_ThrowTimeOutException(eq("invalidToken"), any());
-// //
-// //         UIException ex = assertThrows(UIException.class, () -> {
-// //             real.testGuest_AddProductToCart("invalidToken", itemStoreDTO, 3);
-// //         });
-// //
-// //         assertEquals("Invalid token!", ex.getMessage());
-// //         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
-// //     }
-// //
-// //     @Test
-// //     void testUserAddProductToCart_ZeroQuantity() throws Exception {
-// //         int userId = 20;
-// //         String userToken = "user-token-2";
-// //         int storeId = 10;
-// //         int productId = 100;
-// //
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
-// //         when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
-// //
-// //         ItemStoreDTO itemStoreDTO = new ItemStoreDTO(productId, 5, 1500, Category.Electronics, 0, 4, "Laptop", "TestStore");
-// //
-// //         doThrow(new UIException("Cannot add product with zero quantity", 1025))
-// //                 .when(real.mockUserRepo).addItemToGeustCart(eq(userId), any(ItemCartDTO.class));
-// //
-// //         UIException exception = assertThrows(UIException.class, () -> {
-// //             real.userService.addToUserCart(userToken, itemStoreDTO, 3);
-// //         });
-// //
-// //         assertEquals("Cannot add product with zero quantity", exception.getMessage());
-// //     }
-// //
-// //     @Test
-// //     void testUserBuyCart_Success() throws Exception {
-// //         int userId = 20;
-// //         String userToken = "user-token-2";
-// //         int storeId = 100;
-// //         int productId = 200;
-// //
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
-// //         when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
-// //         when(real.mockUserRepo.isRegistered(userId)).thenReturn(true);
-// //
-// //         ItemStoreDTO itemStoreDTO = new ItemStoreDTO(productId, 5, 1500, Category.Electronics, 0, 4, "Laptop", "TestStore");
-// //         ItemCartDTO itemCartDTO = new ItemCartDTO(4, productId, 5, 1500, "Laptop", "TestStore", Category.Electronics);
-// //         //int storeId, int productId, int quantity, int price, String name, String storeName,Category category
-// //         CartItem CartItem = new CartItem(itemCartDTO);
-// //         doNothing().when(real.mockUserRepo).addItemToGeustCart(userId, itemCartDTO);
-// //         real.userService.addToUserCart(userToken, itemStoreDTO, 3);
-// //
-// //         ShoppingCart mockCart = Mockito.mock(ShoppingCart.class);
-// //         when(real.mockUserRepo.getUserCart(userId)).thenReturn(mockCart);
-// //         when(mockCart.getAllCart()).thenReturn(List.of(CartItem));
-// //
-// //         ShoppingBasket mockBasket = Mockito.mock(ShoppingBasket.class);
-// //         when(mockBasket.getStoreId()).thenReturn(storeId);
-// //         when(mockBasket.getItems()).thenReturn(List.of(CartItem));
-// //
-// //         HashMap<Integer, ShoppingBasket> baskets = new HashMap<>();
-// //         baskets.put(storeId, mockBasket);
-// //         when(mockCart.getBaskets()).thenReturn(baskets);
-// //
-// //         List<ReceiptProduct> receiptProducts = List.of(
-// //                 new ReceiptProduct("ProductName", "TestStore", 2, 100, productId, Category.Electronics));
-// //         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), anyList(), eq(false), eq("TestStore")))
-// //                 .thenReturn(receiptProducts);
-// //         when(real.mockStockRepo.calculateTotalPrice(receiptProducts)).thenReturn(200.0);
-// //         when(real.mockPay.processPayment(PaymentDetails.testPayment(), 200.0)).thenReturn(true);
-// //         when(real.mockSupply.processSupply(any())).thenReturn(true);
-// //         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
-// //
-// //         doNothing().when(real.mockOrderRepo).setOrderToStore(eq(storeId), eq(userId), any(), eq("TestStore"));
-// //         when(real.mockStoreRepo.findStoreByID(100)).thenReturn(new Store(100, "TestStore", "ELECTRONICS"));
-// //
-// //         PaymentDetails paymentDetails = PaymentDetails.testPayment();
-// //         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
-// //         ReceiptDTO[] receipts = real.purchaseService.buyRegisteredCart(userToken, paymentDetails, supplyDetails);
-// //
-// //         assertNotNull(receipts);
-// //         assertEquals(1, receipts.length);
-// //         assertEquals("TestStore", receipts[0].getStoreName());
-// //
-// //         verify(real.mockStockRepo).processCartItemsForStore(eq(storeId), anyList(), eq(false), eq("TestStore"));
-// //         verify(real.mockStockRepo).calculateTotalPrice(anyList());
-// //         verify(real.mockPay).processPayment(any(), eq(200.0));
-// //         verify(real.mockSupply).processSupply(any());
-// //         verify(real.mockOrderRepo).setOrderToStore(eq(storeId), eq(userId), any(), eq("TestStore"));
-// //     }
 
-// //     @Test
-// //     void testUserBuyCart_InvalidToken() throws Exception {
-// //         String userToken = "user-token-2";
-// //
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(false);
-// //
-// //         PaymentDetails paymentDetails = PaymentDetails.testPayment();
-// //         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
-// //
-// //         UIException ex = assertThrows(UIException.class, ()
-// //                 -> real.purchaseService.buyRegisteredCart(userToken, paymentDetails, supplyDetails));
-// //
-// //         assertEquals("Shopping cart is empty or not found", ex.getMessage());
-// //         assertEquals(1009, ex.getNumber());
-// //
-// //     }
-// //
-// //     @Test
-// //     void testUserBuyCart_EmptyCart() throws Exception {
-// //         int userId = 20;
-// //         String userToken = "user-token-2";
-// //
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
-// //         when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
-// //
-// //         ShoppingCart mockCart = Mockito.mock(ShoppingCart.class);
-// //         when(real.mockUserRepo.getUserCart(userId)).thenReturn(mockCart);
-// //         when(mockCart.getAllCart()).thenReturn(List.of());
-// //
-// //         PaymentDetails paymentDetails = PaymentDetails.testPayment();
-// //         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
-// //
-// //         UIException ex = assertThrows(UIException.class, ()
-// //                 -> real.purchaseService.buyRegisteredCart(userToken, paymentDetails, supplyDetails));
-// //
-// //         assertEquals("Shopping cart is empty or not found", ex.getMessage());
-// //     }
-// //
-// //     @Test
-// //     void testUserBuyCart_ProductNotAvailable() throws Exception {
-// //         int userId = 20;
-// //         String userToken = "user-token-2";
-// //         int storeId = 100;
-// //
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
-// //         when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
-// //
-// //         ItemCartDTO mockItem = Mockito.mock(ItemCartDTO.class);
-// //         List<ItemCartDTO> items = List.of(mockItem);
-// //
-// //         CartItem mockItem1 = Mockito.mock(CartItem.class);
-// //         List<CartItem> items1 = List.of(mockItem1);
-// //
-// //         ShoppingBasket mockBasket = Mockito.mock(ShoppingBasket.class);
-// //         when(mockBasket.getStoreId()).thenReturn(storeId);
-// //         when(mockBasket.getItems()).thenReturn(items1);
-// //
-// //         HashMap<Integer, ShoppingBasket> baskets = new HashMap<>();
-// //         baskets.put(storeId, mockBasket);
-// //
-// //         ShoppingCart mockCart = Mockito.mock(ShoppingCart.class);
-// //         when(mockCart.getAllCart()).thenReturn(items1);
-// //         when(mockCart.getBaskets()).thenReturn(baskets);
-// //
-// //         when(real.mockUserRepo.getUserCart(userId)).thenReturn(mockCart);
-// //
-// //         when(real.mockStockRepo.checkAvailability(any())).thenReturn(false);
-// //
-// //         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), eq(items1), eq(false), eq("TestStore")))
-// //                 .thenThrow(new UIException("Not all items are available for user purchase", 1006));
-// //
-// //         PaymentDetails paymentDetails = PaymentDetails.testPayment();
-// //         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
-// //
-// // //        Exception ex = assertThrows(Exception.class, ()
-// //         //              -> real.purchaseService.buyRegisteredCart(userToken, paymentDetails, supplyDetails));
-// //         //  verify(real.mockUserRepo).getUserCart(userId);
-// //         //verify(real.mockStockRepo).processCartItemsForStore(eq(storeId), eq(items1), eq(false), eq("TestStore"));
-// //     }
-// //
-// //     @Test
-// //     void testUserBuyCart_PaymentFails() throws Exception {
-// //         int userId = 20;
-// //         int storeId = 100;
-// //         String userToken = "user-token-2";
-// //
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
-// //         when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
-// //
-// //         ShoppingCart mockCart = Mockito.mock(ShoppingCart.class);
-// //         ShoppingBasket mockBasket = Mockito.mock(ShoppingBasket.class);
-// //         when(real.mockUserRepo.getUserCart(userId)).thenReturn(mockCart);
-// //         when(mockCart.getAllCart()).thenReturn(List.of(Mockito.mock(CartItem.class)));
-// //         HashMap<Integer, ShoppingBasket> baskets = new HashMap<>();
-// //         baskets.put(storeId, mockBasket);
-// //         when(mockCart.getBaskets()).thenReturn(baskets);
-// //         when(mockBasket.getStoreId()).thenReturn(storeId);
-// //         when(mockBasket.getItems()).thenReturn(List.of(Mockito.mock(CartItem.class)));
-// //
-// //         when(real.mockStockRepo.checkAvailability(any())).thenReturn(true);
-// //         when(real.mockStockRepo.processCartItemsForStore(eq(storeId), anyList(), eq(true), eq("TestStore")))
-// //                 .thenReturn(List.of(Mockito.mock(ReceiptProduct.class)));
-// //         when(real.mockStockRepo.calculateTotalPrice(anyList())).thenReturn(100.0);
-// //
-// //         doThrow(new RuntimeException("Payment failed")).when(real.mockPay)
-// //                 .processPayment(any(), eq(100.0));
-// //         when(real.mockStoreRepo.findStoreByID(100)).thenReturn(new Store(100, "TestStore", "ELECTRONICS"));
-// //
-// //         PaymentDetails paymentDetails = PaymentDetails.testPayment();
-// //         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
-// //
-// //         RuntimeException ex = assertThrows(RuntimeException.class, ()
-// //                 -> real.purchaseService.buyRegisteredCart(userToken, paymentDetails, supplyDetails));
-// //
-// //     }
-// //
-// //     @Test
-// //     void testUserSearchProductInStore_Success() throws Exception {
-// //         int userId = 20;
-// //         String userToken = "user-token-2";
-// //         int storeId = 100;
-// //         int productId = 111;
-// //
-// //         ProductSearchCriteria criteria = new ProductSearchCriteria(
-// //                 "Laptop", Category.Electronics, "Lap", storeId,
-// //                 0, 0, 0, 0
-// //         );
-// //
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
-// //         when(real.mockAuthRepo.getUserId(userToken)).thenReturn(userId);
-// //
-// //         ProductDTO[] products = {
-// //             new ProductDTO(productId, "Laptop", Category.Electronics, "Gaming Laptop")
-// //         };
-// //
-// //         ItemStoreDTO[] items = {
-// //             new ItemStoreDTO(productId, 5, 1500, Category.Electronics, 0, 100, "Laptop", "TestStore")};
-// //         when(real.mockStoreRepo.getStoreNameById(storeId)).thenReturn("TestStore");
-// //
-// //         when(real.mockStockRepo.search(criteria)).thenReturn(items);
-// //
-// //         ItemStoreDTO[] result = real.stockService.searchProducts(userToken, criteria);
-// //
-// //         assertNotNull(result);
-// //         assertEquals(1, result.length);
-// //         assertEquals(productId, result[0].getProductId());
-// //         assertEquals(1500, result[0].getPrice());
-// //         assertEquals(storeId, result[0].getStoreId());
-// //
-// //     }
-// //
-// //     @Test
-// //     void testUserSearchProducts_InvalidToken() throws Exception {
-// //         String userToken = "user-token-2";
-// //
-// //         ProductSearchCriteria criteria = new ProductSearchCriteria(
-// //                 null, Category.Electronics, null,
-// //                 0, 0, 0, 0, 0
-// //         );
-// //
-// //         doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
-// //                 .when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(eq(userToken), any());
-// //
-// //         UIException exception = assertThrows(UIException.class, () -> {
-// //             real.stockService.searchProducts(userToken, criteria);
-// //         });
-// //
-// //         assertEquals("Invalid token!", exception.getMessage());
-// //     }
-// //
-// //     @Test
-// //     void testUserSearchProducts_NoMatches() throws Exception {
-// //         String userToken = "user-token-2";
-// //
-// //         ProductSearchCriteria criteria = new ProductSearchCriteria(
-// //                 null, // productNameFilter
-// //                 Category.Electronics, // categoryFilter
-// //                 null, // keywordFilter
-// //                 0, // storeId (not restricted)
-// //                 0, // minPrice
-// //                 0, // maxPrice
-// //                 0, // minStoreRating
-// //                 0 // maxStoreRating
-// //         );
-// //
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
-// //         when(real.mockAuthRepo.getUserId(userToken)).thenReturn(20);
-// //
-// //         ItemStoreDTO[] result = real.stockService.searchProducts(userToken, criteria);
-// //
-// //         assertNull(result);
-// //     }
-// //
-// //     @Test
-// //     void testUserSearchProductInStore_InvalidToken() throws Exception {
-// //         String userToken = "user-token-2";
-// //         int storeId = 100;
-// //         int productId = 200;
-// //
-// //         ProductSearchCriteria criteria = new ProductSearchCriteria(
-// //                 "Product", null, null, storeId,
-// //                 0, 0, 0, 0
-// //         );
-// //
-// //         doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
-// //                 .when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(eq(userToken), any());
-// //
-// //         UIException exception = assertThrows(UIException.class, () -> {
-// //             real.stockService.searchProducts(userToken, criteria);
-// //         });
-// //
-// //         assertEquals("Invalid token!", exception.getMessage());
-// //     }
-// //
-// //     @Test
-// //     void testUserSearchProductInStore_ProductNotFound() throws Exception {
-// //         int storeId = 100;
-// //         int productId = 200;
-// //         String userToken = "user-token-2";
-// //
-// //         ProductSearchCriteria criteria = new ProductSearchCriteria(
-// //                 "Laptop", Category.Electronics, null, storeId,
-// //                 0, 0, 0, 0
-// //         );
-// //
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
-// //         when(real.mockAuthRepo.getUserId(userToken)).thenReturn(20);
-// //
-// //         ProductDTO[] emptyProducts = new ProductDTO[0];
-// //
-// //         ItemStoreDTO[] result = real.stockService.searchProducts(userToken, criteria);
-// //
-// //         assertNull(result);
-// //     }
-// //
-// //     @Test
-// //     void testUserSearchProductInStore_ProductNotInStore() throws Exception {
-// //         int storeId = 100;
-// //         int productId = 200;
-// //         String userToken = "user-token-2";
-// //
-// //         ProductSearchCriteria criteria = new ProductSearchCriteria(
-// //                 "Laptop", Category.Electronics, null, storeId,
-// //                 0, 0, 0, 0
-// //         );
-// //
-// //         when(real.mockAuthRepo.validToken(userToken)).thenReturn(true);
-// //         when(real.mockAuthRepo.getUserId(userToken)).thenReturn(20);
-// //
-// //         ProductDTO[] products = {
-// //             new ProductDTO(productId, "Laptop", Category.Electronics, "Gaming Laptop")
-// //         };
-// //
-// //         ItemStoreDTO[] result = real.stockService.searchProducts(userToken, criteria);
-// //
-// //         assertNull(result);
-// //     }
-// //
-// //     @Test
-// //     void testUserGetPurchasePolicy_Success() throws Exception {
-// // //
-// //     }
-// //
-// //     @Test
-// //     void testUserGetPurchasePolicy_Failure() throws Exception {
-// // //
-// //     }
-// //
-// //     @Test
-// //     void testRankStore_Success() throws Exception {
-// //         String validToken = "user-token";
-// //         String invalidToken = "guest-token";
-// //         int userId = 10;
-// //         int storeId = 100;
-// //         int productId = 200;
-// //         doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(validToken, logger);
-// //         when(real.mockAuthRepo.getUserId(validToken)).thenReturn(userId);
-// //         doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userId);
-// //         doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
-// //         when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
-// //
-// //         doNothing().when(real.mockStoreRepo).rankStore(storeId, 4);
-// //
-// //         real.storeService.rankStore(validToken, storeId, 4);
-// //         verify(real.mockStoreRepo).rankStore(storeId, 4);
-// //     }
-// //
-// //     @Test
-// //     void testRankStore_InvalidToken() throws Exception {
-// //         String invalidToken = "guest-token";
-// //         int storeId = 100;
-// //
-// //         when(real.mockAuthRepo.validToken(invalidToken)).thenReturn(false);
-// //
-// //         doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
-// //                 .when(real.mockAuthRepo)
-// //                 .checkAuth_ThrowTimeOutException(eq(invalidToken), any(Logger.class));
-// //
-// //         UIException ex = assertThrows(UIException.class, ()
-// //                 -> real.storeService.rankStore(invalidToken, storeId, 4)
-// //         );
-// //
-// //         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
-// //     }
-// //
-// //     @Test
-// //     void testRankStore_InvalidStore() throws Exception {
-// //         System.out.println("sgfmnklfgjklrgwhjrwjklhtrwgjkl");
-// //         String validToken = "user-token";
-// //         String invalidToken = "guest-token";
-// //         int userId = 10;
-// //         int storeId = 100;
-// //         int productId = 200;
-// //         doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(validToken, logger);
-// //         when(real.mockAuthRepo.getUserId(validToken)).thenReturn(userId);
-// //         doNothing().when(real.mockUserRepo).checkUserRegister_ThrowException(userId);
-// //         doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
-// //         doThrow(new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND))
-// //                 .when(real.mockStoreRepo).checkStoreExistance(storeId);
-// //
-// //         UIException ex = assertThrows(UIException.class, ()
-// //                 -> real.storeService.rankStore(validToken, storeId, 5)
-// //         );
-// //         assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getNumber());
-// //     }
-// //
-// //     @Test
-// //     void testRankProduct_Success() throws Exception {
-// //         String validToken = "user-token";
-// //         int userId = 10;
-// //         int storeId = 100;
-// //         int productId = 200;
-// //
-// //         doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(validToken, logger);
-// //         when(real.mockAuthRepo.getUserId(validToken)).thenReturn(userId);
-// //         doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userId);
-// //         doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
-// //         when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
-// //         doNothing().when(real.mockStockRepo).rankProduct(storeId, productId, 3);
-// //
-// //         real.stockService.rankProduct(storeId, validToken, productId, 3);
-// //
-// //         verify(real.mockStockRepo).rankProduct(storeId, productId, 3);
-// //     }
-// //
-// //     @Test
-// //     void testRankProduct_InvalidToken() throws Exception {
-// //         String invalidToken = "guest-token";
-// //         int storeId = 100;
-// //         int productId = 200;
-// //
-// //         when(real.mockAuthRepo.validToken(invalidToken)).thenReturn(false);
-// //         doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
-// //                 .when(real.mockAuthRepo)
-// //                 .checkAuth_ThrowTimeOutException(eq(invalidToken), any(Logger.class));
-// //
-// //         UIException ex = assertThrows(UIException.class, ()
-// //                 -> real.stockService.rankProduct(storeId, invalidToken, productId, 3)
-// //         );
-// //
-// //         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
-// //     }
-// //
-// //     @Test
-// //     void testRankProduct_InvalidStore() throws Exception {
-// //         String validToken = "user-token";
-// //         int userId = 10;
-// //         int storeId = 100;
-// //         int productId = 200;
-// //
-// //         doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(validToken, logger);
-// //         when(real.mockAuthRepo.getUserId(validToken)).thenReturn(userId);
-// //         doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userId);
-// //         doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
-// //         doThrow(new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND))
-// //                 .when(real.mockStoreRepo).checkStoreExistance(storeId);
-// //
-// //         UIException ex = assertThrows(UIException.class, ()
-// //                 -> real.stockService.rankProduct(storeId, validToken, productId, 3)
-// //         );
-// //
-// //         assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getNumber());
-// //     }
-// //
-// //     @Test
-// //     void testRankProduct_InvalidProduct() throws Exception {
-// //         String validToken = "user-token";
-// //         int userId = 10;
-// //         int storeId = 100;
-// //         int invalidProductId = 999;
-// //
-// //         doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(validToken, logger);
-// //         when(real.mockAuthRepo.getUserId(validToken)).thenReturn(userId);
-// //         doNothing().when(real.mockUserRepo).checkUserRegisterOnline_ThrowException(userId);
-// //         doNothing().when(real.mockSusRepo).checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
-// //         when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
-// //         doThrow(new UIException("Product not found", ErrorCodes.PRODUCT_NOT_FOUND))
-// //                 .when(real.mockStockRepo).rankProduct(storeId, invalidProductId, 3);
-// //
-// //         UIException ex = assertThrows(UIException.class, ()
-// //                 -> real.stockService.rankProduct(storeId, validToken, invalidProductId, 3)
-// //         );
-// //
-// //         assertEquals(ErrorCodes.PRODUCT_NOT_FOUND, ex.getNumber());
-// //     }
-// //
-// //     @Test
-// //     void testUser_AddReviewToStore_Success() throws Exception {
-// //         String token = "user-token-2";
-// //         int storeId = 100;
-// //         int userId = 20;
-// //         String username = "user2";
-// //         String review = "Very fast delivery!";
-// //
-// //         doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(token, logger);
-// //         when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
-// //         doNothing().when(real.mockReviewRepo).AddReviewToStore(storeId, userId, username, review);
-// //
-// //         boolean result = real.reviewService.AddReviewToStore(token, storeId, review);
-// //         assertTrue(result);
-// //
-// //         verify(real.mockReviewRepo).AddReviewToStore(storeId, userId, username, review);
-// //     }
-// //
-// //     @Test
-// //     void testUser_AddReviewToProduct_Success() throws Exception {
-// //         String token = "user-token-2";
-// //         int storeId = 100;
-// //         int productId = 111;
-// //         int userId = 20;
-// //         String username = "user2";
-// //         String review = "Amazing laptop, very fast!";
-// //         ItemStoreDTO[] itemsInStore = {
-// //             new ItemStoreDTO(productId, 10, 1500, Category.Electronics, 4, storeId, "Laptop", "TestStore")
-// //         };
-// //
-// //         doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(token, logger);
-// //         when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
-// //         when(real.mockStockRepo.getProductsInStore(storeId)).thenReturn(itemsInStore);
-// //         when(real.mockAuthRepo.getUserId(token)).thenReturn(userId);
-// //         when(real.mockAuthRepo.getUserName(token)).thenReturn(username);
-// //         doNothing().when(real.mockReviewRepo).AddReviewToProduct(storeId, productId, userId, username, review);
-// //
-// //         boolean result = real.reviewService.AddReviewToProduct(token, storeId, productId, review);
-// //         assertTrue(result);
-// //
-// //         verify(real.mockReviewRepo).AddReviewToProduct(storeId, productId, userId, username, review);
-// //     }
-// //
-// //     @Test
-// //     void testUser_AddReviewToStore_Failure_StoreNotExist() throws Exception {
-// //         String token = "user-token-2";
-// //         int storeId = 999;
-// //         String review = "Store not found!";
-// //
-// //         doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(token, logger);
-// //         when(real.mockStoreRepo.checkStoreExistance(storeId))
-// //                 .thenThrow(new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND));
-// //
-// //         UIException ex = assertThrows(UIException.class, () -> {
-// //             real.reviewService.AddReviewToStore(token, storeId, review);
-// //         });
-// //
-// //         assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getErrorCode());
-// //     }
-// //
-// //     @Test
-// //     void testUser_AddReviewToStore_Failure_InvalidToken() throws Exception {
-// //         String token = "invalid-token";
-// //         int storeId = 100;
-// //         String review = "Should fail due to invalid token";
-// //
-// //         doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
-// //                 .when(real.mockAuthRepo)
-// //                 .checkAuth_ThrowTimeOutException(eq(token), any());
-// //
-// //         UIException ex = assertThrows(UIException.class, () -> {
-// //             real.reviewService.AddReviewToStore(token, storeId, review);
-// //         });
-// //
-// //         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getErrorCode());
-// //         assertTrue(ex.getMessage().contains("Invalid token"));
-// //     }
-// //
-// //     @Test
-// //     void testUser_AddReviewToProduct_Failure_InvalidToken() throws Exception {
-// //         String token = "invalid-token";
-// //         int storeId = 100;
-// //         int productId = 111;
-// //         String review = "Should fail due to invalid token";
-// //
-// //         // Force the mocked authRepo to throw when token is invalid
-// //         doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
-// //                 .when(real.mockAuthRepo)
-// //                 .checkAuth_ThrowTimeOutException(eq(token), any());
-// //
-// //         UIException ex = assertThrows(UIException.class, () -> {
-// //             real.reviewService.AddReviewToProduct(token, storeId, productId, review);
-// //         });
-// //
-// //         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getErrorCode());
-// //         assertTrue(ex.getMessage().contains("Invalid token"));
-// //     }
-// //
-// //     @Test
-// //     void testUser_AddReviewToProduct_Failure_ProductNotFound() throws Exception {
-// //         String token = "user-token-2";
-// //         int storeId = 100;
-// //         int nonExistentProductId = 999;
-// //         int userId = 20;
-// //         String username = "user2";
-// //         String review = "This product does not exist!";
-// //
-// //         ItemStoreDTO[] itemsInStore = {
-// //             new ItemStoreDTO(111, 10, 1500, Category.Electronics, 4, storeId, "Laptop", "TestStore")
-// //         };
-// //
-// //         doNothing().when(real.mockAuthRepo).checkAuth_ThrowTimeOutException(token, logger);
-// //         when(real.mockStoreRepo.checkStoreExistance(storeId)).thenReturn(true);
-// //         when(real.mockStockRepo.getProductsInStore(storeId)).thenReturn(itemsInStore);
-// //
-// //         UIException ex = assertThrows(UIException.class, () -> {
-// //             real.reviewService.AddReviewToProduct(token, storeId, nonExistentProductId, review);
-// //         });
-// //
-// //         assertEquals(ErrorCodes.PRODUCT_NOT_FOUND, ex.getErrorCode());
-// //         assertTrue(ex.getMessage().contains("Product with ID " + nonExistentProductId));
-// //     }
 
-// }
+
+     @Test
+     void testUser_LogIn_Failure_Invalid_UserName() throws Exception {
+         // Arrange
+         String invalidUsername = "notfound";
+         String token = "guest-token";
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(token, logger);
+         when(mockUserRepo.findRegisteredUsersByUsername(invalidUsername)).thenReturn(List.of());
+
+         // Act + Assert
+         UIException ex = assertThrows(UIException.class, () -> {
+             userService.login(token, invalidUsername, "1234");
+         });
+
+         assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getNumber());
+         assertEquals("User not found: " + invalidUsername, ex.getMessage());
+     }
+
+     //
+     @Test
+     void testUser_LogOut_Failure_InvalidToken() throws UIException {
+         String token = "invalid-token";
+
+         doThrow(new UIException("Invalid or expired token", ErrorCodes.INVALID_TOKEN))
+                 .when(mockAuthRepo).checkAuth_ThrowTimeOutException(token, logger);
+
+         UIException ex = assertThrows(UIException.class, () -> {
+             userService.logoutUser(token);
+         });
+
+         assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getNumber());
+         assertTrue( ex.getMessage().contains("not found"));
+     }
+     @Test
+     void testUser_LogOut_Failure_UserNotFound() throws Exception {
+         String token = "user-token";
+         String username = "ghost";
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(token, logger);
+         when(mockAuthRepo.getUserName(token)).thenReturn(username);
+         when(mockUserRepo.findRegisteredUsersByUsername(username)).thenReturn(List.of());
+
+         UIException ex = assertThrows(UIException.class, () -> {
+             userService.logoutUser(token);
+         });
+
+         assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getNumber());
+         assertEquals("User not found: " + username, ex.getMessage());
+     }
+     @Test
+     void testUser_LogOut_Failure_RepoSaveException() throws Exception {
+         String token = "user-token";
+         String username = "bashar";
+         Registered user = new Registered(1, username, "encoded", 20);
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(token, logger);
+         when(mockAuthRepo.getUserName(token)).thenReturn(username);
+         when(mockUserRepo.findRegisteredUsersByUsername(username)).thenReturn(List.of(user));
+         when(mockUserRepo.save(user)).thenThrow(new RuntimeException("Database save failed"));
+
+         Exception ex = assertThrows(Exception.class, () -> {
+             userService.logoutUser(token);
+         });
+
+         assertTrue(ex.getMessage().contains("Database save failed"));
+     }
+
+
+     @Test
+     void testUserLogin_Failure_InvalidToken() throws Exception {
+         String badToken = "bad-token";
+
+         // Arrange: make the checkAuth_ThrowTimeOutException throw INVALID_TOKEN
+         doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
+                 .when(mockAuthRepo)
+                 .checkAuth_ThrowTimeOutException(eq(badToken), any(Logger.class));
+
+         // Act + Assert
+         UIException ex = assertThrows(UIException.class, () -> {
+             userService.login(badToken, "bashar", "pass123");
+         });
+
+         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
+         assertTrue(ex.getMessage().contains("Invalid"));
+     }
+
+
+     @Test
+     void testUserLogin_Failure_UserNotFound() throws Exception {
+         String token = "guest-token"; // מותר להשתמש בטוקן מה־setup
+         String unknownUsername = "notExist";
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(token, logger);
+
+         // Simulate DB returns no user
+         when(mockUserRepo.findRegisteredUsersByUsername(unknownUsername))
+                 .thenReturn(List.of());
+
+         UIException ex = assertThrows(UIException.class, () -> {
+             userService.login(token, unknownUsername, "pass123");
+         });
+
+         assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getNumber());
+         assertTrue(ex.getMessage().contains("User not found"));
+     }
+
+
+     //
+ //
+     @Test
+     void testUser_setAdmin_Success() throws Exception {
+         int userId = USER1_ID;
+         String adminKey = "123321";
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockUserRepo.findById(userId)).thenReturn(Optional.of(user1));
+         when(adminInitilizer.matchPassword(adminKey)).thenReturn(true);
+
+         boolean result = userService.setAdmin(user1Token, adminKey, userId);
+
+         assertTrue(result);
+         assertTrue(user1.isAdmin());
+     }
+
+
+     @Test
+     void testUser_setAdmin_Failure_InvalidToken() throws Exception {
+         int userId = USER1_ID;
+         String adminKey = "123321";
+
+         doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
+                 .when(mockAuthRepo)
+                 .checkAuth_ThrowTimeOutException(eq("bad-token"), any(Logger.class));
+
+         UIException ex = assertThrows(UIException.class, () -> {
+             userService.setAdmin("bad-token", adminKey, userId);
+         });
+
+         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
+         assertTrue(ex.getMessage().contains("Invalid token"));
+     }
+
+
+
+     @Test
+     void testUser_setAdmin_Failure_UserNotFound() throws Exception {
+         int userId = 999;
+         String adminKey = "123321";
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockUserRepo.findById(userId)).thenReturn(Optional.empty());
+
+         boolean result = userService.setAdmin(user1Token, adminKey, userId);
+
+         assertFalse(result);
+     }
+
+
+
+     @Test
+     void testGetReceiptDTOsByUser_Success() throws Exception {
+         // Arrange
+         when(mockAuthRepo.validToken(user1Token)).thenReturn(true);
+         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+         when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+
+         ReceiptProduct rp = new ReceiptProduct("Phone", "CoolStore", 2, 100, 0, Category.Electronics, 0);
+         List<ReceiptProduct> products = List.of(rp);
+         ReceiptDTO receiptDTO = new ReceiptDTO("CoolStore", null, products, 200);
+
+         Order order = new Order(USER1_ID, receiptDTO, "CoolStore");
+         when(mockOrderRepo.findOrdersByUserId(USER1_ID)).thenReturn(List.of(order));
+
+         // Act
+         List<ReceiptDTO> receipts = orderService.getReceiptDTOsByUser(user1Token);
+
+         // Assert
+         assertNotNull(receipts);
+         assertEquals(1, receipts.size());
+         ReceiptDTO r = receipts.get(0);
+         assertEquals("CoolStore", r.getStoreName());
+         assertEquals(200, r.getFinalPrice());
+         assertEquals(1, r.getProductsList().size());
+         assertEquals("Phone", r.getProductsList().get(0).getProductName());
+         assertEquals(2, r.getProductsList().get(0).getQuantity());
+         assertEquals(100, r.getProductsList().get(0).getPrice());
+         assertEquals(0, r.getProductsList().get(0).getStoreId());
+     }
+
+
+
+
+
+     @Test
+     void testUser_CheckPurchaseHistory_Failure_InvalidToken() {
+         // Arrange
+         when(mockAuthRepo.validToken(user1Token)).thenReturn(false);
+
+         // Act + Assert
+         UIException ex = assertThrows(UIException.class, () -> {
+             orderService.getReceiptDTOsByUser(user1Token);
+         });
+
+         assertEquals("Invalid token!", ex.getMessage());
+         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
+     }
+
+
+     @Test
+     void testUser_CheckPurchaseHistory_Failure_GetUserNameThrows() throws UIException {
+         // Arrange
+         when(mockAuthRepo.validToken(user1Token)).thenReturn(true);
+         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+
+         when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+
+         // Act + Assert
+         UIException ex = assertThrows(UIException.class, () -> {
+             orderService.getReceiptDTOsByUser(user1Token);
+         });
+
+         assertTrue(ex.getMessage().contains("not registered to the system"));
+         assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getNumber());
+     }
+
+
+
+     @Test
+     void testUserGetStoreProducts() throws Exception {
+
+     }
+
+     @Test
+     void testUserViewEmptyStore() throws Exception {
+
+
+     }
+
+
+     @Test
+     void testUserViewInvalidStore() throws Exception {
+
+     }
+
+     @Test
+     void testUserGetProductInfo() throws Exception {
+         int productId = 42;
+
+         // Arrange
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+
+         Product product = new Product("Phone", Category.Electronics, "Smartphone", new String[]{"mobile"});
+         forceField(product, "productId", productId);
+
+         when(mockStockRepo1.findById(productId)).thenReturn(Optional.of(product));
+
+         // Act
+         ProductDTO dto = stockService.getProductInfo(user1Token, productId);
+
+         // Assert
+         assertNotNull(dto);
+         assertEquals("Phone", dto.getName());
+         assertEquals(Category.Electronics, dto.getCategory());
+         assertEquals("Smartphone", dto.getDescription());
+     }
+
+
+
+     @Test
+     void testUserGetProductInfo_ProductNotFound() throws Exception {
+         int productId = 42;
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockStockRepo1.findById(productId)).thenReturn(Optional.empty());
+
+         UIException ex = assertThrows(UIException.class, () -> {
+             stockService.getProductInfo(user1Token, productId);
+         });
+
+         assertEquals(ErrorCodes.PRODUCT_NOT_FOUND, ex.getNumber());
+         assertTrue(ex.getMessage().toLowerCase().contains("product"));
+     }
+
+     @Test
+     void testUserGetProductInfo_Failure_DTO_Null() throws Exception {
+         int productId = 42;
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+
+         Product product = new Product("Phone", Category.Electronics, "Smartphone", new String[]{"mobile"});
+         forceField(product, "productId", productId);
+
+         Product spyProduct = Mockito.spy(product);
+         when(spyProduct.getDTO()).thenReturn(null);
+
+         when(mockStockRepo1.findById(productId)).thenReturn(Optional.of(spyProduct));
+
+         UIException ex = assertThrows(UIException.class, () -> {
+             stockService.getProductInfo(user1Token, productId);
+         });
+
+         assertEquals(ErrorCodes.PRODUCT_NOT_FOUND, ex.getNumber());
+         assertTrue(ex.getMessage().toLowerCase().contains("product"));
+     }
+
+
+     @Test
+     void testUserAddProductToCart_Success() throws Exception {
+         // Arrange
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+
+         // mock החזרת Registered
+         when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+         when(mockUserRepo.save(any(Registered.class))).thenAnswer(inv -> inv.getArgument(0));
+
+         // item להוסיף לעגלה
+         ItemStoreDTO itemToAdd = new ItemStoreDTO(0, 300, 50, Category.Electronics, 3, 0, "Phone", "CoolStore");
+         int quantity = 2;
+
+         // Act
+         boolean result = userService.addToUserCart(user1Token, itemToAdd, quantity);
+
+         // Assert
+         assertTrue(result);
+         assertEquals(1, user1.getCart().size());
+
+         CartItem cartItem = user1.getCart().get(0);
+         assertEquals("Phone", cartItem.name);
+         assertEquals(50, cartItem.price);
+         assertEquals(0, cartItem.storeId);
+     }
+
+
+     @Test
+     void testUserAddProductToCart_InvalidToken() throws Exception {
+         doThrow(new UIException("Token expired", ErrorCodes.INVALID_TOKEN))
+                 .when(mockAuthRepo)
+                 .checkAuth_ThrowTimeOutException(eq(user1Token), any());
+
+         ItemStoreDTO itemToAdd = new ItemStoreDTO(
+                 0, 2, 50, Category.Electronics, 3, 0, "Phone", "CoolStore");
+
+         UIException ex = assertThrows(UIException.class, () -> {
+             userService.addToUserCart(user1Token, itemToAdd, 1);
+         });
+
+         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getErrorCode());
+         assertTrue(ex.getMessage().contains("Token expired"));
+     }
+
+
+
+     @Test
+     void testUserAddProductToCart_UserNotFound() throws Exception {
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockAuthRepo.getUserId(user1Token)).thenReturn(999);
+
+         when(mockUserRepo.findById(999)).thenReturn(Optional.empty());
+         when(mockGuestRepo.findById(999)).thenReturn(Optional.empty());
+
+         ItemStoreDTO itemToAdd = new ItemStoreDTO(0, 2, 50, Category.Electronics, 3, 0, "Phone", "CoolStore");
+
+         UIException ex = assertThrows(UIException.class, () -> {
+             userService.addToUserCart(user1Token, itemToAdd, 1);
+         });
+
+         assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getErrorCode());
+         assertTrue(ex.getMessage().contains("id is not registered or guest"));
+     }
+
+
+     @Test
+     void testSearchProducts_Success_ByName() throws Exception {
+         ProductSearchCriteria criteria = new ProductSearchCriteria(
+                 "Phone", null, null, 1, 0, 5000, 0, 5);
+
+         Product product = new Product("Phone", Category.Electronics, "Desc", new String[]{"Phone"});
+         forceField(product, "productId", 0);
+
+         item item = new item(0, 10, 100, Category.Electronics);
+         item.rankItem(4);
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockStockRepo1.findByNameContainingIgnoreCase("Phone")).thenReturn(List.of(product));
+         when(mockStoreStock.findItemsByProductId(0)).thenReturn(List.of(item));
+         when(mockStoreRepo.findById(item.getStoreId())).thenReturn(Optional.of(store));
+
+         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(user1Token, criteria);
+
+         assertEquals(1, result.length);
+         assertEquals("Phone", result[0].getProductName());
+         assertEquals(100, result[0].getPrice());
+         assertEquals(4, result[0].getRank());
+     }
+     @Test
+     void testSearchProducts_Success_PriceFilter() throws Exception {
+         ProductSearchCriteria criteria = new ProductSearchCriteria(
+                 "Phone", null, null, 1, 50, 150, 0, 5); // min=50, max=150
+
+         Product product = new Product("Phone", Category.Electronics, "Desc", new String[]{"Phone"});
+         forceField(product, "productId", 0);
+
+         item item = new item(0, 10, 100, Category.Electronics);
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockStockRepo1.findByNameContainingIgnoreCase("Phone")).thenReturn(List.of(product));
+         when(mockStoreStock.findItemsByProductId(0)).thenReturn(List.of(item));
+         when(mockStoreRepo.findById(item.getStoreId())).thenReturn(Optional.of(store));
+
+         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(user1Token, criteria);
+
+         assertEquals(1, result.length);
+         assertTrue(result[0].getPrice() >= 50 && result[0].getPrice() <= 150);
+     }
+     @Test
+     void testSearchProducts_Success_ByNameAndRank() throws Exception {
+         ProductSearchCriteria criteria = new ProductSearchCriteria(
+                 "Phone", null, null, 1, 0, 5000, 4, 5); // min rank=4, max rank=5
+
+         Product product = new Product("Phone", Category.Electronics, "Desc", new String[]{"Phone"});
+         forceField(product, "productId", 0);
+
+         item item = new item(0, 10, 100, Category.Electronics);
+         item.rankItem(5); // rank is 5
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockStockRepo1.findByNameContainingIgnoreCase("Phone")).thenReturn(List.of(product));
+         when(mockStoreStock.findItemsByProductId(0)).thenReturn(List.of(item));
+         when(mockStoreRepo.findById(item.getStoreId())).thenReturn(Optional.of(store));
+
+         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(user1Token, criteria);
+
+         assertEquals(1, result.length);
+         assertTrue(result[0].getRank() >= 4);
+     }
+     @Test
+     void testSearchProducts_Success_ByCategory() throws Exception {
+         ProductSearchCriteria criteria = new ProductSearchCriteria(
+                 "Phone", Category.Electronics, null, 1, 0, 5000, 0, 5);
+
+         Product product = new Product("Phone", Category.Electronics, "Desc", new String[]{"Phone"});
+         forceField(product, "productId", 0);
+
+         item item = new item(0, 10, 100, Category.Electronics);
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockStockRepo1.findByNameContainingIgnoreCase("Phone")).thenReturn(List.of(product));
+         when(mockStoreStock.findItemsByProductId(0)).thenReturn(List.of(item));
+         when(mockStoreRepo.findById(item.getStoreId())).thenReturn(Optional.of(store));
+
+         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(user1Token, criteria);
+
+         assertEquals(1, result.length);
+         assertEquals(Category.Electronics, result[0].getCategory());
+     }
+     @Test
+     void testSearchProducts_Success_MultipleItemsSameProduct() throws Exception {
+         ProductSearchCriteria criteria = new ProductSearchCriteria(
+                 "Phone", null, null, 1, 0, 5000, 0, 5);
+
+         Product product = new Product("Phone", Category.Electronics, "Desc", new String[]{"Phone"});
+         forceField(product, "productId", 0);
+
+         item item1 = new item(0, 10, 100, Category.Electronics);
+         item item2 = new item(0, 15, 150, Category.Electronics);
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockStockRepo1.findByNameContainingIgnoreCase("Phone")).thenReturn(List.of(product));
+         when(mockStoreStock.findItemsByProductId(0)).thenReturn(List.of(item1, item2));
+         when(mockStoreRepo.findById(anyInt())).thenReturn(Optional.of(store));
+
+         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(user1Token, criteria);
+
+         assertEquals(2, result.length);
+         assertTrue(result[0].getPrice() == 100 || result[0].getPrice() == 150);
+     }
+     @Test
+     void testSearchProducts_Success_StrictPrice() throws Exception {
+         ProductSearchCriteria criteria = new ProductSearchCriteria(
+                 "Phone", null, null, 1, 90, 110, 0, 5); // only 100 allowed
+
+         Product product = new Product("Phone", Category.Electronics, "Desc", new String[]{"Phone"});
+         forceField(product, "productId", 0);
+
+         item item = new item(0, 10, 100, Category.Electronics);
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockStockRepo1.findByNameContainingIgnoreCase("Phone")).thenReturn(List.of(product));
+         when(mockStoreStock.findItemsByProductId(0)).thenReturn(List.of(item));
+         when(mockStoreRepo.findById(item.getStoreId())).thenReturn(Optional.of(store));
+
+         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(user1Token, criteria);
+
+         assertEquals(1, result.length);
+         assertTrue(result[0].getPrice() >= 90 && result[0].getPrice() <= 110);
+     }
+     @Test
+     void testSearchProducts_Failure_NoMatchingProducts() throws Exception {
+         ProductSearchCriteria criteria = new ProductSearchCriteria(
+                 "NotExist", null, null, 1, 0, 5000, 0, 5);
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockStockRepo1.findByNameContainingIgnoreCase("NotExist")).thenReturn(List.of());
+
+         ItemStoreDTO[] result = stockService.searchProductsOnAllSystem(user1Token, criteria);
+
+         assertEquals(0, result.length);
+     }
+
+     @Test
+     void testSearchProducts_Failure_StoreNotFound() throws Exception {
+         ProductSearchCriteria criteria = new ProductSearchCriteria(
+                 "Phone", null, null, 1, 0, 5000, 0, 5);
+
+         Product product = new Product("Phone", Category.Electronics, "Desc", new String[]{"Phone"});
+         forceField(product, "productId", 0);
+
+         item item = new item(0, 10, 100, Category.Electronics);
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockStockRepo1.findByNameContainingIgnoreCase("Phone")).thenReturn(List.of(product));
+         when(mockStoreStock.findItemsByProductId(0)).thenReturn(List.of(item));
+         when(mockStoreRepo.findById(item.getStoreId())).thenReturn(Optional.empty());
+
+         assertThrows(NoSuchElementException.class, () -> {
+             stockService.searchProductsOnAllSystem(user1Token, criteria);
+         });
+     }
+
+
+
+     @Test
+     void testRankProduct_Success() throws Exception {
+         int storeId = 0;
+         int productId = 0;
+         int newRank = 5;
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+
+         when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+
+         StoreStock stock = Mockito.mock(StoreStock.class);
+         when(mockStoreStock.findById(storeId)).thenReturn(Optional.of(stock));
+         when(mockStoreStock.saveAndFlush(stock)).thenReturn(stock);
+
+         int result = stockService.rankProduct(storeId, user1Token, productId, newRank);
+
+         assertEquals(productId, result);
+         verify(stock).rankProduct(productId, newRank);
+         verify(mockStoreStock).saveAndFlush(stock);
+     }
+     @Test
+     void testRankProduct_Failure_SuspendedUser() throws Exception {
+         int storeId = 0;
+         int productId = 0;
+         int newRank = 3;
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+
+         UserSuspension suspension = new UserSuspension(USER1_ID,100);
+         when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.of(suspension));
+
+         UIException ex = assertThrows(UIException.class, () ->
+                 stockService.rankProduct(storeId, user1Token, productId, newRank));
+
+         assertEquals(ErrorCodes.USER_SUSPENDED, ex.getNumber());
+         assertTrue(ex.getMessage().toLowerCase().contains("suspended"));
+     }
+     @Test
+     void testRankProduct_Failure_StoreStockNotFound() throws Exception {
+         int storeId = 999;
+         int productId = 1;
+         int newRank = 4;
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+         when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+
+         when(mockStoreStock.findById(storeId)).thenReturn(Optional.empty());
+
+         DevException ex = assertThrows(DevException.class, () ->
+                 stockService.rankProduct(storeId, user1Token, productId, newRank));
+
+         assertTrue(ex.getMessage().toLowerCase().contains("store stock not found"));
+     }
+     @Test
+     void testRankProduct_Failure_InvalidToken() throws Exception {
+         int storeId = 0;
+         int productId = 0;
+         int newRank = 2;
+
+         doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
+                 .when(mockAuthRepo).checkAuth_ThrowTimeOutException(eq("bad-token"), any());
+
+         UIException ex = assertThrows(UIException.class, () ->
+                 stockService.rankProduct(storeId, "bad-token", productId, newRank));
+
+         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
+         assertTrue(ex.getMessage().contains("Invalid token"));
+     }
+
+     @Test
+     void testUserRankStore_Success() throws Exception {
+         int storeId = 0;
+         int newRank = 5;
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+         when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+
+         Store spyStore = Mockito.spy(store);
+         when(mockStoreRepo.findById(storeId)).thenReturn(Optional.of(spyStore));
+
+         // Act
+         storeService.rankStore(user1Token, storeId, newRank);
+
+         // Assert
+         verify(spyStore).rankStore(newRank);
+     }
+     @Test
+     void testUserRankStore_Failure_Suspended() throws Exception {
+         int storeId = 0;
+         int newRank = 4;
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+
+         UserSuspension suspension = new UserSuspension(USER1_ID, 100);
+         when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.of(suspension));
+
+         UIException ex = assertThrows(UIException.class, () ->
+                 storeService.rankStore(user1Token, storeId, newRank)
+         );
+
+         assertEquals(ErrorCodes.USER_SUSPENDED, ex.getNumber());
+         assertTrue(ex.getMessage().toLowerCase().contains("suspended"));
+     }
+     @Test
+     void testUserRankStore_Failure_StoreNotFound() throws Exception {
+         int storeId = 99;
+         int newRank = 4;
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+         when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+
+         when(mockStoreRepo.findById(storeId)).thenReturn(Optional.empty());
+
+         Exception ex = assertThrows(Exception.class, () ->
+                 storeService.rankStore(user1Token, storeId, newRank)
+         );
+
+         assertTrue(ex.getMessage().toLowerCase().contains("store"));
+     }
+
+     @Test
+     void testUserAddReviewToProduct_Success() throws Exception {
+         int storeId = store.getstoreId(); // מה-setup
+         int productId = product.getProductId();
+         String reviewText = "Excellent product!";
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+         when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+         when(mockStoreRepo.findById(storeId)).thenReturn(Optional.of(store));
+         when(mockStoreStock.findItemsByStoreId(storeId))
+                 .thenReturn(List.of(new item(productId, 10, 100, Category.Electronics)));
+
+         when(mockAuthRepo.getUserName(user1Token)).thenReturn(USER1_USERNAME);
+
+         boolean result = reviewService.AddReviewToProduct(user1Token, storeId, productId, reviewText);
+
+         assertTrue(result);
+         verify(mockReviewRepo).save(any(Review.class));
+     }
+     @Test
+     void testUserAddReviewToProduct_Failure_Suspended() throws Exception {
+         int storeId = store.getstoreId();
+         int productId = product.getProductId();
+         String reviewText = "Test Review";
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+         when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.of(new UserSuspension(USER1_ID, 100)));
+         when(mockStoreRepo.findById(storeId)).thenReturn(Optional.of(store));
+
+         UIException ex = assertThrows(UIException.class, () -> {
+             reviewService.AddReviewToProduct(user1Token, storeId, productId, reviewText);
+         });
+
+         assertEquals(ErrorCodes.USER_SUSPENDED, ex.getNumber());
+         assertTrue(ex.getMessage().toLowerCase().contains("suspended"));
+     }
+     @Test
+     void testUserAddReviewToProduct_Failure_EmptyStore() throws Exception {
+         int storeId = store.getstoreId();
+         int productId = product.getProductId();
+         String reviewText = "Nice one";
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+         when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+         when(mockStoreRepo.findById(storeId)).thenReturn(Optional.of(store));
+         when(mockStoreStock.findItemsByStoreId(storeId)).thenReturn(List.of()); // אין פריטים
+
+         UIException ex = assertThrows(UIException.class, () -> {
+             reviewService.AddReviewToProduct(user1Token, storeId, productId, reviewText);
+         });
+
+         assertEquals(ErrorCodes.PRODUCT_NOT_FOUND, ex.getNumber());
+         assertTrue(ex.getMessage().toLowerCase().contains("no products"));
+     }
+     @Test
+     void testUserAddReviewToProduct_Failure_ProductNotFoundInStore() throws Exception {
+         int storeId = store.getstoreId();
+         int productId = product.getProductId();
+         String reviewText = "Good";
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+         when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+         when(mockStoreRepo.findById(storeId)).thenReturn(Optional.of(store));
+
+         // יש פריטים אבל עם productId אחר
+         when(mockStoreStock.findItemsByStoreId(storeId))
+                 .thenReturn(List.of(new item(999, 5, 50, Category.Electronics)));
+
+         UIException ex = assertThrows(UIException.class, () -> {
+             reviewService.AddReviewToProduct(user1Token, storeId, productId, reviewText);
+         });
+
+         assertEquals(ErrorCodes.PRODUCT_NOT_FOUND, ex.getNumber());
+         assertTrue(ex.getMessage().contains("Product with ID"));
+     }
+     @Test
+     void testUserAddReviewToStore_Success() throws Exception {
+         int storeId = store.getstoreId();
+         String reviewText = "Great store, will buy again!";
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+         when(mockAuthRepo.getUserName(user1Token)).thenReturn(USER1_USERNAME);
+         when(mockStoreRepo.findById(storeId)).thenReturn(Optional.of(store));
+
+         boolean result = reviewService.AddReviewToStore(user1Token, storeId, reviewText);
+
+         assertTrue(result);
+         verify(mockReviewRepo).save(any(Review.class));
+     }
+
+
+
+     @Test
+     void testUserAddReviewToStore_Failure_StoreNotFound() throws Exception {
+         int storeId = 999;
+         String reviewText = "No such store";
+
+         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+         when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+         when(mockStoreRepo.findById(storeId)).thenReturn(Optional.empty());
+
+         Exception ex = assertThrows(Exception.class, () -> {
+             reviewService.AddReviewToStore(user1Token, storeId, reviewText);
+         });
+
+         assertTrue(ex.getMessage().toLowerCase().contains("store"));
+     }
+     @Test
+     void testGetReviewsForStore_Success() throws Exception {
+         int storeId = store.getstoreId();
+
+         // Arrange
+         when(mockStoreRepo.findById(storeId)).thenReturn(Optional.of(store));
+
+         Review r1 = new Review(USER1_ID, USER1_USERNAME, "Amazing store!", storeId, -1);
+         Review r2 = new Review(USER2_ID, USER2_USERNAME, "Good selection.", storeId, -1);
+
+         when(mockReviewRepo.findByStoreId(storeId)).thenReturn(List.of(r1, r2));
+
+         // Act
+         List<ReviewDTO> reviews = reviewService.getReviewsForStore(storeId);
+
+         // Assert
+         assertNotNull(reviews);
+         assertEquals(2, reviews.size());
+         assertEquals("Amazing store!", reviews.get(0).getReviewMsg());
+         assertEquals("Good selection.", reviews.get(1).getReviewMsg());
+     }
+     @Test
+     void testGetReviewsForStore_Failure_StoreNotFound() throws Exception {
+         int storeId = 999;
+
+         when(mockStoreRepo.findById(storeId)).thenReturn(Optional.empty());
+
+         Exception ex = assertThrows(Exception.class, () -> {
+             reviewService.getReviewsForStore(storeId);
+         });
+
+         assertTrue(ex.getMessage().toLowerCase().contains("store"));
+     }
+     @Test
+     void testGetReviewsForProduct_Success() throws Exception {
+         int storeId = store.getstoreId();
+         int productId = product.getProductId();
+
+         // Arrange
+         when(mockStoreRepo.findById(storeId)).thenReturn(Optional.of(store));
+
+         Review r1 = new Review(USER1_ID, USER1_USERNAME, "Awesome product!", storeId, productId);
+         Review r2 = new Review(USER2_ID, USER2_USERNAME, "Worth the price.", storeId, productId);
+
+         when(mockReviewRepo.findByStoreIdAndProductId(storeId, productId)).thenReturn(List.of(r1, r2));
+
+         // Act
+         List<ReviewDTO> reviews = reviewService.getReviewsForProduct(storeId, productId);
+
+         // Assert
+         assertNotNull(reviews);
+         assertEquals(2, reviews.size());
+         assertEquals("Awesome product!", reviews.get(0).getReviewMsg());
+         assertEquals("Worth the price.", reviews.get(1).getReviewMsg());
+     }
+     @Test
+     void testGetReviewsForProduct_Failure_StoreNotFound() throws Exception {
+         int storeId = 999;
+         int productId = 0;
+
+         when(mockStoreRepo.findById(storeId)).thenReturn(Optional.empty());
+
+         Exception ex = assertThrows(Exception.class, () -> {
+             reviewService.getReviewsForProduct(storeId, productId);
+         });
+
+         assertTrue(ex.getMessage().toLowerCase().contains("store"));
+     }
+
+          @Test
+      void testUserBuyCart_Success() throws Exception {
+
+      }
+
+      @Test
+      void testUserBuyCart_InvalidToken() throws Exception {
+
+      }
+
+      @Test
+      void testUserBuyCart_EmptyCart() throws Exception {
+
+      }
+
+      @Test
+      void testUserBuyCart_ProductNotAvailable() throws Exception {
+
+      }
+
+      @Test
+      void testUserBuyCart_PaymentFails() throws Exception {
+      }
+     @Test
+     void testUserGetPurchasePolicy_Success() throws Exception {
+
+     }
+
+     @Test
+     void testUserGetPurchasePolicy_Failure() throws Exception {
+
+     }
+
+
+ }
