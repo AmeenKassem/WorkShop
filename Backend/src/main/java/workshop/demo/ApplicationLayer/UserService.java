@@ -272,7 +272,7 @@ public class UserService {
         logger.info("Item removed from cart for productId={}", itemCartId);
         return true;
     }
-
+@Transactional
     public SpecialCartItemDTO[] getSpecialCart(String token) throws UIException, Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
