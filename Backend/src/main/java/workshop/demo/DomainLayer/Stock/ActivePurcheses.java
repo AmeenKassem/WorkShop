@@ -212,7 +212,7 @@ public class ActivePurcheses {
         return random;
     }
 
-    public ParticipationInRandomDTO participateInRandom(int userId, int randomId, double productPrice)
+    public ParticipationInRandomDTO participateInRandom(int userId, int randomId, double productPrice, String userName)
             throws UIException {
         logger.debug("participateInRandom: userId={}, randomId={}, price={}", userId, randomId, productPrice);
 
@@ -232,7 +232,7 @@ public class ActivePurcheses {
             activeRandom.remove(randomId);
             throw new UIException("Random has ended!", ErrorCodes.RANDOM_FINISHED);
         }
-        return activeRandom.get(randomId).participateInRandom(userId, productPrice).toDTO();
+        return activeRandom.get(randomId).participateInRandom(userId, productPrice, userName).toDTO();
     }
 
     public RandomDTO[] getRandoms() {

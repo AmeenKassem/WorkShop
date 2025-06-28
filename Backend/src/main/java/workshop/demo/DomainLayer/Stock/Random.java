@@ -1,5 +1,9 @@
 package workshop.demo.DomainLayer.Stock;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 // import java.util.Timer;
 // import java.util.TimerTask;
@@ -18,6 +22,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKey;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Transient;
 import workshop.demo.ApplicationLayer.LockManager;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
@@ -45,7 +50,8 @@ public class Random {
     private boolean canceled;
     private long endTimeMillis;
 
-    @Transient
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "winner_participation_id")
     private ParticipationInRandom winner;
 
     @ManyToOne
@@ -88,7 +94,7 @@ public class Random {
 
     }
 
-    public ParticipationInRandom participateInRandom(int userId, double amountPaid) throws UIException {
+    public ParticipationInRandom participateInRandom(int userId, double amountPaid, String userName) throws UIException {
         ParticipationInRandom card;
         if (!isActive)
             throw new UIException("Random event is over.", ErrorCodes.RANDOM_FINISHED);
@@ -101,7 +107,7 @@ public class Random {
             card = usersParticipations.get(userId);
             card.setAmountPaid(card.getAmountPaid() + amountPaid);
         } else {
-            card = new ParticipationInRandom(productId, storeId, userId, randomId, amountPaid);
+            card = new ParticipationInRandom(productId, storeId, userId, randomId, amountPaid, userName);
         }
         card.setRandom(this);
         usersParticipations.put(userId, card);
@@ -155,6 +161,7 @@ public class Random {
         randomDTO.storeId = storeId;
         randomDTO.winner = winner != null ? winner.toDTO() : null;
         randomDTO.endTimeMillis = getEndTimeMillis();
+        randomDTO.endDate = getDateOfEnd();
 
         ParticipationInRandomDTO[] participations = new ParticipationInRandomDTO[usersParticipations.size()];
         int i = 0;
@@ -255,6 +262,21 @@ public class Random {
 
     public Map<Integer, ParticipationInRandom> getUsersParticipations() {
         return usersParticipations;
+    }
+
+    public String getDateOfEnd() {
+        // Convert to LocalDateTime
+        LocalDateTime dateTime = LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(endTimeMillis),
+                ZoneId.systemDefault() // Use your system time zone or ZoneId.of("UTC"), etc.
+        );
+
+        // Format to readable string
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        String formatted = dateTime.format(formatter);
+        System.out.println("Formatted Time: " + formatted);
+        return formatted;
     }
 
 }

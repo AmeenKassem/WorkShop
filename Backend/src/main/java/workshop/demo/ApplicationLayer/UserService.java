@@ -26,6 +26,7 @@ import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.ParticipationInRandom;
 import workshop.demo.DomainLayer.Stock.Product;
+import workshop.demo.DomainLayer.Stock.Random;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.UserAuctionBid;
 import workshop.demo.DomainLayer.Store.Store;
@@ -298,8 +299,10 @@ public class UserService {
             if (item.type == SpecialType.Random) {
                 ParticipationInRandomDTO card = activePurcheses.getRandomCard(item.storeId, item.specialId,
                         item.user.getId());
+                Random random = activePurcheses.getRandom(item.specialId);
                 itemToSend.setValues(product.getName(), card.isWinner, card.ended);
-                itemToSend.dateEnd = null; //TODO , use the same function you have used on RandomDTO 
+                itemToSend.dateEnd = random.getDateOfEnd(); //TODO , use the same function you have used on RandomDTO 
+                itemToSend.quantity = random.getQuantity();
             } else if (item.type == SpecialType.BID) {
                 SingleBid bid = activePurcheses.getBid(item.storeId, item.specialId, item.bidId, item.type);
                 itemToSend.setValues(product.getName(), bid.isWinner() || bid.isAccepted(), bid.isEnded());
