@@ -12,13 +12,18 @@ public class SpecialCartItemDTO {
     public String storeName;
     public boolean isWinner;
     public boolean isEnded;
+    
+    public int quantity;
+    //Random and Auction
+    public String dateEnd;
 
     //Auction
     public double myBid;
     public double maxBid;
     public boolean onTop;
-    public String dateEnd;
 
+
+    
 
     public SpecialCartItemDTO() {
     }

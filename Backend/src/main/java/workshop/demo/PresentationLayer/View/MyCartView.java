@@ -187,11 +187,16 @@ public class MyCartView extends VerticalLayout {
         card.add(createInfoLine(VaadinIcon.PACKAGE, "Product: " + item.getProductName()));
         card.add(createInfoLine(VaadinIcon.SHOP, "Store: " + item.storeName));
         card.add(createInfoLine(VaadinIcon.TROPHY, "Type: " + item.getType()));
+        card.add(createInfoLine(VaadinIcon.CART, "Quantity: " + item.quantity));
+
         if(item.getType()==SpecialType.Auction){
            card.add(createInfoLine(VaadinIcon.MONEY, "My bid: " + item.myBid));
             card.add(createInfoLine(VaadinIcon.CLOCK, item.isEnded() ? "Ended!" : "Ends at " + item.dateEnd));
             card.add(createInfoLine(VaadinIcon.ARROW_UP, item.onTop ? "You are on top!" : "Someone bid with " + item.maxBid));
            // card.add(createStyledLabel("\ud83c\udfc6" + (item.onTop ? " You are on the top !" : " Some one bid with "+(item.maxBid))));
+        }
+        if (item.getType() == SpecialType.Random) {
+            card.add(createInfoLine(VaadinIcon.CLOCK, item.isEnded() ? "Ended at: " + item.dateEnd : "Ends at: " + item.dateEnd));
         }
         return card;
     }

@@ -46,7 +46,7 @@ public interface IStockRepo {
 
         public boolean rejectBid(int storeId, int bidId, int userBidId) throws Exception;
 
-        public SingleBid acceptBid(int storeId, int bidId, int userBidId) throws UIException, DevException;
+        //public SingleBid acceptBid(int storeId, int bidId, int userBidId) throws UIException, DevException;
 
         // random
         public int addProductToRandom(int productId, int quantity, double productPrice, int storeId,
@@ -87,8 +87,8 @@ public interface IStockRepo {
 
         double calculateTotalPrice(List<ReceiptProduct> items);
 
-        ParticipationInRandomDTO validatedParticipation(int userId, int randomId, int storeId, double amountPaid)
-                        throws UIException, DevException;
+        // ParticipationInRandomDTO validatedParticipation(int userId, int randomId, int storeId, double amountPaid)
+        //                 throws UIException, DevException;
 
         // List<ReceiptProduct> processCartItemsForStore(int storeId, List<CartItem> cartItems, boolean isGuest,
         //                 String StoreName)
@@ -116,7 +116,7 @@ public interface IStockRepo {
 
         // AuctionDTO[] searchActiveAuctions(ProductSearchCriteria criteria) throws UIException;
 
-        BidDTO[] searchActiveBids(ProductSearchCriteria criteria) throws UIException;
+        //BidDTO[] searchActiveBids(ProductSearchCriteria criteria) throws UIException;
 
         public void changequantity(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
                         throws Exception;
@@ -128,8 +128,8 @@ public interface IStockRepo {
 
         public void markRefunded(int specialId);
 
-        public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
-                        throws UIException, DevException;
+        // public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
+        //                 throws UIException, DevException;
 
         StoreStock findStoreStockById(int storeId);
 

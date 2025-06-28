@@ -50,89 +50,85 @@ public class AdminPageView extends VerticalLayout {
     }
 
     private void showManageUsers() {
-        removeAll();
-        H2 header = new H2("🔒 User Suspension Management");
-        header.addClassName("main-header");
+    removeAll(); // Clear previous content
 
-        Button viewSuspensionsBtn = new Button("👁️ View Suspensions", e -> showSuspensionsDialog());
-        viewSuspensionsBtn.addClassName("v-button");
-        viewSuspensionsBtn.addClassName("secondary");
+    H2 header = new H2("🔒 User Suspension Management");
+    header.addClassName("main-header");
 
-        Grid<UserDTO> userGrid = new Grid<>(UserDTO.class, false);
-        userGrid.setWidthFull();
-        userGrid.getStyle().set("overflow-x", "auto");
-        userGrid.addClassName("v-grid");
+    Button viewSuspensionsBtn = new Button("👁️ View Suspensions", e -> showSuspensionsDialog());
+    viewSuspensionsBtn.addClassName("v-button");
+    viewSuspensionsBtn.addClassName("secondary");
 
-        userGrid.addColumn(user -> user.username != null ? user.username : "Guest")
-                .setHeader("Username");
-        userGrid.addColumn(user -> user.age).setHeader("Age");
-        userGrid.addColumn(user -> Boolean.TRUE.equals(user.isOnline) ? "Online" : "Offline")
-                .setHeader("Status");
-        userGrid.addColumn(user -> Boolean.TRUE.equals(user.isAdmin) ? "Admin" : "User")
-                .setHeader("Role");
+    Grid<UserDTO> userGrid = new Grid<>(UserDTO.class, false);
+    userGrid.addClassName("v-grid");
+    userGrid.setWidthFull();
+    userGrid.setWidth("100%");
+    userGrid.setAllRowsVisible(true);
 
-        userGrid.addComponentColumn(user -> {
-            HorizontalLayout actions = new HorizontalLayout();
+    userGrid.addColumn(user -> user.username != null ? user.username : "Guest").setHeader("Username");
+    userGrid.addColumn(user -> user.age).setHeader("Age");
+    userGrid.addColumn(user -> Boolean.TRUE.equals(user.isOnline) ? "Online" : "Offline").setHeader("Status");
+    userGrid.addColumn(user -> Boolean.TRUE.equals(user.isAdmin) ? "Admin" : "User").setHeader("Role");
 
-            Button suspend = new Button("⏸ Suspend ", click -> {
-                Dialog dialog = new Dialog();
-                dialog.setHeaderTitle("Suspend User");
-                dialog.getElement().getClassList().add("dialog-content");
+    userGrid.addComponentColumn(user -> {
+        HorizontalLayout actions = new HorizontalLayout();
+        actions.addClassName("actions-wrapper");
 
-                TextField minutesField = new TextField("Suspend for (minutes)");
-                Button confirm = new Button("OK", e -> {
-                    try {
-                        int minutes = Integer.parseInt(minutesField.getValue());
-                        presenter.onSuspendUser(user.id, minutes);
-                        dialog.close();
-                    } catch (NumberFormatException ex) {
-                        NotificationView.showError("Invalid input");
-                    }
-                });
+        Button suspend = new Button("⏸ Suspend", click -> {
+            Dialog dialog = new Dialog();
+            dialog.setHeaderTitle("Suspend User");
 
-                dialog.add(new VerticalLayout(minutesField, confirm));
-                dialog.open();
+            TextField minutesField = new TextField("Suspend for (minutes)");
+            minutesField.setPlaceholder("e.g., 10");
+            minutesField.setWidthFull();
+
+            Button confirm = new Button("✅ OK", e -> {
+                try {
+                    int minutes = Integer.parseInt(minutesField.getValue());
+                    presenter.onSuspendUser(user.id, minutes);
+                    dialog.close();
+                } catch (NumberFormatException ex) {
+                    NotificationView.showError("Invalid input");
+                }
             });
 
-            Button pause = new Button("Pause", click -> presenter.onPauseSuspension(user.getId()));
-            Button resume = new Button("Resume", click -> presenter.onResumeSuspension(user.getId()));
-            Button cancel = new Button("Cancel", click -> presenter.onCancelSuspension(user.getId()));
+            confirm.addClassName("v-button");
+            confirm.addClassName("danger");
 
-            suspend.addClassName("v-button");
-            suspend.addClassName("danger");
-            pause.addClassName("v-button");
-            pause.addClassName("warning");
-            resume.addClassName("v-button");
-            resume.addClassName("success");
-            cancel.addClassName("v-button");
-            cancel.addClassName("danger");
+            VerticalLayout dialogLayout = new VerticalLayout(minutesField, confirm);
+            dialogLayout.setSpacing(true);
+            dialogLayout.setPadding(true);
+            dialog.add(dialogLayout);
+            dialog.open();
+        });
 
-            actions.add(suspend, cancel, pause, resume);
-            return actions;
-        }).setHeader("Actions")
-          .setAutoWidth(true)
-          .setFlexGrow(0);
+        Button pause = new Button("⏸ Pause", click -> presenter.onPauseSuspension(user.getId()));
+        Button resume = new Button("▶️ Resume", click -> presenter.onResumeSuspension(user.getId()));
+        Button cancel = new Button("❌ Cancel", click -> presenter.onCancelSuspension(user.getId()));
 
-        try {
-            List<UserDTO> users = presenter.getAllUsers();
-            List<UserDTO> nonAdminUsers = users.stream()
-                    .filter(user -> !Boolean.TRUE.equals(user.isAdmin))
-                    .toList();
 
-            userGrid.setItems(nonAdminUsers);
-        } catch (Exception e) {
-            add(new Paragraph("❌ Failed to load users: " + e.getMessage()));
-            return;
-        }
+        actions.add(suspend, pause, resume, cancel);
+        return actions;
+    }).setHeader("Actions").setAutoWidth(true).setFlexGrow(0);
 
-        VerticalLayout userPanel = new VerticalLayout();
-        userPanel.addClassName("admin-panel-card");
-        userPanel.setWidthFull();
-        userPanel.add(header, viewSuspensionsBtn, userGrid);
-
-        addClassName("admin-panel-wrapper");
-        add(userPanel);
+    try {
+        List<UserDTO> users = presenter.getAllUsers();
+        List<UserDTO> nonAdminUsers = users.stream()
+                .filter(user -> !Boolean.TRUE.equals(user.isAdmin))
+                .toList();
+        userGrid.setItems(nonAdminUsers);
+    } catch (Exception e) {
+        add(new Paragraph("❌ Failed to load users: " + e.getMessage()));
+        return;
     }
+
+    VerticalLayout userPanel = new VerticalLayout(header, viewSuspensionsBtn, userGrid);
+    userPanel.addClassName("admin-panel-card");
+    userPanel.setWidthFull();
+
+    addClassName("admin-panel-wrapper");
+    add(userPanel);
+}
 
       private void showSuspensionsDialog() {
         List<UserSuspensionDTO> suspensions = presenter.onViewSuspensions();

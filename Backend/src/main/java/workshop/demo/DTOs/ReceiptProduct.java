@@ -30,7 +30,7 @@ public class ReceiptProduct {
 
     @ManyToOne
     @JoinColumn(name = "order_id")
-    @JsonIgnore 
+    @JsonIgnore
     private Order order;
 
     public ReceiptProduct(String productName, String storename, int quantity, int price, int productId,

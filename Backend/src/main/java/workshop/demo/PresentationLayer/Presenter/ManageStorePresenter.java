@@ -145,68 +145,77 @@ public class ManageStorePresenter {
 
     }
 
-    public void fetchOrdersByStore(int storeId) {
-        String url = String.format(Base.url+"/api/history/getOrdersByStore?storeId=%d", storeId);
+   public void fetchOrdersByStore(int storeId) {
+    String url = String.format(Base.url + "/api/history/getOrdersByStore?storeId=%d", storeId);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<?> entity = new HttpEntity<>(headers);
+    HttpHeaders headers = new HttpHeaders();
+    headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    HttpEntity<?> entity = new HttpEntity<>(headers);
 
-        try {
-            ResponseEntity<ApiResponse<List<OrderDTO>>> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    entity,
-                    new ParameterizedTypeReference<ApiResponse<List<OrderDTO>>>() {
+    try {
+        ResponseEntity<ApiResponse<List<OrderDTO>>> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                new ParameterizedTypeReference<ApiResponse<List<OrderDTO>>>() {
+                });
+
+        ApiResponse<List<OrderDTO>> body = response.getBody();
+
+        if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
+            List<OrderDTO> orders = body.getData();
+
+            if (orders == null || orders.isEmpty()) {
+                NotificationView.showError("EMPTY HISTORY: You got no orders yet!");
+                return;
             }
-            );
 
-            ApiResponse<List<OrderDTO>> body = response.getBody();
+            List<String> formattedOrders = new ArrayList<>();
 
-            if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
-                List<OrderDTO> orders = body.getData();
+            for (OrderDTO order : orders) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("User ID: ").append(order.getUserId()).append("\n");
+                sb.append("Date: ").append(order.getDate()).append("\n");
+                sb.append("Final Price: ").append(order.getFinalPrice()).append("\n");
+                sb.append("Products:\n");
 
-                List<String> formattedOrders = new ArrayList<>();
-
-                for (OrderDTO order : orders) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("🧾 Order\n");
-                    sb.append("User ID: ").append(order.getUserId()).append("\n");
-                    sb.append("Store ID: ").append(order.getStoreId()).append("\n");
-                    sb.append("Date: ").append(order.getDate()).append("\n");
-                    sb.append("Final Price: ").append(order.getFinalPrice()).append("\n");
-                    sb.append("Products:\n");
-
-                    for (ReceiptProduct p : order.getProductsList()) {
-                        sb.append("- ").append(p.toString()).append("\n");
-                    }
-
-                    formattedOrders.add(sb.toString());
+                for (ReceiptProduct p : order.getProductsList()) {
+                    sb.append("• ")
+                      .append(p.getProductName()).append(" (")
+                      .append(p.getCategory()).append(", Qty: ")
+                      .append(p.getQuantity()).append(", Price: ")
+                      .append(p.getPrice()).append(")\n");
                 }
 
-                view.showDialog(formattedOrders);
-            } else if (body != null && body.getErrNumber() == ErrorCodes.STORE_NOT_FOUND) {
-                NotificationView.showError("EMPTY HISTORY you got no orders yet!");
+                formattedOrders.add(sb.toString().trim());
             }
 
-        } catch (HttpClientErrorException e) {
-            try {
-                String responseBody = e.getResponseBodyAsString();
-                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-                if (errorBody.getErrNumber() != -1) {
-                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-                } else {
-                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
-                }
-            } catch (Exception parsingEx) {
-                NotificationView.showError("HTTP error: " + e.getMessage());
-            }
+            view.showStoreOrdersDialog(formattedOrders);
 
-        } catch (Exception e) {
-            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+        } else if (body != null && body.getErrNumber() == ErrorCodes.STORE_NOT_FOUND) {
+            NotificationView.showError("EMPTY HISTORY: You got no orders yet!");
+        } else if (body != null && body.getErrNumber() != -1) {
+            NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
         }
+
+    } catch (HttpClientErrorException e) {
+        try {
+            String responseBody = e.getResponseBodyAsString();
+            ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
+            if (errorBody.getErrNumber() != -1) {
+                NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+            } else {
+                NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
+            }
+        } catch (Exception parsingEx) {
+            NotificationView.showError("HTTP error: " + e.getMessage());
+        }
+
+    } catch (Exception e) {
+        NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
     }
+}
 
     public void deactivateStore(int storeId) {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
