@@ -304,7 +304,7 @@ public class UserService {
                 itemToSend.dateEnd = random.getDateOfEnd(); //TODO , use the same function you have used on RandomDTO 
                 itemToSend.quantity = random.getQuantity();
             } else if (item.type == SpecialType.BID) {
-                SingleBid bid = activePurcheses.getBid(item.storeId, item.specialId, item.bidId, item.type);
+                SingleBid bid = activePurcheses.getBid(item.storeId, item.specialId, item.user.getId(), item.type);
                 itemToSend.setValues(product.getName(), bid.isWinner() || bid.isAccepted(), bid.isEnded());
             } else if (item.type == SpecialType.Auction) {
                 Auction auction = activePurcheses.getAuctionById(item.specialId);

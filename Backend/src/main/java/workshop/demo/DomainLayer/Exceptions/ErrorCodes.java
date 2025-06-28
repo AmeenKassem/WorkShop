@@ -41,5 +41,6 @@ public class ErrorCodes {
     public static final int AI_NOT_WORK = 1037;
     public static final int NO_INIT_SYSTEM = 1038;
     public static final int NOT_ADMIN = 1039;
+    public static final int OWNER_ALREADY_ACCEPT_BID = 1040;
 
 }

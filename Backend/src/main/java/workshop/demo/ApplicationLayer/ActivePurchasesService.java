@@ -13,9 +13,13 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.NotificationDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.SpecialType;
@@ -446,6 +450,11 @@ public class ActivePurchasesService {
                         "Random on store: " + storeJpaRepo.findById(storeId).get().getStoreName() + ", on product: "
                                 + stock.getProductById(res.getProductId()).getName() + " has ended.",
                         participationsIds);
+                notifier.sendDelayedMessageToUser(active.getRandom(randomId).getWinner().getUserName(),
+                        "Congratulations! You have won the random on product: "
+                                + stock.getProductById(res.getProductId()).getName() + " in store: "
+                                + storeJpaRepo.findById(storeId).get().getStoreName()
+                                + ". Please check your cart for details.");
 
             }
             return res;
@@ -634,15 +643,16 @@ public class ActivePurchasesService {
                             + ", on product : "
                             + stock.getProductById(active.getBidById(bidId).getProductId()).getName(),
                     ownersIds);
+            activePurchasesRepo.flush();
             return true;
         }
     }
 
     @Transactional
-    public SingleBid acceptBid(String token, int storeId, int bidId, int bidToAcceptId) throws Exception, DevException {
+    public SingleBid acceptBid(String token, int storeId, int bidId, int userToAcceptForId) throws Exception, DevException {
 
         synchronized (lockManager.getBidLock(bidId)) {
-            logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidToAcceptId, bidId, storeId);
+            logger.info("User trying to accept bid: {} for bidId: {} in store: {}", userToAcceptForId, bidId, storeId);
             int userId = checkUserAndStore(token, storeId, true);
             if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
                 throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
@@ -650,56 +660,83 @@ public class ActivePurchasesService {
             Store store = storeJpaRepo.findById(storeId).orElseThrow();
             ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();
 
-            List<Integer> ownersIds = new ArrayList<>();
-            suConnectionRepo.getOwnersInStore(storeId).forEach(user -> ownersIds.add(user.getMyId()));
-            SingleBid bidAccepted = active.acceptBid(bidId, bidToAcceptId, ownersIds, userId);
+            synchronized (lockManager.getStoreLock(storeId)) {
+                List<Integer> ownersIds = new ArrayList<>();
+                suConnectionRepo.getOwnersInStore(storeId).forEach(user -> ownersIds.add(user.getMyId()));
+                SingleBid bidAccepted = active.acceptBid(bidId, userToAcceptForId, ownersIds, userId);
 
-            if (!bidAccepted.isWinner()) {
-                notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
-                        "Owner " + userRepo.findById(userId).get().getUsername() + " accepted your bid, on store: "
-                                + store.getStoreName() + ", on product : "
-                                + stock.getProductById(bidAccepted.getProductId()).getName());
-            } else {
-                notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
-                        "Owner " + userRepo.findById(userId).get().getUsername()
-                                + " accepted your bid on store : " + store.getStoreName() + ", on product : "
-                                + stock.getProductById(active.getBidById(bidId).getProductId()).getName()
-                                + " and you are the winner!");
-                for (int id : active.getBidById(bidId).getLosersIdsIfAccepted()) {
+                if (!bidAccepted.isWinner()) {
+                    notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
+                            "Owner " + userRepo.findById(userId).get().getUsername() + " accepted your bid, on store: "
+                                    + store.getStoreName() + ", on product : "
+                                    + stock.getProductById(bidAccepted.getProductId()).getName());
+                } else {
+                    notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
+                            "Owner " + userRepo.findById(userId).get().getUsername()
+                                    + " accepted your bid on store : " + store.getStoreName() + ", on product : "
+                                    + stock.getProductById(active.getBidById(bidId).getProductId()).getName()
+                                    + " and you are the winner!");
+                    for (int id : active.getBidById(bidId).getLosersIdsIfAccepted()) {
 
-                    notifier.sendDelayedMessageToUser(userRepo.findById(id).get().getUsername(), "the BID on strore: "
-                            + store.getStoreName() + ", on product : "
-                            + stock.getProductById(active.getBidById(bidId).getProductId()).getName()
-                            + " has ended and your bid was not accepted.");
+                        notifier.sendDelayedMessageToUser(userRepo.findById(id).get().getUsername(),
+                                "the BID on strore: "
+                                        + store.getStoreName() + ", on product : "
+                                        + stock.getProductById(active.getBidById(bidId).getProductId()).getName()
+                                        + " has ended and your bid was not accepted.");
+                    }
                 }
+                logger.info("Bid accepted. User: {} is the winner.", bidAccepted.getUserId());
+                activePurchasesRepo.saveAndFlush(active);
+                return bidAccepted;
             }
-            logger.info("Bid accepted. User: {} is the winner.", bidAccepted.getUserId());
-            activePurchasesRepo.saveAndFlush(active);
-            return bidAccepted;
 
         }
     }
 
     @Transactional
-    public void rejectBid(String token, int storeId, int bidId, int bidTorejectId, int ownerOffer)
+    public void rejectBid(String token, int storeId, int bidId, int userToRejectForId, int ownerOffer)
             throws Exception, DevException {
-        logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidTorejectId, bidId, storeId);
-        int userId = checkUserAndStore(token, storeId, true);
-        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-            throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
-        }
+        synchronized (lockManager.getBidLock(bidId)) {
+            logger.info("User trying to accept bid: {} for bidId: {} in store: {}", userToRejectForId, bidId, storeId);
+            int userId = checkUserAndStore(token, storeId, true);
+            if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+                throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
+            }
 
-        Store store = storeJpaRepo.findById(storeId).orElseThrow();
-        ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();
-        boolean bidRejected = active.rejectBid(bidId, bidTorejectId);
-        int userRejected = active.getBidById(bidId).getBid(bidTorejectId).getUserId();
-        if (bidRejected) {
-            notifier.sendDelayedMessageToUser(userRepo.findById(userRejected).get().getUsername(), "Your bid on store: "
-                    + store.getStoreName() + ", on product : "
-                    + stock.getProductById(active.getBidById(bidId).getProductId()).getName()
-                    + " has been rejected");
+            Store store = storeJpaRepo.findById(storeId).orElseThrow();
+            ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();
+            boolean bidRejected = active.rejectBid(bidId, userToRejectForId);
+            int userRejected = active.getBidById(bidId).getBid(userToRejectForId).getUserId();
+            if (bidRejected) {
+                notifier.sendDelayedMessageToUser(userRepo.findById(userRejected).get().getUsername(),
+                        "Your bid on store: "
+                                + store.getStoreName() + ", on product : "
+                                + stock.getProductById(active.getBidById(bidId).getProductId()).getName()
+                                + " has been rejected");
+            }
+
+            if( ownerOffer > 0 ) {
+                String ownerName = userRepo.findById(userId)
+                        .orElseThrow(() -> new UIException("Owner not found", ErrorCodes.USER_NOT_FOUND)).getUsername();
+                String message = "Owner is Offering you to bid again with this price: " + ownerOffer
+                        + " on store: " + store.getStoreName() + ", on product : "
+                        + stock.getProductById(active.getBidById(bidId).getProductId()).getName() + ". Would you like to bid again?";
+                notifier.sendDelayedMessageToUser(userRepo.findById(userRejected).get().getUsername(),
+                        toJsonOffer(message, NotificationDTO.NotificationType.USER_OFFER, ownerName, storeId, bidId));
+            }
+            activePurchasesRepo.saveAndFlush(active);
         }
-        activePurchasesRepo.saveAndFlush(active);
+    }
+
+    private String toJsonOffer(String message, NotificationDTO.NotificationType type, String senderName, int storeId, int bidId) {
+        NotificationDTO dto = new NotificationDTO(message, NotificationDTO.NotificationType.USER_OFFER, senderName, storeId, bidId);
+        JsonObject json = Json.createObject();
+        json.put("message", dto.getMessage());
+        json.put("bidId", dto.getBidId());
+        json.put("type", dto.getType().name());
+        json.put("senderName", dto.getSenderName());
+        json.put("storeId", dto.getStoreId());
+        return json.toJson();
     }
 
 }

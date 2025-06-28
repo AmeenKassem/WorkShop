@@ -105,7 +105,7 @@ public class ManageStoreSpecialPurchasesPresenter {
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     storeId,
                     bidId,
-                    accept ? "bidToAcceptId" : "bidToRejectId",
+                    accept ? "userToAcceptForId" : "userToRejectForId",
                     bidToRespondId);
 
             HttpHeaders headers = new HttpHeaders();

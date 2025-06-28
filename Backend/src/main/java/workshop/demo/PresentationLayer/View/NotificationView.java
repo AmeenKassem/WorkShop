@@ -54,9 +54,9 @@ public class NotificationView extends com.vaadin.flow.component.Component {
         // Important: Add this component to the UI when it's created
         getElement().executeJs(
                 "const elem = this; "
-                + "setTimeout(() => {"
-                + "  console.log('NotificationView initialized and ready');"
-                + "}, 100);");
+                        + "setTimeout(() => {"
+                        + "  console.log('NotificationView initialized and ready');"
+                        + "}, 100);");
     }
 
     public void setReceivedNotification(List<JsonObject> receivedNotifications) {
@@ -99,7 +99,10 @@ public class NotificationView extends com.vaadin.flow.component.Component {
                 storeNotification(json);
                 String type = json.getString("type");
 
-                if ("OFFER".equals(type)) {
+
+                if ("USER_OFFER".equals(type)) {
+                    // Handle user offer notifications
+                } else if ("OFFER".equals(type)) {
                     showOfferNotification(json);
                 } else {
                     showSimpleNotification(msg); // fallback for plain string
@@ -148,7 +151,7 @@ public class NotificationView extends com.vaadin.flow.component.Component {
             // 🔽 This part is executed when Approve is clicked
             sendOfferResponse(json, true);
             receivedNotifications.remove(json); // remove this message
-            //Notification.show("You accepted the offer");
+            // Notification.show("You accepted the offer");
             notification.close();
         });
 
@@ -252,7 +255,7 @@ public class NotificationView extends com.vaadin.flow.component.Component {
 
                     // First check if the notification.js is loaded
                     page.executeJs("console.log('Testing if JS module is loaded properly');");
-                    String wsUrl = Base.url.replace("http","ws");
+                    String wsUrl = Base.url.replace("http", "ws");
                     // Then initialize the WebSocket with proper error handling
                     page.executeJs("try { "
                             + "console.log('About to initialize notification socket for: ' + $0); "
@@ -298,7 +301,7 @@ public class NotificationView extends com.vaadin.flow.component.Component {
 
         // Construct URL with query parameters
         String url = String.format(
-                Base.url+"/api/store/respondToOffer?storeId=%d&senderName=%s&receiverName=%s&answer=%s&toBeOwner=%s",
+                Base.url + "/api/store/respondToOffer?storeId=%d&senderName=%s&receiverName=%s&answer=%s&toBeOwner=%s",
                 storeId,
                 UriUtils.encodeQueryParam(senderName, StandardCharsets.UTF_8),
                 UriUtils.encodeQueryParam(receiverName, StandardCharsets.UTF_8),

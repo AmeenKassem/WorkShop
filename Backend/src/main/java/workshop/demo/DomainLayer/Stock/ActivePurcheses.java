@@ -156,27 +156,27 @@ public class ActivePurcheses {
         return bidDTOs;
     }
 
-    public SingleBid acceptBid(int userBidId, int bidId, List<Integer> ownersIds, int userId)
+    public SingleBid acceptBid(int bidId, int userToAcceptForId, List<Integer> ownersIds, int userId)
             throws DevException, UIException {
-        logger.debug("acceptBid called with userBidId={}, bidId={}", userBidId, bidId);
+        logger.debug("acceptBid called with userBidId={}, bidId={}", userToAcceptForId, bidId);
 
         if (!activeBid.containsKey(bidId)) {
-            logger.error("Bid ID {} not found", bidId);
+            logger.error("Bid ID {} not  ound", bidId);
 
             throw new DevException("Bid ID not found in active bids!");
         }
-        return activeBid.get(bidId).acceptBid(userBidId, ownersIds, userId);
+        return activeBid.get(bidId).acceptBid(userToAcceptForId, ownersIds, userId);
     }
 
-    public boolean rejectBid(int userBidId, int bidId) throws DevException, UIException {
-        logger.debug("rejectBid called with userBidId={}, bidId={}", userBidId, bidId);
+    public boolean rejectBid(int userToRejectForId, int bidId) throws DevException, UIException {
+        logger.debug("rejectBid called with userBidId={}, bidId={}", userToRejectForId, bidId);
 
         if (!activeBid.containsKey(bidId)) {
             logger.error("Bid ID {} not found", bidId);
 
             throw new DevException("Bid ID not found in active bids!");
         }
-        return activeBid.get(bidId).rejectBid(userBidId);
+        return activeBid.get(bidId).rejectBid(userToRejectForId);
     }
 
     // ========== Random ==========
@@ -411,8 +411,8 @@ public class ActivePurcheses {
         return getRandom(specialId).getCard(userId).toDTO();
     }
 
-    public SingleBid getBid(int storeId2, int specialId, int bidId, SpecialType type) {
-        return activeBid.get(specialId).getBid(bidId);
+    public SingleBid getBid(int storeId2, int specialId, int userId, SpecialType type) {
+        return activeBid.get(specialId).getBid(userId);
     }
 
     public void endAuction(int randomId) {
