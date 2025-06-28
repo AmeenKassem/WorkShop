@@ -49,8 +49,8 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
     }
 
     public void showAllSpecials(RandomDTO[] randoms, AuctionDTO[] auctions, BidDTO[] bids) {
-        // add(new H3("Random Draws"));
-        // add(createRandomSection(new RandomDTO[0]));
+        add(new H3("Random Draws"));
+        add(createRandomSection(randoms));
 
         H3 auctionHeader = new H3("📣 Auctions");
         auctionHeader.addClassName("section-header");

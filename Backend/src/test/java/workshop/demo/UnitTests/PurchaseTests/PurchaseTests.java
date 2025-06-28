@@ -27,7 +27,7 @@ public class PurchaseTests {
     @Test
     void testSaveBidAndRetrieve() {
         int userId = 1;
-        SingleBid bid = new SingleBid(1, 2, userId, 100.0, SpecialType.BID, 5, 10, 20);
+        SingleBid bid = new SingleBid(1, 2, userId, 100.0, SpecialType.BID, 5, 10);
         repo.saveBid(bid);
         List<SingleBid> result = repo.getAllBidsByUser(userId);
 

@@ -328,7 +328,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         dialog.setHeaderTitle("🎲 Set Product to Random Draw");
 
         NumberField quantityField = new NumberField("Quantity");
-        NumberField priceField = new NumberField("Price per Ticket");
+        NumberField priceField = new NumberField("Full Price");
         NumberField timeField = new NumberField("Duration (minutes)");
 
         quantityField.setValue(1.0);
