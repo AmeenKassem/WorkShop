@@ -1,3 +1,4 @@
+
 package workshop.demo.UnitTests.StoreTests;
 
 import java.util.ArrayList;
@@ -782,8 +783,342 @@ public class RandomTests {
 //        SingleBid b1 = bid.bid(1, 100);
 //
 //        SingleBid winner = bid.acceptBid(b1.getId());
+
 //
+//import java.util.ArrayList;
+//import java.util.List;
+//import java.util.concurrent.atomic.AtomicInteger;
+//import java.util.function.Predicate;
+//
+//import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+//import static org.junit.jupiter.api.Assertions.assertEquals;
+//import static org.junit.jupiter.api.Assertions.assertFalse;
+//import static org.junit.jupiter.api.Assertions.assertNotEquals;
+//import static org.junit.jupiter.api.Assertions.assertNotNull;
+//import static org.junit.jupiter.api.Assertions.assertNull;
+//import static org.junit.jupiter.api.Assertions.assertThrows;
+//import static org.junit.jupiter.api.Assertions.assertTrue;
+//import org.junit.jupiter.api.BeforeEach;
+//import org.junit.jupiter.api.Test;
+//import org.springframework.boot.test.context.SpringBootTest;
+//import org.springframework.test.context.ActiveProfiles;
+//
+//import workshop.demo.DTOs.AuctionDTO;
+//import workshop.demo.DTOs.AuctionStatus;
+//import workshop.demo.DTOs.BidDTO;
+//import workshop.demo.DTOs.Category;
+//import workshop.demo.DTOs.CreateDiscountDTO;
+//import workshop.demo.DTOs.ItemCartDTO;
+//import workshop.demo.DTOs.ItemStoreDTO;
+//import workshop.demo.DTOs.ParticipationInRandomDTO;
+//import workshop.demo.DTOs.RandomDTO;
+//import workshop.demo.DTOs.ReceiptProduct;
+//import workshop.demo.DTOs.SingleBidDTO;
+//import workshop.demo.DTOs.SpecialType;
+//import workshop.demo.DTOs.Status;
+//import workshop.demo.DTOs.StoreDTO;
+//import workshop.demo.DomainLayer.Exceptions.DevException;
+//import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
+//import workshop.demo.DomainLayer.Exceptions.UIException;
+//import workshop.demo.DomainLayer.Stock.ActivePurcheses;
+//import workshop.demo.DomainLayer.Stock.Auction;
+//import workshop.demo.DomainLayer.Stock.BID;
+//import workshop.demo.DomainLayer.Stock.Product;
+//import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
+//import workshop.demo.DomainLayer.Stock.SingleBid;
+//import workshop.demo.DomainLayer.Stock.StoreStock;
+//import workshop.demo.DomainLayer.Stock.item;
+//import workshop.demo.DomainLayer.Store.AndDiscount;
+//import workshop.demo.DomainLayer.Store.CompositeDiscount;
+//import workshop.demo.DomainLayer.Store.Discount;
+//import workshop.demo.DomainLayer.Store.DiscountConditions;
+//import workshop.demo.DomainLayer.Store.DiscountFactory;
+//import workshop.demo.DomainLayer.Store.DiscountScope;
+//import workshop.demo.DomainLayer.Store.InvisibleDiscount;
+//import workshop.demo.DomainLayer.Store.MaxDiscount;
+//import workshop.demo.DomainLayer.Store.OrDiscount;
+//import workshop.demo.DomainLayer.Store.Random;
+//import workshop.demo.DomainLayer.Store.Store;
+//import workshop.demo.DomainLayer.Store.VisibleDiscount;
+//import workshop.demo.DomainLayer.Store.XorDiscount;
+//import workshop.demo.DomainLayer.StoreUserConnection.Node;
+//import workshop.demo.DomainLayer.StoreUserConnection.Offer;
+//import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+//import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
+//import workshop.demo.DomainLayer.StoreUserConnection.Tree;
+//import workshop.demo.DomainLayer.User.UserSpecialItemCart;
+//
+//@SpringBootTest
+//@ActiveProfiles("test")
+//public class RandomTests {
+//
+//    private SingleBid auctionBid;
+//    private SingleBid standardBid;
+//    private Auction auction;
+//    private Random random;
+//    private Store store;
+//    Node owner;
+//    Node manager;
+//    private SuperDataStructure superDS;
+//    private BID bid;
+//    private Product product;
+//
+//    private List<ItemStoreDTO> items;
+//    private DiscountScope scope;
+//    private StoreStock storeStock;
+//    private item testItem;
+//    private ActivePurcheses active;
+//    private final int storeId = 1;
+//
+//    @BeforeEach
+//    void setUp() {
+//        active = new ActivePurcheses(storeId);
+//
+//        bid = new BID(123, 2, 1, 10); // productId=123, quantity=2, bidId=1, storeId=10
+//        storeStock = new StoreStock(1);
+//        testItem = new item(1, 10, 1000, Category.Electronics);
+//        storeStock.addItem(testItem);
+//        auction = new Auction(1, 5, 2000, 100, 10,0);
+//        random = new Random(1, 5, 100.0, 10, 200, 2000);
+//        store = new Store("TechStore", "ELECTRONICS");
+//        superDS = new SuperDataStructure();
+//        owner = new Node(1,  -1,false,null); // root owner
+//        manager = new Node(2, 1,false,owner); // manager added by owner
+//        items = new ArrayList<>();
+//        items.add(new ItemStoreDTO(1, 1, 1000, Category.Electronics, 0, 1, "Laptop", "test"));
+//        items.add(new ItemStoreDTO(1, 1, 50, Category.Electronics, 0, 1, "Laptop1", "test"));
+//        scope = new DiscountScope(items);
+//        String[] keywords = {"gaming", "laptop", "performance"};
+//        product = new Product("Laptop", Category.Electronics, "High-end laptop", keywords);
+//        auctionBid = new SingleBid(1, 2, 100, 999.99, SpecialType.Auction, 10, 1, 11);
+//        standardBid = new SingleBid(2, 3, 200, 499.49, SpecialType.BID, 20, 2, 22);
+//        standardBid.ownersNum = 2;
+//    }
+//
+//    @Test
+//    void testVisibleDiscount_applicable() {
+//        Discount d = new VisibleDiscount("10% Electronics", 0.1, s -> s.containsCategory("ELECTRONICS"));
+//        assertTrue(d.isApplicable(scope));
+//        assertEquals(105, d.apply(scope), 0.01);
+//    }
+//
+//    @Test
+//    void testInvisibleDiscount_notApplicable() {
+//        Discount d = new InvisibleDiscount("10% Books", 0.1, s -> s.containsCategory("BOOKS"));
+//        assertFalse(d.isApplicable(scope));
+//        assertEquals(0.0, d.apply(scope), 0.01);
+//    }
+//
+//    @Test
+//    void testAndDiscount() {
+//        AndDiscount and = new AndDiscount("AND Combo");
+//        and.addDiscount(new VisibleDiscount("10% Electronics", 0.1, s -> s.containsCategory("ELECTRONICS")));
+//        and.addDiscount(new VisibleDiscount("5% Electronics", 0.05, s -> s.containsCategory("ELECTRONICS")));
+//        assertTrue(and.isApplicable(scope));
+//        assertEquals(157.5, and.apply(scope), 0.01);
+//    }
+//
+//    @Test
+//    void testOrDiscount() {
+//        OrDiscount or = new OrDiscount("OR Combo");
+//        or.addDiscount(new VisibleDiscount("10% Electronics", 0.1, s -> s.containsCategory("ELECTRONICS")));
+//        or.addDiscount(new VisibleDiscount("5% Books", 0.05, s -> s.containsCategory("BOOKS")));
+//        assertTrue(or.isApplicable(scope));
+//        assertEquals(105, or.apply(scope), 0.01);
+//    }
+//
+//    @Test
+//    void testMaxDiscount() {
+//        MaxDiscount max = new MaxDiscount("MAX Combo");
+//        max.addDiscount(new VisibleDiscount("10% Electronics", 0.1, s -> s.containsCategory("ELECTRONICS")));
+//        max.addDiscount(new VisibleDiscount("20% Accessories", 0.2, s -> s.containsCategory("ACCESSORIES")));
+//        assertTrue(max.isApplicable(scope));
+//        assertEquals(105, max.apply(scope), 0.01); // 20% of 50
+//    }
+//
+//    @Test
+//    void testXorDiscount_singleValid() {
+//        XorDiscount xor = new XorDiscount("XOR Combo");
+//        xor.addDiscount(new VisibleDiscount("10% Electronics", 0.1, s -> s.containsCategory("ELECTRONICS")));
+//        xor.addDiscount(new VisibleDiscount("5% Books", 0.05, s -> s.containsCategory("BOOKS")));
+//        assertTrue(xor.isApplicable(scope));
+//        assertEquals(105, xor.apply(scope), 0.01);
+//    }
+//
+//    @Test
+//    void testXorDiscount_multipleValid() {
+//        XorDiscount xor = new XorDiscount("XOR Combo");
+//        xor.addDiscount(new VisibleDiscount("10% Electronics", 0.1, s -> s.containsCategory("ELECTRONICS")));
+//        xor.addDiscount(new VisibleDiscount("5% Accessories", 0.05, s -> s.containsCategory("ACCESSORIES")));
+//        assertTrue(xor.isApplicable(scope));
+//        assertEquals(105, xor.apply(scope), 0.01);
+//    }
+//
+//    @Test
+//    void testRemoveDiscountByName_nested() {
+//        OrDiscount root = new OrDiscount("root");
+//        AndDiscount child = new AndDiscount("child");
+//        VisibleDiscount leaf = new VisibleDiscount("leaf", 0.1, s -> true);
+//        child.addDiscount(leaf);
+//        root.addDiscount(child);
+//
+//        assertTrue(root.removeDiscountByName("leaf"));
+//        assertTrue(root.getDiscounts().isEmpty());
+//    }
+//
+//    @Test
+//    void testDiscountFactory_createsComposite() {
+//        CreateDiscountDTO d1 = new CreateDiscountDTO("D1", 0.1, CreateDiscountDTO.Type.VISIBLE, "CATEGORY:ELECTRONICS", CreateDiscountDTO.Logic.SINGLE, null);
+//        CreateDiscountDTO d2 = new CreateDiscountDTO("D2", 0.05, CreateDiscountDTO.Type.VISIBLE, "CATEGORY:ACCESSORIES", CreateDiscountDTO.Logic.SINGLE, null);
+//        CreateDiscountDTO dto = new CreateDiscountDTO("FactoryTest", 0.0, CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.OR, List.of(d1, d2));
+//
+//        Discount d = DiscountFactory.fromDTO(dto);
+//        assertEquals("FactoryTest", d.getName());
+//        assertTrue(d.isApplicable(scope));
+//        assertTrue(d instanceof CompositeDiscount);
+//    }
+//
+//    @Test
+//    void testDiscountConditions_totalPrice() {
+//        Predicate<DiscountScope> cond = DiscountConditions.fromString("TOTAL>900");
+//        assertTrue(cond.test(scope));
+//    }
+//
+//    @Test
+//    void testDiscountConditions_category() {
+//        Predicate<DiscountScope> cond = DiscountConditions.fromString("CATEGORY:ELECTRONICS");
+//        assertTrue(cond.test(scope));
+//    }
+//
+//    @Test
+//    void testDiscountConditions_quantity() {
+//        Predicate<DiscountScope> cond = DiscountConditions.fromString("QUANTITY>2");
+//        assertTrue(cond.test(scope));
+//    }
+//
+//    @Test
+//    void testDiscountConditions_item() {
+//        Predicate<DiscountScope> cond = DiscountConditions.fromString("ITEM:1");
+//        assertTrue(cond.test(scope));
+//    }
+//
+//    @Test
+//    void testDiscountConditions_store() {
+//        Predicate<DiscountScope> cond = DiscountConditions.fromString("STORE:1");
+//        assertTrue(cond.test(scope));
+//    }
+//
+//    @Test
+//    void testDiscountConditions_invalid() {
+//        Predicate<DiscountScope> cond = DiscountConditions.fromString("BAD:VALUE");
+//        assertFalse(cond.test(scope));
+//    }
+//
+//    @Test
+//    void testBidSuccess() throws UIException {
+//        SingleBid bid = auction.bid(101, 50.0);
+//        assertNotNull(bid);
+//        assertEquals(50.0, bid.getBidPrice());
+//    }
+//
+//    @Test
+//    void testBidTooLow() throws UIException {
+//        auction.bid(101, 50.0);
+//        UIException ex = assertThrows(UIException.class, () -> auction.bid(102, 30.0));
+//        assertTrue(ex.getMessage().contains("must be higher"));
+//    }
+//
+//    @Test
+//    void testGetDTOContainsCorrectData() throws UIException {
+//        auction.bid(101, 50.0);
+//        AuctionDTO dto = auction.getDTO();
+//        assertEquals(1, dto.productId);
+//        assertEquals(10, dto.storeId);
+//        assertEquals(50.0, dto.maxBid);
+//        assertEquals(AuctionStatus.IN_PROGRESS, dto.status);
+//        assertEquals(1, dto.bids.length);
+//    }
+//
+//    @Test
+//    void testGetWinnerAfterTimeExpires() throws Exception {
+//        SingleBid b1 = auction.bid(201, 100.0);
+//        Thread.sleep(2100); // wait for the auction to finish
+//        AuctionDTO dto = auction.getDTO();
+//        assertEquals(AuctionStatus.FINISH, dto.status);
+//        assertEquals(b1.getId(), dto.winner.getId());
+//        assertEquals(100.0, dto.winner.getBidPrice());
+//    }
+//
+//    @Test
+//    void testBidAfterAuctionEndsThrows() throws Exception {
+//        auction.bid(101, 100.0);
+//        Thread.sleep(2100); // allow it to finish
+//        UIException ex = assertThrows(UIException.class, () -> auction.bid(102, 120.0));
+//        assertTrue(ex.getMessage().contains("ended"));
+//    }
+//
+//    @Test
+//    void testBidIsWinnerFunction() throws Exception {
+//        SingleBid b1 = auction.bid(201, 300.0);
+//        Thread.sleep(2100); // wait for auction to end
+//        assertTrue(auction.bidIsWinner(b1.getId()));
+//    }
+//
+//    @Test
+//    void testGetBid() throws UIException {
+//        SingleBid b1 = auction.bid(123, 250.0);
+//        assertEquals(b1, auction.getBid(b1.getId()));
+//        assertNull(auction.getBid(999)); // not exist
+//    }
+//
+//    @Test
+//    void testParticipateSuccess() throws Exception {
+//        ParticipationInRandomDTO card = random.participateInRandom(1001, 40.0);
+//        assertNotNull(card);
+//        assertEquals(60.0, random.getAmountLeft(), 0.01);
+//    }
+//
+//    @Test
+//    void testParticipateNegativeAmount() {
+//        UIException e = assertThrows(UIException.class, () -> {
+//            random.participateInRandom(1002, -5.0);
+//        });
+//        assertTrue(e.getMessage().contains("positive"));
+//    }
+//
+//    @Test
+//    void testParticipateOverAmount() {
+//        UIException e = assertThrows(UIException.class, () -> {
+//            random.participateInRandom(1003, 150.0);
+//        });
+//        assertTrue(e.getMessage().contains("Maximum amount"));
+//    }
+//
+//    @Test
+//    void testDuplicateParticipation() throws Exception {
+//        random.participateInRandom(1004, 50.0);
+//        UIException e = assertThrows(UIException.class, () -> {
+//            random.participateInRandom(1004, 30.0);
+//        });
+//        assertTrue(e.getMessage().contains("already participated"));
+//    }
+//
+//    @Test
+//    void testFullParticipationTriggersEnd() throws Exception {
+//        random.participateInRandom(1, 30.0);
+//        random.participateInRandom(2, 30.0);
+//        random.participateInRandom(3, 40.0); // reaches 100
+//        assertFalse(random.isActive());
+//        assertNotNull(random.getWinner());
+//    }
+//
+//    @Test
+//    void testEndRandomMarksWinnerAndLosers() throws Exception {
+//        random.participateInRandom(101, 40.0);
+//        random.participateInRandom(102, 60.0);
+//        ParticipationInRandomDTO winner = random.endRandom();
 //        assertNotNull(winner);
+
 //        assertTrue(winner.isAccepted());
 //        assertFalse(bid.isOpen());
 //    }
@@ -1104,9 +1439,423 @@ public class RandomTests {
 //        SingleBid bid = active.addUserBidToBid(bidId, 88, 500.0);
 //        active.acceptBid(bid.getId(), bidId);  // mark as accepted
 //
-//        SingleBid result = active.getBidIfWinner(bidId, bid.getId(), SpecialType.BID);
+//    @Test
+//    void testUpdatePrice_Success() throws Exception {
+//        storeStock.updatePrice(1, 1500);
+//        assertEquals(1500, storeStock.getItemByProductId(1).getPrice());
+//    }
+//
+//    @Test
+//    void testUpdatePrice_NotFound_Throws() {
+//        UIException ex = assertThrows(UIException.class, () -> storeStock.updatePrice(999, 300));
+//        assertTrue(ex.getMessage().contains("Item not found"));
+//    }
+//
+//    @Test
+//    void testRankProduct_Success() throws Exception {
+//        storeStock.rankProduct(1, 3);
+//        assertEquals(1, storeStock.getItemByProductId(1).getRank()[2].get());
+//    }
+//
+//    @Test
+//    void testRankProduct_InvalidRankIndex_Throws() {
+//        Exception ex = assertThrows(Exception.class, () -> storeStock.rankProduct(1, 10));
+//    }
+//
+//    @Test
+//    void testRankProduct_NotFound_Throws() {
+//        UIException ex = assertThrows(UIException.class, () -> storeStock.rankProduct(999, 2));
+//        assertTrue(ex.getMessage().contains("Product ID not found"));
+//    }
+//
+//    @Test
+//    void testGetItemsByCategoryObject() {
+//        item another = new item(2, 5, 2000, Category.Electronics);
+//        storeStock.addItem(another);
+//        List<item> electronics = storeStock.getItemsByCategoryObject(Category.Electronics);
+//        assertEquals(2, electronics.size());
+//    }
+//
+//
+//
+//
+//
+//
+//    @Test
+//    void testChangeQuantityBatch_GuestFailsOnInsufficient() {
+//        ItemCartDTO dto = new ItemCartDTO(1, 1, 9999, 1000, "Phone", "Store", Category.Electronics);
+//        assertThrows(UIException.class,
+//                () -> storeStock.changequantity(List.of(dto), true, "StoreName"));
+//    }
+//
+//    @Test
+//    void testChangeQuantityBatch_RegisteredSkipsInvalid() throws Exception {
+//        ItemCartDTO valid = new ItemCartDTO(1, 1, 1, 1000, "Phone", "Store", Category.Electronics);
+//        ItemCartDTO invalid = new ItemCartDTO(999, 1, 5, 1000, "X", "Y", Category.Books);
+//
+//        // Should not throw exception for registered users
+//        storeStock.changequantity(List.of(invalid, valid), false, "StoreName");
+//
+//        assertEquals(4, storeStock.getItemByProductId(1).getQuantity()); // 10 - 1
+//    }
+//
+//    @Test
+//    void testGetStoreStockId() {
+//        assertEquals(1, storeStock.getStoreStockId());
+//    }
+//
+//    @Test
+//    void testGetStock() {
+//        assertTrue(storeStock.getStock().containsKey(1));
+//    }
+//
+//    @Test
+//    void testGetName() {
+//        assertEquals("Laptop", product.getName());
+//    }
+//
+//    @Test
+//    void testSetName() {
+//        product.setName("New Laptop");
+//        assertEquals("New Laptop", product.getName());
+//    }
+//
+//    @Test
+//    void testGetProductId1() {
+//        assertEquals(0, product.getProductId());
+//    }
+//
+//    @Test
+//    void testSetProductId() {
+//        product.setProductId(99);
+//        assertEquals(99, product.getProductId());
+//    }
+//
+//    @Test
+//    void testGetDescription() {
+//        assertEquals("High-end laptop", product.getDescription());
+//    }
+//
+//    @Test
+//    void testSetDescription() {
+//        product.setDescription("Gaming Laptop");
+//        assertEquals("Gaming Laptop", product.getDescription());
+//    }
+//
+//    @Test
+//    void testGetCategory() {
+//        assertEquals(Category.Electronics, product.getCategory());
+//    }
+//
+//    @Test
+//    void testSetCategory() {
+//        product.setCategory(Category.Books);
+//        assertEquals(Category.Books, product.getCategory());
+//    }
+//
+//    @Test
+//    void testGetKeywords() {
+//        String[] keywords = product.getKeywords();
+//        assertEquals(3, keywords.length);
+//        assertEquals("gaming", keywords[0]);
+//    }
+//
+//    @Test
+//    void testSetKeywords() {
+//        String[] newKeywords = {"tech", "fast", "new"};
+//        product.setKeywords(newKeywords);
+//        String[] actual = product.getKeywords();
+//        assertArrayEquals(newKeywords, actual);
+//    }
+//
+//    @Test
+//    void testGetProductPrice_Success() throws Exception {
+//        int randomId = active.addProductToRandom(1, 5, 123.45, storeId, 99999);
+//        double price = active.getProductPrice(randomId);
+//        assertEquals(123.45, price);
+//    }
+//
+//    @Test
+//    void testGetProductPrice_NotFound_Throws() {
+//        assertThrows(DevException.class, () -> active.getProductPrice(999));
+//    }
+//
+//    @Test
+//    void testGetRandom_Success() throws Exception {
+//        int randomId = active.addProductToRandom(2, 3, 200.0, storeId, 50000);
+//        Random result = active.getRandom(randomId);
+//        assertNotNull(result);
+//        assertEquals(2, result.getProductId());
+//    }
+//
+//    @Test
+//    void testGetRandom_NotFound_Throws() {
+//        assertThrows(DevException.class, () -> active.getRandom(888));
+//    }
+//
+//    @Test
+//    void testgetRandomCardforuser_ReturnsWinner() throws Exception {
+//        int randomId = active.addProductToRandom(10, 3, 150, storeId, 99999);
+//        ParticipationInRandomDTO dto = active.participateInRandom(5, randomId, 150);
+//        active.getRandom(randomId).endRandom(); // Ends and assigns a winner
+//
+//        ParticipationInRandomDTO result = active.getRandomCardforuser(randomId, dto.userId);
 //        assertNotNull(result);
 //    }
+//
+//    @Test
+//    void testgetRandomCardforuser_ReturnsNull_IfNotWinnerOrNotExist() throws Exception {
+//        assertNull(active.getRandomCardforuser(777, 5));
+//    }
+//
+//    @Test
+//    void testGetBidIfWinner_Auction_Winner() throws Exception {
+//        int auctionId = active.addProductToAuction(1, 1, 99999,0);
+//        SingleBid bid = active.addUserBidToAuction(auctionId, 99, 300.0);
+//        active.getBidIfWinner(auctionId, bid.getId(), SpecialType.Auction); // triggers isWinner() check
+//
+//        bid.markAsWinner();  // simulate win
+//        SingleBid result = active.getBidIfWinner(auctionId, bid.getId(), SpecialType.Auction);
+//        assertNotNull(result);
+//    }
+//
+////    @Test
+////    void testGetBidIfWinner_BID_Winner() throws Exception {
+////        int bidId = active.addProductToBid(1, 1);
+////        SingleBid bid = active.addUserBidToBid(bidId, 88, 500.0);
+////        active.acceptBid(bid.getId(), bidId);  // mark as accepted
+////
+////        SingleBid result = active.getBidIfWinner(bidId, bid.getId(), SpecialType.BID);
+////        assertNotNull(result);
+////    }
+//    @Test
+//    void testGetBidIfWinner_ReturnsNull_NotFoundOrNotWinner() {
+//        assertNull(active.getBidIfWinner(999, 1, SpecialType.BID));
+//    }
+//
+//    @Test
+//    void testGetBidWithId_Auction() throws Exception {
+//        int auctionId = active.addProductToAuction(1, 1, 100000,0);
+//        SingleBid bid = active.addUserBidToAuction(auctionId, 66, 300);
+//        SingleBid result = active.getBidWithId(auctionId, bid.getId(), SpecialType.Auction);
+//        assertEquals(bid, result);
+//    }
+//
+//    @Test
+//    void testGetBidWithId_BID() throws Exception {
+//        int bidId = active.addProductToBid(1, 1);
+//        SingleBid bid = active.addUserBidToBid(bidId, 55, 400);
+//        SingleBid result = active.getBidWithId(bidId, bid.getId(), SpecialType.BID);
+//        assertEquals(bid, result);
+//    }
+//
+//    @Test
+//    void testGetBidWithId_ReturnsNull_IfMissing() {
+//        assertNull(active.getBidWithId(1234, 1, SpecialType.BID));
+//        assertNull(active.getBidWithId(1234, 1, SpecialType.Auction));
+//    }
+//
+//    @Test
+//    void testGetCardWithId_NotFound() {
+//        assertNull(active.getCardWithId(5555, 1));
+//    }
+//
+//    @Test
+//    void testGetProductIdForSpecial_Auction() throws Exception {
+//        int id = active.addProductToAuction(42, 1, 99999,0);
+//        assertEquals(42, active.getProductIdForSpecial(id, SpecialType.Auction));
+//    }
+//
+//    @Test
+//    void testGetProductIdForSpecial_BID() throws Exception {
+//        int id = active.addProductToBid(44, 1);
+//        assertEquals(44, active.getProductIdForSpecial(id, SpecialType.BID));
+//    }
+//
+//    @Test
+//    void testGetProductIdForSpecial_Random() throws Exception {
+//        int id = active.addProductToRandom(55, 1, 300, storeId, 99999);
+//        assertEquals(55, active.getProductIdForSpecial(id, SpecialType.Random));
+//    }
+//
+//    @Test
+//    void testGetWinner_WhenNoWinner_ReturnsNull() {
+//        Auction auction = new Auction(1, 1, 5000, 1, 10,0);
+//        assertNull(auction.getWinner()); // Timer hasn't ended, so no winner
+//    }
+//
+//    @Test
+//    void testBidIsWinner_WhenNoWinner_ReturnsFalse() {
+//        Auction auction = new Auction(1, 1, 5000, 1, 10,0);
+//        assertFalse(auction.bidIsWinner(999));
+//    }
+//
+//    @Test
+//    void testBidIsWinner_MatchingWinner_ReturnsTrue() throws UIException, InterruptedException {
+//        Auction auction = new Auction(1, 1, 100, 1, 10,0);
+//        SingleBid bid = auction.bid(5, 300.0);
+//
+//        Thread.sleep(150); // let auction finish
+//
+//        assertEquals(bid, auction.getWinner());
+//        assertTrue(auction.bidIsWinner(bid.getId()));
+//    }
+//
+//    @Test
+//    void testBidIsWinner_WrongId_ReturnsFalse() throws UIException, InterruptedException {
+//        Auction auction = new Auction(1, 1, 100, 1, 10, 0);
+//        auction.bid(5, 300.0);
+//
+//        Thread.sleep(150); // let auction finish
+//
+//        assertNotNull(auction.getWinner());
+//        assertFalse(auction.bidIsWinner(999)); // wrong ID
+//    }
+//
+//    @Test
+//    void testGetBidPrice() {
+//        assertEquals(999.99, auctionBid.getBidPrice());
+//    }
+//
+//    @Test
+//    void testGetId() {
+//        assertEquals(1, auctionBid.getId());
+//        assertEquals(2, standardBid.getId());
+//    }
+//
+//    @Test
+//    void testGetUserId() {
+//        assertEquals(100, auctionBid.getUserId());
+//    }
+//
+//    @Test
+//    void testMarkAsWinner_Auction() {
+//        auctionBid.markAsWinner();
+//        assertEquals(Status.AUCTION_WON, auctionBid.getStatus());
+//        assertTrue(auctionBid.isWinner());
+//        assertTrue(auctionBid.isWon());
+//        assertTrue(auctionBid.isEnded());
+//    }
+//
+//    @Test
+//    void testMarkAsLosed_Auction() {
+//        auctionBid.markAsLosed();
+//        assertEquals(Status.AUCTION_LOSED, auctionBid.getStatus());
+//        assertFalse(auctionBid.isWinner());
+//        assertTrue(auctionBid.isEnded());
+//    }
+//
+//    @Test
+//    void testAcceptBid_Once_NotEnoughOwners() {
+//        standardBid.acceptBid(); // acceptCounter = 1, ownersNum = 2
+//        assertNotEquals(Status.BID_ACCEPTED, standardBid.getStatus());
+//        assertFalse(standardBid.isAccepted());
+//        assertFalse(standardBid.isWon());
+//    }
+//
+//    @Test
+//    void testAcceptBid_Twice_TriggersAccepted() {
+//        standardBid.acceptBid();
+//        standardBid.acceptBid(); // counter reaches ownersNum = 2
+//        assertEquals(Status.BID_ACCEPTED, standardBid.getStatus());
+//        assertTrue(standardBid.isAccepted());
+//        assertTrue(standardBid.isWinner());
+//        assertTrue(standardBid.isWon());
+//        assertTrue(standardBid.isEnded());
+//    }
+//
+//    @Test
+//    void testRejectBid() {
+//        standardBid.rejectBid();
+//        assertEquals(Status.BID_REJECTED, standardBid.getStatus());
+//        assertFalse(standardBid.isAccepted());
+//        assertFalse(standardBid.isWinner());
+//        assertTrue(standardBid.isEnded());
+//    }
+//
+//    @Test
+//    void testConvertToDTO_AuctionPending() {
+//        SingleBidDTO dto = auctionBid.convertToDTO();
+//        assertEquals(auctionBid.getId(), dto.id);
+//        assertEquals(SpecialType.Auction, dto.type);
+//        assertFalse(dto.isWinner);
+//        assertFalse(dto.isAccepted);
+//        assertFalse(dto.isEnded);
+//    }
+//
+//    @Test
+//    void testConvertToDTO_AuctionWon() {
+//        auctionBid.markAsWinner();
+//        SingleBidDTO dto = auctionBid.convertToDTO();
+//        assertTrue(dto.isWinner);
+//        assertTrue(dto.isEnded);
+//    }
+//
+//    @Test
+//    void testGetters1() {
+//        assertEquals(3, standardBid.getAmount());
+//        assertEquals(11, auctionBid.getSpecialId());
+//        assertEquals(10, auctionBid.getStoreId());
+//        assertEquals(SpecialType.Auction, auctionBid.getType());
+//        assertEquals(Status.AUCTION_PENDING, auctionBid.getStatus());
+//    }
+//
+//    @Test
+//    void testProductIdGetter() {
+//        assertEquals(1, auctionBid.productId());
+//    }
+//
+//    @Test
+//    void testIsEnded_FalseInitially() {
+//        assertFalse(auctionBid.isEnded());
+//        assertFalse(standardBid.isEnded());
+//    }
+//
+//    @Test
+//    void testIsEnded_AfterAcceptedOrRejected() {
+//        standardBid.acceptBid();
+//        standardBid.acceptBid(); // triggers accept
+//        assertTrue(standardBid.isEnded());
+//
+//        SingleBid rejectedBid = new SingleBid(1, 1, 1, 100.0, SpecialType.BID, 1, 3, 3);
+//        rejectedBid.rejectBid();
+//        assertTrue(rejectedBid.isEnded());
+//    }
+//
+//    @Test
+//    void testRankItem_ValidRanks() {
+//        for (int i = 1; i <= 5; i++) {
+//            boolean result = testItem.rankItem(i);
+//            assertTrue(result, "Rank " + i + " should return true");
+//            assertEquals(1, testItem.getRank()[i - 1].get(), "Rank index " + (i - 1) + " should be incremented");
+//        }
+//    }
+//
+//    @Test
+//    void testRankItem_InvalidLowRank() {
+//        boolean result = testItem.rankItem(0);
+//        assertFalse(result);
+//        for (int i = 0; i < 5; i++) {
+//            assertEquals(0, testItem.getRank()[i].get());
+//        }
+//    }
+//
+//    @Test
+//    void testRankItem_InvalidHighRank() {
+//        boolean result = testItem.rankItem(6);
+//        assertFalse(result);
+//        for (int i = 0; i < 5; i++) {
+//            assertEquals(0, testItem.getRank()[i].get());
+//        }
+//    }
+//
+//    @Test
+//    void testMultipleRankIncrements() {
+//        testItem.rankItem(2);
+//        testItem.rankItem(2);
+//        assertEquals(2, testItem.getRank()[1].get());
+//    }
+
     @Test
     void testGetBidIfWinner_ReturnsNull_NotFoundOrNotWinner() {
         assertNull(active.getBidIfWinner(999, 1, SpecialType.BID));
