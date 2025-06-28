@@ -169,7 +169,7 @@ public class PurchaseService {
             finalTotal += totalForStore;
             storeToProducts.put(storeId, Pair.of(boughtItems, totalForStore));
         }
-        //Hmode
+        // Hmode
         int paymentTxId = paymentService.processPayment(payment, finalTotal);
         if (paymentTxId == -1) {
             logger.error("Payment failed");
@@ -191,9 +191,9 @@ public class PurchaseService {
             throw e;
         }
 
-        //Hmode
+        // Hmode
         storeStockRepo.flush();
-        return saveReceiptsWithDiscount(userId, storeToProducts,paymentTxId,supplyTxId);
+        return saveReceiptsWithDiscount(userId, storeToProducts, paymentTxId, supplyTxId);
     }
 
     @Transactional
@@ -230,12 +230,14 @@ public class PurchaseService {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
 
-        ParticipationInRandomDTO card = activePurchasesService.participateInRandom(userId, randomId, storeId, amountPaid);
-        UserSpecialItemCart item = new UserSpecialItemCart(storeId, randomId, -1 , SpecialType.Random, card.getProductId());
+        ParticipationInRandomDTO card = activePurchasesService.participateInRandom(userId, randomId, storeId,
+                amountPaid);
+        UserSpecialItemCart item = new UserSpecialItemCart(storeId, randomId, -1, SpecialType.Random,
+                card.getProductId());
         user.addSpecialItemToCart(item);
-        //Hmode
-        boolean done = paymentService.processPayment(paymentDetails, amountPaid)==-1?false:true;
-        //boolean done = true; // for testing purposes, must be removed later
+        // Hmode
+        boolean done = paymentService.processPayment(paymentDetails, amountPaid) == -1 ? false : true;
+        // boolean done = true; // for testing purposes, must be removed later
         if (!done) {
             logger.error("Payment failed for userId={}, amountPaid={}", userId, amountPaid);
             throw new UIException("Payment failed", ErrorCodes.PAYMENT_ERROR);
@@ -248,7 +250,7 @@ public class PurchaseService {
         return card;
     }
 
-     @Transactional
+    @Transactional
     public ReceiptDTO[] finalizeSpecialCart(String token, PaymentDetails payment, SupplyDetails supply)
             throws Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -260,7 +262,7 @@ public class PurchaseService {
 
         logger.info("The user " + userId + " finalizing the special cart.");
         Registered user = regRepo.findById(userId).orElseThrow(() -> notLoggedInException());
-        
+
         // winning!!
         List<SingleBid> winningBids = new ArrayList<>();
         List<ParticipationInRandomDTO> winningRandoms = new ArrayList<>();
@@ -276,12 +278,15 @@ public class PurchaseService {
                 Random random = active.getRandom(specialItem.specialId);
                 ParticipationInRandomDTO card = random.getRandomCardforuser(userId);
                 if (card != null && card.isWinner && card.ended) {
-                winningRandoms.add(card); // Won
+                    logger.info("random card win");
+                    winningRandoms.add(card); // Won
                 } else if ((card != null && !card.isWinner && card.ended) || card == null) {
-                user.removeSpecialItem(specialItem); // Lost or not found → remove
+                    logger.info("");
+                    itemsToRemove.add(specialItem);// Lost or not found → remove
                 } else if (card.mustRefund()) {
+                    logger.info("");
                     // If the card must be refunded, we remove it from the user's cart
-                    user.removeSpecialItem(specialItem);
+                    itemsToRemove.add(specialItem);
                     paymentService.processRefund(card.transactionIdForPayment);
                 }
                 // DO NOT DELETE THIS CODE!!!!!!!!!!!!
@@ -306,7 +311,7 @@ public class PurchaseService {
         sumToPay += setRecieptMapForAuctions(winningAuctions, storeToProducts);
         setRecieptMapForRandoms(storeToProducts, winningRandoms);
         logger.info("finilizing cart with price:" + sumToPay);
-        //Hmode
+        // Hmode
         int paymentTxId = paymentService.processPayment(payment, sumToPay);
         if (paymentTxId == -1) {
             logger.error("Payment failed");
@@ -328,12 +333,12 @@ public class PurchaseService {
             throw e;
         }
 
-        //Hmode
+        // Hmode
         user.clearSpecialCart(itemsToRemove);
         activeRepo.flush();
         regRepo.saveAndFlush(user);
         logger.info("saving changes with user cart !");
-        return saveReceipts(userId, storeToProducts,paymentTxId,supplyTxId);
+        return saveReceipts(userId, storeToProducts, paymentTxId, supplyTxId);
     }
 
     private double setRecieptMapForAuctions(List<UserAuctionBid> winningAuctions,
@@ -431,7 +436,8 @@ public class PurchaseService {
         }
     }
 
-    private ReceiptDTO[] saveReceipts(int userId, Map<Integer, List<ReceiptProduct>> storeToProducts,int paymentTxId,int supplyTxId)
+    private ReceiptDTO[] saveReceipts(int userId, Map<Integer, List<ReceiptProduct>> storeToProducts, int paymentTxId,
+            int supplyTxId)
             throws UIException {
         logger.info("saveReceipts called for userId={}", userId);
 
@@ -463,7 +469,7 @@ public class PurchaseService {
 
     @Transactional
     public ReceiptDTO[] saveReceiptsWithDiscount(int userId,
-            Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts,int paymentTxId,int supplyTxId)
+            Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts, int paymentTxId, int supplyTxId)
             throws UIException {
         logger.info("saveReceipts called for userId={}", userId);
 
