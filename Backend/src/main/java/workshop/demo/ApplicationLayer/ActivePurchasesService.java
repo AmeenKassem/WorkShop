@@ -116,7 +116,7 @@ public class ActivePurchasesService {
     public int setProductToAuction(String token, int storeId, int productId, int quantity, long time, double startPrice)
             throws Exception, DevException {
         logger.info("Setting product {} to auction in store {}", productId, storeId);
-        int userId = checkUserAndStore(token, storeId);
+        int userId = checkUserAndStore(token, storeId,true);
         // adding auction here:
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();
         Auction auction = active.addProductToAuction(productId, quantity, time, startPrice);
@@ -228,7 +228,7 @@ public class ActivePurchasesService {
             throw new UIException("stock service:user not found!", ErrorCodes.USER_NOT_FOUND);
     }
 
-    private int checkUserAndStore(String token, int storeId) throws Exception {
+    private int checkUserAndStore(String token, int storeId,boolean checkWorker) throws Exception {
 
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
@@ -241,7 +241,7 @@ public class ActivePurchasesService {
         // must add the exceptions here:
         Store store = storeJpaRepo.findById(storeId)
                 .orElseThrow(() -> new UIException("store not found on db!", ErrorCodes.STORE_NOT_FOUND));
-        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+        if (checkWorker && (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType))) {
             throw new UIException("you have no permession to set produt to auction.", ErrorCodes.NO_PERMISSION);
         }
         return userId;
@@ -249,7 +249,7 @@ public class ActivePurchasesService {
     @Transactional
     public AuctionDTO[] getAllActiveAuctions_user(String token, int storeId) throws Exception {
         logger.info("User requesting all auctions in store: {}", storeId);
-        int userId = checkUserAndStore(token, storeId);
+        int userId = checkUserAndStore(token, storeId,false);
         logger.info("Returning auction list to user: {}", userId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow();
 
@@ -271,7 +271,7 @@ public class ActivePurchasesService {
     }
 
     public AuctionDTO[] getAllAuctions(String token, int storeId) throws Exception {
-        checkUserAndStore(token, storeId);
+        checkUserAndStore(token, storeId,true);
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
         List<AuctionDTO> auctions = new ArrayList<>();
         for (AuctionDTO auctionDTO : active.getAuctions()) {
@@ -320,7 +320,7 @@ public class ActivePurchasesService {
             throws UIException, DevException, Exception {
         synchronized (lockManager.getAuctionLock(auctionId)) {
             logger.info("User trying to bid on auction: {}, store: {}", auctionId, storeId);
-            int userId = checkUserAndStore(token, storeId);
+            int userId = checkUserAndStore(token, storeId,false);
             // SingleBid bid = stockRepo.bidOnAuction(storeId, userId, auctionId, price);
             ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
             int userLoosedTopId = active.getCurrAuctionTop(auctionId);
@@ -343,7 +343,7 @@ public class ActivePurchasesService {
     public int setProductToRandom(String token, int productId, int quantity, double productPrice, int storeId,
             long randomTime) throws UIException, DevException, Exception {
         logger.info("Setting product {} to auction in store {}", productId, storeId);
-        int userId = checkUserAndStore(token, storeId);
+        int userId = checkUserAndStore(token, storeId,true);
         // adding random here:
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();
         Random random = active.addProductToRandom(productId, quantity, productPrice, storeId, randomTime);
@@ -365,7 +365,7 @@ public class ActivePurchasesService {
     @Transactional
     public RandomDTO[] getAllActiveRandoms_user(String token, int storeId) throws Exception {
         logger.info("User requesting all randoms in store: {}", storeId);
-        int userId = checkUserAndStore(token, storeId);
+        int userId = checkUserAndStore(token, storeId,false);
         logger.info("Returning random list to user: {}", userId);
         // Store store = storeJpaRepo.findById(storeId).orElseThrow();
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
@@ -384,7 +384,7 @@ public class ActivePurchasesService {
     }
 
     public RandomDTO[] getAllRandoms(String token, int storeId) throws Exception {
-        checkUserAndStore(token, storeId);
+        checkUserAndStore(token, storeId,true);
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
         List<RandomDTO> randoms = new ArrayList<>();
         for (RandomDTO randomDTO : active.getRandoms()) {
@@ -510,7 +510,7 @@ public class ActivePurchasesService {
     @Transactional
     public int setProductToBid(String token, int storeId, int productId, int quantity) throws Exception {
         logger.info("User attempting to set product {} as bid in store {}", productId, storeId);
-        int userId = checkUserAndStore(token, storeId);
+        int userId = checkUserAndStore(token, storeId,true);
         // adding bid here:
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();
         int bidId = active.addProductToBid(productId, quantity);
@@ -533,7 +533,7 @@ public class ActivePurchasesService {
 
     public BidDTO[] getAllActiveBids_user(String token, int storeId) throws Exception {
         logger.info("User requesting all auctions in store: {}", storeId);
-        int userId = checkUserAndStore(token, storeId);
+        int userId = checkUserAndStore(token, storeId,false);
         logger.info("Returning auction list to user: {}", userId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow();
 
@@ -558,7 +558,7 @@ public class ActivePurchasesService {
     }
 
     public BidDTO[] getAllBids(String token, int storeId) throws Exception {
-        checkUserAndStore(token, storeId);
+        checkUserAndStore(token, storeId,true);
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
         List<BidDTO> bids = new ArrayList<>();
         for (BidDTO bidDTO : active.getBids()) {
@@ -607,7 +607,7 @@ public class ActivePurchasesService {
             throws UIException, DevException, Exception {
         synchronized (lockManager.getBidLock(bidId)) {
             logger.info("User trying to bid on bid for store: {}", storeId);
-            int userId = checkUserAndStore(token, storeId);
+            int userId = checkUserAndStore(token, storeId,false);
 
             ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
             List<Integer> ownersIds = new ArrayList<>();
@@ -633,7 +633,7 @@ public class ActivePurchasesService {
 
         synchronized (lockManager.getBidLock(bidId)) {
             logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidToAcceptId, bidId, storeId);
-            int userId = checkUserAndStore(token, storeId);
+            int userId = checkUserAndStore(token, storeId,true);
             if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
                 throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
             }
@@ -673,7 +673,7 @@ public class ActivePurchasesService {
     @Transactional
     public void rejectBid(String token, int storeId, int bidId, int bidTorejectId, int ownerOffer) throws Exception, DevException {
         logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidTorejectId, bidId, storeId);
-        int userId = checkUserAndStore(token, storeId);
+        int userId = checkUserAndStore(token, storeId,true);
         if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
             throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
         }
