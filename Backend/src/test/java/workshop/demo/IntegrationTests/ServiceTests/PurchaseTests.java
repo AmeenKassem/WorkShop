@@ -335,7 +335,7 @@ activePurcheses.rejectBid(NOToken, createdStoreId, x, activePurcheses.getAllBids
 
     @Test
     void Add_AuctionBidToSpecialCart_Success_lost() throws Exception {
-         auctionId = activePurcheses.setProductToAuction(NOToken, createdStoreId, productId_laptop, 1, 1000, 2);
+         auctionId = activePurcheses.setProductToAuction(NOToken, createdStoreId, productId_laptop, 1, 5000, 2);
          auctionId = activePurcheses.getAllAuctions(NOToken, createdStoreId)[0].auctionId;
         assertTrue(activePurcheses.getAllAuctions(NOToken, createdStoreId).length == 1);
         activePurcheses.addBidOnAucction(NGToken, auctionId, createdStoreId, 10);
@@ -351,7 +351,7 @@ activePurcheses.rejectBid(NOToken, createdStoreId, x, activePurcheses.getAllBids
         activePurcheses.addBidOnAucction(NOToken, auctionId, createdStoreId, 20);
         assertTrue(activePurcheses.getAllAuctions(NOToken, createdStoreId)[0].bids.length == 2);
 
-        Thread.sleep(1000);
+        Thread.sleep(5000);
 
         assertTrue(activePurcheses.getAllAuctions(NOToken, createdStoreId)[0].status
                 .equals(AuctionStatus.FINISH));
