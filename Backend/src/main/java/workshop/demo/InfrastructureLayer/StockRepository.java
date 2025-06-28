@@ -3,17 +3,12 @@ package workshop.demo.InfrastructureLayer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
-import java.util.TimerTask;
-//import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// import org.hibernate.validator.internal.util.logging.Log_.logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import workshop.demo.DTOs.AuctionDTO;
-import workshop.demo.DTOs.AuctionStatus;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
@@ -27,7 +22,6 @@ import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
-import workshop.demo.DomainLayer.Stock.Auction;
 import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
@@ -78,7 +72,6 @@ public class StockRepository implements IStockRepo {
     //     allProducts.computeIfAbsent(category, k -> new ArrayList<>()).add(product);
     //     return id;
     // }
-
     // @Override
     public Product findByIdInSystem_throwException(int productId) throws UIException {
         for (List<Product> productList : allProducts.values()) {
@@ -127,7 +120,6 @@ public class StockRepository implements IStockRepo {
     //         throws UIException, DevException {
     //     return null;
     // }
-
     // @Override
     // public int addAuctionToStore(int StoreId, int productId, int quantity, long tome, double startPrice)
     //         throws UIException, DevException {
@@ -149,13 +141,11 @@ public class StockRepository implements IStockRepo {
     //                     e.printStackTrace();
     //                 }
     //             }
-
     //         }, tome);
     //     }
     //     decreaseQuantitytoBuy(StoreId, productId, quantity);
     //     return res;
     // }
-
     private void increaseQuantityForStore(int storeId, int productId, int quantity) throws UIException {
         this.storeStocks.get(storeId).IncreaseQuantitytoBuy(productId, quantity);
     }
@@ -164,7 +154,6 @@ public class StockRepository implements IStockRepo {
     // public AuctionDTO[] getAuctionsOnStore(int storeId) throws UIException, DevException {
     //     return getActivePurchases(storeId).getAuctions();
     // }
-
     @Override
     public int addProductToBid(int storeId, int productId, int quantity) throws UIException, DevException {
         checkQuantity(productId, quantity, storeId);
@@ -192,7 +181,6 @@ public class StockRepository implements IStockRepo {
     // public SingleBid acceptBid(int storeId, int bidId, int userBidId) throws UIException, DevException {
     //     return getActivePurchases(storeId).acceptBid(userBidId, bidId);
     // }
-
     @Override
     public int addProductToRandom(int productId, int quantity, double productPrice, int storeId,
             long RandomTime) throws UIException, DevException {
@@ -226,7 +214,6 @@ public class StockRepository implements IStockRepo {
     //         throws UIException, DevException {
     //     return getActivePurchases(storeId).participateInRandom(userId, randomId, amountPaid);
     // }
-
     @Override
     public RandomDTO[] getRandomsInStore(int storeId) throws UIException, DevException {
         return getActivePurchases(storeId).getRandoms();
@@ -363,7 +350,6 @@ public class StockRepository implements IStockRepo {
     //     // }
     //     return this.storeId2ActivePurchases.get(storeId).participateInRandom(userId, randomId, amountPaid);
     // }
-
     public double getProductPrice(int storeId, int randomId) throws DevException {
         return this.storeId2ActivePurchases.get(storeId).getProductPrice(randomId);
     }
@@ -390,7 +376,6 @@ public class StockRepository implements IStockRepo {
     //     }
     //     return null;
     // }
-
     public void changequantity(int storeId, List<CartItem> cartItems, boolean isGuest, String StoreName)
             throws Exception {
         StoreStock storeStock = storeStocks.get(storeId);
@@ -532,7 +517,6 @@ public class StockRepository implements IStockRepo {
     //     }
     //     return result.toArray(new BidDTO[0]);
     // }
-
     // @Override
     // public AuctionDTO[] searchActiveAuctions(ProductSearchCriteria criteria) throws UIException {
     //     ItemStoreDTO[] storeItems = search(criteria);
@@ -548,7 +532,6 @@ public class StockRepository implements IStockRepo {
     //     }
     //     return result.toArray(new AuctionDTO[0]);
     // }
-
     private ItemStoreDTO convertToItemStoreDTO(item item, Product product, int storeId) {
         return new ItemStoreDTO(product.getProductId(), item.getQuantity(), item.getPrice(), product.getCategory(),
                 item.getFinalRank(), storeId, product.getName(), null);
@@ -602,6 +585,32 @@ public class StockRepository implements IStockRepo {
     @Override
     public StoreStock findStoreStockById(int storeId) {
         return storeStocks.get(storeId);
+    }
+
+    @Override
+    public SingleBid acceptBid(int storeId, int bidId, int userBidId) throws UIException, DevException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'acceptBid'");
+    }
+
+    @Override
+    public ParticipationInRandomDTO validatedParticipation(int userId, int randomId, int storeId, double amountPaid)
+            throws UIException, DevException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'validatedParticipation'");
+    }
+
+    @Override
+    public BidDTO[] searchActiveBids(ProductSearchCriteria criteria) throws UIException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'searchActiveBids'");
+    }
+
+    @Override
+    public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
+            throws UIException, DevException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'participateInRandom'");
     }
 
 }

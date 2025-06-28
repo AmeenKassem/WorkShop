@@ -345,5 +345,17 @@ public class StoreController {
         String[] arr = storeService.getAllDiscountNames(storeId, token);
         return new ApiResponse(arr, null);
     }
+    @GetMapping("/getStoreDiscounts")
+    public ResponseEntity<?> getStoreDiscounts(@RequestParam int storeId, @RequestParam String token) {
+        try {
+            List<CreateDiscountDTO> discounts = storeService.getFlattenedDiscounts(storeId, token);
+            return ResponseEntity.ok(new ApiResponse<>(discounts, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
 
 }

@@ -23,7 +23,6 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Store.CompositeDiscount;
 import workshop.demo.DomainLayer.Store.Discount;
@@ -38,6 +37,10 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.StoreTreeEntity;
 import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import workshop.demo.InfrastructureLayer.DiscountEntities.CompositeDiscountEntity;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountEntity;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountJpaRepository;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountMapper;
 import workshop.demo.InfrastructureLayer.IOrderRepoDB;
 import workshop.demo.InfrastructureLayer.IStoreRepoDB;
 import workshop.demo.InfrastructureLayer.IStoreStockRepo;
@@ -60,8 +63,6 @@ public class StoreService {
     @Autowired
     private ISUConnectionRepo suConnectionRepo;
     @Autowired
-    private IStockRepo stockRepo;
-    @Autowired
     private UserSuspensionJpaRepository suspensionJpaRepo;
     private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
     @Autowired
@@ -77,7 +78,10 @@ public class StoreService {
     @Autowired
     private IActivePurchasesRepo activePurchasesRepo;
     @Autowired
+    private DiscountJpaRepository discountRepo;
+    @Autowired
     private LockManager lockManager;
+
 
     @PostConstruct
     public void loadStoreTreesIntoMemory() {
@@ -451,6 +455,15 @@ public class StoreService {
         int userId = authRepo.getUserId(token);
         userService.checkUserRegisterOnline_ThrowException(userId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+        // Load discount from DB
+        DiscountEntity rootEntity = discountRepo.findByName("ROOT_" + storeId)
+                .orElse(null);
+
+        if (rootEntity != null) {
+            Discount discount = DiscountMapper.toDomain(rootEntity);
+            store.setDiscount(discount);
+        }
+
         return store.getStoreDTO();
     }
 
@@ -535,35 +548,60 @@ public class StoreService {
             }
             subDiscounts.forEach(comp::addDiscount);
         }
+
+
         store.addDiscount(discount);
+        DiscountEntity entity = DiscountMapper.toEntity(discount);
+        //discountRepo.save(entity);
+        store.setDiscountEntity(entity);
+        storeJpaRepo.save(store);
         logger.info("Discount '{}' added successfully to store {}", discount.getName(), storeId);
     }
-
+    @Transactional
     public void removeDiscountFromStore(String token, int storeId, String discountName)
             throws UIException, DevException {
+        logger.info("User attempting to remove discount '{}' from store {}", discountName, storeId);
+
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userService.checkUserRegisterOnline_ThrowException(userId);
         UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+            throw new UIException("Suspended user", ErrorCodes.USER_SUSPENDED);
         }
 
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);
-
         if (!suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_STORE_POLICY)) {
-            throw new UIException("You do not have permission to remove discounts", ErrorCodes.NO_PERMISSION);
+            throw new UIException("No permission", ErrorCodes.NO_PERMISSION);
         }
 
-        // Store store =storeJpaRepo.findById(storeId).get();
+        // Manually remove from domain
         boolean removed = store.removeDiscountByName(discountName);
         if (!removed) {
-            throw new UIException("Discount not found: " + discountName, ErrorCodes.DISCOUNT_NOT_FOUND);
+            throw new UIException("Discount not found", ErrorCodes.DISCOUNT_NOT_FOUND);
         }
 
-        logger.info("Discount '{}' removed from store {}", discountName, storeId);
+        DiscountEntity oldEntity = store.getDiscountEntity();
+        if (oldEntity != null) {
+            discountRepo.delete(oldEntity);
+        }
+
+        store.setDiscountEntity(null);
+        store.setDiscount(null);
+
+        Discount newTree = store.getDiscount();
+        if (newTree != null) {
+            DiscountEntity updated = DiscountMapper.toEntity(newTree);
+            store.setDiscountEntity(updated);
+        }
+
+        storeJpaRepo.save(store);
+        logger.info("Discount '{}' removed and store updated", discountName);
     }
+
+
+
 
     public void addPurchasePolicy(String token, int storeId, String policyKey/* "NO_ALCOHOL""MIN_QTY" */,
             Integer param/* when MIN_QTY */) throws Exception {
@@ -637,6 +675,24 @@ public class StoreService {
         if (node instanceof CompositeDiscount comp) {
             comp.getDiscounts().forEach(d -> collectNames(d, acc));
         }
+    }
+    public List<CreateDiscountDTO> getFlattenedDiscounts(int storeId, String token) throws UIException {
+        Store store = storeJpaRepo.findById(storeId).get();
+        Discount root = store.getDiscount();
+
+        if (root == null)
+            return List.of();
+
+        // If it's composite, extract children
+        CreateDiscountDTO rootDTO = root.toDTO();
+        List<CreateDiscountDTO> subs = rootDTO.getSubDiscounts();
+
+        if (subs != null && !subs.isEmpty()) {
+            return subs;
+        }
+
+        // Otherwise, return root as a single-item list
+        return List.of(rootDTO);
     }
 
 }
