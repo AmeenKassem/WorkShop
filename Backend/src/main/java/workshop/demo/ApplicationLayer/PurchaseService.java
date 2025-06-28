@@ -303,6 +303,20 @@ public class PurchaseService {
                     itemsToRemove.add(specialItem);
                     logger.info("one auction bid must be removed bid id:" + specialItem.bidId);
                 }
+            } else if (specialItem.type == SpecialType.BID) { // BID
+                ActivePurcheses active = activeRepo.findById(specialItem.storeId).orElse(null);
+                SingleBid bid = active.getBid(specialItem.storeId, specialItem.specialId, userId, specialItem.type);
+                if (bid.isEnded()) {
+                    if (bid.isWinner()) {
+                        winningBids.add(bid);
+                        logger.info("user win bid. id:" + specialItem.bidId);
+                    }
+                    // user.removeSpecialItem(specialItem);
+                    itemsToRemove.add(specialItem);
+                    logger.info("one bid must be removed bid id:" + specialItem.bidId);
+                }
+            } else {
+                logger.warn("Unknown special item type: {}", specialItem.type);
             }
         }
         logger.info("hiiiiiiiiiiiii");
@@ -426,8 +440,8 @@ public class PurchaseService {
             ReceiptProduct receiptProduct = new ReceiptProduct(
                     product.getName(),
                     storeName,
-                    1,
-                    0,
+                    card.quantity,
+                    (int) card.amountPaid,
                     product.getProductId(),
                     product.getCategory(), card.storeId);
 
