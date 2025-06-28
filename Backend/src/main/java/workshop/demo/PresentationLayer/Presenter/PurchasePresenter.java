@@ -148,8 +148,9 @@ public class PurchasePresenter {
             String cvv,
             String address,
             String city,
-            String state,
-            String zipCode) {
+            String country,
+            String zipCode,
+            String name) {
 
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         if (token == null) {
@@ -159,7 +160,7 @@ public class PurchasePresenter {
 
         try {
             PaymentDetails paymentDetails = new PaymentDetails(cardNumber, cardHolderName, expirationDate, cvv);
-            SupplyDetails supplyDetails = new SupplyDetails(address, city, state, zipCode);
+            SupplyDetails supplyDetails = new SupplyDetails(address, city, null, zipCode,name,country);
 
             ObjectMapper mapper = new ObjectMapper();
             String paymentJson = mapper.writeValueAsString(paymentDetails);
@@ -209,8 +210,9 @@ public class PurchasePresenter {
             String cvv,
             String address,
             String city,
-            String state,
-            String zipCode) {
+            String country,
+            String zipCode,
+            String name) {
 
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         if (token == null) {
@@ -220,7 +222,7 @@ public class PurchasePresenter {
 
         try {
             PaymentDetails paymentDetails = new PaymentDetails(cardNumber, cardHolderName, expirationDate, cvv);
-            SupplyDetails supplyDetails = new SupplyDetails(address, city, state, zipCode);
+            SupplyDetails supplyDetails = new SupplyDetails(address, city, null, zipCode,name,country);
 
             ObjectMapper mapper = new ObjectMapper();
             String paymentJson = mapper.writeValueAsString(paymentDetails);
