@@ -1,5 +1,7 @@
 package workshop.demo.DomainLayer.Store;
 
+import workshop.demo.DTOs.CreateDiscountDTO;
+
 public class AndDiscount extends CompositeDiscount {
     public AndDiscount(String name) {
         super(name);
@@ -18,4 +20,21 @@ public class AndDiscount extends CompositeDiscount {
                 .mapToDouble(d -> d.apply(scope))
                 .sum();
     }
+
+    @Override
+    public CreateDiscountDTO toDTO() {
+        CreateDiscountDTO dto = new CreateDiscountDTO();
+        dto.setName(getName());
+        dto.setLogic(CreateDiscountDTO.Logic.AND);
+        dto.setType(CreateDiscountDTO.Type.VISIBLE); // or INVISIBLE if you support it
+        dto.setPercent(0); // composite discount itself may not have a percent
+        dto.setCondition("None");
+
+        dto.setSubDiscounts(discounts.stream()
+                .map(Discount::toDTO)
+                .toList());
+
+        return dto;
+    }
+
 }
