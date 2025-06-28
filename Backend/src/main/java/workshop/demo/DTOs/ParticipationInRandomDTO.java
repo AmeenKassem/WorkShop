@@ -6,6 +6,7 @@ public class ParticipationInRandomDTO {
     public int userId;
     public int storeId;
     public int productId;
+    public String userName;
     //public int numberOfCards;
     public double amountPaid;
     public boolean isWinner;
