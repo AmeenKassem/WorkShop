@@ -89,11 +89,13 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("⭐ Store Reviews");
 
-        VerticalLayout content = new VerticalLayout();
-        content.addClassName("dialog-content");
-        content.setSpacing(true);
-        content.setPadding(true);
-        content.setWidth("400px");
+    VerticalLayout content = new VerticalLayout();
+    content.addClassName("dialog-content");
+    content.setSpacing(true);
+    content.setPadding(true);
+    content.setWidth("400px");
+    content.setMaxHeight("400px");
+    content.getStyle().set("overflow", "auto");
 
         if (reviews == null || reviews.isEmpty()) {
             content.add(new Paragraph("Nothing here yet."));
@@ -271,4 +273,46 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
         dlg.open();
     }
 
+
+
+   public void showStoreOrdersDialog(List<String> orders) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("📜 Store's Order History");
+
+        VerticalLayout content = new VerticalLayout();
+        content.addClassName("dialog-content");
+        content.setSpacing(true);
+        content.setPadding(true);
+        content.setWidth("500px");
+
+        content.setMaxHeight("400px");
+        content.getStyle().set("overflow", "auto");
+
+        if (orders == null || orders.isEmpty()) {
+            content.add(new Paragraph("There are no orders yet."));
+        } else {
+            for (String order : orders) {
+                VerticalLayout card = new VerticalLayout();
+                card.getStyle()
+                    .set("background-color", "#fff")
+                    .set("border", "1px solid #ddd")
+                    .set("border-radius", "10px")
+                    .set("padding", "1rem")
+                    .set("margin-bottom", "1rem")
+                    .set("box-shadow", "0 2px 6px rgba(0,0,0,0.08)");
+                card.setSpacing(false);
+                card.setPadding(false);
+
+                Span orderDetails = new Span(order);
+                orderDetails.getStyle().set("white-space", "pre-line");
+                card.add(orderDetails);
+                content.add(card);
+            }
+        }
+
+        Button close = new Button("Close", e -> dialog.close());
+        dialog.getFooter().add(close);
+        dialog.add(content);
+        dialog.open();
+    }
 }

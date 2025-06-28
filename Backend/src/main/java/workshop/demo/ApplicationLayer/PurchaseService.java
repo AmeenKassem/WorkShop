@@ -486,6 +486,7 @@ public class PurchaseService {
             ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, discountedTotal);
             receipt.setPaymentTransactionId(paymentTxId);
             receipt.setSupplyTransactionId(supplyTxId);
+            
             receipts.add(receipt);
             // orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
             Order order = new Order(userId, receipt, storeName);

@@ -298,6 +298,7 @@ public class UserService {
                 ParticipationInRandomDTO card = activePurcheses.getRandomCard(item.storeId, item.specialId,
                         item.user.getId());
                 itemToSend.setValues(product.getName(), card.isWinner, card.ended);
+                itemToSend.dateEnd = null; //TODO , use the same function you have used on RandomDTO 
             } else if (item.type == SpecialType.BID) {
                 SingleBid bid = activePurcheses.getBid(item.storeId, item.specialId, item.bidId, item.type);
                 itemToSend.setValues(product.getName(), bid.isWinner() || bid.isAccepted(), bid.isEnded());
