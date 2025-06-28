@@ -168,6 +168,7 @@ public class PurchaseService {
 
             Discount discount     = store.getDiscount();
             double   discountAmt  = 0.0;
+            System.out.println("Hmode is"+discount.toDTO().getCondition().toString());
             if (discount != null) {
                 discountAmt = discount.apply(new DiscountScope(itemStoreDTOS));
             }

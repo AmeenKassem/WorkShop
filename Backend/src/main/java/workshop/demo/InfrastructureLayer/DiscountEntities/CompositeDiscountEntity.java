@@ -25,30 +25,42 @@ public class CompositeDiscountEntity extends DiscountEntity {
     )
     private List<DiscountEntity> subDiscounts = new ArrayList<>();
 
-    public Logic getLogic() { return logic; }
-    public void setLogic(Logic logic) { this.logic = logic; }
+    public Logic getLogic() {
+        return logic;
+    }
 
-    public List<DiscountEntity> getSubDiscounts() { return subDiscounts; }
-    public void setSubDiscounts(List<DiscountEntity> subDiscounts) { this.subDiscounts = subDiscounts; }
+    public void setLogic(Logic logic) {
+        this.logic = logic;
+    }
+
+    public List<DiscountEntity> getSubDiscounts() {
+        return subDiscounts;
+    }
+
+    public void setSubDiscounts(List<DiscountEntity> subDiscounts) {
+        this.subDiscounts = subDiscounts;
+    }
+
     public static Discount toDomain(DiscountEntity entity) {
         if (entity instanceof VisibleDiscountEntity vd) {
             return new VisibleDiscount(
                     vd.getName(),
                     vd.getPercent(),
-                    DiscountConditions.fromString(vd.getCondition())
+                    DiscountConditions.fromString(vd.getCondition()),
+                    vd.getCondition()
             );
 
         } else if (entity instanceof InvisibleDiscountEntity id) {
             return new InvisibleDiscount(
                     id.getName(),
                     id.getPercent(),
-                    DiscountConditions.fromString(id.getCondition())
+                    DiscountConditions.fromString(id.getCondition()),
+                    id.getCondition()
             );
 
         } else if (entity instanceof CompositeDiscountEntity comp) {
             CompositeDiscount result;
 
-            // 🧠 THIS is what was missing:
             switch (comp.getLogic()) {
                 case MAX -> result = new MaxDiscount(comp.getName());
                 case AND -> result = new AndDiscount(comp.getName());
@@ -61,10 +73,10 @@ public class CompositeDiscountEntity extends DiscountEntity {
             for (DiscountEntity sub : comp.getSubDiscounts()) {
                 result.addDiscount(toDomain(sub));
             }
+
             return result;
         }
 
         throw new IllegalArgumentException("Unknown DiscountEntity type: " + entity.getClass());
     }
-
 }
