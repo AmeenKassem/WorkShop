@@ -74,8 +74,10 @@ public class StoreService {
     private StoreTreeJPARepository storeTreeJPARepo;
     @Autowired
     private OfferJpaRepository offerJPARepo;
-    @Autowired 
+    @Autowired
     private IActivePurchasesRepo activePurchasesRepo;
+    @Autowired
+    private LockManager lockManager;
 
     @PostConstruct
     public void loadStoreTreesIntoMemory() {
@@ -86,7 +88,7 @@ public class StoreService {
                 logger.debug("Loading storeId=" + entity.getStoreId() + ", nodes=" + entity.getAllNodes().size());
 
                 this.suConnectionRepo.getData().getEmployees().put(entity.getStoreId(), tree);
-                //for offers:
+                // for offers:
                 logger.info(">> Loading offers...");
 
                 List<Offer> allOffers = offerJPARepo.findAll();
@@ -100,25 +102,27 @@ public class StoreService {
                             .add(offer);
                 }
                 logger.info(">> Loaded " + allOffers.size() + " offers");
-                //-----------will be deleted: just for testing-----------
+                // -----------will be deleted: just for testing-----------
                 // Detailed breakdown
-                // for (Map.Entry<Integer, List<Offer>> entry : suConnectionRepo.getData().getOffers().entrySet()) {
-                //     int storeId = entry.getKey();
-                //     List<Offer> offers = entry.getValue();
-                //     logger.info("Store ID {} has {} offers:", storeId, offers.size());
+                // for (Map.Entry<Integer, List<Offer>> entry :
+                // suConnectionRepo.getData().getOffers().entrySet()) {
+                // int storeId = entry.getKey();
+                // List<Offer> offers = entry.getValue();
+                // logger.info("Store ID {} has {} offers:", storeId, offers.size());
 
-                //     for (Offer offer : offers) {
-                //         OfferKey key = offer.getId();
-                //         String permissionsStr = offer.getPermissions() != null && !offer.getPermissions().isEmpty()
-                //                 ? offer.getPermissions().toString()
-                //                 : "[]";
-                //         logger.info("  → sender={} | receiver={} | toBeOwner={} | permissions={}",
-                //                 key.getSenderId(),
-                //                 key.getReceiverId(),
-                //                 offer.isToBeOwner(),
-                //                 permissionsStr
-                //         );
-                //     }
+                // for (Offer offer : offers) {
+                // OfferKey key = offer.getId();
+                // String permissionsStr = offer.getPermissions() != null &&
+                // !offer.getPermissions().isEmpty()
+                // ? offer.getPermissions().toString()
+                // : "[]";
+                // logger.info(" → sender={} | receiver={} | toBeOwner={} | permissions={}",
+                // key.getSenderId(),
+                // key.getReceiverId(),
+                // offer.isToBeOwner(),
+                // permissionsStr
+                // );
+                // }
                 // }
             } catch (DevException e) {
                 logger.debug("Failed to load store tree and offers for storeId=" + entity.getStoreId());
@@ -195,7 +199,9 @@ public class StoreService {
         suConnectionRepo.checkToAddOwner(storeId, ownerId, newOwnerId);
         logger.info("Making an offer to be a store owner from {} to {}", ownerId, newOwnerId);
         String owner = this.userRepo.findById(ownerId).get().getUsername();
-        String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
+        String storeName = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND))
+                .getStoreName();
         String Message = String.format(
                 "In store: %s, the owner: %s is offering you: %s to become an owner of this store.",
                 storeName, owner, newOwnerName);
@@ -227,17 +233,19 @@ public class StoreService {
     }
 
     public int AddOwnershipToStore(int storeId, int ownerId, int newOwnerId, boolean decide) throws Exception {
-        userService.checkUserRegisterOnline_ThrowException(newOwnerId);
-        if (decide) {
-            suConnectionRepo.getOffer(storeId, ownerId, newOwnerId);
-            suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
+        synchronized (lockManager.getStoreLock(storeId)) {
+            userService.checkUserRegisterOnline_ThrowException(newOwnerId);
+            if (decide) {
+                suConnectionRepo.getOffer(storeId, ownerId, newOwnerId);
+                suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
+                suConnectionRepo.deleteOffer(storeId, ownerId, newOwnerId);
+                logger.info("Successfully added user {} as owner to store {} by user {}", newOwnerId, storeId, ownerId);
+                return newOwnerId;
+            }
+            logger.info("Ownership addition declined by user {}", newOwnerId);
             suConnectionRepo.deleteOffer(storeId, ownerId, newOwnerId);
-            logger.info("Successfully added user {} as owner to store {} by user {}", newOwnerId, storeId, ownerId);
-            return newOwnerId;
+            return -1;
         }
-        logger.info("Ownership addition declined by user {}", newOwnerId);
-        suConnectionRepo.deleteOffer(storeId, ownerId, newOwnerId);
-        return -1;
     }
 
     public void DeleteOwnershipFromStore(int storeId, String token, int ownerToDelete) throws Exception, DevException {
@@ -277,7 +285,9 @@ public class StoreService {
         logger.info("Making an offer to be a store manager from {} to {}", ownerId, managerId);
         String owner = this.userRepo.findById(ownerId).get().getUsername();
         String nameNew = this.userRepo.findById(managerId).get().getUsername();
-        String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
+        String storeName = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND))
+                .getStoreName();
         String message = String.format(
                 "In store: %s, the owner: %s is offering you: %s to be a manager of this store.",
                 storeName, owner, nameNew);
@@ -339,15 +349,15 @@ public class StoreService {
         logger.info("about to rank store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        //userService.checkUserRegisterOnline_ThrowException(userId);
+        // userService.checkUserRegisterOnline_ThrowException(userId);
         UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         store.rankStore(newRank);
-        //storeJpaRepo.save(store);
-        //this.storeRepo.rankStore(storeId, newRank);
+        // storeJpaRepo.save(store);
+        // this.storeRepo.rankStore(storeId, newRank);
         logger.info("store ranked sucessfully!");
 
     }
@@ -370,8 +380,10 @@ public class StoreService {
         suConnectionRepo.checkMainOwnerToDeactivateStore_ThrowException(storeId, ownerId);
         List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
         storeJpaRepo.deactivateStore(storeId);
-        //storeRepo.deactivateStore(storeId, ownerId);
-        String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
+        // storeRepo.deactivateStore(storeId, ownerId);
+        String storeName = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND))
+                .getStoreName();
         logger.info("Store {} successfully deactivated by owner {}", storeId, ownerId);
         logger.info("About to notify all employees");
         /// we have to notify the employees here
@@ -391,10 +403,12 @@ public class StoreService {
         userService.checkAdmin_ThrowException(adminId);
         logger.info("trying to close store: {} by: {}", storeId, adminId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
+        String storeName = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND))
+                .getStoreName();
         List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
         // this.storeRepo.closeStore(storeId);
-        //store.setActive(false);
+        // store.setActive(false);
 
         this.suConnectionRepo.closeStore(storeId);
         storeJpaRepo.delete(store);
@@ -417,7 +431,9 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         List<Node> nodes = suConnectionRepo.getAllWorkers(storeId); // return this as nodes
-        String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
+        String storeName = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND))
+                .getStoreName();
         List<WorkerDTO> result = new ArrayList<>();
         for (Node node : nodes) {
             String username = userRepo.findById(node.getMyId()).get().getUsername();

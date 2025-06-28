@@ -158,8 +158,8 @@ public class ManageStoreSpecialPurchasesView extends VerticalLayout implements H
                     offerCard.add(new Paragraph("Product ID: " + offer.productId));
 
                     if (!offer.isAccepted && !offer.isEnded) {
-                        Button acceptBtn = new Button("Accept", ev -> presenter.respondToSingleBid(bid.bidId, offer.id, true));
-                        Button rejectBtn = new Button("Reject", ev -> presenter.respondToSingleBid(bid.bidId, offer.id, false));
+                        Button acceptBtn = new Button("Accept", ev -> presenter.respondToSingleBid(bid.bidId, offer.userId, true));
+                        Button rejectBtn = new Button("Reject", ev -> presenter.respondToSingleBid(bid.bidId, offer.userId, false));
                         HorizontalLayout buttons = new HorizontalLayout(acceptBtn, rejectBtn);
                         offerCard.add(buttons);
                     }

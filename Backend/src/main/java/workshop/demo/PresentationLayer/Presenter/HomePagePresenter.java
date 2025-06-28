@@ -188,7 +188,7 @@ public class HomePagePresenter {
     public boolean addRegularBid(String token, int bidId, int storeId, double price) {
         try {
             String url = String.format(
-                    Base.url + "/stock/addRegularBid?token=%s&bitId=%d&storeId=%d&price=%s",
+                    Base.url + "/stock/addRegularBid?token=%s&bidId=%d&storeId=%d&offer=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     bidId,
                     storeId,
