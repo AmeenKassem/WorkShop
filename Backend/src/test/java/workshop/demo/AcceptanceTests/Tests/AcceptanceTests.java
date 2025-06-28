@@ -51,8 +51,7 @@ public class AcceptanceTests {
     protected IStoreStockRepo mockStoreStock;
     @Mock
     protected NodeJPARepository mockNodeRepo;
-    @Mock
-    protected IStockRepo mockStockRepo;
+   
     @Mock
     protected PurchaseRepository mockPurchaseRepo;
     @Mock

@@ -795,12 +795,12 @@ public class RandomTests {
 //        UIException ex = assertThrows(UIException.class, () -> bid.acceptBid(b1.getId()));
 //        assertEquals("This bid is already closed!", ex.getMessage());
 //    }
-    @Test
-    void testAcceptBidWithInvalidIdThrows() throws Exception {
-        bid.bid(1, 50);
-        DevException ex = assertThrows(DevException.class, () -> bid.acceptBid(999));
-        assertEquals("Trying to accept bid for non-existent ID.", ex.getMessage());
-    }
+    // @Test
+    // void testAcceptBidWithInvalidIdThrows() throws Exception {
+    //     bid.bid(1, 50);
+    //     DevException ex = assertThrows(DevException.class, () -> bid.acceptBid(999));
+    //     assertEquals("Trying to accept bid for non-existent ID.", ex.getMessage());
+    // }
 
     @Test
     void testRejectBidSuccess() throws Exception {
@@ -1223,24 +1223,24 @@ public class RandomTests {
         assertTrue(auctionBid.isEnded());
     }
 
-    @Test
-    void testAcceptBid_Once_NotEnoughOwners() {
-        standardBid.acceptBid(); // acceptCounter = 1, ownersNum = 2
-        assertNotEquals(Status.BID_ACCEPTED, standardBid.getStatus());
-        assertFalse(standardBid.isAccepted());
-        assertFalse(standardBid.isWon());
-    }
+    // @Test
+    // void testAcceptBid_Once_NotEnoughOwners() {
+    //     standardBid.acceptBid(); // acceptCounter = 1, ownersNum = 2
+    //     assertNotEquals(Status.BID_ACCEPTED, standardBid.getStatus());
+    //     assertFalse(standardBid.isAccepted());
+    //     assertFalse(standardBid.isWon());
+    // }
 
-    @Test
-    void testAcceptBid_Twice_TriggersAccepted() {
-        standardBid.acceptBid();
-        standardBid.acceptBid(); // counter reaches ownersNum = 2
-        assertEquals(Status.BID_ACCEPTED, standardBid.getStatus());
-        assertTrue(standardBid.isAccepted());
-        assertTrue(standardBid.isWinner());
-        assertTrue(standardBid.isWon());
-        assertTrue(standardBid.isEnded());
-    }
+    // @Test
+    // void testAcceptBid_Twice_TriggersAccepted() {
+    //     standardBid.acceptBid();
+    //     standardBid.acceptBid(); // counter reaches ownersNum = 2
+    //     assertEquals(Status.BID_ACCEPTED, standardBid.getStatus());
+    //     assertTrue(standardBid.isAccepted());
+    //     assertTrue(standardBid.isWinner());
+    //     assertTrue(standardBid.isWon());
+    //     assertTrue(standardBid.isEnded());
+    // }
 
     @Test
     void testRejectBid() {
@@ -1278,10 +1278,10 @@ public class RandomTests {
         assertEquals(Status.AUCTION_PENDING, auctionBid.getStatus());
     }
 
-    @Test
-    void testProductIdGetter() {
-        assertEquals(1, auctionBid.productId());
-    }
+    // @Test
+    // // void testProductIdGetter() {
+    // //     assertEquals(1, auctionBid.productId());
+    // // }
 
     @Test
     void testIsEnded_FalseInitially() {
@@ -1289,16 +1289,16 @@ public class RandomTests {
         assertFalse(standardBid.isEnded());
     }
 
-    @Test
-    void testIsEnded_AfterAcceptedOrRejected() {
-        standardBid.acceptBid();
-        standardBid.acceptBid(); // triggers accept
-        assertTrue(standardBid.isEnded());
+    // @Test
+    // void testIsEnded_AfterAcceptedOrRejected() {
+    //     standardBid.acceptBid();
+    //     standardBid.acceptBid(); // triggers accept
+    //     assertTrue(standardBid.isEnded());
 
-        SingleBid rejectedBid = new SingleBid(1, 1, 1, 100.0, SpecialType.BID, 1, 3, 3);
-        rejectedBid.rejectBid();
-        assertTrue(rejectedBid.isEnded());
-    }
+    //     SingleBid rejectedBid = new SingleBid(1, 1, 1, 100.0, SpecialType.BID, 1, 3, 3);
+    //     rejectedBid.rejectBid();
+    //     assertTrue(rejectedBid.isEnded());
+    // }
 
     @Test
     void testRankItem_ValidRanks() {

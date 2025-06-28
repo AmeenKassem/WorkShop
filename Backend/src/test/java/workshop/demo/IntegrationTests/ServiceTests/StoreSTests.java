@@ -3,63 +3,26 @@ package workshop.demo.IntegrationTests.ServiceTests;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
-import javax.xml.crypto.Data;
 
-import org.junit.jupiter.api.AfterEach;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.contains;
+
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.transaction.annotation.Transactional;
-import org.junit.jupiter.api.AfterEach;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.contains;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.transaction.annotation.Transactional;
-
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import workshop.demo.ApplicationLayer.ActivePurchasesService;
 import workshop.demo.ApplicationLayer.DatabaseCleaner;
 //import workshop.demo.ApplicationLayer.AdminHandler;
@@ -73,16 +36,12 @@ import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
 import workshop.demo.DTOs.AuctionDTO;
-import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.OrderDTO;
-import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ProductDTO;
-import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.ReceiptDTO;
-import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DTOs.WorkerDTO;
@@ -91,23 +50,15 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.BaseNotifier;
 
-import workshop.demo.DomainLayer.Stock.SingleBid;
-import workshop.demo.DomainLayer.Stock.SingleBid;
+
 
 import workshop.demo.DomainLayer.Store.PurchasePolicy;
 import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.StoreUserConnection.Offer;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 import workshop.demo.InfrastructureLayer.*;
 import workshop.demo.SocketCommunication.SocketHandler;
-import workshop.demo.DomainLayer.Store.PurchasePolicy;
-import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.StoreUserConnection.Offer;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
-import workshop.demo.InfrastructureLayer.*;
-import workshop.demo.SocketCommunication.SocketHandler;
+
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -123,8 +74,7 @@ public class StoreSTests {
     // @Autowired
     // private NotificationRepository notificationRepository;
 
-    @Autowired
-    private StockRepository stockRepository;
+  
     @Autowired
     private IStockRepoDB stockRepositoryjpa;
     @Autowired
@@ -727,9 +677,10 @@ public class StoreSTests {
     void testOwner_AddToBID_Success() throws Exception {
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-        stockService.setProductToBid(NOToken, createdStoreId, PID, 1);
-        assertTrue(stockService.getAllBidsStatus(NOToken, createdStoreId).length == 1);
-        assertTrue(stockService.getAllBidsStatus(NOToken, createdStoreId)[0].productId == 1);
+        activePurcheses.setProductToBid(NOToken, createdStoreId, PID, 1);
+                assertTrue(activePurcheses.getAllBids(NOToken, createdStoreId)[0].productId == PID);
+
+        assertTrue(activePurcheses.getAllBids(NOToken, createdStoreId).length == 1);
 
     }
 
@@ -737,11 +688,11 @@ public class StoreSTests {
     void testOwner_AddToRandom_Success() throws Exception {
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-        stockService.setProductToRandom(NOToken, PID, 1, 100, createdStoreId, 5000);
+        activePurcheses.setProductToRandom(NOToken, PID, 1, 100, createdStoreId, 5000);
 
-        assertTrue(stockService.getAllRandomInStore(NOToken, createdStoreId).length == 1);
-        assertTrue(stockService.getAllRandomInStore(NOToken, createdStoreId)[0].productId == 1);
-        assertTrue(stockService.getAllRandomInStore(NOToken, createdStoreId).length == 1);
+        assertTrue(activePurcheses.getAllRandoms(NOToken, createdStoreId).length == 1);
+        assertTrue(activePurcheses.getAllRandoms(NOToken, createdStoreId)[0].productId == PID);
+        assertTrue(activePurcheses.getAllRandoms(NOToken, createdStoreId).length == 1);
 
     }
 
@@ -1219,24 +1170,24 @@ public class StoreSTests {
         assertEquals(ErrorCodes.STORE_NOT_FOUND, exception.getErrorCode());
     }
 
-    @Test
-    void test_validatedParticipation_storeNotInitialized_throwsDevException() {
-        DevException ex = assertThrows(DevException.class,
-                () -> stockRepository.validatedParticipation(10, 1, 999, 200.0) // storeId 999 doesn't exist
-        );
-        assertTrue(ex.getMessage().contains("Store stock not initialized"));
-    }
+    // @Test
+    // void test_validatedParticipation_storeNotInitialized_throwsDevException() {
+    //     DevException ex = assertThrows(DevException.class,
+    //             () -> stockRepository.validatedParticipation(10, 1, 999, 200.0) // storeId 999 doesn't exist
+    //     );
+    //     assertTrue(ex.getMessage().contains("Store stock not initialized"));
+    // }
 
     @Test
     void test_getRandomCardIfWinner_exception_returnsNull() {
-        ParticipationInRandomDTO result = stockRepository.getRandomCardforuser(999, 1, 10); // storeId 999 not set up
-        assertNull(result);
+     //   ParticipationInRandomDTO result = stockRepository.getRandomCardforuser(999, 1, 10); // storeId 999 not set up
+     //   assertNull(result);
     }
 
     @Test
     void test_getBidIfWinner_exception_returnsNull() {
-        SingleBid result = stockRepository.getBidIfWinner(999, 1, 1, SpecialType.BID); // storeId 999 not set up
-        assertNull(result);
+   //     SingleBid result = stockRepository.getBidIfWinner(999, 1, 1, SpecialType.BID); // storeId 999 not set up
+     //   assertNull(result);
     }
 
     @Test

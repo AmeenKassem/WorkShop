@@ -26,7 +26,6 @@ public class SuspendconTests {
     @Autowired private StoreTreeJPARepository tree;
     @Autowired private NodeJPARepository node;
   
-    @Autowired private StockRepository stockRepository;
     @Autowired private IStockRepoDB stockRepositoryjpa;
     @Autowired private IStoreRepoDB storeRepositoryjpa;
     @Autowired private PurchaseRepository purchaseRepository;

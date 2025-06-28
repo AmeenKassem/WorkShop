@@ -39,7 +39,6 @@ import workshop.demo.InfrastructureLayer.NodeJPARepository;
 import workshop.demo.InfrastructureLayer.OfferJpaRepository;
 import workshop.demo.InfrastructureLayer.PurchaseRepository;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
-import workshop.demo.InfrastructureLayer.StockRepository;
 import workshop.demo.InfrastructureLayer.StoreTreeJPARepository;
 import workshop.demo.InfrastructureLayer.UserJpaRepository;
 
@@ -55,8 +54,7 @@ public class SpecialPurchasesTest {
     // @Autowired
     // private NotificationRepository notificationRepository;
 
-    @Autowired
-    private StockRepository stockRepository;
+
     @Autowired
     private IStockRepoDB stockRepositoryjpa;
     @Autowired

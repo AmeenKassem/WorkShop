@@ -24,6 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
+import workshop.demo.ApplicationLayer.DatabaseCleaner;
 import workshop.demo.ApplicationLayer.NotificationService;
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.ApplicationLayer.PaymentServiceImp;
@@ -106,6 +107,8 @@ public class GuestTests {
     // ======================== Utility ========================
     @Autowired
     private Encoder encoder;
+      @Autowired
+    DatabaseCleaner databaseCleaner;
 
     // ======================== Test Data ========================
     String NOToken;
@@ -119,22 +122,9 @@ public class GuestTests {
 
     @BeforeEach
     void setup() throws Exception {
-        node.deleteAll();
-        orderRepository.deleteAll();
-        tree.deleteAll();
-        userRepo.deleteAll();
-
-        guestRepo.deleteAll();
-
-        stockRepositoryjpa.deleteAll();
-        offerRepo.deleteAll();
-        storeRepositoryjpa.deleteAll();
-        storeStockRepo.deleteAll();
-
-        suspensionRepo.deleteAll();
-        orderRepository.deleteAll();
 
 
+databaseCleaner.wipeDatabase();
         GToken = userService.generateGuest();
 
         String OToken = userService.generateGuest();

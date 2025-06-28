@@ -21,7 +21,6 @@ import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.SingleBid;
@@ -45,8 +44,7 @@ import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
 public class StockService {
 
     private static final Logger logger = LoggerFactory.getLogger(StockService.class);
-    @Autowired
-    private IStockRepo stockRepo;
+  
     @Autowired
     private IAuthRepo authRepo;
     @Autowired
@@ -121,25 +119,25 @@ public class StockService {
         return products;
     }
 
-    public RandomDTO[] searchActiveRandoms(String token, ProductSearchCriteria criteria) throws Exception {
-        logger.info("Starting searchRandoms with criteria: {}", criteria);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
-        RandomDTO[] randoms = stockRepo.searchActiveRandoms(criteria);
-        // storeRepo.fillWithStoreName(randoms);
-        // -> must be jpa
-        return randoms;
-    }
+    // public RandomDTO[] searchActiveRandoms(String token, ProductSearchCriteria criteria) throws Exception {
+    //     logger.info("Starting searchRandoms with criteria: {}", criteria);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
+    //     RandomDTO[] randoms = stockRepo.searchActiveRandoms(criteria);
+    //     // storeRepo.fillWithStoreName(randoms);
+    //     // -> must be jpa
+    //     return randoms;
+    // }
 
-    public BidDTO[] searchActiveBids(String token, ProductSearchCriteria criteria) throws Exception {
-        logger.info("Starting searchBids with criteria: {}", criteria);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
-        BidDTO[] bids = stockRepo.searchActiveBids(criteria);
-        // storeRepo.fillWithStoreName(bids);
-        // -> must be jpa
-        return bids;
-    }
+    // public BidDTO[] searchActiveBids(String token, ProductSearchCriteria criteria) throws Exception {
+    //     logger.info("Starting searchBids with criteria: {}", criteria);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
+    //     BidDTO[] bids = stockRepo.searchActiveBids(criteria);
+    //     // storeRepo.fillWithStoreName(bids);
+    //     // -> must be jpa
+    //     return bids;
+    // }
 
 
 
@@ -167,140 +165,140 @@ public class StockService {
         }
     }
 
-    public boolean addRegularBid(String token, int bitId, int storeId, double price) throws UIException, DevException {
-        logger.info("User attempting regular bid on bidId: {}, storeId: {}", bitId, storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
-        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
-        }
+    // public boolean addRegularBid(String token, int bitId, int storeId, double price) throws UIException, DevException {
+    //     logger.info("User attempting regular bid on bidId: {}, storeId: {}", bitId, storeId);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
+    //     checkUserRegisterOnline_ThrowException(userId);
+    //     UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+    //     if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+    //         throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+    //     }
 
-        SingleBid bid = stockRepo.bidOnBid(bitId, price, userId, storeId);
-        //bid.ownersNum = suConnectionRepo.getOwnersInStore(storeId).size();
-        UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, bid.getSpecialId(), bid.getId(),
-                SpecialType.BID,-1);
-        userRepo.findById(userId).get().addSpecialItemToCart(specialItem);
-        for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
-            String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
-            notifier.sendDelayedMessageToUser(ownerName,
-                    "User " + userRepo.findById(userId).get().getUsername() + " placed a bid on your product");
-        }
-        logger.info("Regular bid successful by user: {}", userId);
-        return true;
+    //     SingleBid bid = stockRepo.bidOnBid(bitId, price, userId, storeId);
+    //     //bid.ownersNum = suConnectionRepo.getOwnersInStore(storeId).size();
+    //     UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, bid.getSpecialId(), bid.getId(),
+    //             SpecialType.BID,-1);
+    //     userRepo.findById(userId).get().addSpecialItemToCart(specialItem);
+    //     for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
+    //         String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
+    //         notifier.sendDelayedMessageToUser(ownerName,
+    //                 "User " + userRepo.findById(userId).get().getUsername() + " placed a bid on your product");
+    //     }
+    //     logger.info("Regular bid successful by user: {}", userId);
+    //     return true;
 
-    }
+    // }
 
     
-    public int setProductToBid(String token, int storeid, int productId, int quantity) throws Exception {
-        logger.info("User attempting to set product {} as bid in store {}", productId, storeid);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
-        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
-        }
-        Store store = storeJpaRepo.findById(storeid).orElseThrow(() -> storeNotFound());
-        // Node Worker= this.
-        if (!this.suConnectionRepo.manipulateItem(userId, storeid, Permission.SpecialType)) {
-            throw new UIException("you have no permession to set product to bid.", ErrorCodes.NO_PERMISSION);
-        }
-        for (Node worker : suConnectionRepo.getOwnersInStore(storeid)) {
-            String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
-            notifier.sendDelayedMessageToUser(ownerName,
-                    "Owner " + userRepo.findById(userId).get().getUsername() + " set a product to bid in your store");
-        }
+    // public int setProductToBid(String token, int storeid, int productId, int quantity) throws Exception {
+    //     logger.info("User attempting to set product {} as bid in store {}", productId, storeid);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
+    //     checkUserRegisterOnline_ThrowException(userId);
+    //     UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+    //     if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+    //         throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+    //     }
+    //     Store store = storeJpaRepo.findById(storeid).orElseThrow(() -> storeNotFound());
+    //     // Node Worker= this.
+    //     if (!this.suConnectionRepo.manipulateItem(userId, storeid, Permission.SpecialType)) {
+    //         throw new UIException("you have no permession to set product to bid.", ErrorCodes.NO_PERMISSION);
+    //     }
+    //     for (Node worker : suConnectionRepo.getOwnersInStore(storeid)) {
+    //         String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
+    //         notifier.sendDelayedMessageToUser(ownerName,
+    //                 "Owner " + userRepo.findById(userId).get().getUsername() + " set a product to bid in your store");
+    //     }
 
-        return stockRepo.addProductToBid(storeid, productId, quantity);
-    }
+    //     return stockRepo.addProductToBid(storeid, productId, quantity);
+    // }
 
-    public BidDTO[] getAllBidsStatus(String token, int storeId) throws Exception, DevException {
-        logger.info("Fetching bid status for store: {}", storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
+    // public BidDTO[] getAllBidsStatus(String token, int storeId) throws Exception, DevException {
+    //     logger.info("Fetching bid status for store: {}", storeId);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
+    //     checkUserRegisterOnline_ThrowException(userId);
 
-        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-            throw new UIException("you have no permession to see bidss info.", ErrorCodes.NO_PERMISSION);
-        }
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+    //     if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+    //         throw new UIException("you have no permession to see bidss info.", ErrorCodes.NO_PERMISSION);
+    //     }
+    //     Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
 
-        return stockRepo.getAllBids(storeId);
-    }
+    //     return stockRepo.getAllBids(storeId);
+    // }
 
-    public BidDTO[] getAllBidsInStore(String token, int storeId) throws Exception, DevException {
-        logger.info("Fetching bid for store: {}", storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+    // public BidDTO[] getAllBidsInStore(String token, int storeId) throws Exception, DevException {
+    //     logger.info("Fetching bid for store: {}", storeId);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
+    //     checkUserRegisterOnline_ThrowException(userId);
+    //     Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
 
-        return stockRepo.getAllBids(storeId);
-    }
+    //     return stockRepo.getAllBids(storeId);
+    // }
 
-    public SingleBid acceptBid(String token, int storeId, int bidId, int bidToAcceptId) throws Exception, DevException {
-        logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidToAcceptId, bidId, storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
-        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
-        }
-        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-            throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
-        }
+    // public SingleBid acceptBid(String token, int storeId, int bidId, int bidToAcceptId) throws Exception, DevException {
+    //     logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidToAcceptId, bidId, storeId);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
+    //     checkUserRegisterOnline_ThrowException(userId);
+    //     Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+    //     UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+    //     if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+    //         throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+    //     }
+    //     if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+    //         throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
+    //     }
 
-        SingleBid bidAccepted = stockRepo.acceptBid(storeId, bidId, bidToAcceptId);
-        if (!bidAccepted.isWinner()) {
-            notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
-                    "Owner " + userRepo.findById(userId).get().getUsername() + " accepted your bid");
-        } else {
-            notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
-                    "Owner " + userRepo.findById(userId).get().getUsername()
-                            + " accepted your bid and you are the winner!");
-        }
-        logger.info("Bid accepted. User: {} is the winner.", bidAccepted.getUserId());
-        return bidAccepted;
-    }
+    //     SingleBid bidAccepted = stockRepo.acceptBid(storeId, bidId, bidToAcceptId);
+    //     if (!bidAccepted.isWinner()) {
+    //         notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
+    //                 "Owner " + userRepo.findById(userId).get().getUsername() + " accepted your bid");
+    //     } else {
+    //         notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
+    //                 "Owner " + userRepo.findById(userId).get().getUsername()
+    //                         + " accepted your bid and you are the winner!");
+    //     }
+    //     logger.info("Bid accepted. User: {} is the winner.", bidAccepted.getUserId());
+    //     return bidAccepted;
+    // }
 
-    public void rejectBid(String token, int storeId, int bidId, int bidTorejectId) throws Exception, DevException {
-        logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidTorejectId, bidId, storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
-        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
-        }
-        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-            throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
-        }
+    // public void rejectBid(String token, int storeId, int bidId, int bidTorejectId) throws Exception, DevException {
+    //     logger.info("User trying to accept bid: {} for bidId: {} in store: {}", bidTorejectId, bidId, storeId);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
+    //     checkUserRegisterOnline_ThrowException(userId);
+    //     Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+    //     UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+    //     if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+    //         throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+    //     }
+    //     if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+    //         throw new UIException("you have no permession to accept bid", ErrorCodes.USER_NOT_LOGGED_IN);
+    //     }
 
-        stockRepo.rejectBid(storeId, bidId, bidTorejectId);
-    }
+    //     stockRepo.rejectBid(storeId, bidId, bidTorejectId);
+    // }
 
-    @Transactional
-    public int setProductToRandom(String token, int productId, int quantity, double productPrice, int storeId,
-            long RandomTime) throws UIException, DevException {
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
-        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
-        }
-        for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
-            String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
-            notifier.sendDelayedMessageToUser(ownerName, "Owner "
-                    + userRepo.findById(userId).get().getUsername() + " set a product to random in your store");
-        }
-        return stockRepo.addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
-    }
+    // @Transactional
+    // public int setProductToRandom(String token, int productId, int quantity, double productPrice, int storeId,
+    //         long RandomTime) throws UIException, DevException {
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
+    //     checkUserRegisterOnline_ThrowException(userId);
+    //     UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+    //     if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+    //         throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+    //     }
+    //     for (Node worker : suConnectionRepo.getOwnersInStore(storeId)) {
+    //         String ownerName = userRepo.findById(worker.getMyId()).get().getUsername();
+    //         notifier.sendDelayedMessageToUser(ownerName, "Owner "
+    //                 + userRepo.findById(userId).get().getUsername() + " set a product to random in your store");
+    //     }
+    //     return stockRepo.addProductToRandom(productId, quantity, productPrice, storeId, RandomTime);
+    // }
 
     // public ParticipationInRandomDTO endBid(String token, int storeId, int randomId) throws Exception, DevException {
     //     logger.info("Ending random bid {} in store {}", randomId, storeId);
@@ -315,36 +313,36 @@ public class StockService {
     //     return stockRepo.endRandom(storeId, randomId);
     // }
 
-    public RandomDTO[] getAllRandomInStore(String token, int storeId) throws Exception, DevException {
-        logger.info("Fetching all randoms in store {}", storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
-            throw new UIException("you have no permession to see random info.", ErrorCodes.NO_PERMISSION);
-        }
-        return stockRepo.getRandomsInStore(storeId);
-    }
+    // public RandomDTO[] getAllRandomInStore(String token, int storeId) throws Exception, DevException {
+    //     logger.info("Fetching all randoms in store {}", storeId);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
+    //     checkUserRegisterOnline_ThrowException(userId);
+    //     Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+    //     if (!this.suConnectionRepo.manipulateItem(userId, storeId, Permission.SpecialType)) {
+    //         throw new UIException("you have no permession to see random info.", ErrorCodes.NO_PERMISSION);
+    //     }
+    //     return stockRepo.getRandomsInStore(storeId);
+    // }
 
-    public RandomDTO[] getAllRandomInStoreToUser(String token, int storeId) throws Exception, DevException {
-        logger.info("Fetching all randoms in store {}", storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        return stockRepo.getRandomsInStore(storeId);
-    }
+    // public RandomDTO[] getAllRandomInStoreToUser(String token, int storeId) throws Exception, DevException {
+    //     logger.info("Fetching all randoms in store {}", storeId);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
+    //     checkUserRegisterOnline_ThrowException(userId);
+    //     Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+    //     return stockRepo.getRandomsInStore(storeId);
+    // }
 
-    public RandomDTO[] getAllRandomInStore_user(String token, int storeId) throws Exception, DevException {
-        logger.info("Fetching all randoms in store {}", storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+    // public RandomDTO[] getAllRandomInStore_user(String token, int storeId) throws Exception, DevException {
+    //     logger.info("Fetching all randoms in store {}", storeId);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
+    //     checkUserRegisterOnline_ThrowException(userId);
+    //     Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
 
-        return stockRepo.getRandomsInStore(storeId);
-    }
+    //     return stockRepo.getRandomsInStore(storeId);
+    // }
 
     // stock managment:
     public ItemStoreDTO[] getProductsInStore(int storeId) throws UIException, DevException {
@@ -524,16 +522,16 @@ public class StockService {
     // susRepo.checkUserSuspensoin_ThrowExceptionIfSuspeneded(userId);
     // return stockRepo.participateInRandom(userId, randomId, storeId, price);
     // }
-    public BidDTO[] getAllBidsStatus_user(String token, int storeId) throws Exception, DevException {
-        logger.info("Fetching bid status for store: {}", storeId);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        checkUserRegisterOnline_ThrowException(userId);
+    // public BidDTO[] getAllBidsStatus_user(String token, int storeId) throws Exception, DevException {
+    //     logger.info("Fetching bid status for store: {}", storeId);
+    //     authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    //     int userId = authRepo.getUserId(token);
+    //     checkUserRegisterOnline_ThrowException(userId);
 
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+    //     Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
 
-        return stockRepo.getAllBids(storeId);
-    }
+    //     return stockRepo.getAllBids(storeId);
+    // }
 
     public Product getProductById(int productId) {
         return stockJpaRepo.findById(productId).orElse(null);

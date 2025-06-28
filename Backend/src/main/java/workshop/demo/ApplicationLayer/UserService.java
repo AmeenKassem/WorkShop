@@ -23,7 +23,6 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.Auction;
 import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.ParticipationInRandom;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.SingleBid;

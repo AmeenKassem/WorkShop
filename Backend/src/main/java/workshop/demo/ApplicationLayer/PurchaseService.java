@@ -32,7 +32,6 @@ import workshop.demo.DomainLayer.Purchase.ISupplyService;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.Auction;
 import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.Random;
 import workshop.demo.DomainLayer.Stock.SingleBid;
@@ -59,8 +58,7 @@ public class PurchaseService {
 
     @Autowired
     private IAuthRepo authRepo;
-    @Autowired
-    private IStockRepo stockRepo;
+
     @Autowired
     private IOrderRepoDB orderJpaRepo;
     // private final IUserRepo userRepo;

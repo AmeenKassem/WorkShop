@@ -64,8 +64,7 @@ public class UserTests {
     // @Autowired
     // private NotificationRepository notificationRepository;
 
-    @Autowired
-    private StockRepository stockRepository;
+
     @Autowired
     private IStockRepoDB stockRepositoryjpa;
     @Autowired
@@ -925,10 +924,10 @@ public class UserTests {
         activePurcheses.setProductToRandom(NOToken,PID,3,1,x,endTime);
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                "Laptop", null, null, 1, null, null, null, null);
+                "Laptop", Category.Electronics, null, null, 0, 10000, 1, 5);
 
         // BidDTO[] result = stockService.searchActiveBids(NGToken, criteria);
-        RandomDTO[] result = activePurcheses.searchActiveRandoms(GToken, criteria);
+        RandomDTO[] result = activePurcheses.searchActiveRandoms(NGToken, criteria);
         assertNotNull(result);
         assertEquals(1, result.length);
         assertEquals("Laptop", result[0].productName);
