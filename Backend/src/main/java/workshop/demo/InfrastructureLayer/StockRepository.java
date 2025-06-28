@@ -188,10 +188,10 @@ public class StockRepository implements IStockRepo {
         return getActivePurchases(storeId).rejectBid(userBidId, bidId);
     }
 
-    @Override
-    public SingleBid acceptBid(int storeId, int bidId, int userBidId) throws UIException, DevException {
-        return getActivePurchases(storeId).acceptBid(userBidId, bidId);
-    }
+    // @Override
+    // public SingleBid acceptBid(int storeId, int bidId, int userBidId) throws UIException, DevException {
+    //     return getActivePurchases(storeId).acceptBid(userBidId, bidId);
+    // }
 
     @Override
     public int addProductToRandom(int productId, int quantity, double productPrice, int storeId,
@@ -221,11 +221,11 @@ public class StockRepository implements IStockRepo {
 
     }
 
-    @Override
-    public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
-            throws UIException, DevException {
-        return getActivePurchases(storeId).participateInRandom(userId, randomId, amountPaid);
-    }
+    // @Override
+    // public ParticipationInRandomDTO participateInRandom(int userId, int randomId, int storeId, double amountPaid)
+    //         throws UIException, DevException {
+    //     return getActivePurchases(storeId).participateInRandom(userId, randomId, amountPaid);
+    // }
 
     @Override
     public RandomDTO[] getRandomsInStore(int storeId) throws UIException, DevException {
@@ -352,17 +352,17 @@ public class StockRepository implements IStockRepo {
         return total;
     }
 
-    public ParticipationInRandomDTO validatedParticipation(int userId, int randomId, int storeId, double amountPaid)
-            throws DevException, UIException {
-        if (storeStocks.get(storeId) == null) {
-            throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
-        }
-        // double requiredPrice = getProductPrice(storeId, randomId);// total price
-        // if (amountPaid > requiredPrice) {
-        // throw new DevException("Insufficient payment");
-        // }
-        return this.storeId2ActivePurchases.get(storeId).participateInRandom(userId, randomId, amountPaid);
-    }
+    // public ParticipationInRandomDTO validatedParticipation(int userId, int randomId, int storeId, double amountPaid)
+    //         throws DevException, UIException {
+    //     if (storeStocks.get(storeId) == null) {
+    //         throw new DevException("Store stock not initialized for storeId in repo: " + storeId);
+    //     }
+    //     // double requiredPrice = getProductPrice(storeId, randomId);// total price
+    //     // if (amountPaid > requiredPrice) {
+    //     // throw new DevException("Insufficient payment");
+    //     // }
+    //     return this.storeId2ActivePurchases.get(storeId).participateInRandom(userId, randomId, amountPaid);
+    // }
 
     public double getProductPrice(int storeId, int randomId) throws DevException {
         return this.storeId2ActivePurchases.get(storeId).getProductPrice(randomId);
@@ -517,21 +517,21 @@ public class StockRepository implements IStockRepo {
         return result.toArray(new RandomDTO[0]);
     }
 
-    @Override
-    public BidDTO[] searchActiveBids(ProductSearchCriteria criteria) throws UIException {
-        ItemStoreDTO[] storeItems = search(criteria);
-        List<BidDTO> result = new ArrayList<>();
-        for (ItemStoreDTO item : storeItems) {
-            int productId = item.getProductId();
-            ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
-            List<BidDTO> bids = active.getBidsForProduct(productId);
-            for (BidDTO bid : bids) {
-                bid.productName = item.getProductName();
-                result.add(bid);
-            }
-        }
-        return result.toArray(new BidDTO[0]);
-    }
+    // @Override
+    // public BidDTO[] searchActiveBids(ProductSearchCriteria criteria) throws UIException {
+    //     ItemStoreDTO[] storeItems = search(criteria);
+    //     List<BidDTO> result = new ArrayList<>();
+    //     for (ItemStoreDTO item : storeItems) {
+    //         int productId = item.getProductId();
+    //         ActivePurcheses active = storeId2ActivePurchases.get(item.getStoreId());
+    //         List<BidDTO> bids = active.getBidsForProduct(productId);
+    //         for (BidDTO bid : bids) {
+    //             bid.productName = item.getProductName();
+    //             result.add(bid);
+    //         }
+    //     }
+    //     return result.toArray(new BidDTO[0]);
+    // }
 
     // @Override
     // public AuctionDTO[] searchActiveAuctions(ProductSearchCriteria criteria) throws UIException {

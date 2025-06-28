@@ -222,6 +222,7 @@ public class HomePage extends VerticalLayout {
 
         searchField.setWidth("150px");
         categoryCombo.setWidth("130px");
+        
         typeSelector.setWidth("130px");
         searchBySelector.setWidth("130px");
         minPriceField.setWidth("80px");
@@ -231,7 +232,7 @@ public class HomePage extends VerticalLayout {
         if (isUser) {
             row.add(searchField, categoryCombo, typeSelector, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
         } else {
-            row.add(searchField, categoryCombo, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
+            row.add(searchField, categoryCombo,typeSelector, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
         }
         layout.add(row);
         return layout;

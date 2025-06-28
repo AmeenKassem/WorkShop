@@ -6,6 +6,7 @@ public class ParticipationInRandomDTO {
     public int userId;
     public int storeId;
     public int productId;
+    public String userName;
     //public int numberOfCards;
     public double amountPaid;
     public boolean isWinner;
@@ -14,6 +15,8 @@ public class ParticipationInRandomDTO {
     public boolean mustRefund;
     public int transactionIdForPayment = 0;
 
+    
+    
     public ParticipationInRandomDTO(int productId, int storeId, int userId, int randomId, double amountPaid) {
         this.amountPaid = amountPaid;
         this.userId = userId;
