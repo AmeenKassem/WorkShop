@@ -192,14 +192,23 @@ public class Store {
     }
 
     public boolean removeDiscountByName(String name) {
-        if (discount instanceof CompositeDiscount composite) {
-            return composite.removeDiscountByName(name);
-        } else if (discount != null && discount.getName().equals(name)) {
+        Discount root = getDiscount(); // reconstructs if null
+
+        if (root instanceof CompositeDiscount composite) {
+            boolean removed = composite.removeDiscountByName(name);
+            if (removed && composite.getDiscounts().isEmpty()) {
+                this.discount = null;  // fully remove empty composite
+            }
+            return removed;
+        } else if (root != null && root.getName().equals(name)) {
             this.discount = null;
             return true;
         }
+
         return false;
     }
+
+
 
     public void addPurchasePolicy(PurchasePolicy p) throws Exception {
         if (p == null) {

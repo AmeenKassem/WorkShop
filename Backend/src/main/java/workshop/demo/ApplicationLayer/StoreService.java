@@ -38,6 +38,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.StoreTreeEntity;
 import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import workshop.demo.InfrastructureLayer.DiscountEntities.CompositeDiscountEntity;
 import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountEntity;
 import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountJpaRepository;
 import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountMapper;
@@ -543,40 +544,51 @@ public class StoreService {
         storeJpaRepo.save(store);
         logger.info("Discount '{}' added successfully to store {}", discount.getName(), storeId);
     }
+    @Transactional
     public void removeDiscountFromStore(String token, int storeId, String discountName)
             throws UIException, DevException {
+        logger.info("User attempting to remove discount '{}' from store {}", discountName, storeId);
+
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userService.checkUserRegisterOnline_ThrowException(userId);
         UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+            throw new UIException("Suspended user", ErrorCodes.USER_SUSPENDED);
         }
 
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);
-
         if (!suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_STORE_POLICY)) {
-            throw new UIException("You do not have permission to remove discounts", ErrorCodes.NO_PERMISSION);
+            throw new UIException("No permission", ErrorCodes.NO_PERMISSION);
         }
 
-        // Store store =storeJpaRepo.findById(storeId).get();
-        Optional<DiscountEntity> optionalEntity = discountRepo.findByName(discountName);
-        if (optionalEntity.isPresent()) {
-            discountRepo.delete(optionalEntity.get());
-        } else {
-            // Optionally log or throw an exception
-            throw new RuntimeException("Discount not found: " + discountName);
-        }
-
-
+        // Manually remove from domain
         boolean removed = store.removeDiscountByName(discountName);
         if (!removed) {
-            throw new UIException("Discount not found: " + discountName, ErrorCodes.DISCOUNT_NOT_FOUND);
+            throw new UIException("Discount not found", ErrorCodes.DISCOUNT_NOT_FOUND);
         }
 
-        logger.info("Discount '{}' removed from store {}", discountName, storeId);
+        DiscountEntity oldEntity = store.getDiscountEntity();
+        if (oldEntity != null) {
+            discountRepo.delete(oldEntity);
+        }
+
+        store.setDiscountEntity(null);
+        store.setDiscount(null);
+
+        Discount newTree = store.getDiscount();
+        if (newTree != null) {
+            DiscountEntity updated = DiscountMapper.toEntity(newTree);
+            store.setDiscountEntity(updated);
+        }
+
+        storeJpaRepo.save(store);
+        logger.info("Discount '{}' removed and store updated", discountName);
     }
+
+
+
 
     public void addPurchasePolicy(String token, int storeId, String policyKey/* "NO_ALCOHOL""MIN_QTY" */,
             Integer param/* when MIN_QTY */) throws Exception {
