@@ -101,7 +101,7 @@ public class GuestTests extends AcceptanceTests {
         forceStoreId(store, 0);
         when(mockSusRepo.findById(2)).thenReturn(Optional.empty());
         when(mockStoreRepo.save(any(Store.class))).thenReturn(store);
-        when(mockiosRepo.addNewStoreOwner(123, 2)).thenReturn(true);
+        when(suConnectionRepo.addNewStoreOwner(123, 2)).thenReturn(true);
         when(mockActivePurchases.save(any(ActivePurcheses.class))).thenAnswer(inv -> inv.getArgument(0));
         when(mockStoreStock.save(any(StoreStock.class))).thenAnswer(inv -> inv.getArgument(0));
         when(mockAuthRepo.getUserId(ownerToken)).thenReturn(2);
@@ -677,119 +677,6 @@ public class GuestTests extends AcceptanceTests {
         assertEquals(ErrorCodes.PRODUCT_NOT_FOUND, ex.getNumber());
         assertTrue(ex.getMessage().toLowerCase().contains("product"));
     }
-
-    //    @Test
-//    void testGuestRankProduct_Success() throws Exception {
-//        int storeId = 0;
-//        int productId = 0;
-//        int newRank = 4;
-//
-//        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(guestToken, logger);
-//        when(mockAuthRepo.getUserId(guestToken)).thenReturn(0);
-//
-//        when(mockSusRepo.findById(0)).thenReturn(Optional.empty());
-//
-//        StoreStock stock = Mockito.spy(new StoreStock(storeId));
-//        when(mockStoreStock.findById(storeId)).thenReturn(Optional.of(stock));
-//        when(mockStoreStock.saveAndFlush(any())).thenAnswer(inv -> inv.getArgument(0));
-//
-//        int result = stockService.rankProduct(storeId, guestToken, productId, newRank);
-//
-//        assertEquals(productId, result);
-//        verify(stock).rankProduct(productId, newRank);
-//    }
-//    @Test
-//    void testGuestRankProduct_Failure_Suspended() throws Exception {
-//        int storeId = 0;
-//        int productId = 0;
-//        int newRank = 4;
-//
-//        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(guestToken, logger);
-//        when(mockAuthRepo.getUserId(guestToken)).thenReturn(0);
-//
-//        UserSuspension suspension = new UserSuspension(0, 100);
-//        when(mockSusRepo.findById(0)).thenReturn(Optional.of(suspension));
-//
-//        UIException ex = assertThrows(UIException.class, () ->
-//                stockService.rankProduct(storeId, guestToken, productId, newRank)
-//        );
-//
-//        assertEquals(ErrorCodes.USER_SUSPENDED, ex.getNumber());
-//        assertTrue(ex.getMessage().toLowerCase().contains("suspended"));
-//    }
-//    @Test
-//    void testGuestRankProduct_Failure_StoreStockNotFound() throws Exception {
-//        int storeId = 99;
-//        int productId = 0;
-//        int newRank = 4;
-//
-//        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(guestToken, logger);
-//        when(mockAuthRepo.getUserId(guestToken)).thenReturn(0);
-//        when(mockSusRepo.findById(0)).thenReturn(Optional.empty());
-//
-//        when(mockStoreStock.findById(storeId)).thenReturn(Optional.empty());
-//
-//        DevException ex = assertThrows(DevException.class, () ->
-//                stockService.rankProduct(storeId, guestToken, productId, newRank)
-//        );
-//
-//        assertTrue(ex.getMessage().toLowerCase().contains("stock"));
-//    }
-//    @Test
-//    void testGuestRankStore_Success() throws Exception {
-//        int storeId = 0;
-//        int newRank = 5;
-//
-//        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(guestToken, logger);
-//        when(mockAuthRepo.getUserId(guestToken)).thenReturn(0);
-//        when(mockSusRepo.findById(0)).thenReturn(Optional.empty());
-//
-//        Store spyStore = Mockito.spy(store);
-//        when(mockStoreRepo.findById(storeId)).thenReturn(Optional.of(spyStore));
-//
-//        // Act
-//        storeService.rankStore(guestToken, storeId, newRank);
-//
-//        // Assert
-//        verify(spyStore).rankStore(newRank);
-//    }
-//
-//    @Test
-//    void testGuestRankStore_Failure_Suspended() throws Exception {
-//        int storeId = 0;
-//        int newRank = 4;
-//
-//        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(guestToken, logger);
-//        when(mockAuthRepo.getUserId(guestToken)).thenReturn(0);
-//
-//        UserSuspension suspension = new UserSuspension(0, 100);
-//        when(mockSusRepo.findById(0)).thenReturn(Optional.of(suspension));
-//
-//        UIException ex = assertThrows(UIException.class, () ->
-//                storeService.rankStore(guestToken, storeId, newRank)
-//        );
-//
-//        assertEquals(ErrorCodes.USER_SUSPENDED, ex.getNumber());
-//        assertTrue(ex.getMessage().toLowerCase().contains("suspended"));
-//    }
-//
-//    @Test
-//    void testGuestRankStore_Failure_StoreNotFound() throws Exception {
-//        int storeId = 99;
-//        int newRank = 4;
-//
-//        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(guestToken, logger);
-//        when(mockAuthRepo.getUserId(guestToken)).thenReturn(0);
-//        when(mockSusRepo.findById(0)).thenReturn(Optional.empty());
-//
-//        when(mockStoreRepo.findById(storeId)).thenReturn(Optional.empty());
-//
-//        Exception ex = assertThrows(Exception.class, () ->
-//                storeService.rankStore(guestToken, storeId, newRank)
-//        );
-//
-//        assertTrue(ex.getMessage().toLowerCase().contains("store"));
-//    }
 
     @Test
     void testGuestBuyCart_Success() throws Exception {

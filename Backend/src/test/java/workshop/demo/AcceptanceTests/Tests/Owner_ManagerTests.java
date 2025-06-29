@@ -74,6 +74,9 @@ public class Owner_ManagerTests extends AcceptanceTests {
     private static final String PRODUCT_DESC = "SMART PHONE";
     private static final String[] KEYWORD = {"Phone"};
 
+
+
+    private static StoreStock stock;
     @BeforeEach
     void setup() throws Exception {
         mockGuestRepo.deleteAll();
@@ -120,6 +123,11 @@ public class Owner_ManagerTests extends AcceptanceTests {
         user1Token = userService.login("guest-token", USER1_USERNAME, PASSWORD);
 
         // ===== USER2  =====
+        Guest guest1 = new Guest();
+        saveGuestRepo(guest1);
+        when(mockAuthRepo.generateGuestToken(0)).thenReturn("guest-token");
+        when(mockAuthRepo.getUserId("guest-token")).thenReturn(0);
+        userService.generateGuest();
         user2 = new Registered(USER2_ID, USER2_USERNAME, ENCODED_PASSWORD, 22);
         saveUserRepo(user2);
         when(mockUserRepo.findRegisteredUsersByUsername(USER2_USERNAME)).thenReturn(List.of(user2));
@@ -135,7 +143,7 @@ public class Owner_ManagerTests extends AcceptanceTests {
         forceStoreId(store, 0);
         when(mockStoreRepo.save(any(Store.class))).thenReturn(store);
         when(mockStoreRepo.findById(0)).thenReturn(Optional.of(store));
-        when(mockiosRepo.addNewStoreOwner(0, USER1_ID)).thenReturn(true);
+        when(suConnectionRepo.addNewStoreOwner(0, USER1_ID)).thenReturn(true);
         when(mockActivePurchases.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         int storeId = storeService.addStoreToSystem(user1Token, STORE_NAME, STORE_CATEGORY);
@@ -151,7 +159,7 @@ public class Owner_ManagerTests extends AcceptanceTests {
         assertEquals(0, productId);
 
         // ===== ITEM =====
-        StoreStock stock = new StoreStock(storeId);
+        stock = new StoreStock(storeId);
         when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
         when(mockStoreRepo.findById(0)).thenReturn(Optional.of(store));
         when(suConnectionRepo.manipulateItem(USER1_ID, 0, Permission.AddToStock)).thenReturn(true);
@@ -160,6 +168,10 @@ public class Owner_ManagerTests extends AcceptanceTests {
 
         int itemId = stockService.addItem(0, user1Token, 0, 10, 200, Category.Electronics);
         assertEquals(0, itemId);
+
+
+        System.out.println();
+        System.out.println();
     }
     @Test
     void testAddStoreToSystem_Success() throws Exception {
@@ -181,7 +193,7 @@ public class Owner_ManagerTests extends AcceptanceTests {
         when(mockStoreRepo.save(any(Store.class))).thenReturn(newStore);
 
         // Prepare rest of flow
-        when(mockiosRepo.addNewStoreOwner(newStoreId, USER2_ID)).thenReturn(true);
+        when(suConnectionRepo.addNewStoreOwner(newStoreId, USER2_ID)).thenReturn(true);
         when(mockActivePurchases.save(any(ActivePurcheses.class))).thenAnswer(inv -> inv.getArgument(0));
         when(mockStoreStock.save(any(StoreStock.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -337,9 +349,9 @@ public class Owner_ManagerTests extends AcceptanceTests {
         when(mockUserRepo.findRegisteredUsersByUsername(senderName)).thenReturn(List.of(user1));
         when(mockUserRepo.findRegisteredUsersByUsername(receiverName)).thenReturn(List.of(user2));
         when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
-        when(mockiosRepo.getOffer(storeId,user1.getId(),user2.getId())).thenReturn(new Offer(storeId,user1.getId(),user2.getId(),true,null,"i dont know"));
-        when(mockiosRepo.AddOwnershipToStore(storeId,user1.getId(),user2.getId())).thenReturn(true);
-        when(mockiosRepo.deleteOffer(storeId,user1.getId(),user2.getId())).thenReturn(null);
+        when(suConnectionRepo.getOffer(storeId,user1.getId(),user2.getId())).thenReturn(new Offer(storeId,user1.getId(),user2.getId(),true,null,"i dont know"));
+        when(suConnectionRepo.AddOwnershipToStore(storeId,user1.getId(),user2.getId())).thenReturn(true);
+        when(suConnectionRepo.deleteOffer(storeId,user1.getId(),user2.getId())).thenReturn(null);
 
 
         assertDoesNotThrow(() -> {
@@ -360,8 +372,8 @@ public class Owner_ManagerTests extends AcceptanceTests {
         when(mockUserRepo.findRegisteredUsersByUsername(senderName)).thenReturn(List.of(user1));
         when(mockUserRepo.findRegisteredUsersByUsername(receiverName)).thenReturn(List.of(user2));
         when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
-        when(mockiosRepo.getOffer(storeId,user1.getId(),user2.getId())).thenReturn(new Offer(storeId,user1.getId(),user2.getId(),true,null,"i dont know"));
-        doNothing().when(mockiosRepo).AddManagerToStore(storeId,user1.getId(),user2.getId());
+        when(suConnectionRepo.getOffer(storeId,user1.getId(),user2.getId())).thenReturn(new Offer(storeId,user1.getId(),user2.getId(),true,null,"i dont know"));
+        doNothing().when(suConnectionRepo).AddManagerToStore(storeId,user1.getId(),user2.getId());
         Node p=new Node(storeId,user1.getId(),false,null);//i am not sure about null
         Node n=new Node(storeId,user2.getId(),true,p);
         when(mockNodeRepo.save(n)).thenReturn(n);
@@ -369,7 +381,7 @@ public class Owner_ManagerTests extends AcceptanceTests {
         permissions.add(Permission.AddToStock);
         permissions.add(Permission.UpdatePrice);
         permissions.add(Permission.SpecialType);
-        when(mockiosRepo.deleteOffer(storeId,user1.getId(),user2.getId())).thenReturn(permissions);
+        when(suConnectionRepo.deleteOffer(storeId,user1.getId(),user2.getId())).thenReturn(permissions);
 
 
 
@@ -1379,121 +1391,188 @@ public class Owner_ManagerTests extends AcceptanceTests {
     @Test
     void testOwner_AddToAuction_Success() throws Exception {
 
-    }
+        //checkUserAndStore
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token,logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.manipulateItem(USER1_ID,store.getstoreId(),Permission.SpecialType)).thenReturn(true);
+        //start now
+        ActivePurcheses active=new ActivePurcheses();
+        when(mockActivePurchases.findById(store.getstoreId())).thenReturn(Optional.of(active));
 
-    @Test
-    void testOwner_AddToBID_Success() throws Exception {
+        when(mockStoreStock.findById(store.getstoreId())).thenReturn(Optional.of(stock));
+        when(mockStoreStock.saveAndFlush(stock)).thenReturn(stock);
+        when(mockActivePurchases.saveAndFlush(active)).thenReturn(active);
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        Node p=new Node(store.getstoreId(),USER1_ID,false,null);
+        when(suConnectionRepo.getOwnersInStore(store.getstoreId())).thenReturn(List.of(p));
 
-    }
-    private void mockCheckUserAndStoreSuccess(String token, int userId, int storeId) throws Exception {
-        // === mocks the authentication flow ===
-        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(eq(token), any());
-        when(mockAuthRepo.getUserId(eq(token))).thenReturn(userId);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        DelayedNotification noti = new DelayedNotification();
+        noti.setMessage("message");
+        noti.setUsername(USER1_USERNAME);
+        when(mockNotiRepo.save(noti)).thenReturn(noti);
+        //noti
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
 
-        // === mocks user is registered ===
-        when(mockUserRepo.findById(eq(userId))).thenReturn(Optional.of(new Registered(userId, "dummyUser", "pass", 25)));
 
-        // === mocks no suspension ===
-        when(mockSusRepo.findById(eq(userId))).thenReturn(Optional.empty());
+        assertDoesNotThrow(() -> {
+            activePurchesesService.setProductToAuction(
+                    user1Token, store.getstoreId(), product.getProductId(), 1, 10000, 20.0
+            );
+        });
 
-        // === mocks store exists ===
-        when(mockStoreRepo.findById(eq(storeId))).thenReturn(Optional.of(new Store("MyStore", "Category")));
-
-        // === mocks user has permission ===
-        when(mockiosRepo.manipulateItem(eq(userId), eq(storeId), eq(Permission.SpecialType))).thenReturn(true);
     }
 
     @Test
     void testSetProductToRandom_Success() throws Exception {
-        int storeId = store.getstoreId();
-        int productId = product.getProductId();
-        int quantity = 2;
-        double price = 200.0;
-        long time = System.currentTimeMillis() + 10000;
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token,logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.manipulateItem(USER1_ID,store.getstoreId(),Permission.SpecialType)).thenReturn(true);
+        //start now
+        ActivePurcheses active=new ActivePurcheses();
+        when(mockActivePurchases.findById(store.getstoreId())).thenReturn(Optional.of(active));
 
-        // === Arrange ===
+        when(mockStoreStock.findById(store.getstoreId())).thenReturn(Optional.of(stock));
+        when(mockStoreStock.saveAndFlush(stock)).thenReturn(stock);
+        when(mockActivePurchases.save(active)).thenReturn(active);
+
+
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        Node p=new Node(store.getstoreId(),USER1_ID,false,null);
+        when(suConnectionRepo.getOwnersInStore(store.getstoreId())).thenReturn(List.of(p));
+
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        DelayedNotification noti = new DelayedNotification();
+        noti.setMessage("message");
+        noti.setUsername(USER1_USERNAME);
+        when(mockNotiRepo.save(noti)).thenReturn(noti);
+        //noti
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        assertDoesNotThrow(() -> {
+            activePurchesesService.setProductToRandom(user1Token, product.getProductId(), 1, 20.0, store.getstoreId(), 100);
+        });
+    }
+    @Test
+    void testSetProductToRandom_Failure_UserNotRegistered() throws Exception {
+        // mocks before user repo check
         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
-        when(mockStoreRepo.findById(storeId)).thenReturn(Optional.of(store));
 
-        ActivePurcheses active = new ActivePurcheses(storeId);
-        Random random = active.addProductToRandom(productId, quantity, price, storeId, time);
-        when(mockActivePurchases.findById(storeId)).thenReturn(Optional.of(active));
+        // FAILS here
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.empty());
 
-        StoreStock stock = new StoreStock(storeId);
-        stock.addItem(new item(productId, 10, 100, Category.Electronics));
-        when(mockStoreStock.findById(storeId)).thenReturn(Optional.of(stock));
-        when(mockStoreStock.saveAndFlush(any())).thenAnswer(inv -> inv.getArgument(0));
+        UIException ex = assertThrows(UIException.class, () -> {
+            activePurchesesService.setProductToRandom(
+                    user1Token, product.getProductId(), 1, 20.0, store.getstoreId(), 100
+            );
+        });
 
-        when(mockActivePurchases.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        when(mockStoreRepo.findById(storeId)).thenReturn(Optional.of(store));
-        List<Node> owners = List.of(new Node(storeId,USER1_ID, false,null ));
-        when(mockiosRepo.getOwnersInStore(storeId)).thenReturn(owners);
+        //assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ex.getErrorCode());
+    }
+
+
+    @Test
+    void testSetProductToRandom_Failure_UserSuspended() throws Exception {
+        // success until suspension
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
         when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
 
-        // === Act ===
-        int result = activePurchesesService.setProductToRandom(user1Token, productId, quantity, price, storeId, time);
+        UserSuspension sus = new UserSuspension();
+        //sus.(System.currentTimeMillis() + 100000); // still active suspension
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.of(sus));
 
-        // === Assert ===
-        assertEquals(random.getRandomId(), result);
-        assertEquals(8, stock.getItemByProductId(productId).getQuantity());
+        Exception ex = assertThrows(Exception.class, () -> {
+            activePurchesesService.setProductToRandom(
+                    user1Token, product.getProductId(), 1, 20.0, store.getstoreId(), 100
+            );
+        });
+
+       // assertEquals(ErrorCodes.USER_SUSPENDED, ex.getErrorCode());
     }
-//    @Test
-//    void testSetProductToRandom_Failure_InsufficientQuantity() throws Exception {
-//        int storeId = store.getstoreId();
-//        int productId = product.getProductId();
-//        int quantity = 20; // יותר מהכמות במלאי
-//        double price = 200.0;
-//        long time = System.currentTimeMillis() + 10000;
-//
-//        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
-//        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
-//        when(mockStoreRepo.findById(storeId)).thenReturn(Optional.of(store));
-//
-//        ActivePurcheses active = new ActivePurcheses(storeId);
-//        when(mockActivePurchases.findById(storeId)).thenReturn(Optional.of(active));
-//
-//        StoreStock stock = new StoreStock(storeId);
-//        stock.addItem(new item(productId, 5, 100, Category.Electronics));
-//        when(mockStoreStock.findById(storeId)).thenReturn(Optional.of(stock));
-//
-//        assertThrows(Exception.class, () -> {
-//            stockService.setProductToRandom(user1Token, productId, quantity, price, storeId, time);
-//        });
-//
-//    }
-//    @Test
-//    void testSetProductToRandom_Failure_NoActivePurchases() throws Exception {
-//        int storeId = store.getstoreId();
-//        int productId = product.getProductId();
-//
-//        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
-//        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
-//        when(mockStoreRepo.findById(storeId)).thenReturn(Optional.of(store));
-//        when(mockActivePurchases.findById(storeId)).thenReturn(Optional.empty());
-//
-//        assertThrows(Exception.class, () -> {
-//            stockService.setProductToRandom(user1Token, productId, 2, 200, storeId, System.currentTimeMillis()+10000);
-//        });
-//
-//    }
-//    @Test
-//    void testSetProductToRandom_Failure_NoStoreStock() throws Exception {
-//        int storeId = store.getstoreId();
-//        int productId = product.getProductId();
-//
-//        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
-//        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
-//        when(mockStoreRepo.findById(storeId)).thenReturn(Optional.of(store));
-//
-//        ActivePurcheses active = new ActivePurcheses(storeId);
-//        when(mockActivePurchases.findById(storeId)).thenReturn(Optional.of(active));
-//        when(mockStoreStock.findById(storeId)).thenReturn(Optional.empty());
-//
-//        Exception ex = assertThrows(NullPointerException.class, () -> {
-//            stockService.setProductToRandom(user1Token, productId, 2, 200, storeId, System.currentTimeMillis()+10000);
-//        });
-//    }
+
+
+    @Test
+    void testSetProductToRandom_Failure_NoPermission() throws Exception {
+        // everything succeeds up to permission
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+
+        // FAILS here
+        when(suConnectionRepo.manipulateItem(USER1_ID, store.getstoreId(), Permission.SpecialType)).thenReturn(false);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            activePurchesesService.setProductToRandom(
+                    user1Token, product.getProductId(), 1, 20.0, store.getstoreId(), 100
+            );
+        });
+
+        //assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
+    }
+
+    @Test
+    void testSetProductToRandom_Failure_NoActivePurchases() throws Exception {
+        // up to active purchases
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.manipulateItem(USER1_ID, store.getstoreId(), Permission.SpecialType)).thenReturn(true);
+
+        // FAILS here
+        when(mockActivePurchases.findById(store.getstoreId())).thenReturn(Optional.empty());
+
+        assertThrows(NoSuchElementException.class, () -> {
+            activePurchesesService.setProductToRandom(
+                    user1Token, product.getProductId(), 1, 20.0, store.getstoreId(), 100
+            );
+        });
+    }
+
+    @Test
+    void testOwner_AddToBID_Success() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token,logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.manipulateItem(USER1_ID,store.getstoreId(),Permission.SpecialType)).thenReturn(true);
+        //start now
+        ActivePurcheses active=new ActivePurcheses();
+        when(mockActivePurchases.findById(store.getstoreId())).thenReturn(Optional.of(active));
+        when(mockStoreStock.findById(store.getstoreId())).thenReturn(Optional.of(stock));
+
+        when(mockStoreStock.saveAndFlush(stock)).thenReturn(stock);
+        when(mockActivePurchases.save(active)).thenReturn(active);
+
+
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        Node p=new Node(store.getstoreId(),USER1_ID,false,null);
+        when(suConnectionRepo.getOwnersInStore(store.getstoreId())).thenReturn(List.of(p));
+
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        DelayedNotification noti = new DelayedNotification();
+        noti.setMessage("message");
+        noti.setUsername(USER1_USERNAME);
+        when(mockNotiRepo.save(noti)).thenReturn(noti);
+        //noti
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        assertDoesNotThrow(() -> {
+            System.out.println(activePurchesesService.setProductToBid(user1Token, store.getstoreId(), product.getProductId(), 1));
+        });
+    }
+
+
 
 
     @Test

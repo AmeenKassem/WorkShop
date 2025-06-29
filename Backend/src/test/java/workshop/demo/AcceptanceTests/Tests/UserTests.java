@@ -44,8 +44,7 @@ import workshop.demo.InfrastructureLayer.Encoder;
 @SpringBootTest
 @ActiveProfiles("test")
 public class UserTests extends AcceptanceTests {
-
-    private static final Logger logger = LoggerFactory.getLogger(UserTests.class);
+    private static final Logger logger = LoggerFactory.getLogger(Owner_ManagerTests.class);
 
     private String user1Token;
     private String user2Token;
@@ -73,10 +72,6 @@ public class UserTests extends AcceptanceTests {
     private static final String PRODUCT_DESC = "SMART PHONE";
     private static final String[] KEYWORD = {"Phone"};
 
-    public UserTests() {
-
-    }
-
     @BeforeEach
     void setup() throws Exception {
         mockGuestRepo.deleteAll();
@@ -90,7 +85,7 @@ public class UserTests extends AcceptanceTests {
         when(encoder.encodePassword(PASSWORD)).thenReturn(ENCODED_PASSWORD);
         when(encoder.matches(PASSWORD, ENCODED_PASSWORD)).thenReturn(true);
 
-        // ===== USER1 נרשם דרך guest =====
+        // ===== USER1 guest =====
         Guest guest = new Guest();
         saveGuestRepo(guest);
         when(mockAuthRepo.generateGuestToken(0)).thenReturn("guest-token");
@@ -99,10 +94,17 @@ public class UserTests extends AcceptanceTests {
 
         when(mockUserRepo.existsByUsername(USER1_USERNAME)).thenReturn(0);
         when(mockUserRepo.save(any(Registered.class))).thenAnswer(inv -> {
-            Registered registered = inv.getArgument(0);
-            forceField(registered, "id", USER1_ID);
-            return registered;
+            Registered reg = inv.getArgument(0);
+            if (USER1_USERNAME.equals(reg.getUsername())) {
+                forceField(reg, "id", USER1_ID);
+            } else if (USER2_USERNAME.equals(reg.getUsername())) {
+                forceField(reg, "id", USER2_ID);
+            } else {
+                forceField(reg, "id", 999); // fallback
+            }
+            return reg;
         });
+
         userService.register("guest-token", USER1_USERNAME, PASSWORD, 20);
 
         user1 = new Registered(USER1_ID, USER1_USERNAME, ENCODED_PASSWORD, 20);
@@ -115,7 +117,12 @@ public class UserTests extends AcceptanceTests {
         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException("user1Token", logger);
         user1Token = userService.login("guest-token", USER1_USERNAME, PASSWORD);
 
-        // ===== USER2 נוצר ישירות =====
+        // ===== USER2  =====
+        Guest guest1 = new Guest();
+        saveGuestRepo(guest1);
+        when(mockAuthRepo.generateGuestToken(0)).thenReturn("guest-token");
+        when(mockAuthRepo.getUserId("guest-token")).thenReturn(0);
+        userService.generateGuest();
         user2 = new Registered(USER2_ID, USER2_USERNAME, ENCODED_PASSWORD, 22);
         saveUserRepo(user2);
         when(mockUserRepo.findRegisteredUsersByUsername(USER2_USERNAME)).thenReturn(List.of(user2));
@@ -131,7 +138,7 @@ public class UserTests extends AcceptanceTests {
         forceStoreId(store, 0);
         when(mockStoreRepo.save(any(Store.class))).thenReturn(store);
         when(mockStoreRepo.findById(0)).thenReturn(Optional.of(store));
-        when(mockiosRepo.addNewStoreOwner(0, USER1_ID)).thenReturn(true);
+        when(suConnectionRepo.addNewStoreOwner(0, USER1_ID)).thenReturn(true);
         when(mockActivePurchases.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         int storeId = storeService.addStoreToSystem(user1Token, STORE_NAME, STORE_CATEGORY);
@@ -156,8 +163,10 @@ public class UserTests extends AcceptanceTests {
 
         int itemId = stockService.addItem(0, user1Token, 0, 10, 200, Category.Electronics);
         assertEquals(0, itemId);
-    }
 
+        System.out.println();
+        System.out.println();
+    }
 
 
     @Test
@@ -848,7 +857,7 @@ public class UserTests extends AcceptanceTests {
         Exception ex = assertThrows(Exception.class, () ->
                 storeService.rankStore(user1Token, storeId, newRank)
         );
-
+        logger.info("STORE NOT FOUND");
         assertTrue(ex.getMessage().toLowerCase().contains("store"));
     }
 

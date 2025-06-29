@@ -72,7 +72,7 @@ public class AcceptanceTests {
     @MockBean
     protected UserSuspensionJpaRepository mockSusRepo;
 
-    ISUConnectionRepo mockiosRepo = Mockito.mock(ISUConnectionRepo.class);
+    //ISUConnectionRepo mockiosRepo = Mockito.mock(ISUConnectionRepo.class);
 
     @MockBean
     protected SUConnectionRepository suConnectionRepo;
@@ -151,23 +151,7 @@ public class AcceptanceTests {
         when(mockGuestRepo.save(any(Guest.class))).thenThrow(new RuntimeException("DB error saving guest"));
     }
 
-    protected void mockSaveRegisteredFailure() {
-        when(mockUserRepo.save(any(Registered.class))).thenThrow(new RuntimeException("DB error saving registered"));
-    }
 
-    protected void mockExistsByUsernameSuccess() {
-        when(mockUserRepo.existsByUsername(any())).thenReturn(1);
-    }
-
-    protected void mockExistsByUsernameFailure() {
-        when(mockUserRepo.existsByUsername(any())).thenReturn(0);
-    }
-
-    protected void forceId(Object obj, int id) throws Exception {
-        Field idField = getFieldRecursively(obj.getClass(), "id");
-        idField.setAccessible(true);
-        idField.set(obj, id);
-    }
 
     private Field getFieldRecursively(Class<?> clazz, String fieldName) throws NoSuchFieldException {
         while (clazz != null) {
