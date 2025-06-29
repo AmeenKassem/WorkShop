@@ -14,31 +14,52 @@ public class AdminInitView extends VerticalLayout {
 
     private final AdminInitPresenter presenter;
 
-    public AdminInitView() {
-        this.presenter = new AdminInitPresenter(this);
-        add(new H1("Admin Init Page"));
+   public AdminInitView() {
+    this.presenter = new AdminInitPresenter(this);
+    add(new H1("Admin Init Page"));
 
-        TextField usernameField = new TextField("Admin Username");
-        PasswordField passwordField = new PasswordField("Admin Password");
-        TextField keyField = new TextField("Admin Key");
+    TextField usernameField = new TextField("Admin Username");
+    PasswordField passwordField = new PasswordField("Admin Password");
+    TextField keyField = new TextField("Admin Key");
 
-        Button initButton = new Button("Initialize System");
-        initButton.addClickListener(event -> {
-            String username = usernameField.getValue();
-            String password = passwordField.getValue();
-            String key = keyField.getValue();
+    Button initButton = new Button("Initialize System");
+    initButton.addClickListener(event -> {
+        String username = usernameField.getValue();
+        String password = passwordField.getValue();
+        String key = keyField.getValue();
+        presenter.initializeSystem(username, password, key);
+    });
 
-            presenter.initializeSystem(username, password, key);
-        });
-        String fieldWidth = "400px";
+    Button deleteButton = new Button("Delete data !!!");
+    deleteButton.addClickListener(event -> {
+        String username = usernameField.getValue();
+        String password = passwordField.getValue();
+        String key = keyField.getValue();
+        presenter.deleteData(username, password, key);
+    });
 
-        usernameField.setWidth(fieldWidth);
-        passwordField.setWidth(fieldWidth);
-        keyField.setWidth(fieldWidth);
-        initButton.setWidth(fieldWidth);
-        setSizeFull();
-        setAlignItems(Alignment.CENTER);
-        setJustifyContentMode(JustifyContentMode.CENTER);
-        add(usernameField, passwordField, keyField, initButton);
-    }
+    Button initFromDIFButton = new Button("Initialize from DIF");
+    initFromDIFButton.addClickListener(event -> {
+        String username = usernameField.getValue();
+        String password = passwordField.getValue();
+        String key = keyField.getValue();
+        presenter.initDataFromDIF(username, password, key);
+    });
+
+    String fieldWidth = "400px";
+
+    usernameField.setWidth(fieldWidth);
+    passwordField.setWidth(fieldWidth);
+    keyField.setWidth(fieldWidth);
+    initButton.setWidth(fieldWidth);
+    deleteButton.setWidth(fieldWidth);
+    initFromDIFButton.setWidth(fieldWidth);
+
+    setSizeFull();
+    setAlignItems(Alignment.CENTER);
+    setJustifyContentMode(JustifyContentMode.CENTER);
+
+    add(usernameField, passwordField, keyField, initButton, deleteButton, initFromDIFButton);
+}
+
 }

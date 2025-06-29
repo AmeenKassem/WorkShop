@@ -378,7 +378,7 @@ public class UserController {
         }
     }
 
-    // // Additional admin methods can be added here...
+    // Additional admin methods can be added here...
     // @GetMapping("/purchaseHistory")
     // public ResponseEntity<List<PurchaseHistoryDTO>>
     // getSystemPurchaseHistory(@RequestParam String token) {
