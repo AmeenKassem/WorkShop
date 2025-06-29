@@ -388,7 +388,7 @@ public class ActivePurchasesService {
                 .toArray(RandomDTO[]::new);
 
     }
-
+@Transactional
     public RandomDTO[] getAllRandoms(String token, int storeId) throws Exception {
         checkUserAndStore(token, storeId, true);
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
@@ -569,7 +569,7 @@ public class ActivePurchasesService {
                 .map(BID::getDTO)
                 .toArray(BidDTO[]::new);
     }
-
+@Transactional
     public BidDTO[] getAllBids(String token, int storeId) throws Exception {
         checkUserAndStore(token, storeId, true);
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
