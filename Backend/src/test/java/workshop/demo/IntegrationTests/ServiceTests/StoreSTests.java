@@ -346,7 +346,6 @@ public class StoreSTests {
         assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ex.getNumber());
     }
 
-    // todo:: send approval to user
     @Test
     void testOwner_AddStoreOwner_Rejected() throws Exception {
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
