@@ -155,7 +155,7 @@ public class Store {
             this.discount = d;
         } else {
             // wrap old and new discount into MaxDiscount by default
-            MaxDiscount combo = new MaxDiscount("MAX("+this.discount.getName()+d.getName()+")");
+            MaxDiscount combo = new MaxDiscount("MAX("+this.discount.getName()+"+"+d.getName()+")");
             combo.addDiscount(discount);
             combo.addDiscount(d);
             this.discount = combo;

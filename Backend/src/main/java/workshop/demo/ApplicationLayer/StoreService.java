@@ -576,6 +576,7 @@ public class StoreService {
         List<Discount> subDiscounts = new ArrayList<>();
         // Find createDiscountDTO for each subDiscount and add it to the subDiscounts
         // list
+        store.getDiscount();
         for (String target : subDiscountsNames) {
             Discount d = store.findDiscountByName(target);
             if (d == null) {
