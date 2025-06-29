@@ -101,17 +101,15 @@ public class UserService {
         return userToAdd.getId();
     }
 
-    public void registerAdminDirectly(String username, String password, int age) throws UIException {
-        if (regJpaRepo.findByUsername(username).isPresent()) {
-            throw new UIException("Admin user already exists", 1002);
-        }
-
-        String encryptedPassword = encoder.encodePassword(password);
-        Registered admin = new Registered(username, encryptedPassword, age);
-        admin.setAdmin();
-        regJpaRepo.save(admin);
-    }
-
+    // public void registerAdminDirectly(String username, String password, int age) throws UIException {
+    //     if (regJpaRepo.findByUsername(username).isPresent()) {
+    //         throw new UIException("Admin user already exists", 1002);
+    //     }
+    //     String encryptedPassword = encoder.encodePassword(password);
+    //     Registered admin = new Registered(username, encryptedPassword, age);
+    //     admin.setAdmin();
+    //     regJpaRepo.save(admin);
+    // }
     public boolean isAdmin(String username, String password) {
         Optional<Registered> reg = regJpaRepo.findByUsername(username);
         if (!reg.isPresent()) {
@@ -271,6 +269,7 @@ public class UserService {
         return true;
     }
 
+    @Transactional
     public SpecialCartItemDTO[] getSpecialCart(String token) throws UIException, Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
@@ -289,19 +288,22 @@ public class UserService {
             itemToSend.storeName = store.getStoreName();
             // System.out.println("product id is " + item.getProductId());
             Product product = stockRepo.findById(item.getProductId()).orElse(null);
-            // if (product == null) {
-            // System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadddddddddddddddddddddddddddddddddddddddiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiinnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
-            // }
             if (item.type == SpecialType.Random) {
                 ParticipationInRandomDTO card = activePurcheses.getRandomCard(item.storeId, item.specialId,
                         item.user.getId());
                 Random random = activePurcheses.getRandom(item.specialId);
                 itemToSend.setValues(product.getName(), card.isWinner, card.ended);
-                itemToSend.dateEnd = random.getDateOfEnd(); //TODO , use the same function you have used on RandomDTO 
+                itemToSend.dateEnd = random.getDateOfEnd(); // TODO , use the same function you have used on RandomDTO
                 itemToSend.quantity = random.getQuantity();
+                itemToSend.isEnded = card.ended;
+                itemToSend.isWinner = card.isWinner;
+                itemToSend.myBid = card.amountPaid;
             } else if (item.type == SpecialType.BID) {
                 SingleBid bid = activePurcheses.getBid(item.storeId, item.specialId, item.user.getId(), item.type);
                 itemToSend.setValues(product.getName(), bid.isWinner() || bid.isAccepted(), bid.isEnded());
+                itemToSend.quantity = activePurcheses.getBidById(item.specialId).getQuantity();
+                itemToSend.status = bid.getStatus();
+                itemToSend.myBid = bid.getBidPrice();
             } else if (item.type == SpecialType.Auction) {
                 Auction auction = activePurcheses.getAuctionById(item.specialId);
                 itemToSend.setValues(product.getName(), auction.bidIsWinner(item.bidId), auction.isEnded());
@@ -309,6 +311,7 @@ public class UserService {
                 itemToSend.maxBid = auction.getMaxBid();
                 itemToSend.onTop = auction.bidIsTop(item.bidId);
                 itemToSend.dateEnd = auction.getDateOfEnd();
+                itemToSend.quantity = auction.getQuantity();
             }
             result.add(itemToSend);
         }
@@ -374,6 +377,24 @@ public class UserService {
         Optional<Registered> reg = regJpaRepo.findById(adminId);
         if (!reg.isPresent()) {
             throw new UIException("user is not admin!!", ErrorCodes.NO_PERMISSION);
+        }
+    }
+
+    public void registerAdmin(String userName, String password, String key) throws Exception {
+        if (adminInitilizer.matchPassword(key)) {
+            int id = registerUser(userName, password, 30);
+            setUserAsAdmin(id, key);
+        } else {
+            throw new UIException("admin key not correct!", ErrorCodes.NOT_ADMIN);
+        }
+    }
+
+    public void checkAdmin(String adminKey, String username, String password) throws UIException {
+        if (adminInitilizer.matchPassword(adminKey)) {
+            int id = login(username, password);
+            setUserAsAdmin(id, adminKey);
+        } else {
+            throw new UIException("admin key not correct!", ErrorCodes.NOT_ADMIN);
         }
     }
 

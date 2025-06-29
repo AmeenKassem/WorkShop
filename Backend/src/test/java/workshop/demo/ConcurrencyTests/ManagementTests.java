@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import workshop.demo.ApplicationLayer.DatabaseCleaner;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 
@@ -26,6 +27,8 @@ public class ManagementTests {
 
     @Autowired
     private SuperDataStructure data;
+    @Autowired
+    DatabaseCleaner cleaner;
 
     //StoreRepository repository;
     int storeId = 1;
@@ -36,7 +39,7 @@ public class ManagementTests {
 
     @BeforeEach
     void setUp() {
-        data = new SuperDataStructure();
+        cleaner.wipeDatabase();
         data.addNewStore(storeId, bossId);
     }
 
@@ -77,7 +80,7 @@ public class ManagementTests {
         results.add(executor.submit(fromOwner2));
 
         executor.shutdown();
-        executor.awaitTermination(3, TimeUnit.SECONDS);
+        //executor.awaitTermination(3, TimeUnit.SECONDS);
         int successCount = 0;
         for (Future<Boolean> result : results) {
             if (result.get()) {

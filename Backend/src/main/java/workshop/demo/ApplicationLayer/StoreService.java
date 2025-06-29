@@ -2,6 +2,7 @@ package workshop.demo.ApplicationLayer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.OfferKey;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.StoreTreeEntity;
 import workshop.demo.DomainLayer.StoreUserConnection.Tree;
+import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 import workshop.demo.InfrastructureLayer.DiscountEntities.CompositeDiscountEntity;
 import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountEntity;
@@ -88,6 +90,35 @@ public class StoreService {
         System.out.println("innnn load");
         for (StoreTreeEntity entity : storeTreeJPARepo.findAllWithNodes()) {
             try {
+                // DEBUG each node before building the Tree-------------------------------------
+                for (Node node : entity.getAllNodes()) {
+                    String authStatus = node.getMyAuth() != null ? "AUTH_ID=" + node.getMyAuth().getId() : "AUTH=NULL";
+                    logger.info("[DEBUG] Loading Node: my_id={} store_id={} isManager={} {}",
+                            node.getMyId(), node.getStoreId(), node.getIsManager(), authStatus);
+
+                    if (node.getIsManager() && node.getMyAuth() == null) {
+                        logger.error("[ERROR] Manager node id={} in store {} has NULL Authorization! Data issue detected.",
+                                node.getMyId(), entity.getStoreId());
+                    }
+                }
+                //----------------------------------------------------------------
+                // Force load Authorization permissions so permissions map is initialized
+                for (Node node : entity.getAllNodes()) {
+                    if (node.getIsManager() && node.getMyAuth() != null) {
+                        if (node.getIsManager() && node.getMyAuth() != null) {
+                            logger.info("[DEBUG] Initializing permissions for manager my_id={} in store {}",
+                                    node.getMyId(), entity.getStoreId());
+
+                            Map<Permission, Boolean> permissions = node.getMyAuth().getMyAutho();
+                            for (Map.Entry<Permission, Boolean> entry : permissions.entrySet()) {
+                                logger.info("  → Permission {} => {}", entry.getKey(), entry.getValue());
+                            }
+
+                            // Force loading if not already done
+                            permissions.size();
+                        }
+                    }
+                }
                 Tree tree = new Tree(entity);
                 logger.debug("Loading storeId=" + entity.getStoreId() + ", nodes=" + entity.getAllNodes().size());
 
@@ -194,7 +225,13 @@ public class StoreService {
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
-        int newOwnerId = userRepo.findRegisteredUsersByUsername(newOwnerName).get(0).getId();
+        List<Registered> usersFound = userRepo.findRegisteredUsersByUsername(newOwnerName);
+        if (usersFound.isEmpty()) {
+            throw new UIException("User '" + newOwnerName + "' is not registered", ErrorCodes.USER_NOT_FOUND);
+        }
+        int newOwnerId = usersFound.get(0).getId();
+
+        //int newOwnerId = userRepo.findRegisteredUsersByUsername(newOwnerName).get(0).getId();
         userService.checkUserRegisterOnline_ThrowException(newOwnerId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);
@@ -280,7 +317,13 @@ public class StoreService {
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
-        int managerId = userRepo.findRegisteredUsersByUsername(managerName).get(0).getId();
+        //int managerId = userRepo.findRegisteredUsersByUsername(managerName).get(0).getId();
+        List<Registered> usersFound = userRepo.findRegisteredUsersByUsername(managerName);
+        if (usersFound.isEmpty()) {
+            throw new UIException("User '" + managerName + "' is not registered", ErrorCodes.USER_NOT_FOUND);
+        }
+        int managerId = usersFound.get(0).getId();
+
         userService.checkUserRegisterOnline_ThrowException(managerId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);
@@ -435,14 +478,18 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         List<Node> nodes = suConnectionRepo.getAllWorkers(storeId); // return this as nodes
+        logger.info("ine view roles -> got the nodes! the size is {}" + nodes.size());
+
         String storeName = storeJpaRepo.findById(storeId)
                 .orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND))
                 .getStoreName();
         List<WorkerDTO> result = new ArrayList<>();
         for (Node node : nodes) {
+            logger.info("ine view roles -> got the nodes -> on nodes!");
             String username = userRepo.findById(node.getMyId()).get().getUsername();
             boolean isManager = node.getIsManager();
             Permission[] permissions = suConnectionRepo.getPermissions(node);
+            logger.info("ine view roles -> got the nodes -> no nodes! -> permisstions {}" + permissions.length);
             boolean setByMe = node.getParentId() == userId;
             result.add(new WorkerDTO(node.getMyId(), username, isManager, !isManager, storeName, permissions, setByMe));
         }
@@ -529,7 +576,6 @@ public class StoreService {
         List<Discount> subDiscounts = new ArrayList<>();
         // Find createDiscountDTO for each subDiscount and add it to the subDiscounts
         // list
-        store.getDiscount();
         for (String target : subDiscountsNames) {
             Discount d = store.findDiscountByName(target);
             if (d == null) {
@@ -628,9 +674,6 @@ public class StoreService {
         logger.info("Discount '{}' removed and store updated", discountName);
     }
 
-
-
-
     public void addPurchasePolicy(String token, int storeId, String policyKey/* "NO_ALCOHOL""MIN_QTY" */,
             Integer param/* when MIN_QTY */) throws Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
@@ -704,12 +747,14 @@ public class StoreService {
             comp.getDiscounts().forEach(d -> collectNames(d, acc));
         }
     }
+
     public List<CreateDiscountDTO> getFlattenedDiscounts(int storeId, String token) throws UIException {
         Store store = storeJpaRepo.findById(storeId).get();
         Discount root = store.getDiscount();
 
-        if (root == null)
+        if (root == null) {
             return List.of();
+        }
 
         // If it's composite, extract children
         CreateDiscountDTO rootDTO = root.toDTO();

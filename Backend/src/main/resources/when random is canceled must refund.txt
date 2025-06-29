@@ -1,0 +1,19 @@
+admin :
+	init <username> <password> <adminkey>;
+
+user :
+	reg <username> <password> <age>;
+	login <username> <password>;
+
+	cart :
+		+ <username> <productName> <storeName> <quantity>
+		- <username> <productName> <storeName> <quantity>
+
+	auction <username> <storeName> <productName> <bid>
+
+store :
+	create <username> <storeName> <storeCategory>;
+
+	item <ownerName> <storeName> <productName> <productCategory> <desc> <quantity> <price> <keyword1> <keyword2> ... ;
+
+	auction <username> <storeName> <productName> <auctionTime> <quantity> <startPrice>;

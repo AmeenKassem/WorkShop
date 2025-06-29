@@ -42,7 +42,7 @@ public class ManageStorePresenter {
 
     public void fetchStore(String token, int storeId) {
         String url = String.format(
-                Base.url+"/api/store/getstoreDTO?token=%s&storeId=%d",
+                Base.url + "/api/store/getstoreDTO?token=%s&storeId=%d",
                 token,
                 storeId
         );
@@ -94,7 +94,7 @@ public class ManageStorePresenter {
             NotificationView.showError("FAILED: store not loaded!");
         }
         String url = String.format(
-                Base.url+"/api/Review/getStoreReviews?storeId=%d",
+                Base.url + "/api/Review/getStoreReviews?storeId=%d",
                 storeId
         );
 
@@ -145,82 +145,82 @@ public class ManageStorePresenter {
 
     }
 
-   public void fetchOrdersByStore(int storeId) {
-    String url = String.format(Base.url + "/api/history/getOrdersByStore?storeId=%d", storeId);
+    public void fetchOrdersByStore(int storeId) {
+        String url = String.format(Base.url + "/api/history/getOrdersByStore?storeId=%d", storeId);
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-    HttpEntity<?> entity = new HttpEntity<>(headers);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        HttpEntity<?> entity = new HttpEntity<>(headers);
 
-    try {
-        ResponseEntity<ApiResponse<List<OrderDTO>>> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                new ParameterizedTypeReference<ApiResponse<List<OrderDTO>>>() {
-                });
+        try {
+            ResponseEntity<ApiResponse<List<OrderDTO>>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<ApiResponse<List<OrderDTO>>>() {
+            });
 
-        ApiResponse<List<OrderDTO>> body = response.getBody();
+            ApiResponse<List<OrderDTO>> body = response.getBody();
 
-        if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
-            List<OrderDTO> orders = body.getData();
+            if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
+                List<OrderDTO> orders = body.getData();
 
-            if (orders == null || orders.isEmpty()) {
-                NotificationView.showError("EMPTY HISTORY: You got no orders yet!");
-                return;
-            }
-
-            List<String> formattedOrders = new ArrayList<>();
-
-            for (OrderDTO order : orders) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("User ID: ").append(order.getUserId()).append("\n");
-                sb.append("Date: ").append(order.getDate()).append("\n");
-                sb.append("Final Price: ").append(order.getFinalPrice()).append("\n");
-                sb.append("Products:\n");
-
-                for (ReceiptProduct p : order.getProductsList()) {
-                    sb.append("• ")
-                      .append(p.getProductName()).append(" (")
-                      .append(p.getCategory()).append(", Qty: ")
-                      .append(p.getQuantity()).append(", Price: ")
-                      .append(p.getPrice()).append(")\n");
+                if (orders == null || orders.isEmpty()) {
+                    NotificationView.showError("EMPTY HISTORY: You got no orders yet!");
+                    return;
                 }
 
-                formattedOrders.add(sb.toString().trim());
+                List<String> formattedOrders = new ArrayList<>();
+
+                for (OrderDTO order : orders) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("User Name: ").append(order.userName).append("\n");
+                    sb.append("Date: ").append(order.getDate()).append("\n");
+                    sb.append("Final Price: ").append(order.getFinalPrice()).append("\n");
+                    sb.append("Products:\n");
+
+                    for (ReceiptProduct p : order.getProductsList()) {
+                        sb.append("• ")
+                                .append(p.getProductName()).append(" (")
+                                .append(p.getCategory()).append(", Qty: ")
+                                .append(p.getQuantity()).append(", Price: ")
+                                .append(p.getPrice()).append(")\n");
+                    }
+
+                    formattedOrders.add(sb.toString().trim());
+                }
+
+                view.showStoreOrdersDialog(formattedOrders);
+
+            } else if (body != null && body.getErrNumber() == ErrorCodes.STORE_NOT_FOUND) {
+                NotificationView.showError("EMPTY HISTORY: You got no orders yet!");
+            } else if (body != null && body.getErrNumber() != -1) {
+                NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
             }
 
-            view.showStoreOrdersDialog(formattedOrders);
-
-        } else if (body != null && body.getErrNumber() == ErrorCodes.STORE_NOT_FOUND) {
-            NotificationView.showError("EMPTY HISTORY: You got no orders yet!");
-        } else if (body != null && body.getErrNumber() != -1) {
-            NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
-        }
-
-    } catch (HttpClientErrorException e) {
-        try {
-            String responseBody = e.getResponseBodyAsString();
-            ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
-            if (errorBody.getErrNumber() != -1) {
-                NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
-            } else {
-                NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
+        } catch (HttpClientErrorException e) {
+            try {
+                String responseBody = e.getResponseBodyAsString();
+                ApiResponse errorBody = new ObjectMapper().readValue(responseBody, ApiResponse.class);
+                if (errorBody.getErrNumber() != -1) {
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(errorBody.getErrNumber()));
+                } else {
+                    NotificationView.showError("FAILED: " + errorBody.getErrorMsg());
+                }
+            } catch (Exception parsingEx) {
+                NotificationView.showError("HTTP error: " + e.getMessage());
             }
-        } catch (Exception parsingEx) {
-            NotificationView.showError("HTTP error: " + e.getMessage());
-        }
 
-    } catch (Exception e) {
-        NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+        } catch (Exception e) {
+            NotificationView.showError("UNEXPECTED ERROR: " + e.getMessage());
+        }
     }
-}
 
     public void deactivateStore(int storeId) {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         String url = String.format(
-                Base.url+"/api/store/deactivate?storeId=%d&token=%s",
+                Base.url + "/api/store/deactivate?storeId=%d&token=%s",
                 storeId,
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
         );
@@ -271,7 +271,7 @@ public class ManageStorePresenter {
 
         try {
             String url = String.format(
-                    Base.url+"/api/store/viewRolesAndPermissions?storeId=%d&token=%s",
+                    Base.url + "/api/store/viewRolesAndPermissions?storeId=%d&token=%s",
                     storeId,
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
@@ -315,12 +315,13 @@ public class ManageStorePresenter {
         }
         return null;
     }
+
     // ── purchase-policy helpers ─────────────────────────────────────────
     /*───────────────────────────────────────────────────────────────
      *  Add a purchase-policy to the store
      *──────────────────────────────────────────────────────────────*/
     public void addPurchasePolicy(int storeId, String token,
-                                  String policyKey, Integer param) {
+            String policyKey, Integer param) {
 
         try {
             UriComponentsBuilder b = UriComponentsBuilder
@@ -345,7 +346,6 @@ public class ManageStorePresenter {
             }
 
             /* success → let the caller decide whether to show a toast */
-
         } catch (Exception ex) {
             ExceptionHandlers.handleException(ex);        // centralised UX/logging
         }
@@ -355,7 +355,7 @@ public class ManageStorePresenter {
      *  Remove a purchase-policy from the store
      *──────────────────────────────────────────────────────────────*/
     public void removePurchasePolicy(int storeId, String token,
-                                     String policyKey, Integer param) {
+            String policyKey, Integer param) {
 
         try {
             UriComponentsBuilder b = UriComponentsBuilder
@@ -383,6 +383,5 @@ public class ManageStorePresenter {
             ExceptionHandlers.handleException(ex);
         }
     }
-
 
 }

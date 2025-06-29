@@ -69,3 +69,39 @@
     background: linear-gradient(90deg, #ec4899, #db2777);
     transform: scale(1.03);
 }
+
+.receipt-dialog::part(content) {
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    max-width: 700px;
+}
+
+.cart-section {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 6px 16px rgba(244, 114, 182, 0.2);
+    border: 1px solid #f9a8d4;
+    transition: transform 0.3s;
+}
+
+.receipt-card {
+    background-color: #fff1f2;
+    border: 1px solid #fbcfe8;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(244, 114, 182, 0.1);
+    margin-bottom: 1rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.receipt-card:hover {
+    transform: scale(1.01);
+    background-color: #ffe4e6;
+}
+
+.cart-section {
+    padding: 2rem;
+    max-width: 100%; 
+}

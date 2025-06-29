@@ -276,4 +276,8 @@ public class Auction {
     public int getWinnenId() {
         return winnerId;
     }
+
+    public int getQuantity() {
+        return quantity;
+    }
 }

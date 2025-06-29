@@ -102,14 +102,14 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         logo.addClassName("market-title");
         logo.getStyle()
                 .set("font-size", "2rem")
-                .set("border-bottom", "2px solid #ce5290") // קו עדין מתחת לשם
+                .set("border-bottom", "2px solid #ce5290")
                 .set("padding-bottom", "0.5rem")
-                .set("margin-bottom", "1rem"); // רווח בין שם החנות לכפתורים
+                .set("margin-bottom", "1rem");
 
         // Vertical layout for the full header: logo on top, buttons below
         HorizontalLayout headerLayout = new HorizontalLayout();
         headerLayout.setWidthFull();
-        headerLayout.setAlignItems(Alignment.CENTER); // שומר על יישור למרכז
+        headerLayout.setAlignItems(Alignment.CENTER); 
         headerLayout.setSpacing(false);
         headerLayout.setPadding(true);
         headerLayout.addClassName("app-header");
@@ -121,7 +121,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         buttonRow = new HorizontalLayout();
         buttonRow.setSpacing(false);
         buttonRow.setPadding(false);
-        buttonRow.getStyle().set("gap", "0.5rem"); // רווח קטן בין הכפתורים
+        buttonRow.getStyle().set("gap", "0.5rem"); 
         buttonRow.setAlignItems(Alignment.CENTER);
         buttonRow.addClassName("header-button-row");
         headerLayout.add(buttonRow);

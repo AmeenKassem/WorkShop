@@ -10,6 +10,8 @@ public class OrderDTO {
     private List<ReceiptProduct> productsList;
     private double finalPrice;
 
+    public String userName;
+
     public OrderDTO() {
     }
 
@@ -61,4 +63,13 @@ public class OrderDTO {
     public double getFinalPrice() {
         return finalPrice;
     }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
 }

@@ -17,6 +17,9 @@ public class SpecialCartItemDTO {
     //Random and Auction
     public String dateEnd;
 
+    //Bid
+    public Status status;
+
     //Auction
     public double myBid;
     public double maxBid;

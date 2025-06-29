@@ -107,11 +107,7 @@ public class BID {
 
     public SingleBid acceptBid(int userToAcceptForId, List<Integer> ownersIds, int userId)
             throws DevException, UIException {
-
-        System.out.println("acceptBid called with userToAcceptForId=" + userToAcceptForId + ", bidId=" + bidId);
-        for( int id : bids.keySet()) {
-            System.out.println("Bid ID in bids: " + id);
-        }
+                
         SingleBid curr = null;
         if (isAccepted)
             throw new UIException("This bid is already closed!", ErrorCodes.BID_FINISHED);
@@ -126,7 +122,6 @@ public class BID {
                 for (SingleBid bid : bids.values()) {
                     if (bid.getId() != curr.getId()) {
                         bid.markAsBIDLosed();
-                        ;
                     }
                 }
             }
@@ -197,5 +192,9 @@ public class BID {
             throw new IllegalArgumentException("ActivePurchases cannot be null");
         }
         this.activePurcheses = activePurcheses2;
+    }
+
+    public int getQuantity() {
+        return quantity;
     }
 }

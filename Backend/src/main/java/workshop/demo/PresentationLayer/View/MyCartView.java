@@ -16,6 +16,7 @@ import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.Status;
 import workshop.demo.PresentationLayer.Presenter.MyCartPresenter;
 
 @Route(value = "MyCart", layout = MainLayout.class)
@@ -188,15 +189,23 @@ public class MyCartView extends VerticalLayout {
         card.add(createInfoLine(VaadinIcon.SHOP, "Store: " + item.storeName));
         card.add(createInfoLine(VaadinIcon.TROPHY, "Type: " + item.getType()));
         card.add(createInfoLine(VaadinIcon.CART, "Quantity: " + item.quantity));
+        
+
+        if(item.getType() == SpecialType.BID) {
+            card.add(createInfoLine(VaadinIcon.MONEY, "My bid: " + item.myBid));
+            card.add(createInfoLine(item.status == Status.BID_ACCEPTED ? VaadinIcon.CHECK_CIRCLE : item.status == Status.BID_REJECTED ? VaadinIcon.CLOSE_CIRCLE : VaadinIcon.HOURGLASS, "Status: " + item.status));
+        }
 
         if(item.getType()==SpecialType.Auction){
-           card.add(createInfoLine(VaadinIcon.MONEY, "My bid: " + item.myBid));
+            card.add(createInfoLine(VaadinIcon.MONEY, "My bid: " + item.myBid));
             card.add(createInfoLine(VaadinIcon.CLOCK, item.isEnded() ? "Ended!" : "Ends at " + item.dateEnd));
             card.add(createInfoLine(VaadinIcon.ARROW_UP, item.onTop ? "You are on top!" : "Someone bid with " + item.maxBid));
            // card.add(createStyledLabel("\ud83c\udfc6" + (item.onTop ? " You are on the top !" : " Some one bid with "+(item.maxBid))));
         }
         if (item.getType() == SpecialType.Random) {
-            card.add(createInfoLine(VaadinIcon.CLOCK, item.isEnded() ? "Ended at: " + item.dateEnd : "Ends at: " + item.dateEnd));
+            card.add(createInfoLine(VaadinIcon.MONEY, "Amount Paid: " + item.myBid));
+            card.add(createInfoLine(VaadinIcon.CLOCK, item.isEnded() ? "Random has ENDED!" : "Ends at: " + item.dateEnd));
+            card.add(createStyledLabel("\ud83c\udfc6" + ((item.isWinner && item.isEnded) ? " You WON the random!" : (!item.isWinner && item.isEnded) ? " You did not win this random." : "Not ended yet!")));
         }
         return card;
     }

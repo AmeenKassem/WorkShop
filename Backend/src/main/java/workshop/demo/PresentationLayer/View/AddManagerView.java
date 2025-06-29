@@ -105,11 +105,11 @@ public class AddManagerView extends VerticalLayout implements HasUrlParameter<In
     }
 
     public void showSuccess(String msg) {
-        Notification.show("✅ " + msg, 3000, Notification.Position.BOTTOM_CENTER);
+        NotificationView.showSuccess(msg);
     }
 
     public void showError(String msg) {
-        Notification.show("❌ " + msg, 5000, Notification.Position.BOTTOM_CENTER);
+        NotificationView.showError(msg);
     }
 
     private String getPermissionLabel(Permission p) {
