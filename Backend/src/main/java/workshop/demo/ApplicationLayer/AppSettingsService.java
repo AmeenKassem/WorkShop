@@ -14,6 +14,8 @@ public class AppSettingsService {
     private AppSettingsRepository appSettingsRepository;
     @Autowired
     private UserService userService;
+    @Autowired
+    private DatabaseCleaner dataBase;
 
     public boolean isInitialized() {
         AppSettingsEntity settings = appSettingsRepository.findById(1L)
@@ -25,18 +27,19 @@ public class AppSettingsService {
         return settings.isInitialized();
     }
 
-    public void markInitialized(String userName, String password, int key) throws UIException {
-        if (!userService.isAdmin(userName, password) || key != 123321) {
-            throw new UIException("NOT THE ADMIN", 1039);
-        }
+    public void markInitialized(String userName, String password, String key) throws Exception {
+
+        userService.registerAdmin(userName, password, key);
         AppSettingsEntity settings = appSettingsRepository.findById(1L)
                 .orElse(new AppSettingsEntity());
         settings.setInitialized(true);
         appSettingsRepository.save(settings);
     }
 
-    public void markShutdown(int key) throws UIException {
-        if (key != 123321) {
+ 
+
+    public void markShutdown(String key) throws UIException {
+        if (key != "123321") {
             throw new UIException("NOT THE ADMIN", 1039);
         }
         AppSettingsEntity settings = appSettingsRepository.findById(1L)
@@ -44,5 +47,14 @@ public class AppSettingsService {
         settings.setInitialized(false);
         appSettingsRepository.save(settings);
     }
+
+
+
+    public void deleteData(String adminKey,String username,String password) throws UIException{
+        userService.checkAdmin( adminKey, username,password);
+        dataBase.wipeDatabase();
+        markShutdown(adminKey);
+    }
+
 
 }

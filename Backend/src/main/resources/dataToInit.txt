@@ -1,0 +1,12 @@
+clear-all;
+admin init ana a123321 123321;
+user reg bhaa123 a123321 25;
+user reg bhaa a123321 25;
+user login bhaa123 a123321;
+user login bhaa a123321;
+store open bhaa123 masho arraba;
+store item bhaa123 masho btata2 Grocery food 20 10 food veg;
+store auction bhaa123 masho btata2 10000 10 5.0;
+user auction bhaa123 masho btata2 6.0;
+user auction bhaa masho btata2 7.0;
+user auction bhaa123 masho btata2 8.0;

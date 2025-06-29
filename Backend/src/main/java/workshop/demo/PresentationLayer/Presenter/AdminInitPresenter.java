@@ -30,28 +30,76 @@ public class AdminInitPresenter {
                     Base.url + "/api/appsettings/admin/init?key=%s&userName=%s&password=%s",
                     key,
                     username,
-                    password
-            );
+                    password);
 
             ResponseEntity<ApiResponse> response = restTemplate.exchange(
                     url,
                     HttpMethod.POST,
                     null,
                     new ParameterizedTypeReference<ApiResponse>() {
-            }
-            );
+                    });
 
             ApiResponse<?> res = response.getBody();
 
             if (res != null && res.getErrorMsg() == null) {
                 NotificationView.showSuccess("Site has been successfully initialized.");
 
-                //UI.getCurrent().getPage().setLocation("/");
+                // UI.getCurrent().getPage().setLocation("/");
                 // Reset user session to guest so MainLayout will show guest buttons
                 VaadinSession.getCurrent().setAttribute("auth-token", null);
                 VaadinSession.getCurrent().setAttribute("user-type", "guest");
                 UI.getCurrent().getPage().executeJs("window.location.href='/'");
             }
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+    }
+
+    public void deleteData(String username, String password, String key) {
+        try {
+            // Build the URL
+            String url = String.format(
+                    Base.url + "/api/appsettings/resetdata?key=%s&userName=%s&password=%s",
+                    key,
+                    username,
+                    password);
+
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    null,
+                    new ParameterizedTypeReference<ApiResponse>() {
+                    });
+
+            ApiResponse<?> res = response.getBody();
+
+            if (res != null && res.getErrorMsg() == null) {
+                NotificationView.showSuccess("Site has been successfully cleared!.");
+            }
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+    }
+
+    public void initDataFromDIF(String username, String password, String key) {
+        try {
+            // Build the URL
+            String url = String.format(
+                    Base.url + "/api/appsettings/initdatafile?key=%s&userName=%s&password=%s",
+                    key,
+                    username,
+                    password);
+
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    null,
+                    new ParameterizedTypeReference<ApiResponse>() {
+                    });
+
+            ApiResponse<?> res = response.getBody();
+
+           System.out.println(res.getData());
         } catch (Exception e) {
             ExceptionHandlers.handleException(e);
         }
