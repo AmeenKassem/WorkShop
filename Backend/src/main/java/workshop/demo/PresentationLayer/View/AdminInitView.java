@@ -3,13 +3,13 @@ package workshop.demo.PresentationLayer.View;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
-import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import workshop.demo.PresentationLayer.Presenter.AdminInitPresenter;
@@ -19,17 +19,15 @@ import workshop.demo.PresentationLayer.Presenter.AdminInitPresenter;
 public class AdminInitView extends VerticalLayout {
 
     private final AdminInitPresenter presenter;
-    private final TextArea logOutput = new TextArea("🪵 DIF Initialization Logs");
+    private final Div logOutput = new Div();
     private final Dialog logDialog = new Dialog();
 
     public AdminInitView() {
         this.presenter = new AdminInitPresenter(this);
 
-        // Title
         H1 title = new H1("🔐 Admin Init Panel");
         title.addClassName("main-title");
 
-        // Fields
         TextField usernameField = new TextField("👤 Admin Username");
         PasswordField passwordField = new PasswordField("🔑 Admin Password");
         TextField keyField = new TextField("🧿 Admin Key");
@@ -39,7 +37,6 @@ public class AdminInitView extends VerticalLayout {
         passwordField.setWidth(fieldWidth);
         keyField.setWidth(fieldWidth);
 
-        // Buttons
         Button initButton = new Button("🚀 Initialize System", new Icon(VaadinIcon.COG));
         Button deleteButton = new Button("🗑️ Delete Data", new Icon(VaadinIcon.TRASH));
         Button initFromDIFButton = new Button("📁 Initialize from DIF", new Icon(VaadinIcon.FILE_TREE));
@@ -48,10 +45,8 @@ public class AdminInitView extends VerticalLayout {
         deleteButton.setWidth(fieldWidth);
         initFromDIFButton.setWidth(fieldWidth);
 
-        // Log Dialog Setup
         logOutput.setWidth("600px");
         logOutput.setHeight("300px");
-        logOutput.setReadOnly(true);
         logOutput.addClassName("terminal-log");
 
         Icon closeIcon = new Icon(VaadinIcon.CLOSE);
@@ -72,7 +67,6 @@ public class AdminInitView extends VerticalLayout {
         logDialog.setDraggable(true);
         logDialog.setResizable(true);
 
-        // Layouts
         VerticalLayout formLayout = new VerticalLayout(
                 usernameField, passwordField, keyField,
                 initButton, deleteButton, initFromDIFButton
@@ -83,7 +77,6 @@ public class AdminInitView extends VerticalLayout {
         VerticalLayout panel = new VerticalLayout(title, formLayout);
         panel.addClassName("admin-init-panel");
 
-        // Button Logic
         initButton.addClickListener(event -> {
             presenter.initializeSystem(usernameField.getValue(), passwordField.getValue(), keyField.getValue());
         });
@@ -97,7 +90,6 @@ public class AdminInitView extends VerticalLayout {
             logDialog.open();
         });
 
-        // Main Layout Setup
         setSizeFull();
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
@@ -107,6 +99,20 @@ public class AdminInitView extends VerticalLayout {
     }
 
     public void showDIFLogs(String logs) {
-        logOutput.setValue(logs);
+        StringBuilder highlighted = new StringBuilder();
+        for (String line : logs.split("\n")) {
+            String safe = line.replace("<", "&lt;").replace(">", "&gt;");
+            String styleClass = "";
+            String lower = line.toLowerCase();
+            if (lower.contains("error") || lower.contains("fail")) {
+                styleClass = "log-error";
+            } else if (lower.contains("warn")) {
+                styleClass = "log-warn";
+            } else if (lower.contains("success") || lower.contains("done")) {
+                styleClass = "log-success";
+            }
+            highlighted.append("<div class='").append(styleClass).append("'>").append(safe).append("</div>");
+        }
+        logOutput.getElement().setProperty("innerHTML", highlighted.toString());
     }
 }
