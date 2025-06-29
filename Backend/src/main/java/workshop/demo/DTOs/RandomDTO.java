@@ -15,6 +15,8 @@ public class RandomDTO {
     public long endTimeMillis;
     public String endDate;
     public String userName;
+    public boolean isActive;
+    public boolean canceled;
     public RandomDTO() {
     }
     public RandomDTO setStoreNameAndProductName(String productName, String storeName) {
