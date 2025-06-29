@@ -1,5 +1,9 @@
 admin :
 	init <username> <password> <adminkey>;
+	suspend <username> <minutes>
+	pause <username>;
+	resume <username>;
+	cancel <username>;
 
 user :
 	reg <username> <password> <age>;

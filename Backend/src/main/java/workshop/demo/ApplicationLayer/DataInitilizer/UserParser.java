@@ -39,6 +39,7 @@ public class UserParser extends ManagerDataInit {
             case "purchase":
                 purchase(toSend);
                 break;
+
             default:
                 log("undefined function for user on line " + line + " : " + construction.getFirst());
                 error = true;
@@ -254,4 +255,6 @@ public class UserParser extends ManagerDataInit {
             error = true;
         }
     }
+
+
 }

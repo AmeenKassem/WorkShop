@@ -15,3 +15,7 @@ user cart + bhaa btata2 masho 2;
 wait 5000;
 user purchase bhaa special valid;
 user purchase bhaa cart valid;
+admin suspend bhaa 10;
+admin pause bhaa;
+admin resume bhaa;
+admin cancel bhaa;
