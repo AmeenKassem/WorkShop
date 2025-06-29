@@ -920,7 +920,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 HorizontalLayout row = new HorizontalLayout();
                 row.setWidthFull();
 
-                String bidDetails = "Product Name: " + bid.productName;
+                String bidDetails = "Product Name: " + bid.productName + "\n Quantity: " + bid.quantity;
 
                 Paragraph bidInfo = new Paragraph(bidDetails);
 

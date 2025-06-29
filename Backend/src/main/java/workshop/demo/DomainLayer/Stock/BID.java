@@ -122,7 +122,6 @@ public class BID {
                 for (SingleBid bid : bids.values()) {
                     if (bid.getId() != curr.getId()) {
                         bid.markAsBIDLosed();
-                        ;
                     }
                 }
             }

@@ -242,6 +242,8 @@ public class ActivePurcheses {
         int i = 0;
         for (Random random : activeRandom.values()) {
             randomDTOs[i] = random.getDTO();
+            randomDTOs[i].isActive = random.isActive();
+            randomDTOs[i].canceled = random.isCanceled();
             i++;
         }
         return randomDTOs;
