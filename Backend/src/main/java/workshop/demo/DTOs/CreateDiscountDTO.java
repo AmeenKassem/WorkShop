@@ -35,25 +35,31 @@ public class CreateDiscountDTO {
     public String getName() {
         return name;
     }
+    public void setName(String name){ this.name =name;}
 
     public double getPercent() {
         return percent;
     }
+    public void setPercent(double percent){ this.percent=percent;}
 
     public Type getType() {
         return type;
     }
-
+    public void setType(Type type){this.type=type;}
     public String getCondition() {
         return condition;
     }
-
+    public void setCondition(String condition){ this.condition=condition;}
     public Logic getLogic() {
         return logic;
     }
+    public void setLogic(Logic logic){this.logic=logic;}
 
     public List<CreateDiscountDTO> getSubDiscounts() {
         return subDiscounts;
+    }
+    public void setSubDiscounts(List<CreateDiscountDTO> subDiscounts){
+        this.subDiscounts=subDiscounts;
     }
 
     public void setCoupon(String coupon) {

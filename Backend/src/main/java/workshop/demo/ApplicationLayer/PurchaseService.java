@@ -11,18 +11,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.PaymentDetails;
-import workshop.demo.DTOs.ReceiptDTO;
-import workshop.demo.DTOs.ReceiptProduct;
-import workshop.demo.DTOs.SpecialType;
-import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
-import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Order.Order;
@@ -32,13 +25,16 @@ import workshop.demo.DomainLayer.Purchase.ISupplyService;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.Auction;
 import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.Random;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.UserAuctionBid;
+
 import workshop.demo.DomainLayer.Stock.item;
+import workshop.demo.DomainLayer.Store.Discount;
+import workshop.demo.DomainLayer.Store.DiscountScope;
+
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
@@ -59,8 +55,6 @@ public class PurchaseService {
 
     @Autowired
     private IAuthRepo authRepo;
-    @Autowired
-    private IStockRepo stockRepo;
     @Autowired
     private IOrderRepoDB orderJpaRepo;
     // private final IUserRepo userRepo;
@@ -148,6 +142,7 @@ public class PurchaseService {
             String storeName = store.getStoreName();
             logger.info("Processing basket for active storeId={} ({})", storeId, storeName);
             List<ReceiptProduct> boughtItems = new ArrayList<>();
+            List<ItemStoreDTO>   itemStoreDTOS = new ArrayList<>();
             StoreStock stock = storeStockRepo.findById(storeId).orElseThrow();
             for (CartItem itemOnUserCart : basket.getItems()) {
                 if (stock.decreaseQuantitytoBuy(itemOnUserCart.productId, itemOnUserCart.quantity)) {
@@ -159,13 +154,38 @@ public class PurchaseService {
                             itemOnUserCart.quantity, itemOnUserCart.price, itemOnUserCart.productId,
                             itemOnUserCart.category, itemOnUserCart.storeId);
                     boughtItems.add(boughtItem);
-
+                    itemStoreDTOS.add(new ItemStoreDTO(
+                            itemOnUserCart.productId, itemOnUserCart.quantity, itemOnUserCart.price,
+                            itemOnUserCart.category, 0, storeId,
+                            itemOnUserCart.name,      storeName));
                     totalForStore += price;
                 } else if (isGuest) {
                     logger.info("user guest tring to buy items with not enough stock on the store ... " + userId);
                     throw new UIException(store.getStoreName(), ErrorCodes.INSUFFICIENT_STOCK);
                 }
             }
+            if(!isGuest) {
+                UserDTO buyer = regRepo.getReferenceById(userId).getUserDTO();            // policy check
+                store.assertPurchasePolicies(buyer, itemStoreDTOS);
+            }else{
+                UserDTO buyer = guestRepo.getReferenceById(userId).getUserDTO();
+                store.assertPurchasePolicies(buyer, itemStoreDTOS);
+            }
+
+            Discount discount     = store.getDiscount();
+            double   discountAmt  = 0.0;
+            //System.out.println("Hmode is"+discount.toDTO().getCondition().toString());
+            if (discount != null) {
+                discountAmt = discount.apply(new DiscountScope(itemStoreDTOS));
+            }
+
+            totalForStore -= discountAmt;            // apply basket-level discount
+            if (totalForStore < 0) totalForStore = 0;
+
+            logger.info("Store={}, Discount={}, Final={}",
+                    storeName, discountAmt, totalForStore);
+            /* ──────────────────────────────────────────────────────── */
+
             finalTotal += totalForStore;
             storeToProducts.put(storeId, Pair.of(boughtItems, totalForStore));
         }
@@ -183,7 +203,7 @@ public class PurchaseService {
                 logger.error("Supply failed");
                 // Auto-refund
                 paymentService.processRefund(paymentTxId);
-                throw new UIException("Supply failed", ErrorCodes.SUPPLY_ERROR);
+                throw new UIException("Supply failed11", ErrorCodes.SUPPLY_ERROR);
             }
         } catch (Exception e) {
             logger.error("Supply exception — refunding payment");
@@ -217,7 +237,7 @@ public class PurchaseService {
             }
         }
     }
-
+@Transactional
     public ParticipationInRandomDTO participateInRandom(String token, int randomId, int storeId, double amountPaid,
             PaymentDetails paymentDetails) throws Exception {
         logger.info("participateInRandom called with randomId={}, storeId={}", randomId, storeId);
@@ -304,6 +324,20 @@ public class PurchaseService {
                     itemsToRemove.add(specialItem);
                     logger.info("one auction bid must be removed bid id:" + specialItem.bidId);
                 }
+            } else if (specialItem.type == SpecialType.BID) { // BID
+                ActivePurcheses active = activeRepo.findById(specialItem.storeId).orElse(null);
+                SingleBid bid = active.getBid(specialItem.storeId, specialItem.specialId, userId, specialItem.type);
+                if (bid.isEnded()) {
+                    if (bid.isWinner()) {
+                        winningBids.add(bid);
+                        logger.info("user win bid. id:" + specialItem.bidId);
+                    }
+                    // user.removeSpecialItem(specialItem);
+                    itemsToRemove.add(specialItem);
+                    logger.info("one bid must be removed bid id:" + specialItem.bidId);
+                }
+            } else {
+                logger.warn("Unknown special item type: {}", specialItem.type);
             }
         }
         logger.info("hiiiiiiiiiiiii");
@@ -427,8 +461,8 @@ public class PurchaseService {
             ReceiptProduct receiptProduct = new ReceiptProduct(
                     product.getName(),
                     storeName,
-                    1,
-                    0,
+                    card.quantity,
+                    (int) card.amountPaid,
                     product.getProductId(),
                     product.getCategory(), card.storeId);
 

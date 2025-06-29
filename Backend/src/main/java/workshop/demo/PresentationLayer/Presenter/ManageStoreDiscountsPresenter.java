@@ -12,6 +12,7 @@ import org.springframework.web.util.UriUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import workshop.demo.Controllers.ApiResponse;
+import workshop.demo.DTOs.CreateDiscountDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 
 public class ManageStoreDiscountsPresenter {
@@ -107,6 +108,28 @@ public class ManageStoreDiscountsPresenter {
 
         } catch (Exception ex) {
             ExceptionHandlers.handleException(ex);
+        }
+    }
+    public List<CreateDiscountDTO> fetchDiscountDetails(int storeId, String token) {
+        try {
+            String url = String.format(
+                    Base.url + "/api/store/getStoreDiscounts?storeId=%d&token=%s",
+                    storeId,
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
+
+            ApiResponse rsp = rest.getForObject(url, ApiResponse.class);
+
+            if (rsp == null || rsp.getErrNumber() != -1) {
+                throw new RuntimeException(rsp == null
+                        ? "Null response from /getStoreDiscounts"
+                        : rsp.getErrorMsg());
+            }
+
+            return Arrays.asList(mapper.convertValue(rsp.getData(), CreateDiscountDTO[].class));
+
+        } catch (Exception ex) {
+            ExceptionHandlers.handleException(ex);
+            return Collections.emptyList();
         }
     }
 }

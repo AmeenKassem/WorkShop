@@ -121,4 +121,8 @@ public class ParticipationInRandom {
         }
         this.amountPaid = d;
     }
+
+    public String getUserName() {
+        return userName;
+    }
 }

@@ -14,6 +14,7 @@ public class ParticipationInRandomDTO {
     public int randomId;
     public boolean mustRefund;
     public int transactionIdForPayment = 0;
+    public int quantity;
 
     
     

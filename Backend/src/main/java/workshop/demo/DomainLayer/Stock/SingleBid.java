@@ -15,6 +15,8 @@ import jakarta.persistence.ManyToOne;
 import workshop.demo.DTOs.SingleBidDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.Status;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 
 @Entity
 public class SingleBid {
@@ -64,7 +66,7 @@ public class SingleBid {
 
     public SingleBidDTO convertToDTO() {
         return new SingleBidDTO(
-                this.id,
+                getId(),
                 this.productId,
                 this.amount,
                 this.price,
@@ -91,11 +93,24 @@ public class SingleBid {
         this.status = Status.AUCTION_LOSED;
     }
 
+    public void markAsBIDLosed() {
+        this.status = Status.BID_REJECTED;
+    }
+
+    public void markAsBIDAccepted() {
+        this.status = Status.BID_ACCEPTED;
+    }
+
+
     public int getId() {
         return this.id;
     }
 
-    public void acceptBid(List<Integer> ownersIds, int ownerId) {
+    public void acceptBid(List<Integer> ownersIds, int ownerId) throws UIException {
+
+        if(voteIds.contains(ownerId)) {
+            throw new UIException("Owner already voted for this bid", ErrorCodes.OWNER_ALREADY_ACCEPT_BID);
+        }
         this.voteIds.add(ownerId);
         if(this.voteIds.containsAll(ownersIds)){
             this.status = Status.BID_ACCEPTED;

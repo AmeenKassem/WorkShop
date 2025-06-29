@@ -13,7 +13,6 @@ import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
-import workshop.demo.DTOs.SingleBidDTO;
 import workshop.demo.DTOs.SpecialCartItemDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.UserDTO;
@@ -23,12 +22,9 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.Auction;
 import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
-import workshop.demo.DomainLayer.Stock.ParticipationInRandom;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.Random;
 import workshop.demo.DomainLayer.Stock.SingleBid;
-import workshop.demo.DomainLayer.Stock.UserAuctionBid;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.CartItem;
@@ -274,7 +270,7 @@ public class UserService {
         logger.info("Item removed from cart for productId={}", itemCartId);
         return true;
     }
-
+@Transactional
     public SpecialCartItemDTO[] getSpecialCart(String token) throws UIException, Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
@@ -301,8 +297,9 @@ public class UserService {
                 itemToSend.dateEnd = random.getDateOfEnd(); // TODO , use the same function you have used on RandomDTO
                 itemToSend.quantity = random.getQuantity();
             } else if (item.type == SpecialType.BID) {
-                SingleBid bid = activePurcheses.getBid(item.storeId, item.specialId, item.bidId, item.type);
+                SingleBid bid = activePurcheses.getBid(item.storeId, item.specialId, item.user.getId(), item.type);
                 itemToSend.setValues(product.getName(), bid.isWinner() || bid.isAccepted(), bid.isEnded());
+                itemToSend.quantity = activePurcheses.getBidById(item.specialId).getQuantity();
             } else if (item.type == SpecialType.Auction) {
                 Auction auction = activePurcheses.getAuctionById(item.specialId);
                 itemToSend.setValues(product.getName(), auction.bidIsWinner(item.bidId), auction.isEnded());
@@ -310,6 +307,7 @@ public class UserService {
                 itemToSend.maxBid = auction.getMaxBid();
                 itemToSend.onTop = auction.bidIsTop(item.bidId);
                 itemToSend.dateEnd = auction.getDateOfEnd();
+                itemToSend.quantity = auction.getQuantity();
             }
             result.add(itemToSend);
         }

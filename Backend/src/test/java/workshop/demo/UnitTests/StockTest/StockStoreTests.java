@@ -24,12 +24,7 @@ public class StockStoreTests {
         assertEquals(5, i.getQuantity());
     }
 
-//    @Test
-//    void test_item_updatePrice_shouldUpdateValue() {
-//        item i = new item(1, 10, 150, Category.ELECTRONICS);
-//        i.updatePrice(250);
-//        assertEquals(250, i.getPrice());
-//    }
+
     @Test
     void test_item_rankProduct_shouldUpdateFinalRank() {
         item i = new item(1, 10, 150, Category.Electronics);

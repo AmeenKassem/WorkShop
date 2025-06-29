@@ -1,17 +1,22 @@
 package workshop.demo.DomainLayer.Store;
 
+import workshop.demo.DTOs.CreateDiscountDTO;
+
 import java.util.function.Predicate;
 
 public class VisibleDiscount implements Discount {
     private final String name;
     private final double percent;
     private final Predicate<DiscountScope> condition;
+    private final String conditionString;
 
-    public VisibleDiscount(String name, double percent, Predicate<DiscountScope> condition) {
+    public VisibleDiscount(String name, double percent, Predicate<DiscountScope> condition, String conditionString) {
         this.name = name;
         this.percent = percent;
         this.condition = condition;
+        this.conditionString = conditionString;
     }
+
 
     @Override
     public boolean isApplicable(DiscountScope scope) {
@@ -27,5 +32,28 @@ public class VisibleDiscount implements Discount {
     @Override
     public String getName() {
         return name;
+    }
+
+    public CreateDiscountDTO toDTO() {
+        CreateDiscountDTO dto = new CreateDiscountDTO();
+        dto.setName(this.name);
+        dto.setPercent(this.percent);
+        dto.setType(CreateDiscountDTO.Type.VISIBLE);
+        dto.setLogic(CreateDiscountDTO.Logic.SINGLE);
+        dto.setCondition(this.conditionString); // ✅ use actual string, not lambda
+
+        return dto;
+    }
+
+    public double getPercent() {
+        return percent;
+    }
+
+    public Predicate<DiscountScope> getCondition() {
+        return condition;
+    }
+
+    public String getConditionString() {
+        return conditionString;
     }
 }

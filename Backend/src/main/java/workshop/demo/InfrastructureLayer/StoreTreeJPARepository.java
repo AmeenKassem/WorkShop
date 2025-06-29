@@ -11,7 +11,9 @@ import workshop.demo.DomainLayer.StoreUserConnection.StoreTreeEntity;
 @Repository
 public interface StoreTreeJPARepository extends JpaRepository<StoreTreeEntity, Integer> {
 
-    @Query("SELECT s FROM StoreTreeEntity s JOIN FETCH s.allNodes")
+    @Query("SELECT DISTINCT s FROM StoreTreeEntity s "
+            + "JOIN FETCH s.allNodes n "
+            + "LEFT JOIN FETCH n.myAuth")
     List<StoreTreeEntity> findAllWithNodes();
 
 }

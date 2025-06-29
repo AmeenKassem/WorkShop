@@ -330,7 +330,7 @@ public class StoreDetailsPresenter {
     public List<RandomDTO> getRandomProductIds(int storeId, String token) {
         try {
             String url = String.format(
-                    Base.url + "/stock/getAllRandomInStore?token=%s&storeId=%d",
+                    Base.url + "/stock/getAllActiveRandomsInStore?token=%s&storeId=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     storeId
             );
@@ -353,7 +353,7 @@ public class StoreDetailsPresenter {
     public List<AuctionDTO> getAuctionProductIds(int storeId, String token) {
         try {
             String url = String.format(
-                    Base.url + "/stock/getAllAuctions?token=%s&storeId=%d",
+                    Base.url + "/stock/getAllActiveAuctionsInStore?token=%s&storeId=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     storeId
             );
@@ -417,7 +417,7 @@ public class StoreDetailsPresenter {
     public List<BidDTO> getBidProduct(int storeId, String token) {
         try {
             String url = String.format(
-                    Base.url + "/stock/getAllBidsInStore?token=%s&storeId=%d",
+                    Base.url + "/stock/getAllActiveBidsInStore?token=%s&storeId=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     storeId
             );
@@ -438,7 +438,7 @@ public class StoreDetailsPresenter {
     public boolean addRegularBid(String token, int bidId, int storeId, double price) {
         try {
             String url = String.format(
-                    Base.url + "/stock/addRegularBid?token=%s&bitId=%d&storeId=%d&price=%s",
+                    Base.url + "/stock/addRegularBid?token=%s&bidId=%d&storeId=%d&offer=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     bidId,
                     storeId,
