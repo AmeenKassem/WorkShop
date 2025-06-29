@@ -11,6 +11,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
@@ -63,6 +64,7 @@ public class HomePage extends VerticalLayout {
         add(searchBarContainer);
 
         resultsContainer.setWidthFull();
+        resultsContainer.addClassName("results-grid");
         resultsContainer.getStyle().set("max-width", "1100px");
         add(resultsContainer);
 
@@ -105,7 +107,8 @@ public class HomePage extends VerticalLayout {
                 .set("margin-bottom", "1.5rem");
 
         String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
-        boolean isUser = "user".equals(userType);
+        boolean isUser = "user".equals(userType) || "admin".equals(userType);
+        
 
         TextField searchField = new TextField("Search");
         searchField.setPlaceholder("Enter keyword or product name");
@@ -160,6 +163,7 @@ public class HomePage extends VerticalLayout {
             String keyword = searchBy.equals("Keyword") ? inputText : null;
 
             resultsContainer.removeAll();
+            System.out.println("user-type: " + userType);
 
             if (!isUser) {
                 // guest search: Normal only
@@ -251,6 +255,8 @@ public class HomePage extends VerticalLayout {
                 .set("font-weight", "bold")
                 .set("border-radius", "8px")
                 .set("margin-top", "8px");
+        card.addClassName("result-card");
+        addToCart.addClassName("right-button");
 
         card.add(name, price, store, addToCart);
         return card;
@@ -272,13 +278,13 @@ public class HomePage extends VerticalLayout {
             try {
                 int quantity = Integer.parseInt(quantityField.getValue());
                 if (quantity <= 0) {
-                    NotificationView.showError("Quantity must be positive.");
+                    Notification.show("Quantity must be positive.");
                     return;
                 }
                 homePagePresenter.addToCart(token, item, quantity);
                 dialog.close();
             } catch (NumberFormatException ex) {
-                NotificationView.showError("Please enter a valid number.");
+                Notification.show("Please enter a valid number.");
             }
         });
 
@@ -296,11 +302,13 @@ public class HomePage extends VerticalLayout {
                 .set("border-radius", "10px")
                 .set("margin-bottom", "10px");
 
-        Span name = new Span("📢 Product Name: " + bid.productName);
-        Paragraph store = new Paragraph("Store: " + bid.storeName);
+        Span name = new Span("📢 : " + bid.productName);
+        Paragraph store = new Paragraph("🏬 Store : " + bid.storeName);
 
         Button makeBid = new Button("Make a Bid", e -> showBidDialog(bid, bid.storeId));
         makeBid.getStyle().set("background-color", "#28a745").set("color", "white");
+        card.addClassName("result-card");
+        makeBid.addClassName("right-button");
 
         card.add(name, store, makeBid);
         return card;
@@ -314,20 +322,16 @@ public class HomePage extends VerticalLayout {
                 .set("border-radius", "10px")
                 .set("margin-bottom", "10px");
 
-        Span name = new Span("🏁 Product Name: " + auction.productName);
-        Paragraph store = new Paragraph("Store: " + auction.storeName);
-        Paragraph max = new Paragraph("Max Bid: $" + auction.maxBid);
+        Span name = new Span("🏁 " + auction.productName);
+        Paragraph store = new Paragraph("🏬 Store : " + auction.storeName);
+          Paragraph max = new Paragraph("💰 Max Bid: ₪" + auction.maxBid);
 
         String formattedTime = formatEndTime(auction.endTimeMillis);
         Paragraph endsAt = new Paragraph("⏰ Ends at: " + formattedTime);
 
         Button makeAuction = new Button("Make Auction", e -> showAuctionBidDialog(auction));
-        makeAuction.getStyle()
-                .set("background-color", "#2E2E2E")
-                .set("color", "white")
-                .set("font-weight", "bold")
-                .set("border-radius", "8px")
-                .set("padding", "6px 16px");
+        card.addClassName("result-card");
+        makeAuction.addClassName("right-button");
 
         card.add(name, store, max, endsAt, makeAuction);
         return card;
@@ -341,16 +345,18 @@ public class HomePage extends VerticalLayout {
                 .set("border-radius", "10px")
                 .set("margin-bottom", "10px");
 
-        Span name = new Span("🎲 Product Name: " + random.productName);
-        Paragraph store = new Paragraph("Store: " + random.storeName);
-        Paragraph amountLeft = new Paragraph("Left Amount: " + random.amountLeft);
-        Paragraph price = new Paragraph("Price: $" + random.productPrice);
+        Span name = new Span("🎲: " + random.productName);
+        Paragraph store = new Paragraph("🏬 Store: " + random.storeName);
+        Paragraph amountLeft = new Paragraph("📦 Left: " + random.amountLeft);
+        Paragraph price = new Paragraph("💰 Price: ₪"  + random.productPrice);
 
         String formattedEndTime = formatEndTime(random.endTimeMillis);
         Paragraph endTime = new Paragraph("🕒 Ends at: " + formattedEndTime);
 
         Button participate = new Button("Join Random Draw", e -> showRandomParticipationDialog(random));
         participate.getStyle().set("background-color", "#9c27b0").set("color", "white");
+        card.addClassName("result-card");
+        participate.addClassName("right-button");
 
         card.add(name, store, amountLeft, price, endTime, participate);
         return card;

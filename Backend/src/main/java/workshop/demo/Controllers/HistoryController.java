@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import workshop.demo.ApplicationLayer.OrderService;
 import workshop.demo.DTOs.OrderDTO;
+import workshop.demo.DTOs.PurchaseHistoryDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 
@@ -75,4 +76,20 @@ public class HistoryController {
         return res.toJson();
     }
 
+
+    @GetMapping("/viewAllPurchaseHistory")
+    public ResponseEntity<ApiResponse<List<PurchaseHistoryDTO>>> viewAllPurchaseHistory(@RequestParam String token) {
+        ApiResponse<List<PurchaseHistoryDTO>> response;
+        try {
+            List<PurchaseHistoryDTO> history = orderService.viewPurchaseHistory(token);
+            response = new ApiResponse<>(history, null);
+            return ResponseEntity.ok(response);
+        } catch (UIException e) {
+            response = new ApiResponse<>(null, e.getMessage(), e.getNumber());
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            response = new ApiResponse<>(null, e.getMessage(), -1);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 }

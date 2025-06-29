@@ -74,7 +74,7 @@ public class AdminPageView extends VerticalLayout {
         HorizontalLayout actions = new HorizontalLayout();
         actions.addClassName("actions-wrapper");
 
-        Button suspend = new Button("⏸ Suspend", click -> {
+        Button suspend = new Button("Suspend", click -> {
             Dialog dialog = new Dialog();
             dialog.setHeaderTitle("Suspend User");
 
@@ -92,8 +92,7 @@ public class AdminPageView extends VerticalLayout {
                 }
             });
 
-            confirm.addClassName("v-button");
-            confirm.addClassName("danger");
+            confirm.addClassName("right-button");
 
             VerticalLayout dialogLayout = new VerticalLayout(minutesField, confirm);
             dialogLayout.setSpacing(true);
@@ -102,9 +101,13 @@ public class AdminPageView extends VerticalLayout {
             dialog.open();
         });
 
-        Button pause = new Button("⏸ Pause", click -> presenter.onPauseSuspension(user.getId()));
-        Button resume = new Button("▶️ Resume", click -> presenter.onResumeSuspension(user.getId()));
-        Button cancel = new Button("❌ Cancel", click -> presenter.onCancelSuspension(user.getId()));
+        Button pause = new Button("Pause", click -> presenter.onPauseSuspension(user.getId()));
+        Button resume = new Button("Resume", click -> presenter.onResumeSuspension(user.getId()));
+        Button cancel = new Button("Cancel", click -> presenter.onCancelSuspension(user.getId()));
+        resume.addClassName("right-button");
+        cancel.addClassName("right-button");
+        suspend.addClassName("right-button");
+        pause.addClassName("right-button");
 
 
         actions.add(suspend, pause, resume, cancel);
@@ -130,45 +133,53 @@ public class AdminPageView extends VerticalLayout {
     add(userPanel);
 }
 
-      private void showSuspensionsDialog() {
-        List<UserSuspensionDTO> suspensions = presenter.onViewSuspensions();
+    private void showSuspensionsDialog() {
+    List<UserSuspensionDTO> suspensions = presenter.onViewSuspensions();
 
-        Dialog dialog = new Dialog();
-        dialog.getElement().getClassList().add("dialog-content");
-        dialog.setHeaderTitle("🚫 Suspended Users");
-        dialog.setWidth("850px");
-        dialog.setHeight("480px");
+    Dialog dialog = new Dialog();
+    dialog.setHeaderTitle("🚫 Suspended Users");
+    dialog.setWidth("850px");
+    dialog.setHeight("480px");
+    dialog.getElement().getClassList().add("custom-dialog"); // ✨ apply custom class
 
-        if (suspensions.isEmpty()) {
-            Paragraph emptyMsg = new Paragraph("No suspended users.");
-            emptyMsg.getStyle().set("padding", "1rem").set("color", "#6b7280");
-            dialog.add(emptyMsg);
-        } else {
-            Grid<UserSuspensionDTO> grid = new Grid<>(UserSuspensionDTO.class, false);
+    VerticalLayout wrapper = new VerticalLayout();
+    wrapper.addClassName("cart-section"); // Reuse styling
+    wrapper.setSizeFull();
+    wrapper.setSpacing(true);
+    wrapper.setPadding(false);
 
-            grid.addColumn(UserSuspensionDTO::getUserName).setHeader("User Name");
-            grid.addColumn(s -> s.isPaused() ? "Yes" : "No").setHeader("Paused");
-            grid.addColumn(s -> s.getSuspensionEndTime() != null ? s.getSuspensionEndTime().toString() : "N/A")
-                .setHeader("End Time").setAutoWidth(true).setFlexGrow(0);
-            grid.addColumn(UserSuspensionDTO::getRemainingWhenPaused)
-                .setHeader("Remaining Time").setAutoWidth(true).setFlexGrow(0);
+    if (suspensions.isEmpty()) {
+        Paragraph emptyMsg = new Paragraph("No suspended users.");
+        emptyMsg.getStyle().set("padding", "1rem").set("color", "#6b7280");
+        wrapper.add(emptyMsg);
+    } else {
+        Grid<UserSuspensionDTO> grid = new Grid<>(UserSuspensionDTO.class, false);
 
-            grid.setItems(suspensions);
-            grid.setWidthFull();
-            grid.setHeight("370px");
-            grid.addClassName("v-grid");
-            grid.getStyle().set("font-size", "0.95rem").set("background", "#fff");
-            dialog.add(grid);
-        }
+        grid.addColumn(UserSuspensionDTO::getUserName).setHeader("User Name");
+        grid.addColumn(s -> s.isPaused() ? "Yes" : "No").setHeader("Paused");
+        grid.addColumn(s -> s.getSuspensionEndTime() != null ? s.getSuspensionEndTime().toString() : "N/A")
+            .setHeader("End Time").setAutoWidth(true).setFlexGrow(0);
+        grid.addColumn(UserSuspensionDTO::getRemainingWhenPaused)
+            .setHeader("Remaining Time").setAutoWidth(true).setFlexGrow(0);
 
-        Button close = new Button("Close", e -> dialog.close());
-        close.addClassName("v-button");
-        close.addClassName("primary");
-        close.getStyle().set("margin-top", "1rem");
-        dialog.getFooter().add(close);
+        grid.setItems(suspensions);
+        grid.setWidthFull();
+        grid.setHeight("370px");
+        grid.addClassName("v-grid");
+        grid.getStyle().set("font-size", "0.95rem").set("background", "#fff");
 
-        dialog.open();
+        wrapper.add(grid);
     }
+
+    Button close = new Button("Close", e -> dialog.close());
+    close.addClassName("right-button");
+    close.getStyle().set("margin-top", "1rem");
+
+    dialog.add(wrapper);
+    dialog.getFooter().add(close);
+    dialog.open();
+}
+
 
     private void showManageStores() {
         getChildren()
@@ -183,11 +194,11 @@ public class AdminPageView extends VerticalLayout {
         storeGrid.addColumn(store -> store.category).setHeader("Category");
         storeGrid.addColumn(store -> store.finalRating).setHeader("Rating");
         storeGrid.addColumn(store -> store.active ? "Active" : "Deactive").setHeader("Status");
-
+        
         storeGrid.addComponentColumn(store -> {
             Button closeBtn = new Button("❌ Close Store", e -> presenter.onCloseStore(store.storeId));
-            closeBtn.addClassName("v-button");
-            closeBtn.addClassName("danger");
+            closeBtn.addClassName("right-button");
+            closeBtn.setWidthFull(); 
             return closeBtn;
         }).setHeader("Action");
 
