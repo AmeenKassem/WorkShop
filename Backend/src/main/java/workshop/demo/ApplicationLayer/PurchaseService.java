@@ -237,7 +237,7 @@ public class PurchaseService {
             }
         }
     }
-
+@Transactional
     public ParticipationInRandomDTO participateInRandom(String token, int randomId, int storeId, double amountPaid,
             PaymentDetails paymentDetails) throws Exception {
         logger.info("participateInRandom called with randomId={}, storeId={}", randomId, storeId);

@@ -274,7 +274,7 @@ public class ActivePurchasesService {
         logger.info("we have to return to te user an array of auctions. size: " + auctionDTOs.size());
         return auctionDTOs.toArray(new AuctionDTO[0]);
     }
-
+@Transactional
     public AuctionDTO[] getAllAuctions(String token, int storeId) throws Exception {
         checkUserAndStore(token, storeId, true);
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
@@ -388,7 +388,7 @@ public class ActivePurchasesService {
                 .toArray(RandomDTO[]::new);
 
     }
-
+@Transactional
     public RandomDTO[] getAllRandoms(String token, int storeId) throws Exception {
         checkUserAndStore(token, storeId, true);
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
@@ -548,7 +548,7 @@ public class ActivePurchasesService {
 
         return bidId;
     }
-
+@Transactional
     public BidDTO[] getAllActiveBids_user(String token, int storeId) throws Exception {
         logger.info("User requesting all auctions in store: {}", storeId);
         int userId = checkUserAndStore(token, storeId, false);
@@ -569,7 +569,7 @@ public class ActivePurchasesService {
                 .map(BID::getDTO)
                 .toArray(BidDTO[]::new);
     }
-
+@Transactional
     public BidDTO[] getAllBids(String token, int storeId) throws Exception {
         checkUserAndStore(token, storeId, true);
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
