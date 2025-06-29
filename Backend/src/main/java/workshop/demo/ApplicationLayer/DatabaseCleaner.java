@@ -44,7 +44,6 @@ public class DatabaseCleaner {
          DELETE FROM dbo.[composite_discount_entity];
          DELETE FROM dbo.[invisible_discount_entity];
          DELETE FROM dbo.[visible_discount_entity];
-         UPDATE dbo.[store] SET discount_id = NULL;        
          DELETE FROM dbo.[discount_entity];
          DELETE FROM dbo.[active_purcheses];
          DELETE FROM dbo.[node];

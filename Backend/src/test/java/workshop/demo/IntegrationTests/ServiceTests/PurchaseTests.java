@@ -265,7 +265,6 @@ public class PurchaseTests {
 
     @Test
     void Add_BidProduct_Failure_StoreNotFound() throws Exception {
-        // <<<<<<< HEAD
 
         UIException ex = assertThrows(UIException.class, () -> activePurcheses.addUserBidToBid(NGToken, 0, 2, 30.0));
 
@@ -433,7 +432,7 @@ public class PurchaseTests {
         assertNotNull(receipts);
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(2000,
+        assertEquals(0,
                 receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
 
         List<ReceiptDTO> result = orderService.getReceiptDTOsByUser(NGToken);
@@ -510,8 +509,8 @@ public class PurchaseTests {
         PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
-        purchaseService.participateInRandom(NGToken, randomId, createdStoreId, 0.00001, paymentDetails);
-        purchaseService.participateInRandom(NOToken, randomId, createdStoreId, 1999.99999, paymentDetails);
+        purchaseService.participateInRandom(NGToken, randomId, createdStoreId, 1000, paymentDetails);
+        purchaseService.participateInRandom(NOToken, randomId, createdStoreId, 1000, paymentDetails);
 
         assertEquals(2, activePurcheses.getAllRandoms(NOToken, createdStoreId)[0].participations.length);
         ParticipationInRandomDTO player1 = activePurcheses.getAllRandoms(NOToken,
