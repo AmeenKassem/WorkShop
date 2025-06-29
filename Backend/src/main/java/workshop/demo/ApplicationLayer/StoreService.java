@@ -529,6 +529,7 @@ public class StoreService {
         List<Discount> subDiscounts = new ArrayList<>();
         // Find createDiscountDTO for each subDiscount and add it to the subDiscounts
         // list
+        store.getDiscount();
         for (String target : subDiscountsNames) {
             Discount d = store.findDiscountByName(target);
             if (d == null) {
@@ -542,21 +543,48 @@ public class StoreService {
         }
         CreateDiscountDTO dto = new CreateDiscountDTO(name, percent, type, condition, logic, List.of());
         Discount discount = DiscountFactory.fromDTO(dto);
-        if (!subDiscounts.isEmpty()) {
-            if (!(discount instanceof CompositeDiscount comp)) {
-                throw new Exception("Chosen logic does not allow sub‑discounts");
-            }
-            subDiscounts.forEach(comp::addDiscount);
-        }
+//        if (!subDiscounts.isEmpty()) {
+//            if (!(discount instanceof CompositeDiscount comp)) {
+//                throw new Exception("Chosen logic does not allow sub‑discounts");
+//            }
+//            subDiscounts.forEach(comp::addDiscount);
+//        }
 
+        Discount oldDiscount =store.getDiscount(); // hydrate transient discount if needed
 
-        store.addDiscount(discount);
-        DiscountEntity entity = DiscountMapper.toEntity(discount);
-        //discountRepo.save(entity);
-        store.setDiscountEntity(entity);
+        DiscountEntity oldEntity = store.getDiscountEntity();
+        //deleteConflictingNamesRecursively(oldEntity); // ✅ cleanup before inserting
+        if(oldDiscount!=null)
+            removeDiscountFromStore(token,storeId,oldDiscount.getName());
+        store.getDiscountEntity();
+        store.getDiscount();
+        store.addDiscount(oldDiscount);
+        store.addDiscount(discount); // now safe to merge
+        DiscountEntity newEntity = DiscountMapper.toEntity(store.getDiscount());
+        //discountRepo.save(newEntity);
+        store.setDiscountEntity(newEntity);
+        store.setDiscount(store.getDiscount());
+
         storeJpaRepo.save(store);
+
+
         logger.info("Discount '{}' added successfully to store {}", discount.getName(), storeId);
     }
+    private void deleteConflictingNamesRecursively(DiscountEntity entity) {
+        if (entity == null) return;
+
+        // First delete all children (if composite)
+        if (entity instanceof CompositeDiscountEntity composite) {
+            for (DiscountEntity child : composite.getSubDiscounts()) {
+                deleteConflictingNamesRecursively(child);
+            }
+        }
+
+        // Then delete this entity
+        discountRepo.delete(entity);
+    }
+
+
     @Transactional
     public void removeDiscountFromStore(String token, int storeId, String discountName)
             throws UIException, DevException {
