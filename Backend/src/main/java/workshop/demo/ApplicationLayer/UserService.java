@@ -101,17 +101,15 @@ public class UserService {
         return userToAdd.getId();
     }
 
-    public void registerAdminDirectly(String username, String password, int age) throws UIException {
-        if (regJpaRepo.findByUsername(username).isPresent()) {
-            throw new UIException("Admin user already exists", 1002);
-        }
-
-        String encryptedPassword = encoder.encodePassword(password);
-        Registered admin = new Registered(username, encryptedPassword, age);
-        admin.setAdmin();
-        regJpaRepo.save(admin);
-    }
-
+    // public void registerAdminDirectly(String username, String password, int age) throws UIException {
+    //     if (regJpaRepo.findByUsername(username).isPresent()) {
+    //         throw new UIException("Admin user already exists", 1002);
+    //     }
+    //     String encryptedPassword = encoder.encodePassword(password);
+    //     Registered admin = new Registered(username, encryptedPassword, age);
+    //     admin.setAdmin();
+    //     regJpaRepo.save(admin);
+    // }
     public boolean isAdmin(String username, String password) {
         Optional<Registered> reg = regJpaRepo.findByUsername(username);
         if (!reg.isPresent()) {
@@ -270,7 +268,8 @@ public class UserService {
         logger.info("Item removed from cart for productId={}", itemCartId);
         return true;
     }
-@Transactional
+
+    @Transactional
     public SpecialCartItemDTO[] getSpecialCart(String token) throws UIException, Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);

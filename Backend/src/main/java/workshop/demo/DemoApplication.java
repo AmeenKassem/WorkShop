@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DomainLayer.AppSettings.AppSettingsEntity;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.InfrastructureLayer.AppSettingsRepository;
 
 @SpringBootApplication
@@ -20,6 +21,8 @@ public class DemoApplication {
     private UserService userService;
     @Autowired
     private AppSettingsRepository appsetting;
+    @Autowired
+    private AdminInitilizer adminInitilizer;
 
     public static void main(String[] args) {
         SpringApplication.run(DemoApplication.class, args);
@@ -29,7 +32,8 @@ public class DemoApplication {
     CommandLineRunner initAdmin(UserService userService) {
         return args -> {
             try {
-                userService.registerAdminDirectly("admin", "Admin123", 23);
+                //userService.registerAdminDirectly("admin", "Admin123", 23);
+                userService.registerAdmin("admin", "Admin123", adminInitilizer.getPassword());
                 System.out.println("[Admin Init] Admin registered successfully.");
             } catch (UIException ex) {
                 // Admin already exists — just log and continue -> the system does not crash
