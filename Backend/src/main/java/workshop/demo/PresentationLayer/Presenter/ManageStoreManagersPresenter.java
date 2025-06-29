@@ -1,6 +1,7 @@
 package workshop.demo.PresentationLayer.Presenter;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,6 +57,9 @@ public class ManageStoreManagersPresenter {
             if (body != null && body.getErrorMsg() == null && body.getErrNumber() == -1) {
                 List<WorkerDTO> managers = objectMapper.convertValue(body.getData(), new TypeReference<>() {
                 });
+                if (managers == null) {
+                    managers = Collections.emptyList();
+                }
                 view.updateManagerList(managers);
             } else if (body != null) {
                 NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
