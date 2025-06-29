@@ -11,6 +11,9 @@ user :
 
 	auction <username> <storeName> <productName> <bid>
 
+	purchase <userName> <special/cart> <valid/invalid>
+
+
 store :
 	create <username> <storeName> <storeCategory>;
 

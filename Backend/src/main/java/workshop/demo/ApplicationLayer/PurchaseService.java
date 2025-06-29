@@ -292,8 +292,9 @@ public class PurchaseService {
                 // DO NOT DELETE THIS CODE!!!!!!!!!!!!
             } else if (specialItem.type == SpecialType.Auction) { // AUCTION
                 ActivePurcheses active = activeRepo.findById(specialItem.storeId).orElse(null);
+                
                 Auction auction = active.getAuctionById(specialItem.specialId);
-                auction.endAuction();
+                // auction.endAuction();
                 if (auction.isEnded()) {
                     if (auction.bidIsWinner(specialItem.bidId)) {
                         winningAuctions.add(auction.getBid(specialItem.bidId));
@@ -488,7 +489,7 @@ public class PurchaseService {
             ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, discountedTotal);
             receipt.setPaymentTransactionId(paymentTxId);
             receipt.setSupplyTransactionId(supplyTxId);
-            
+
             receipts.add(receipt);
             // orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
             Order order = new Order(userId, receipt, storeName);

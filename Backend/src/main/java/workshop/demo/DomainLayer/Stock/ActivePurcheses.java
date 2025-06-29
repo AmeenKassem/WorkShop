@@ -396,8 +396,11 @@ public class ActivePurcheses {
         randomIdGen.set(0);
     }
 
-    @Transactional
+    // @Transactional
     public Auction getAuctionById(int res) {
+        for (Auction auction : activeAuction.values()) {
+            
+        }
         return activeAuction.get(res);
     }
 
