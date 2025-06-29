@@ -139,33 +139,36 @@ public class PurchaseView extends VerticalLayout implements HasUrlParameter<Stri
 
     public static void showReceiptDialog(ReceiptDTO[] receipts) {
         Dialog dialog = new Dialog();
-        dialog.setCloseOnEsc(true);
-        dialog.setCloseOnOutsideClick(false);
-        System.out.println("showing my reciepts dialog!");
-        Div content = new Div();
-        content.getStyle().set("max-height", "400px").set("overflow", "auto");
+        dialog.setHeaderTitle("🧾 My Purchase Receipts");
+        dialog.getElement().getClassList().add("receipt-dialog");
+        dialog.setWidth("600px"); 
+        VerticalLayout wrapper = new VerticalLayout();
+        wrapper.addClassName("cart-section");
+        wrapper.setSpacing(true);
+        wrapper.setPadding(true);
+        wrapper.setWidthFull();
 
-        for (ReceiptDTO receipt : receipts) {
-            Div receiptDiv = new Div();
-            receiptDiv.getStyle().set("border", "1px solid #ccc").set("padding", "10px").set("margin", "10px");
-
-            receiptDiv.add(new H3("Store: " + receipt.getStoreName()));
-            receiptDiv.add(new Paragraph("Date: " + receipt.getDate()));
-            receiptDiv.add(new Paragraph("Total: $" + receipt.getFinalPrice()));
-
-            if (receipt.getProductsList() != null) {
-                for (ReceiptProduct product : receipt.getProductsList()) {
-                    receiptDiv.add(new Paragraph("- " + product.getProductName() +
-                            " (x" + product.getQuantity() + "), $" + product.getPrice()));
-                }
+        if (receipts.length == 0) {
+            Paragraph empty = new Paragraph("No receipts available.");
+            empty.getStyle().set("color", "#6b7280");
+            wrapper.add(empty);
+        } else {
+            for (ReceiptDTO receipt : receipts) {
+                VerticalLayout card = new VerticalLayout();
+                card.addClassName("receipt-card");
+                card.add(new Paragraph("📦 Store: " + receipt.getStoreName()));
+                card.add(new Paragraph("📅 Date: " + receipt.getDate()));
+                card.add(new Paragraph("💳 Total: $" + receipt.getFinalPrice()));
+                wrapper.add(card);
             }
-
-            content.add(receiptDiv);
         }
 
-        Button closeBtn = new Button("Close", e -> dialog.close());
-        closeBtn.getStyle().set("margin-top", "10px");
-        dialog.add(content, closeBtn);
+        Button close = new Button("Close", e -> dialog.close());
+        close.addClassName("right-button");
+        close.getStyle().set("margin-top", "1rem");
+
+        dialog.add(wrapper);
+        dialog.getFooter().add(close);
         dialog.open();
     }
 }

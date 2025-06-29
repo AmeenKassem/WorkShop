@@ -13,9 +13,11 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.Id;
 import jakarta.persistence.MapKey;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Transient;
 import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.AuctionDTO;
@@ -32,6 +34,7 @@ public class ActivePurcheses {
 
     private static final Logger logger = LoggerFactory.getLogger(ActivePurcheses.class);
 
+    
     @Id
     private int storeId;
 
@@ -427,6 +430,7 @@ public class ActivePurcheses {
         return activeAuction.get(auctionId).mustReturnToStock();
     }
 
+    @Transactional
     public int getCurrAuctionTop(int auctionId) {
         return activeAuction.get(auctionId).getTopId();
     }

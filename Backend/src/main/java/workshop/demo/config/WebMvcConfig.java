@@ -15,7 +15,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(appInitializationInterceptor).addPathPatterns("/**");
+        registry.addInterceptor(appInitializationInterceptor).addPathPatterns("/**").excludePathPatterns("/api/appsettings/initdatafile");;
     }
 
 }

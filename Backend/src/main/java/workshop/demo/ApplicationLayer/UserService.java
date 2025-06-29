@@ -289,15 +289,12 @@ public class UserService {
             itemToSend.storeName = store.getStoreName();
             // System.out.println("product id is " + item.getProductId());
             Product product = stockRepo.findById(item.getProductId()).orElse(null);
-            // if (product == null) {
-            // System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadddddddddddddddddddddddddddddddddddddddiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiinnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
-            // }
             if (item.type == SpecialType.Random) {
                 ParticipationInRandomDTO card = activePurcheses.getRandomCard(item.storeId, item.specialId,
                         item.user.getId());
                 Random random = activePurcheses.getRandom(item.specialId);
                 itemToSend.setValues(product.getName(), card.isWinner, card.ended);
-                itemToSend.dateEnd = random.getDateOfEnd(); //TODO , use the same function you have used on RandomDTO 
+                itemToSend.dateEnd = random.getDateOfEnd(); // TODO , use the same function you have used on RandomDTO
                 itemToSend.quantity = random.getQuantity();
             } else if (item.type == SpecialType.BID) {
                 SingleBid bid = activePurcheses.getBid(item.storeId, item.specialId, item.user.getId(), item.type);
@@ -374,6 +371,24 @@ public class UserService {
         Optional<Registered> reg = regJpaRepo.findById(adminId);
         if (!reg.isPresent()) {
             throw new UIException("user is not admin!!", ErrorCodes.NO_PERMISSION);
+        }
+    }
+
+    public void registerAdmin(String userName, String password, String key) throws Exception {
+        if (adminInitilizer.matchPassword(key)) {
+            int id = registerUser(userName, password, 30);
+            setUserAsAdmin(id, key);
+        } else {
+            throw new UIException("admin key not correct!", ErrorCodes.NOT_ADMIN);
+        }
+    }
+
+    public void checkAdmin(String adminKey, String username, String password) throws UIException {
+        if (adminInitilizer.matchPassword(adminKey)) {
+            int id = login(username, password);
+            setUserAsAdmin(id, adminKey);
+        } else {
+            throw new UIException("admin key not correct!", ErrorCodes.NOT_ADMIN);
         }
     }
 

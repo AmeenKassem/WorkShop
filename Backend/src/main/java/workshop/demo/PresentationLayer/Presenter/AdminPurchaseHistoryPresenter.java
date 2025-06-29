@@ -9,6 +9,7 @@ import org.springframework.web.util.UriUtils;
 import org.springframework.http.*;
 import com.vaadin.flow.server.VaadinSession;
 
+import workshop.demo.Controllers.ApiResponse;
 import workshop.demo.DTOs.PurchaseHistoryDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.AdminPurchaseHistoryView;
@@ -34,26 +35,31 @@ public class AdminPurchaseHistoryPresenter {
 
         try {
             String url = String.format(
-                    Base.url+"/api/users/purchaseHistory?token=%s",
+                    Base.url + "/api/history/viewAllPurchaseHistory?token=%s",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             headers.setAccept(List.of(MediaType.APPLICATION_JSON));
             HttpEntity<?> entity = new HttpEntity<>(headers);
 
-            ResponseEntity<List<PurchaseHistoryDTO>> response = restTemplate.exchange(
+            ResponseEntity<ApiResponse<List<PurchaseHistoryDTO>>> response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     entity,
-                    new ParameterizedTypeReference<>() {
-            });
+                    new ParameterizedTypeReference<ApiResponse<List<PurchaseHistoryDTO>>>() {
+                    });
 
-            List<PurchaseHistoryDTO> historyList = response.getBody();
-            this.view.displayPurchaseHistory(historyList);
+            ApiResponse<List<PurchaseHistoryDTO>> apiResponse = response.getBody();
+
+            if (apiResponse != null && apiResponse.getData() != null) {
+                view.displayPurchaseHistory(apiResponse.getData());
+            } else {
+                NotificationView.showError("No purchase history found.");
+            }
 
         } catch (Exception e) {
             ExceptionHandlers.handleException(e);
         }
     }
+
 }
