@@ -2,12 +2,14 @@ package workshop.demo.ApplicationLayer.DataInitilizer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.AuctionStatus;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SupplyDetails;
@@ -36,6 +38,9 @@ public class UserParser extends ManagerDataInit {
             case "auction":
                 auction(toSend);
                 break;
+            case "random":
+                random(toSend);
+                break;
             case "purchase":
                 purchase(toSend);
                 break;
@@ -43,6 +48,39 @@ public class UserParser extends ManagerDataInit {
                 log("undefined function for user on line " + line + " : " + construction.getFirst());
                 error = true;
                 break;
+        }
+    }
+
+    private void random(List<String> toSend) {
+        if (toSend.size() != 4) {
+            log("syntax error on line " + line
+                    + " : params does not match auction <username> <storeName> <productName> <bid>");
+            error = true;
+            return;
+        }
+        String token = getTokenForUserName(toSend.get(0));
+        if (token == null) {
+            return;
+        }
+        String storeName = toSend.get(1).replace("-", " ");
+        int id = getStoreIdByName(storeName);
+        String productName = toSend.get(2).replace("-", " ");
+        double price = Double.parseDouble(toSend.get(3));
+        try {
+            RandomDTO[] randoms = activeService.getAllRandoms(token, id);
+            RandomDTO random = null;
+            for (RandomDTO randomDTO : randoms) {
+                if (randomDTO.productName.equals(productName))
+                    random = randomDTO;
+            }
+            if (random == null) {
+                log("random " + productName + " does not found!");
+                return;
+            }
+            purchaseService.participateInRandom(token, random.id, id, price, PaymentDetails.testPayment());
+            log("user " + toSend.get(0) + "bid on auction set successfully ");
+        } catch (Exception e) {
+            log("got error on line " + line + " :" + e.getMessage());
         }
     }
 
@@ -81,7 +119,7 @@ public class UserParser extends ManagerDataInit {
             try {
                 reciept = purchaseService.buyRegisteredCart(token, paymentDetails, supply);
             } catch (Exception e) {
-                
+
                 log(e.getMessage());
             }
         } else if (toSend.get(1).equals("special")) {
