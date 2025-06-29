@@ -175,7 +175,7 @@ public class ManageStorePresenter {
 
                 for (OrderDTO order : orders) {
                     StringBuilder sb = new StringBuilder();
-                    sb.append("User ID: ").append(order.getUserId()).append("\n");
+                    sb.append("User Name: ").append(order.userName).append("\n");
                     sb.append("Date: ").append(order.getDate()).append("\n");
                     sb.append("Final Price: ").append(order.getFinalPrice()).append("\n");
                     sb.append("Products:\n");
