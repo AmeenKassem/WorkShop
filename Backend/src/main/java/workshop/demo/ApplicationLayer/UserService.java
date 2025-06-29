@@ -270,7 +270,7 @@ public class UserService {
         logger.info("Item removed from cart for productId={}", itemCartId);
         return true;
     }
-
+@Transactional
     public SpecialCartItemDTO[] getSpecialCart(String token) throws UIException, Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
@@ -299,6 +299,7 @@ public class UserService {
             } else if (item.type == SpecialType.BID) {
                 SingleBid bid = activePurcheses.getBid(item.storeId, item.specialId, item.user.getId(), item.type);
                 itemToSend.setValues(product.getName(), bid.isWinner() || bid.isAccepted(), bid.isEnded());
+                itemToSend.quantity = activePurcheses.getBidById(item.specialId).getQuantity();
             } else if (item.type == SpecialType.Auction) {
                 Auction auction = activePurcheses.getAuctionById(item.specialId);
                 itemToSend.setValues(product.getName(), auction.bidIsWinner(item.bidId), auction.isEnded());
@@ -306,6 +307,7 @@ public class UserService {
                 itemToSend.maxBid = auction.getMaxBid();
                 itemToSend.onTop = auction.bidIsTop(item.bidId);
                 itemToSend.dateEnd = auction.getDateOfEnd();
+                itemToSend.quantity = auction.getQuantity();
             }
             result.add(itemToSend);
         }

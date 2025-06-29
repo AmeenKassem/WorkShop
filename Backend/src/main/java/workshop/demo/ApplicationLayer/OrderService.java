@@ -70,7 +70,15 @@ public class OrderService {
     private List<OrderDTO> convertToDTOs(List<Order> orders, int storeId) {
         List<OrderDTO> dtos = new ArrayList<>();
         for (Order o : orders) {
-            dtos.add(new OrderDTO(o.getUserId(), storeId, o.getDate(), o.getProductsList(), o.getFinalPrice()));
+            String userName = userRepo.findById(o.getUserId())
+                    .map(registered -> registered.getUsername())
+                    .orElse("Guest");
+
+            //dtos.add(new OrderDTO(o.getUserId(), storeId, o.getDate(), o.getProductsList(), o.getFinalPrice()));
+            OrderDTO dto = new OrderDTO(o.getUserId(), storeId, o.getDate(), o.getProductsList(), o.getFinalPrice());
+            dto.setUserName(userName);
+
+            dtos.add(dto);
         }
         return dtos;
     }

@@ -24,15 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
-import workshop.demo.ApplicationLayer.NotificationService;
-import workshop.demo.ApplicationLayer.OrderService;
-import workshop.demo.ApplicationLayer.PaymentServiceImp;
-import workshop.demo.ApplicationLayer.PurchaseService;
-import workshop.demo.ApplicationLayer.StockService;
-import workshop.demo.ApplicationLayer.StoreService;
-import workshop.demo.ApplicationLayer.SupplyServiceImp;
-import workshop.demo.ApplicationLayer.UserService;
-import workshop.demo.ApplicationLayer.UserSuspensionService;
+import workshop.demo.ApplicationLayer.*;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
@@ -116,49 +108,38 @@ public class GuestTests {
     int PID;
 
     int createdStoreId;
+    @Autowired
+    DatabaseCleaner databaseCleaner;
 
     @BeforeEach
     void setup() throws Exception {
-        node.deleteAll();
-        orderRepository.deleteAll();
-        tree.deleteAll();
-        userRepo.deleteAll();
-
-        guestRepo.deleteAll();
-
-        stockRepositoryjpa.deleteAll();
-        offerRepo.deleteAll();
-        storeRepositoryjpa.deleteAll();
-        storeStockRepo.deleteAll();
-
-        suspensionRepo.deleteAll();
-        orderRepository.deleteAll();
+        databaseCleaner.wipeDatabase();
 
 
         GToken = userService.generateGuest();
 
         String OToken = userService.generateGuest();
 
-            userService.register(OToken, "owner", "owner", 25);
+        userService.register(OToken, "owner", "owner", 25);
 
-            // --- Login ---
-            NOToken = userService.login(OToken, "owner", "owner");
+        // --- Login ---
+        NOToken = userService.login(OToken, "owner", "owner");
 
-            assertTrue(authRepo.getUserName(NOToken).equals("owner"));
-            // ======================= STORE CREATION =======================
+        assertTrue(authRepo.getUserName(NOToken).equals("owner"));
+        // ======================= STORE CREATION =======================
 
-            createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore",
-                    "ELECTRONICS");
-            // assertEquals( 1,createdStoreId);
+        createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore",
+                "ELECTRONICS");
+        // assertEquals( 1,createdStoreId);
 
-            // ======================= PRODUCT & ITEM ADDITION =======================
-            String[] keywords = { "Laptop", "Lap", "top" };
-            PID = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
+        // ======================= PRODUCT & ITEM ADDITION =======================
+        String[] keywords = { "Laptop", "Lap", "top" };
+        PID = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
 
-            stockService.addItem(createdStoreId, NOToken, PID, 10, 2000,
-                    Category.Electronics);
-            itemStoreDTO = new ItemStoreDTO(PID, 10, 2000, Category.Electronics, 0,
-                    createdStoreId, "Laptop", "TestStore");
+        stockService.addItem(createdStoreId, NOToken, PID, 10, 2000,
+                Category.Electronics);
+        itemStoreDTO = new ItemStoreDTO(PID, 10, 2000, Category.Electronics, 0,
+                createdStoreId, "Laptop", "TestStore");
 
         // } catch (UIException e) {
         //     // TODO Auto-generated catch block
@@ -229,7 +210,7 @@ public class GuestTests {
 
     }
 
-     @Test
+    @Test
     public void test(){
         assertNotNull(4);
     }

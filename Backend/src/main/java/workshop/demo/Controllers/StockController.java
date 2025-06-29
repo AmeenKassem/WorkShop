@@ -403,7 +403,7 @@ public class StockController {
 
     @PostMapping("/rejectBid")
     public ResponseEntity<?> rejectBid(@RequestParam String token, @RequestParam int storeId, @RequestParam int bidId,
-            @RequestParam int userToRejectForId, @RequestParam(required = false) int ownerOffer) {
+            @RequestParam int userToRejectForId, @RequestParam(required = false) Integer ownerOffer) {
         try {
             activeService.rejectBid(token, storeId, bidId, userToRejectForId, ownerOffer);
             return ResponseEntity.ok(new ApiResponse<>("Bid rejected successfully", null));
