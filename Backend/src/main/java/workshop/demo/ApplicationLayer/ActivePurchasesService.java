@@ -559,11 +559,6 @@ public class ActivePurchasesService {
         List<BID> bids = new ArrayList<>();
         for (BID bid : active.getActiveBids()) {
             BidDTO bidDTO = bid.getDTO();
-            // if (bid.getWinner() != null) {
-            // bidDTO.winnerUserName = userRepo.findById(bidDTO.winnerUserId).orElse(new
-            // Registered())
-            // .getUsername();
-            // }
             bidDTO.productName = stock.getProductById(bidDTO.productId).getName();
             bidDTO.storeName = store.getStoreName();
             bids.add(bid);
@@ -694,7 +689,7 @@ public class ActivePurchasesService {
     }
 
     @Transactional
-    public void rejectBid(String token, int storeId, int bidId, int userToRejectForId, int ownerOffer)
+    public void rejectBid(String token, int storeId, int bidId, int userToRejectForId, Integer ownerOffer)
             throws Exception, DevException {
         synchronized (lockManager.getBidLock(bidId)) {
             logger.info("User trying to accept bid: {} for bidId: {} in store: {}", userToRejectForId, bidId, storeId);
@@ -715,10 +710,10 @@ public class ActivePurchasesService {
                                 + " has been rejected");
             }
 
-            if( ownerOffer > 0 ) {
+            if( ownerOffer != null ) {
                 String ownerName = userRepo.findById(userId)
                         .orElseThrow(() -> new UIException("Owner not found", ErrorCodes.USER_NOT_FOUND)).getUsername();
-                String message = "Owner is Offering you to bid again with this price: " + ownerOffer
+                String message = "Owner is Offering you to bid again with this price: " + ownerOffer.toString()
                         + " on store: " + store.getStoreName() + ", on product : "
                         + stock.getProductById(active.getBidById(bidId).getProductId()).getName() + ". Would you like to bid again?";
                 notifier.sendDelayedMessageToUser(userRepo.findById(userRejected).get().getUsername(),
