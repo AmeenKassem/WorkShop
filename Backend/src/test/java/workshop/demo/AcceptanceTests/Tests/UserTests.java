@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+
 import java.util.List;
 import java.util.LinkedList;
 
@@ -180,10 +181,6 @@ public class UserTests extends AcceptanceTests {
     }
 
 
-
-
-
-
     @Test
     void testUser_LogOut_Success() throws Exception {
         // Arrange
@@ -199,8 +196,6 @@ public class UserTests extends AcceptanceTests {
         // Assert
         assertEquals("guest-token", result);
     }
-
-
 
 
     @Test
@@ -234,8 +229,9 @@ public class UserTests extends AcceptanceTests {
         });
 
         assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getNumber());
-        assertTrue( ex.getMessage().contains("not found"));
+        assertTrue(ex.getMessage().contains("not found"));
     }
+
     @Test
     void testUser_LogOut_Failure_UserNotFound() throws Exception {
         String token = "user-token";
@@ -252,6 +248,7 @@ public class UserTests extends AcceptanceTests {
         assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getNumber());
         assertEquals("User not found: " + username, ex.getMessage());
     }
+
     @Test
     void testUser_LogOut_Failure_RepoSaveException() throws Exception {
         String token = "user-token";
@@ -346,7 +343,6 @@ public class UserTests extends AcceptanceTests {
     }
 
 
-
     @Test
     void testUser_setAdmin_Failure_UserNotFound() throws Exception {
         int userId = 999;
@@ -359,7 +355,6 @@ public class UserTests extends AcceptanceTests {
 
         assertFalse(result);
     }
-
 
 
     @Test
@@ -393,9 +388,6 @@ public class UserTests extends AcceptanceTests {
     }
 
 
-
-
-
     @Test
     void testUser_CheckPurchaseHistory_Failure_InvalidToken() {
         // Arrange
@@ -427,7 +419,6 @@ public class UserTests extends AcceptanceTests {
         assertTrue(ex.getMessage().contains("not registered to the system"));
         assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getNumber());
     }
-
 
 
     @Test
@@ -468,7 +459,6 @@ public class UserTests extends AcceptanceTests {
         assertEquals(Category.Electronics, dto.getCategory());
         assertEquals("Smartphone", dto.getDescription());
     }
-
 
 
     @Test
@@ -555,7 +545,6 @@ public class UserTests extends AcceptanceTests {
     }
 
 
-
     @Test
     void testUserAddProductToCart_UserNotFound() throws Exception {
         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
@@ -598,6 +587,7 @@ public class UserTests extends AcceptanceTests {
         assertEquals(100, result[0].getPrice());
         assertEquals(4, result[0].getRank());
     }
+
     @Test
     void testSearchProducts_Success_PriceFilter() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
@@ -618,6 +608,7 @@ public class UserTests extends AcceptanceTests {
         assertEquals(1, result.length);
         assertTrue(result[0].getPrice() >= 50 && result[0].getPrice() <= 150);
     }
+
     @Test
     void testSearchProducts_Success_ByNameAndRank() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
@@ -639,6 +630,7 @@ public class UserTests extends AcceptanceTests {
         assertEquals(1, result.length);
         assertTrue(result[0].getRank() >= 4);
     }
+
     @Test
     void testSearchProducts_Success_ByCategory() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
@@ -659,6 +651,7 @@ public class UserTests extends AcceptanceTests {
         assertEquals(1, result.length);
         assertEquals(Category.Electronics, result[0].getCategory());
     }
+
     @Test
     void testSearchProducts_Success_MultipleItemsSameProduct() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
@@ -680,6 +673,7 @@ public class UserTests extends AcceptanceTests {
         assertEquals(2, result.length);
         assertTrue(result[0].getPrice() == 100 || result[0].getPrice() == 150);
     }
+
     @Test
     void testSearchProducts_Success_StrictPrice() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
@@ -700,6 +694,7 @@ public class UserTests extends AcceptanceTests {
         assertEquals(1, result.length);
         assertTrue(result[0].getPrice() >= 90 && result[0].getPrice() <= 110);
     }
+
     @Test
     void testSearchProducts_Failure_NoMatchingProducts() throws Exception {
         ProductSearchCriteria criteria = new ProductSearchCriteria(
@@ -734,7 +729,6 @@ public class UserTests extends AcceptanceTests {
     }
 
 
-
     @Test
     void testRankProduct_Success() throws Exception {
         int storeId = 0;
@@ -756,6 +750,7 @@ public class UserTests extends AcceptanceTests {
         verify(stock).rankProduct(productId, newRank);
         verify(mockStoreStock).saveAndFlush(stock);
     }
+
     @Test
     void testRankProduct_Failure_SuspendedUser() throws Exception {
         int storeId = 0;
@@ -765,7 +760,7 @@ public class UserTests extends AcceptanceTests {
         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
 
-        UserSuspension suspension = new UserSuspension(USER1_ID,100);
+        UserSuspension suspension = new UserSuspension(USER1_ID, 100);
         when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.of(suspension));
 
         UIException ex = assertThrows(UIException.class, () ->
@@ -774,6 +769,7 @@ public class UserTests extends AcceptanceTests {
         assertEquals(ErrorCodes.USER_SUSPENDED, ex.getNumber());
         assertTrue(ex.getMessage().toLowerCase().contains("suspended"));
     }
+
     @Test
     void testRankProduct_Failure_StoreStockNotFound() throws Exception {
         int storeId = 999;
@@ -791,6 +787,7 @@ public class UserTests extends AcceptanceTests {
 
         assertTrue(ex.getMessage().toLowerCase().contains("store stock not found"));
     }
+
     @Test
     void testRankProduct_Failure_InvalidToken() throws Exception {
         int storeId = 0;
@@ -825,6 +822,7 @@ public class UserTests extends AcceptanceTests {
         // Assert
         verify(spyStore).rankStore(newRank);
     }
+
     @Test
     void testUserRankStore_Failure_Suspended() throws Exception {
         int storeId = 0;
@@ -843,6 +841,7 @@ public class UserTests extends AcceptanceTests {
         assertEquals(ErrorCodes.USER_SUSPENDED, ex.getNumber());
         assertTrue(ex.getMessage().toLowerCase().contains("suspended"));
     }
+
     @Test
     void testUserRankStore_Failure_StoreNotFound() throws Exception {
         int storeId = 99;
@@ -881,6 +880,7 @@ public class UserTests extends AcceptanceTests {
         assertTrue(result);
         verify(mockReviewRepo).save(any(Review.class));
     }
+
     @Test
     void testUserAddReviewToProduct_Failure_Suspended() throws Exception {
         int storeId = store.getstoreId();
@@ -899,6 +899,7 @@ public class UserTests extends AcceptanceTests {
         assertEquals(ErrorCodes.USER_SUSPENDED, ex.getNumber());
         assertTrue(ex.getMessage().toLowerCase().contains("suspended"));
     }
+
     @Test
     void testUserAddReviewToProduct_Failure_EmptyStore() throws Exception {
         int storeId = store.getstoreId();
@@ -918,6 +919,7 @@ public class UserTests extends AcceptanceTests {
         assertEquals(ErrorCodes.PRODUCT_NOT_FOUND, ex.getNumber());
         assertTrue(ex.getMessage().toLowerCase().contains("no products"));
     }
+
     @Test
     void testUserAddReviewToProduct_Failure_ProductNotFoundInStore() throws Exception {
         int storeId = store.getstoreId();
@@ -940,6 +942,7 @@ public class UserTests extends AcceptanceTests {
         assertEquals(ErrorCodes.PRODUCT_NOT_FOUND, ex.getNumber());
         assertTrue(ex.getMessage().contains("Product with ID"));
     }
+
     @Test
     void testUserAddReviewToStore_Success() throws Exception {
         int storeId = store.getstoreId();
@@ -955,7 +958,6 @@ public class UserTests extends AcceptanceTests {
         assertTrue(result);
         verify(mockReviewRepo).save(any(Review.class));
     }
-
 
 
     @Test
@@ -974,6 +976,7 @@ public class UserTests extends AcceptanceTests {
 
         assertTrue(ex.getMessage().toLowerCase().contains("store"));
     }
+
     @Test
     void testGetReviewsForStore_Success() throws Exception {
         int storeId = store.getstoreId();
@@ -995,6 +998,7 @@ public class UserTests extends AcceptanceTests {
         assertEquals("Amazing store!", reviews.get(0).getReviewMsg());
         assertEquals("Good selection.", reviews.get(1).getReviewMsg());
     }
+
     @Test
     void testGetReviewsForStore_Failure_StoreNotFound() throws Exception {
         int storeId = 999;
@@ -1007,6 +1011,7 @@ public class UserTests extends AcceptanceTests {
 
         assertTrue(ex.getMessage().toLowerCase().contains("store"));
     }
+
     @Test
     void testGetReviewsForProduct_Success() throws Exception {
         int storeId = store.getstoreId();
@@ -1029,6 +1034,7 @@ public class UserTests extends AcceptanceTests {
         assertEquals("Awesome product!", reviews.get(0).getReviewMsg());
         assertEquals("Worth the price.", reviews.get(1).getReviewMsg());
     }
+
     @Test
     void testGetReviewsForProduct_Failure_StoreNotFound() throws Exception {
         int storeId = 999;
@@ -1045,27 +1051,194 @@ public class UserTests extends AcceptanceTests {
 
     @Test
     void testUserBuyCart_Success() throws Exception {
+        when(mockAuthRepo.validToken(user2Token)).thenReturn(true);
+        when(mockAuthRepo.getUserId(user2Token)).thenReturn(user2.getId());
+        when(mockSusRepo.findById(user2.getId())).thenReturn(Optional.empty());
+
+        //getUser
+
+        when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
+
+        user2.addToCart(new CartItem(new ItemCartDTO(store.getstoreId(), product.getProductId(), 1, 200, product.getName(), store.getStoreName(), Category.Electronics)));
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+
+        StoreStock stock = new StoreStock(store.getstoreId());
+        stock.addItem(new item(product.getProductId(), 1, 200, Category.Electronics));
+        when(mockStoreStock.findById(store.getstoreId())).thenReturn(Optional.of(stock));
+        when(mockUserRepo.getReferenceById(user2.getId())).thenReturn(user2);
+        // when(mockStoreStock.flush()).thenReturn()
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+
+        ReceiptDTO[] re = purchaseService.buyRegisteredCart(user2Token, paymentDetails, supplyDetails);
+
+        System.out.println(re.length);
+        assertNotNull(re, "Receipts should not be null");
+        assertTrue(re.length > 0, "Should have at least one receipt");
+
+        ReceiptDTO receipt = re[0];
+        assertEquals(store.getStoreName(), receipt.getStoreName());
+        assertTrue(receipt.getFinalPrice() > 0);
+        assertFalse(receipt.getProductsList().isEmpty(), "Receipt should have products");
+
+        ReceiptProduct rp = receipt.getProductsList().get(0);
+        assertEquals(product.getProductId(), rp.getProductId());
+        assertEquals(product.getName(), rp.getProductName());
+        assertEquals(200, rp.getPrice());
+    }
+    @Test
+    void testBuyRegisteredCart_Failure_InvalidToken() {
+        when(mockAuthRepo.validToken(user2Token)).thenReturn(false);
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            purchaseService.buyRegisteredCart(user2Token, paymentDetails, supplyDetails);
+        });
 
     }
 
     @Test
-    void testUserBuyCart_InvalidToken() throws Exception {
+    void testBuyRegisteredCart_Failure_SuspendedUser() throws UIException {
+        when(mockAuthRepo.validToken(user2Token)).thenReturn(true);
+        when(mockAuthRepo.getUserId(user2Token)).thenReturn(user2.getId());
+        when(mockSusRepo.findById(user2.getId()))
+                .thenReturn(Optional.of(new UserSuspension(user2.getId(), System.currentTimeMillis() + 9999)));
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            purchaseService.buyRegisteredCart(user2Token, paymentDetails, supplyDetails);
+        });
 
     }
 
     @Test
-    void testUserBuyCart_EmptyCart() throws Exception {
+    void testBuyRegisteredCart_Failure_EmptyCart() throws UIException {
+        when(mockAuthRepo.validToken(user2Token)).thenReturn(true);
+        when(mockAuthRepo.getUserId(user2Token)).thenReturn(user2.getId());
+        when(mockSusRepo.findById(user2.getId())).thenReturn(Optional.empty());
+        when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            purchaseService.buyRegisteredCart(user2Token, paymentDetails, supplyDetails);
+        });
 
     }
 
     @Test
-    void testUserBuyCart_ProductNotAvailable() throws Exception {
+    void testBuyRegisteredCart_Failure_StoreNotFound() throws UIException {
+        // Setup as user with item in cart
+        when(mockAuthRepo.validToken(user2Token)).thenReturn(true);
+        when(mockAuthRepo.getUserId(user2Token)).thenReturn(user2.getId());
+        when(mockSusRepo.findById(user2.getId())).thenReturn(Optional.empty());
+        when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
+        user2.addToCart(new CartItem(new ItemCartDTO(999, product.getProductId(), 1, 200, "Phone", "NotExistStore", Category.Electronics)));
+
+        when(mockStoreRepo.findById(999)).thenReturn(Optional.empty());
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            purchaseService.buyRegisteredCart(user2Token, paymentDetails, supplyDetails);
+        });
 
     }
 
-    @Test
-    void testUserBuyCart_PaymentFails() throws Exception {
-    }
+//    @Test
+//    void testBuyRegisteredCart_Failure_PurchasePolicyViolation() throws Exception {
+//        // Setup normal flow until policy
+//        when(mockAuthRepo.validToken(user2Token)).thenReturn(true);
+//        when(mockAuthRepo.getUserId(user2Token)).thenReturn(user2.getId());
+//        when(mockSusRepo.findById(user2.getId())).thenReturn(Optional.empty());
+//        when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
+//
+//        user2.addToCart(new CartItem(new ItemCartDTO(store.getstoreId(), product.getProductId(), 1, 200, "Phone", store.getStoreName(), Category.Electronics)));
+//        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+//
+//        StoreStock stock = new StoreStock(store.getstoreId());
+//        stock.addItem(new item(product.getProductId(), 1, 200, Category.Electronics));
+//        when(mockStoreStock.findById(store.getstoreId())).thenReturn(Optional.of(stock));
+//        when(mockUserRepo.getReferenceById(user2.getId())).thenReturn(user2);
+//
+//        // Make policy throw
+//        doThrow(new UIException("policy error", ErrorCodes.NO_PERMISSION)).when(store).assertPurchasePolicies(any(), any());
+//
+//        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+//        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+//
+//        UIException ex = assertThrows(UIException.class, () -> {
+//            purchaseService.buyRegisteredCart(user2Token, paymentDetails, supplyDetails);
+//        });
+//
+//    }
+
+//    @Test
+//    void testBuyRegisteredCart_Failure_PaymentFailed() throws Exception {
+//        setupNormalCartMocks();
+//
+//        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+//        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+//
+//        UIException ex = assertThrows(UIException.class, () -> {
+//            purchaseService.buyRegisteredCart(user2Token, paymentDetails, supplyDetails);
+//        });
+//
+//    }
+//
+//    @Test
+//    void testBuyRegisteredCart_Failure_SupplyFailed() throws Exception {
+//        setupNormalCartMocks();
+//
+//        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+//        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+//
+//        UIException ex = assertThrows(UIException.class, () -> {
+//            purchaseService.buyRegisteredCart(user2Token, paymentDetails, supplyDetails);
+//        });
+//
+//    }
+//
+//    @Test
+//    void testBuyRegisteredCart_Failure_SupplyThrows() throws Exception {
+//        setupNormalCartMocks();
+//
+//        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+//        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+//
+//        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+//            purchaseService.buyRegisteredCart(user2Token, paymentDetails, supplyDetails);
+//        });
+//
+//    }
+//
+//    /**
+//     * Helper to reuse for success & failures
+//     */
+//    private void setupNormalCartMocks() throws Exception {
+//        when(mockAuthRepo.validToken(user2Token)).thenReturn(true);
+//        when(mockAuthRepo.getUserId(user2Token)).thenReturn(user2.getId());
+//        when(mockSusRepo.findById(user2.getId())).thenReturn(Optional.empty());
+//        when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
+//        user2.addToCart(new CartItem(new ItemCartDTO(store.getstoreId(), product.getProductId(), 1, 200, "Phone", store.getStoreName(), Category.Electronics)));
+//        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+//
+//        StoreStock stock = new StoreStock(store.getstoreId());
+//        stock.addItem(new item(product.getProductId(), 1, 200, Category.Electronics));
+//        when(mockStoreStock.findById(store.getstoreId())).thenReturn(Optional.of(stock));
+//        when(mockUserRepo.getReferenceById(user2.getId())).thenReturn(user2);
+//
+//        when(mockStoreStock.saveAndFlush(any())).thenAnswer(inv -> inv.getArgument(0));
+//        when(mockOrderRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+//    }
+
+
     @Test
     void testUserGetPurchasePolicy_Success() throws Exception {
 

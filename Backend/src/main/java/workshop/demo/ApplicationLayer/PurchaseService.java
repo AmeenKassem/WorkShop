@@ -100,7 +100,35 @@ public class PurchaseService {
 
         return processCart(userId, true, paymentdetails, supplydetails);
     }
-
+//    @Test
+//    void testGuestBuyCart_Success() throws Exception {
+//
+//
+//
+//
+//        //
+//        when(mockAuthRepo.validToken(guestToken)).thenReturn(true);
+//        when(mockAuthRepo.getUserId(guestToken)).thenReturn(0);
+//        when(mockSusRepo.findById(0)).thenReturn(Optional.empty());
+//
+//        //getUser
+//        when(mockGuestRepo.findById(guest.getId())).thenReturn(Optional.of(guest));
+//
+//        guest.addToCart(new CartItem(new ItemCartDTO(store.getstoreId(),product.getProductId(),1,200,product.getName(),store.getStoreName(),Category.Electronics)));
+//        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+//
+//        StoreStock stock=new StoreStock(store.getstoreId());
+//        stock.addItem(new item(product.getProductId(),1,200,Category.Electronics));
+//        when(mockStoreStock.findById(store.getstoreId())).thenReturn(Optional.of(stock));
+//        when(mockGuestRepo.getReferenceById(guest.getId())).thenReturn(guest);
+//        // when(mockStoreStock.flush()).thenReturn()
+//        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+//        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+//
+//        ReceiptDTO[] re=purchaseService.buyGuestCart(guestToken,paymentDetails,supplyDetails);
+//
+//        System.out.println(re.length);
+//    }
     @Transactional(rollbackFor = UIException.class)
     public ReceiptDTO[] buyRegisteredCart(String token, PaymentDetails paymentdetails, SupplyDetails supplydetails)
             throws Exception {

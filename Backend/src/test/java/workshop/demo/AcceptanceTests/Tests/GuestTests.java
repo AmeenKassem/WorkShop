@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -36,22 +37,24 @@ import java.util.Optional;
 public class GuestTests extends AcceptanceTests {
     private static final Logger logger = LoggerFactory.getLogger(GuestTests.class);
 
-    // Tokens
+    private String user1Token;
     private String guestToken;
-    private String ownerToken;
 
     // Entities
-    private Guest guest;
     private Registered owner;
+//    private Registered user2;
+    private Guest guest1;
     private Store store;
     private Product product;
 
     // Constants
-    private static final String OWNER_USERNAME = "ownerUser";
-    private static final String OWNER_PASSWORD = "pass123";
-    private static final int OWNER_AGE = 25;
+    private static final String USER1_USERNAME = "user1";
+    private static final String USER2_USERNAME = "user2";
+    private static final String PASSWORD = "pass123";
+    private static final String ENCODED_PASSWORD = "encodedPass123";
 
-    private static final String ENCODED_PASS = "encodedPass123";
+    private static final int USER1_ID = 1;
+    private static final int USER2_ID = 2;
 
     private static final String STORE_NAME = "CoolStore";
     private static final String STORE_CATEGORY = "Electronics";
@@ -63,90 +66,98 @@ public class GuestTests extends AcceptanceTests {
 
     @BeforeEach
     void setup() throws Exception {
+        mockGuestRepo.deleteAll();
+        mockUserRepo.deleteAll();
 
-        // ===== GUEST user (ID = 0) =====
-        guest = new Guest();
-        //forceId(guest, 0);
+        // ===== ENCODER =====
+        Field encoderField = UserService.class.getDeclaredField("encoder");
+        encoderField.setAccessible(true);
+        encoderField.set(userService, encoder);
+
+        when(encoder.encodePassword(PASSWORD)).thenReturn(ENCODED_PASSWORD);
+        when(encoder.matches(PASSWORD, ENCODED_PASSWORD)).thenReturn(true);
+
+        // ===== USER1 guest =====
+        Guest guest = new Guest();
         saveGuestRepo(guest);
         when(mockAuthRepo.generateGuestToken(0)).thenReturn("guest-token");
         when(mockAuthRepo.getUserId("guest-token")).thenReturn(0);
-        guestToken = userService.generateGuest(); // First guest
+        userService.generateGuest();
 
-        // ===== OWNER enters as GUEST (ID = 1) =====
-        Guest ownerAsGuest = new Guest();
-        //forceId(ownerAsGuest, 1);
-        saveGuestRepo(ownerAsGuest);
-        when(mockAuthRepo.generateGuestToken(1)).thenReturn("guest-token-owner");
-        when(mockAuthRepo.getUserId("guest-token-owner")).thenReturn(1);
-        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException("guest-token-owner", logger);
-        String guestTokenForOwner = userService.generateGuest();
+        when(mockUserRepo.existsByUsername(USER1_USERNAME)).thenReturn(0);
+        when(mockUserRepo.save(any(Registered.class))).thenAnswer(inv -> {
+            Registered reg = inv.getArgument(0);
+            if (USER1_USERNAME.equals(reg.getUsername())) {
+                forceField(reg, "id", USER1_ID);
+            } else if (USER2_USERNAME.equals(reg.getUsername())) {
+                forceField(reg, "id", USER2_ID);
+            } else {
+                forceField(reg, "id", 999); // fallback
+            }
+            return reg;
+        });
 
-        // ===== OWNER registers (ID = 2) =====
-        owner = new Registered(2, OWNER_USERNAME, ENCODED_PASS, OWNER_AGE);
+        userService.register("guest-token", USER1_USERNAME, PASSWORD, 20);
+
+        owner = new Registered(USER1_ID, USER1_USERNAME, ENCODED_PASSWORD, 20);
         saveUserRepo(owner);
-        when(mockUserRepo.existsByUsername(OWNER_USERNAME)).thenReturn(0);
-        when(mockUserRepo.findRegisteredUsersByUsername(OWNER_USERNAME)).thenReturn(List.of(owner));
-        when(mockUserRepo.findById(2)).thenReturn(Optional.of(owner));
-        when(encoder.matches(OWNER_PASSWORD, ENCODED_PASS)).thenReturn(true);
+        when(mockUserRepo.findRegisteredUsersByUsername(USER1_USERNAME)).thenReturn(List.of(owner));
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(owner));
 
-        userService.register(guestTokenForOwner, OWNER_USERNAME, OWNER_PASSWORD, OWNER_AGE);
-        // ===== OWNER logs in (ID = 2, token = "owner-token") =====
-        when(mockAuthRepo.getUserId("owner-token")).thenReturn(2);
-        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException("owner-token", logger);
-        when(mockAuthRepo.generateUserToken(2, OWNER_USERNAME)).thenReturn("owner-token");
-        ownerToken = userService.login(guestTokenForOwner, OWNER_USERNAME, OWNER_PASSWORD);
+        when(mockAuthRepo.generateUserToken(USER1_ID, USER1_USERNAME)).thenReturn("user1Token");
+        when(mockAuthRepo.getUserId("user1Token")).thenReturn(USER1_ID);
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException("user1Token", logger);
+        user1Token = userService.login("guest-token", USER1_USERNAME, PASSWORD);
 
-        // ===== Store Setup (store ID = 123) =====
+        // ===== USER2  =====
+        guest1 = new Guest();
+        saveGuestRepo(guest1);
+        when(mockAuthRepo.generateGuestToken(0)).thenReturn("guest-token");
+        when(mockAuthRepo.getUserId("guest-token")).thenReturn(0);
+        guestToken=userService.generateGuest();
+//        user2 = new Registered(USER2_ID, USER2_USERNAME, ENCODED_PASSWORD, 22);
+//        saveUserRepo(user2);
+//        when(mockUserRepo.findRegisteredUsersByUsername(USER2_USERNAME)).thenReturn(List.of(user2));
+//        when(mockUserRepo.findById(USER2_ID)).thenReturn(Optional.of(user2));
+//
+//        when(mockAuthRepo.generateUserToken(USER2_ID, USER2_USERNAME)).thenReturn("user2Token");
+//        when(mockAuthRepo.getUserId("user2Token")).thenReturn(USER2_ID);
+//        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException("user2Token", logger);
+//        g = userService.login("guest-token", USER2_USERNAME, PASSWORD);
+
+        // ===== STORE =====
         store = new Store(STORE_NAME, STORE_CATEGORY);
         forceStoreId(store, 0);
-        when(mockSusRepo.findById(2)).thenReturn(Optional.empty());
         when(mockStoreRepo.save(any(Store.class))).thenReturn(store);
-        when(suConnectionRepo.addNewStoreOwner(123, 2)).thenReturn(true);
-        when(mockActivePurchases.save(any(ActivePurcheses.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(mockStoreStock.save(any(StoreStock.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(mockAuthRepo.getUserId(ownerToken)).thenReturn(2);
-        when(mockUserRepo.findById(2)).thenReturn(Optional.of(owner));
+        when(mockStoreRepo.findById(0)).thenReturn(Optional.of(store));
+        when(suConnectionRepo.addNewStoreOwner(0, USER1_ID)).thenReturn(true);
+        when(mockActivePurchases.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        int storeId = storeService.addStoreToSystem(ownerToken, STORE_NAME, STORE_CATEGORY);
-
-
-        // ===== Validate Store =====
+        int storeId = storeService.addStoreToSystem(user1Token, STORE_NAME, STORE_CATEGORY);
         assertEquals(0, storeId);
-        assertEquals(STORE_NAME, store.getStoreName());
-        assertEquals(STORE_CATEGORY, store.getCategory());
-        assertTrue(store.isActive());
 
-        // ===== Product Setup =====
+        // ===== PRODUCT =====
         product = new Product(PRODUCT_NAME, Category.Electronics, PRODUCT_DESC, KEYWORD);
-        when(mockStoreRepo.findById(storeId)).thenReturn(Optional.of(store));
+        forceField(product, "productId", 0);
         when(mockStockRepo1.save(any(Product.class))).thenReturn(product);
+        when(mockStockRepo1.findById(0)).thenReturn(Optional.of(product));
 
-        int productId = stockService.addProduct(ownerToken, PRODUCT_NAME, Category.Electronics, PRODUCT_DESC, KEYWORD);
-
-        // Assertions (optional)
-        assertNotNull(product);
-        assertEquals(PRODUCT_NAME, product.getName());
-        assertEquals(Category.Electronics, product.getCategory());
-        assertEquals(PRODUCT_DESC, product.getDescription());
+        int productId = stockService.addProduct(user1Token, PRODUCT_NAME, Category.Electronics, PRODUCT_DESC, KEYWORD);
         assertEquals(0, productId);
 
-        // ===== Item Setup =====
-        when(mockSusRepo.findById(2)).thenReturn(Optional.empty());
-        when(mockStoreRepo.findById(0)).thenReturn(Optional.of(store));
-        when(suConnectionRepo.manipulateItem(2, 0, Permission.AddToStock)).thenReturn(true);
-        when(mockStockRepo1.findById(0)).thenReturn(Optional.of(product));
+        // ===== ITEM =====
         StoreStock stock = new StoreStock(storeId);
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(0)).thenReturn(Optional.of(store));
+        when(suConnectionRepo.manipulateItem(USER1_ID, 0, Permission.AddToStock)).thenReturn(true);
         when(mockStoreStock.findById(0)).thenReturn(Optional.of(stock));
-        when(mockStoreStock.save(any(StoreStock.class))).thenAnswer(inv -> inv.getArgument(0));
-        int itemId = stockService.addItem(0, ownerToken, 0, 10, 200, Category.Electronics);
+        when(mockStoreStock.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
+        int itemId = stockService.addItem(0, user1Token, 0, 10, 200, Category.Electronics);
         assertEquals(0, itemId);
-        assertTrue(store.getStoreName().equals(STORE_NAME));
-
 
         System.out.println();
         System.out.println();
-
     }
 
     @Test
@@ -429,10 +440,10 @@ public class GuestTests extends AcceptanceTests {
         CartItem item = new CartItem(new ItemCartDTO(0, 2, originalQty, 50, PRODUCT_NAME, STORE_NAME, Category.Electronics));
         item.setId(itemCartId);
 
-        guest.addToCart(item); // Add it to the shared guest's cart
+        guest1.addToCart(item); // Add it to the shared guest's cart
 
         // Ensure mockGuestRepo returns the shared guest
-        when(mockGuestRepo.findById(guest.getId())).thenReturn(Optional.of(guest));
+        when(mockGuestRepo.findById(guest1.getId())).thenReturn(Optional.of(guest1));
 
         // Act
         boolean result = userService.ModifyCartAddQToBuy(guestToken, itemCartId, quantityToAdd);
@@ -440,7 +451,7 @@ public class GuestTests extends AcceptanceTests {
         // Assert
         assertTrue(result);
 
-        CartItem updatedItem = guest.getCart().stream()
+        CartItem updatedItem = guest1.getCart().stream()
                 .filter(i -> i.getId() == itemCartId)
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Item not found in cart"));
@@ -680,35 +691,178 @@ public class GuestTests extends AcceptanceTests {
 
     @Test
     void testGuestBuyCart_Success() throws Exception {
+        //
+        when(mockAuthRepo.validToken(guestToken)).thenReturn(true);
+        when(mockAuthRepo.getUserId(guestToken)).thenReturn(0);
+        when(mockSusRepo.findById(0)).thenReturn(Optional.empty());
 
+        //getUser
+        when(mockGuestRepo.findById(guest1.getId())).thenReturn(Optional.of(guest1));
+
+        guest1.addToCart(new CartItem(new ItemCartDTO(store.getstoreId(),product.getProductId(),1,200,product.getName(),store.getStoreName(),Category.Electronics)));
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+
+        StoreStock stock=new StoreStock(store.getstoreId());
+        stock.addItem(new item(product.getProductId(),1,200,Category.Electronics));
+        when(mockStoreStock.findById(store.getstoreId())).thenReturn(Optional.of(stock));
+        when(mockGuestRepo.getReferenceById(guest1.getId())).thenReturn(guest1);
+        // when(mockStoreStock.flush()).thenReturn()
+        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+
+        ReceiptDTO[] re=purchaseService.buyGuestCart(guestToken,paymentDetails,supplyDetails);
+
+        System.out.println(re.length);
+        assertNotNull(re, "Receipts should not be null");
+        assertTrue(re.length > 0, "Should have at least one receipt");
+
+        ReceiptDTO receipt = re[0];
+        assertEquals(store.getStoreName(), receipt.getStoreName());
+        assertTrue(receipt.getFinalPrice() > 0);
+        assertFalse(receipt.getProductsList().isEmpty(), "Receipt should have products");
+
+        ReceiptProduct rp = receipt.getProductsList().get(0);
+        assertEquals(product.getProductId(), rp.getProductId());
+        assertEquals(product.getName(), rp.getProductName());
+        assertEquals(200, rp.getPrice());
     }
-
     @Test
-    void testGuestBuyCart_InvalidToken() throws Exception {
+    void testGuestBuyCart_Failure_InvalidToken() {
+        when(mockAuthRepo.validToken(guestToken)).thenReturn(false);
 
+        UIException ex = assertThrows(UIException.class, () -> {
+            purchaseService.buyGuestCart(guestToken, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
+        });
+
+        assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
+        assertTrue(ex.getMessage().contains("Invalid token"));
     }
-
     @Test
-    void testGuestBuyCart_EmptyCart() throws Exception {
+    void testGuestBuyCart_Failure_Suspended() throws UIException {
+        when(mockAuthRepo.validToken(guestToken)).thenReturn(true);
+        when(mockAuthRepo.getUserId(guestToken)).thenReturn(0);
+        when(mockSusRepo.findById(0)).thenReturn(Optional.of(new UserSuspension(0, System.currentTimeMillis() + 100000)));
 
+        UIException ex = assertThrows(UIException.class, () -> {
+            purchaseService.buyGuestCart(guestToken, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
+        });
+
+        assertEquals(ErrorCodes.USER_SUSPENDED, ex.getNumber());
+        assertTrue(ex.getMessage().contains("Suspended"));
     }
-
     @Test
-    void testGuestBuyCart_ProductNotAvailable() throws Exception {
+    void testGuestBuyCart_Failure_EmptyCart() throws Exception {
+        when(mockAuthRepo.validToken(guestToken)).thenReturn(true);
+        when(mockAuthRepo.getUserId(guestToken)).thenReturn(0);
+        when(mockSusRepo.findById(0)).thenReturn(Optional.empty());
 
+        Guest guest = new Guest();
+        forceField(guest, "id", 0);
+        when(mockGuestRepo.findById(0)).thenReturn(Optional.of(guest));
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            purchaseService.buyGuestCart(guestToken, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
+        });
+
+        assertEquals(ErrorCodes.CART_NOT_FOUND, ex.getNumber());
+        assertTrue(ex.getMessage().contains("cart"));
     }
-
     @Test
-    void testGuestBuyCart_PaymentFails() throws Exception {
+    void testGuestBuyCart_Failure_StoreNotFound() throws Exception {
+        when(mockAuthRepo.validToken(guestToken)).thenReturn(true);
+        when(mockAuthRepo.getUserId(guestToken)).thenReturn(0);
+        when(mockSusRepo.findById(0)).thenReturn(Optional.empty());
 
+        Guest guest = new Guest();
+        forceField(guest, "id", 0);
+        guest.addToCart(new CartItem(new ItemCartDTO(999, 0, 200,100, "TestProduct", "FakeStore", Category.Electronics)));
+        when(mockGuestRepo.findById(0)).thenReturn(Optional.of(guest));
+
+        when(mockStoreRepo.findById(999)).thenReturn(Optional.empty());
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            purchaseService.buyGuestCart(guestToken, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
+        });
+
+        assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getNumber());
     }
-
     @Test
-    void testGuestBuyCart_SupplyFails() throws Exception {
+    void testGuestBuyCart_Failure_InsufficientStock() throws Exception {
+        when(mockAuthRepo.validToken(guestToken)).thenReturn(true);
+        when(mockAuthRepo.getUserId(guestToken)).thenReturn(0);
+        when(mockSusRepo.findById(0)).thenReturn(Optional.empty());
+
+        Guest guest = new Guest();
+        forceField(guest, "id", 0);
+        guest.addToCart(new CartItem(new ItemCartDTO(store.getstoreId(), product.getProductId(), 5, 100, product.getName(), store.getStoreName(), Category.Electronics)));
+        when(mockGuestRepo.findById(0)).thenReturn(Optional.of(guest));
+
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+
+        StoreStock stock = new StoreStock(store.getstoreId());
+        stock.addItem(new item(product.getProductId(), 1, 100, Category.Electronics)); // not enough quantity
+        when(mockStoreStock.findById(store.getstoreId())).thenReturn(Optional.of(stock));
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            purchaseService.buyGuestCart(guestToken, PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
+        });
+
+        assertEquals(ErrorCodes.INSUFFICIENT_STOCK, ex.getNumber());
     }
-
     @Test
-    void testGuestBuyCart_StoreNotFound() throws Exception {
+    void testGuestBuyCart_Failure_PaymentFails() throws Exception {
+        setupValidGuestCartScenario(5); // helper that sets everything up (you can ask me to generate)
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            purchaseService.buyGuestCart(guestToken, PaymentDetails.test_fail_Payment(), SupplyDetails.getTestDetails());
+        });
+
+        assertEquals(ErrorCodes.PAYMENT_ERROR, ex.getNumber());
+        assertTrue(ex.getMessage().contains("Payment failed"));
+    }
+    @Test
+    void testGuestBuyCart_Failure_SupplyFails_Refunds() throws Exception {
+        setupValidGuestCartScenario(5);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            purchaseService.buyGuestCart(guestToken, PaymentDetails.testPayment(), SupplyDetails.test_fail_supply());
+        });
+
+        assertEquals(ErrorCodes.SUPPLY_ERROR, ex.getNumber());
+    }
+    private void setupValidGuestCartScenario(int cartQuantity) throws Exception {
+        when(mockAuthRepo.validToken(guestToken)).thenReturn(true);
+        when(mockAuthRepo.getUserId(guestToken)).thenReturn(0);
+        when(mockSusRepo.findById(0)).thenReturn(Optional.empty());
+
+        // Guest with cart
+        Guest guest = new Guest();
+        forceField(guest, "id", 0);
+        guest.addToCart(new CartItem(new ItemCartDTO(
+                store.getstoreId(),
+                product.getProductId(),
+                cartQuantity,
+                100,
+                product.getName(),
+                store.getStoreName(),
+                Category.Electronics
+        )));
+        when(mockGuestRepo.findById(0)).thenReturn(Optional.of(guest));
+        when(mockGuestRepo.getReferenceById(0)).thenReturn(guest);
+
+        // Store exists
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+
+        // StoreStock with enough quantity
+        StoreStock stock = new StoreStock(store.getstoreId());
+        stock.addItem(new item(product.getProductId(), cartQuantity + 5, 100, Category.Electronics));
+        when(mockStoreStock.findById(store.getstoreId())).thenReturn(Optional.of(stock));
+        when(mockStoreStock.saveAndFlush(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        // Policies and discount
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        store.setActive(true);
+
     }
 
 
