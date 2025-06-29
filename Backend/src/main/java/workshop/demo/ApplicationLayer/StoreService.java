@@ -37,6 +37,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.OfferKey;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.StoreTreeEntity;
 import workshop.demo.DomainLayer.StoreUserConnection.Tree;
+import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountEntity;
 import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountJpaRepository;
@@ -222,7 +223,13 @@ public class StoreService {
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
-        int newOwnerId = userRepo.findRegisteredUsersByUsername(newOwnerName).get(0).getId();
+        List<Registered> usersFound = userRepo.findRegisteredUsersByUsername(newOwnerName);
+        if (usersFound.isEmpty()) {
+            throw new UIException("User '" + newOwnerName + "' is not registered", ErrorCodes.USER_NOT_FOUND);
+        }
+        int newOwnerId = usersFound.get(0).getId();
+
+        //int newOwnerId = userRepo.findRegisteredUsersByUsername(newOwnerName).get(0).getId();
         userService.checkUserRegisterOnline_ThrowException(newOwnerId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);
@@ -308,7 +315,13 @@ public class StoreService {
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
-        int managerId = userRepo.findRegisteredUsersByUsername(managerName).get(0).getId();
+        //int managerId = userRepo.findRegisteredUsersByUsername(managerName).get(0).getId();
+        List<Registered> usersFound = userRepo.findRegisteredUsersByUsername(managerName);
+        if (usersFound.isEmpty()) {
+            throw new UIException("User '" + managerName + "' is not registered", ErrorCodes.USER_NOT_FOUND);
+        }
+        int managerId = usersFound.get(0).getId();
+
         userService.checkUserRegisterOnline_ThrowException(managerId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);
