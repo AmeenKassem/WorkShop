@@ -33,16 +33,18 @@ public class AdminPageView extends VerticalLayout {
         setSizeFull();
 
         H2 title = new H2("🔧 Let’s Manage the System!");
-        title.addClassName("main-header"); 
+        title.addClassName("main-header");
         title.getStyle().set("margin", "0 auto");
         add(title);
 
-        Button viewHistoryBtn = new Button("📊 View Purchase History", e -> UI.getCurrent().navigate("admin-purchase-history"));
+        Button viewHistoryBtn = new Button("📊 View Purchase History",
+                e -> UI.getCurrent().navigate("admin-purchase-history"));
 
         Button manageUsersBtn = new Button("👥 Manage Users", e -> showManageUsers());
         Button manageStoresBtn = new Button("👥 Manage Stores", e -> showManageStores());
         Button shutdownSystemBtn = new Button("❌ Shutdown System", e -> showShutdownConfirmation());
-        VerticalLayout actionButtons = new VerticalLayout(viewHistoryBtn, manageUsersBtn, manageStoresBtn, shutdownSystemBtn);
+        VerticalLayout actionButtons = new VerticalLayout(viewHistoryBtn, manageUsersBtn, manageStoresBtn,
+                shutdownSystemBtn);
         actionButtons.setClassName("admin-panel-card");
         addClassName("admin-panel-wrapper");
         actionButtons.setAlignItems(Alignment.STRETCH);
@@ -50,87 +52,86 @@ public class AdminPageView extends VerticalLayout {
     }
 
     private void showManageUsers() {
-    removeAll(); // Clear previous content
+        removeAll(); // Clear previous content
 
-    H2 header = new H2("🔒 User Suspension Management");
-    header.addClassName("main-header");
+        H2 header = new H2("🔒 User Suspension Management");
+        header.addClassName("main-header");
 
-    Button viewSuspensionsBtn = new Button("👁️ View Suspensions", e -> showSuspensionsDialog());
-    viewSuspensionsBtn.addClassName("v-button");
-    viewSuspensionsBtn.addClassName("secondary");
+        Button viewSuspensionsBtn = new Button("👁️ View Suspensions", e -> showSuspensionsDialog());
+        viewSuspensionsBtn.addClassName("v-button");
+        viewSuspensionsBtn.addClassName("secondary");
 
-    Grid<UserDTO> userGrid = new Grid<>(UserDTO.class, false);
-    userGrid.addClassName("v-grid");
-    userGrid.setWidthFull();
-    userGrid.setWidth("100%");
-    userGrid.setAllRowsVisible(true);
+        Grid<UserDTO> userGrid = new Grid<>(UserDTO.class, false);
+        userGrid.addClassName("v-grid");
+        userGrid.setWidthFull();
+        userGrid.setWidth("100%");
+        userGrid.setAllRowsVisible(true);
 
-    userGrid.addColumn(user -> user.username != null ? user.username : "Guest").setHeader("Username");
-    userGrid.addColumn(user -> user.age).setHeader("Age");
-    userGrid.addColumn(user -> Boolean.TRUE.equals(user.isOnline) ? "Online" : "Offline").setHeader("Status");
-    userGrid.addColumn(user -> Boolean.TRUE.equals(user.isAdmin) ? "Admin" : "User").setHeader("Role");
+        userGrid.addColumn(user -> user.username != null ? user.username : "Guest").setHeader("Username");
+        userGrid.addColumn(user -> user.age).setHeader("Age");
+        userGrid.addColumn(user -> Boolean.TRUE.equals(user.isOnline) ? "Online" : "Offline").setHeader("Status");
+        userGrid.addColumn(user -> Boolean.TRUE.equals(user.isAdmin) ? "Admin" : "User").setHeader("Role");
 
-    userGrid.addComponentColumn(user -> {
-        HorizontalLayout actions = new HorizontalLayout();
-        actions.addClassName("actions-wrapper");
+        userGrid.addComponentColumn(user -> {
+            HorizontalLayout actions = new HorizontalLayout();
+            actions.addClassName("actions-wrapper");
 
-        Button suspend = new Button("⏸ Suspend", click -> {
-            Dialog dialog = new Dialog();
-            dialog.setHeaderTitle("Suspend User");
+            Button suspend = new Button("⏸ Suspend", click -> {
+                Dialog dialog = new Dialog();
+                dialog.setHeaderTitle("Suspend User");
 
-            TextField minutesField = new TextField("Suspend for (minutes)");
-            minutesField.setPlaceholder("e.g., 10");
-            minutesField.setWidthFull();
+                TextField minutesField = new TextField("Suspend for (minutes)");
+                minutesField.setPlaceholder("e.g., 10");
+                minutesField.setWidthFull();
 
-            Button confirm = new Button("✅ OK", e -> {
-                try {
-                    int minutes = Integer.parseInt(minutesField.getValue());
-                    presenter.onSuspendUser(user.id, minutes);
-                    dialog.close();
-                } catch (NumberFormatException ex) {
-                    NotificationView.showError("Invalid input");
-                }
+                Button confirm = new Button("✅ OK", e -> {
+                    try {
+                        int minutes = Integer.parseInt(minutesField.getValue());
+                        presenter.onSuspendUser(user.id, minutes);
+                        dialog.close();
+                    } catch (NumberFormatException ex) {
+                        NotificationView.showError("Invalid input");
+                    }
+                });
+
+                confirm.addClassName("v-button");
+                confirm.addClassName("danger");
+
+                VerticalLayout dialogLayout = new VerticalLayout(minutesField, confirm);
+                dialogLayout.setSpacing(true);
+                dialogLayout.setPadding(true);
+                dialog.add(dialogLayout);
+                dialog.open();
             });
 
-            confirm.addClassName("v-button");
-            confirm.addClassName("danger");
+            Button pause = new Button("⏸ Pause", click -> presenter.onPauseSuspension(user.getId()));
+            Button resume = new Button("▶️ Resume", click -> presenter.onResumeSuspension(user.getId()));
+            Button cancel = new Button("❌ Cancel", click -> presenter.onCancelSuspension(user.getId()));
 
-            VerticalLayout dialogLayout = new VerticalLayout(minutesField, confirm);
-            dialogLayout.setSpacing(true);
-            dialogLayout.setPadding(true);
-            dialog.add(dialogLayout);
-            dialog.open();
-        });
+            actions.add(suspend, pause, resume, cancel);
+            return actions;
+        }).setHeader("Actions").setAutoWidth(true).setFlexGrow(0);
 
-        Button pause = new Button("⏸ Pause", click -> presenter.onPauseSuspension(user.getId()));
-        Button resume = new Button("▶️ Resume", click -> presenter.onResumeSuspension(user.getId()));
-        Button cancel = new Button("❌ Cancel", click -> presenter.onCancelSuspension(user.getId()));
+        try {
+            List<UserDTO> users = presenter.getAllUsers();
+            List<UserDTO> nonAdminUsers = users.stream()
+                    .filter(user -> !Boolean.TRUE.equals(user.isAdmin))
+                    .toList();
+            userGrid.setItems(nonAdminUsers);
+        } catch (Exception e) {
+            add(new Paragraph("❌ Failed to load users: " + e.getMessage()));
+            return;
+        }
 
+        VerticalLayout userPanel = new VerticalLayout(header, viewSuspensionsBtn, userGrid);
+        userPanel.addClassName("admin-panel-card");
+        userPanel.setWidthFull();
 
-        actions.add(suspend, pause, resume, cancel);
-        return actions;
-    }).setHeader("Actions").setAutoWidth(true).setFlexGrow(0);
-
-    try {
-        List<UserDTO> users = presenter.getAllUsers();
-        List<UserDTO> nonAdminUsers = users.stream()
-                .filter(user -> !Boolean.TRUE.equals(user.isAdmin))
-                .toList();
-        userGrid.setItems(nonAdminUsers);
-    } catch (Exception e) {
-        add(new Paragraph("❌ Failed to load users: " + e.getMessage()));
-        return;
+        addClassName("admin-panel-wrapper");
+        add(userPanel);
     }
 
-    VerticalLayout userPanel = new VerticalLayout(header, viewSuspensionsBtn, userGrid);
-    userPanel.addClassName("admin-panel-card");
-    userPanel.setWidthFull();
-
-    addClassName("admin-panel-wrapper");
-    add(userPanel);
-}
-
-      private void showSuspensionsDialog() {
+    private void showSuspensionsDialog() {
         List<UserSuspensionDTO> suspensions = presenter.onViewSuspensions();
 
         Dialog dialog = new Dialog();
@@ -149,9 +150,9 @@ public class AdminPageView extends VerticalLayout {
             grid.addColumn(UserSuspensionDTO::getUserName).setHeader("User Name");
             grid.addColumn(s -> s.isPaused() ? "Yes" : "No").setHeader("Paused");
             grid.addColumn(s -> s.getSuspensionEndTime() != null ? s.getSuspensionEndTime().toString() : "N/A")
-                .setHeader("End Time").setAutoWidth(true).setFlexGrow(0);
+                    .setHeader("End Time").setAutoWidth(true).setFlexGrow(0);
             grid.addColumn(UserSuspensionDTO::getRemainingWhenPaused)
-                .setHeader("Remaining Time").setAutoWidth(true).setFlexGrow(0);
+                    .setHeader("Remaining Time").setAutoWidth(true).setFlexGrow(0);
 
             grid.setItems(suspensions);
             grid.setWidthFull();
@@ -172,8 +173,8 @@ public class AdminPageView extends VerticalLayout {
 
     private void showManageStores() {
         getChildren()
-            .filter(component -> component.getClass().equals(VerticalLayout.class))
-            .forEach(this::remove);
+                .filter(component -> component.getClass().equals(VerticalLayout.class))
+                .forEach(this::remove);
 
         H2 header = new H2("🏬 Store Management");
         header.addClassName("main-header");
@@ -220,7 +221,8 @@ public class AdminPageView extends VerticalLayout {
         layout.setPadding(true);
         layout.getStyle().set("background-color", "#fff5f9");
 
-        Paragraph warning = new Paragraph("⚠️ Are you sure you want to shutdown the system? This will mark the site as NOT initialized.");
+        Paragraph warning = new Paragraph(
+                "⚠️ Are you sure you want to shutdown the system? This will mark the site as NOT initialized.");
         warning.getStyle().set("color", "#b91c1c");
 
         IntegerField keyField = new IntegerField("Enter Admin Key");

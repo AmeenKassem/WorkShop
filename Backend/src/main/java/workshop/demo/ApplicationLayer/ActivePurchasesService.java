@@ -13,6 +13,9 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.BidDTO;
@@ -111,6 +114,9 @@ public class ActivePurchasesService {
         }
     }
 
+    
+    @PersistenceContext
+    protected EntityManager entityManager;
     // ======================AUCTION========================
     @Transactional
     public int setProductToAuction(String token, int storeId, int productId, int quantity, long time, double startPrice)
@@ -125,7 +131,7 @@ public class ActivePurchasesService {
             throw new UIException("quantity fsh ", ErrorCodes.INVALID_QUANTITY);
         }
         storeStockRepo.saveAndFlush(storeStock);
-        activePurchasesRepo.save(active);
+        activePurchasesRepo.saveAndFlush(active);
         // timer : after auction.getTimeLeft() ->>
         // auction.end() + notify all paricipates . notify winner . notify onwers + if
         // the auction has no winner return back the stock
@@ -136,8 +142,9 @@ public class ActivePurchasesService {
         notifier.sendMessageForUsers(
                 "Owner " + userRepo.findById(userId).get().getUsername() + " set a product to auction in your store",
                 ownersIds);
-
+        entityManager.flush();
         return auction.getId();
+
     }
 
     public void scheduleAuctionEnd(ActivePurcheses active, long time, StoreStock storeStock, int auctionId,
@@ -324,9 +331,18 @@ public class ActivePurchasesService {
             int userId = checkUserAndStore(token, storeId, false);
             // SingleBid bid = stockRepo.bidOnAuction(storeId, userId, auctionId, price);
             ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
-            int userLoosedTopId = active.getCurrAuctionTop(auctionId);
-            UserAuctionBid bid = active.addUserBidToAuction(auctionId, userId, price);
+            List<Auction> auctions = active.getActiveAuctions();
+            int userLoosedTopId=-1;
+            UserAuctionBid bid=null;
+            for (Auction auction : auctions) {
+                if(auction.getId()==auctionId){
+                    bid =auction.bid(userId, price);
+                    userLoosedTopId = auction.getTopId();
+                }
+            }
+            // UserAuctionBid bid = active.addUserBidToAuction(auctionId, userId, price);
             logger.info("Bid placed successfully by user: {} on auction: {}", userId, auctionId);
+            // int userLoosedTopId = active.getCurrAuctionTop(auctionId);
             if (userLoosedTopId != userId && userLoosedTopId != -1)
                 notifier.sendMessageToUser(userLoosedTopId, "You are loosing the top of auction!");
             activePurchasesRepo.flush();
