@@ -34,7 +34,6 @@ public class ActivePurcheses {
 
     private static final Logger logger = LoggerFactory.getLogger(ActivePurcheses.class);
 
-    
     @Id
     private int storeId;
 
@@ -401,7 +400,7 @@ public class ActivePurcheses {
     // @Transactional
     public Auction getAuctionById(int res) {
         for (Auction auction : activeAuction.values()) {
-            
+
         }
         return activeAuction.get(res);
     }

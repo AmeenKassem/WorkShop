@@ -382,6 +382,7 @@ public class ActivePurchasesService {
         notifier.sendMessageForUsers(
                 "Owner " + userRepo.findById(userId).get().getUsername() + " set a product to random in your store",
                 ownersIds);
+        logger.info("random set with id :"+random.getRandomId());
         return random.getRandomId();
     }
 
