@@ -2,11 +2,17 @@ package workshop.demo.ApplicationLayer.DataInitilizer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.AuctionStatus;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.User.CartItem;
@@ -32,10 +38,103 @@ public class UserParser extends ManagerDataInit {
             case "auction":
                 auction(toSend);
                 break;
+            case "random":
+                random(toSend);
+                break;
+            case "purchase":
+                purchase(toSend);
+                break;
             default:
                 log("undefined function for user on line " + line + " : " + construction.getFirst());
                 error = true;
                 break;
+        }
+    }
+
+    private void random(List<String> toSend) {
+        if (toSend.size() != 4) {
+            log("syntax error on line " + line
+                    + " : params does not match auction <username> <storeName> <productName> <bid>");
+            error = true;
+            return;
+        }
+        String token = getTokenForUserName(toSend.get(0));
+        if (token == null) {
+            return;
+        }
+        String storeName = toSend.get(1).replace("-", " ");
+        int id = getStoreIdByName(storeName);
+        String productName = toSend.get(2).replace("-", " ");
+        double price = Double.parseDouble(toSend.get(3));
+        try {
+            RandomDTO[] randoms = activeService.getAllRandoms(token, id);
+            RandomDTO random = null;
+            for (RandomDTO randomDTO : randoms) {
+                if (randomDTO.productName.equals(productName))
+                    random = randomDTO;
+            }
+            if (random == null) {
+                log("random " + productName + " does not found!");
+                return;
+            }
+            purchaseService.participateInRandom(token, random.id, id, price, PaymentDetails.testPayment());
+            log("user " + toSend.get(0) + "bid on auction set successfully ");
+        } catch (Exception e) {
+            log("got error on line " + line + " :" + e.getMessage());
+        }
+    }
+
+    private void purchase(List<String> toSend) {
+        if (toSend.size() != 3) {
+            log("invalid params purchase <userName> <special/cart> <valid/unvalid> . line " + line);
+            error = true;
+            return;
+        }
+
+        String token = getTokenForUserName(toSend.get(0));
+        if (token == null) {
+            return;
+        }
+        PaymentDetails paymentDetails = null;
+        SupplyDetails supply = null;
+        if (toSend.get(2).equals("valid")) {
+            paymentDetails = PaymentDetails.testPayment();
+            supply = SupplyDetails.getTestDetails();
+        } else if (toSend.get(2).equals("invalid")) {
+            try {
+                paymentDetails = PaymentDetails.test_fail_Payment();
+                supply = SupplyDetails.getTestDetails();
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+        } else {
+            log("you must add payment test if valid");
+            error = true;
+            return;
+        }
+        ReceiptDTO[] reciept = new ReceiptDTO[0];
+        if (toSend.get(1).equals("cart")) {
+            try {
+                reciept = purchaseService.buyRegisteredCart(token, paymentDetails, supply);
+            } catch (Exception e) {
+
+                log(e.getMessage());
+            }
+        } else if (toSend.get(1).equals("special")) {
+            try {
+                reciept = purchaseService.finalizeSpecialCart(token, paymentDetails, supply);
+            } catch (Exception e) {
+                log(e.getMessage());
+            }
+        }
+        for (ReceiptDTO rec : reciept) {
+            log("recipt: store name" + rec.getStoreName() + " ,final price: " + rec.getFinalPrice());
+            for (ReceiptProduct receiptDTO : rec.getProductsList()) {
+                log("product :" + receiptDTO.getProductName() + ",qauntity:" + receiptDTO.getQuantity() + ",price"
+                        + receiptDTO.getPrice());
+            }
         }
     }
 
@@ -57,7 +156,7 @@ public class UserParser extends ManagerDataInit {
         double bid = Double.parseDouble(toSend.get(3));
         try {
             AuctionDTO auction = getAuction(token, id, productName);
-            
+
             if (activeService.addBidOnAucction(token, auction.auctionId, id, bid))
                 log("user " + toSend.get(0) + "bid on auction set successfully ");
         } catch (Exception e) {
@@ -70,7 +169,7 @@ public class UserParser extends ManagerDataInit {
     public AuctionDTO getAuction(String token, int id, String productName) throws Exception {
         AuctionDTO[] auctions = activeService.getAllActiveAuctions_user(token, id);
         for (AuctionDTO auctionDTO : auctions) {
-            if (auctionDTO.productName.equals(productName) && auctionDTO.status==AuctionStatus.IN_PROGRESS) {
+            if (auctionDTO.productName.equals(productName) && auctionDTO.status == AuctionStatus.IN_PROGRESS) {
                 return auctionDTO;
             }
         }

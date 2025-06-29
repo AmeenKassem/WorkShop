@@ -89,11 +89,23 @@ public class InitDataService extends ManagerDataInit {
             case "store":
                 storeParser.store(toSend);
                 break;
-
+            case "wait":
+                justWait(toSend);
+                break;
             default:
                 log("syntax error on line " + line + " :Unkown (" + construction.get(0) + ")");
                 error = true;
                 break;
+        }
+    }
+
+    private void justWait(List<String> toSend) {
+        long ms = Long.parseLong(toSend.get(0));
+        try {
+            Thread.currentThread().sleep(ms);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 

@@ -12,6 +12,7 @@ import jakarta.persistence.PersistenceContext;
 import workshop.demo.ApplicationLayer.ActivePurchasesService;
 import workshop.demo.ApplicationLayer.AppSettingsService;
 import workshop.demo.ApplicationLayer.DatabaseCleaner;
+import workshop.demo.ApplicationLayer.PurchaseService;
 import workshop.demo.ApplicationLayer.StockService;
 import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.UserService;
@@ -51,10 +52,12 @@ public class ManagerDataInit {
     protected AppSettingsRepository appSettingsRepository;
     @Autowired
     protected ActivePurchasesService activeService;
+    @Autowired
+    protected PurchaseService purchaseService;
 
     protected static void log(String toLog) {
-        logger.info(toLog);
-        output += (toLog + "\n");
+        logger.info("line "+line+":"+toLog);
+        output += ("line "+line+":"+toLog + "\n");
     }
 
     protected static String getTokenForUserName(String string) {
