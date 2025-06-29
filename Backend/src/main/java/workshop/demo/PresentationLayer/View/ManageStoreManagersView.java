@@ -24,7 +24,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.PresentationLayer.Presenter.ManageStoreManagersPresenter;
 
 @Route(value = "manage-store-managers", layout = MainLayout.class)
- @CssImport("./Theme/manageStoreTheme.css")
+@CssImport("./Theme/manageStoreTheme.css")
 public class ManageStoreManagersView extends VerticalLayout implements HasUrlParameter<Integer> {
 
     private final ManageStoreManagersPresenter presenter;
@@ -116,13 +116,51 @@ public class ManageStoreManagersView extends VerticalLayout implements HasUrlPar
         addManagerDialog.open();
     }
 
+    // public void updateManagerList(List<WorkerDTO> managers) {
+    //     managersListLayout.removeAll();
+    //     boolean hasVisibleManagers = false;
+    //     for (WorkerDTO manager : managers) {
+    //         if (!manager.isManager() && !manager.isSetByMe()) {
+    //             continue;
+    //         }
+    //         hasVisibleManagers = true;
+    //         VerticalLayout managerBlock = new VerticalLayout();
+    //         managerBlock.addClassName("manager-card");
+    //         Paragraph name = new Paragraph(manager.getUsername());
+    //         name.addClassName("manager-name");
+    //         Map<Permission, Checkbox> checkboxMap = new HashMap<>();
+    //         VerticalLayout permissions = new VerticalLayout();
+    //         permissions.setSpacing(false);
+    //         permissions.setPadding(false);
+    //         for (Permission permission : Permission.values()) {
+    //             Checkbox checkbox = new Checkbox(permission.name());
+    //             checkbox.setValue(Arrays.asList(manager.getPermessions()).contains(permission));
+    //             checkboxMap.put(permission, checkbox);
+    //             permissions.add(checkbox);
+    //         }
+    //         Button saveBtn = new Button("Save", e -> presenter.savePermissions(manager.getWorkerId(), checkboxMap));
+    //         saveBtn.addClassName("save-permissions-button");
+    //         Button deleteBtn = new Button("Delete", e -> presenter.deleteManager(manager.getWorkerId()));
+    //         deleteBtn.addClassName("delete-manager-button");
+    //         HorizontalLayout actionRow = new HorizontalLayout(saveBtn, deleteBtn);
+    //         actionRow.addClassName("button-row");
+    //         managerBlock.add(name, permissions, actionRow);
+    //         managersListLayout.add(managerBlock);
+    //     }
+    //     if (managers.isEmpty()) {
+    //         Paragraph emptyMsg = new Paragraph("No managers assigned to this store yet.");
+    //         emptyMsg.addClassName("empty-managers-message");
+    //         managersListLayout.add(emptyMsg);
+    //     }
+    // }
     public void updateManagerList(List<WorkerDTO> managers) {
         managersListLayout.removeAll();
 
         boolean hasVisibleManagers = false;
 
         for (WorkerDTO manager : managers) {
-            if (!manager.isManager() && !manager.isSetByMe()) {
+            //skip owners and managers not assigned by me
+            if (!manager.isManager() || !manager.isSetByMe()) {
                 continue;
             }
 
@@ -134,6 +172,7 @@ public class ManageStoreManagersView extends VerticalLayout implements HasUrlPar
             Paragraph name = new Paragraph(manager.getUsername());
             name.addClassName("manager-name");
 
+            // MANAGER UI: build permissions
             Map<Permission, Checkbox> checkboxMap = new HashMap<>();
             VerticalLayout permissions = new VerticalLayout();
             permissions.setSpacing(false);
@@ -165,7 +204,6 @@ public class ManageStoreManagersView extends VerticalLayout implements HasUrlPar
             managersListLayout.add(emptyMsg);
         }
     }
-
 
     public void showSuccess(String message) {
         NotificationView.showSuccess(message);

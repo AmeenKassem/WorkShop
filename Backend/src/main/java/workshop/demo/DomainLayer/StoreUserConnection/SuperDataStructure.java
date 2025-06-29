@@ -464,7 +464,7 @@ public class SuperDataStructure {
             }
             return allowedPermissions.toArray(new Permission[0]);
         } else {
-            return null; // Owner have no permessions
+            return new Permission[0];  // Owner have no permessions
         }
     }
 
