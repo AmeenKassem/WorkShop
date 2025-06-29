@@ -109,7 +109,14 @@ public class Guest {
             removeItem(cartItem.getId());
         }
     }
+    //for tests
+    public void setCart(ShoppingCart cart) {
+        this.cart = cart;
+        if (cart != null) {
+            cart.setGuest(this); // maintain bidirectional link
+        }
+    }
 
-    
+
 
 }
