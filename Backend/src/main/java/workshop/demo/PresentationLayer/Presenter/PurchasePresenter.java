@@ -265,7 +265,7 @@ public class PurchasePresenter {
                 for (ReceiptDTO receiptDTO : receipt) {
                     System.out.println("hiiiiiiiiii");
                 }
-                NotificationView.showInfo("You haven't won in any special purchase yet.");
+                NotificationView.showInfo("No items to purchase .");
                 return;
             }
 
