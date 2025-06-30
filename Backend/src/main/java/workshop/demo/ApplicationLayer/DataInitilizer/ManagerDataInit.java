@@ -22,6 +22,7 @@ import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.InfrastructureLayer.AppSettingsRepository;
+import workshop.demo.InfrastructureLayer.UserJpaRepository;
 
 public class ManagerDataInit {
     protected static final Logger logger = LoggerFactory.getLogger(InitDataService.class);
@@ -42,7 +43,6 @@ public class ManagerDataInit {
     protected IAuthRepo authRepo;
     @Autowired
     protected StoreService storeService;
-
     @Autowired
     protected StockService stockService;
     @Autowired
@@ -57,6 +57,10 @@ public class ManagerDataInit {
     protected ActivePurchasesService activeService;
     @Autowired
     protected PurchaseService purchaseService;
+    @Autowired
+    protected UserJpaRepository regJpaRepo;
+
+
 
     protected static void log(String toLog) {
         logger.info("line "+line+":"+toLog);

@@ -2,18 +2,15 @@ package workshop.demo.ApplicationLayer.DataInitilizer;
 
 import java.util.List;
 
-import workshop.demo.DTOs.BidDTO;
-import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.StoreDTO;
-import workshop.demo.DTOs.UserDTO;
-import workshop.demo.DomainLayer.Exceptions.DevException;
-import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-
 import org.springframework.stereotype.Component;
 
 import jakarta.transaction.Transactional;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DomainLayer.Exceptions.DevException;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 
 @Component
 public class StoreParser extends ManagerDataInit {
@@ -37,6 +34,10 @@ public class StoreParser extends ManagerDataInit {
             case "bid":
                 addBidToStore(toSend);
                 break;
+            case "close":
+                closeStore(toSend);
+                break;
+
             default:
                 log("undefined function for store on line " + line + " : " + construction.getFirst());
                 error = true;
@@ -250,4 +251,32 @@ public class StoreParser extends ManagerDataInit {
         }
 
     }
+
+     private void closeStore(List<String> toSend) {
+        if (toSend.size() != 2) {
+            log("invalid close command format. Should be: store close <ownerUsername> <storeName>;");
+            error = true;
+            return;
+        }
+        String ownerName = toSend.get(0);
+        String storeName = toSend.get(1);
+        String token = getTokenForUserName(ownerName);
+        if (token == null) {
+            log("missing login for user: " + ownerName);
+            error = true;
+            return;
+        }
+        int storeId = getStoreIdByName(storeName);
+        try {
+            storeService.closeStore(storeId, token);
+            log("Successfully closed store: " + storeName);
+        } catch (Exception e) {
+            log("Error closing store: " + e.getMessage());
+            error = true;
+        }
+    }
+
+
+
+
 }

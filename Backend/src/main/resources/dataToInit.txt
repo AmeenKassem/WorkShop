@@ -17,3 +17,22 @@ store bid accept bhaa123 masho btata2 mohamed;
 review store bhaa masho its-the-best-market-ever;
 review product bhaa masho btata2 its-tayeb-kther;
 user cart + bhaa btata2 masho 20;
+user reg layan layan1 22;
+user login layan layan1;
+user add-manager bhaa123 masho bhaa ViewAllProducts DeleteFromStock UpdateQuantity;
+user offer-answer masho bhaa123 bhaa reject manager;
+user add-manager bhaa123 masho layan AddToStock;
+user offer-answer masho bhaa123 layan accept manager;
+store item layan masho water Grocery food 20 10 food veg;
+user delete-manager bhaa123 masho layan;
+user add-owner bhaa123 masho bhaa;
+user offer-answer masho bhaa123 bhaa reject owner;
+user add-owner bhaa123 masho mohamed;
+user offer-answer masho bhaa123 mohamed accept owner;
+store item mohamed masho cola Grocery food 20 10 food veg;
+store close bhaa123 masho;
+
+
+
+
+
