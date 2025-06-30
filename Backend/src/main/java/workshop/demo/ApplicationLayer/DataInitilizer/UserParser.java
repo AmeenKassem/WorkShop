@@ -80,7 +80,7 @@ public class UserParser extends ManagerDataInit {
                 return;
             }
             
-            activeService.participateInRandom(authRepo.getUserId(token), random.id, id, price);
+            purchaseService.participateInRandom(token, random.id, id, price,PaymentDetails.testPayment());
             log("user " + toSend.get(0) + "bid on auction set successfully ");
         } catch (Exception e) {
             log("got error on line " + line + " :" + e.getMessage());

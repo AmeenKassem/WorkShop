@@ -493,8 +493,8 @@ public class ActivePurchasesService {
                                 + ". Please check your cart for details.");
 
             }
-            user.addSpecialItemToCart(
-                    new UserSpecialItemCart(storeId, randomId, userId, SpecialType.Random, res.productId));
+            // user.addSpecialItemToCart(
+            //         new UserSpecialItemCart(storeId, randomId, userId, SpecialType.Random, res.productId));
             return res;
         }
     }
