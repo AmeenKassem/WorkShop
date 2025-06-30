@@ -118,9 +118,9 @@ public class ActivePurchasesService {
         }
     }
 
-    
     @PersistenceContext
     protected EntityManager entityManager;
+
     // ======================AUCTION========================
     @Transactional
     public int setProductToAuction(String token, int storeId, int productId, int quantity, long time, double startPrice)
@@ -336,12 +336,14 @@ public class ActivePurchasesService {
             int userId = checkUserAndStore(token, storeId, false);
             // SingleBid bid = stockRepo.bidOnAuction(storeId, userId, auctionId, price);
             ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
+            logger.info("Randoms in ActivePurcheses: "
+                    + active.getActiveRandoms().stream().map(Random::getRandomId).toList());
             List<Auction> auctions = active.getActiveAuctions();
-            int userLoosedTopId=-1;
-            UserAuctionBid bid=null;
+            int userLoosedTopId = -1;
+            UserAuctionBid bid = null;
             for (Auction auction : auctions) {
-                if(auction.getId()==auctionId){
-                    bid =auction.bid(userId, price);
+                if (auction.getId() == auctionId) {
+                    bid = auction.bid(userId, price);
                     userLoosedTopId = auction.getTopId();
                 }
             }
@@ -368,13 +370,17 @@ public class ActivePurchasesService {
         int userId = checkUserAndStore(token, storeId, true);
         // adding random here:
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();
+
         Random random = active.addProductToRandom(productId, quantity, productPrice, storeId, randomTime);
+
         StoreStock storeStock = storeStockRepo.findById(storeId).orElse(null);
         if (!storeStock.decreaseQuantitytoBuy(productId, quantity)) {
             throw new UIException("quantity fsh ", ErrorCodes.INVALID_QUANTITY);
         }
         storeStockRepo.saveAndFlush(storeStock);
-        activePurchasesRepo.save(active);
+        activePurchasesRepo.flush();
+        logger.info("Randoms in ActivePurcheses: "
+                + active.getActiveRandoms().stream().map(Random::getRandomId).toList());
         Store store = storeJpaRepo.findById(storeId).orElse(null);
         scheduleRandomEnd(active, randomTime, storeStock, random.getRandomId(), productId, quantity, store, random);
         List<Integer> ownersIds = new ArrayList<>();
@@ -382,6 +388,7 @@ public class ActivePurchasesService {
         notifier.sendMessageForUsers(
                 "Owner " + userRepo.findById(userId).get().getUsername() + " set a product to random in your store",
                 ownersIds);
+        logger.info("random set with id :" + random.getRandomId());
         return random.getRandomId();
     }
 
@@ -455,18 +462,22 @@ public class ActivePurchasesService {
         synchronized (lockManager.getRandomLock(randomId)) {
             logger.info("User {} trying to participate in random: {}, store: {}", userId, randomId, storeId);
             ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();
-            String userName = userRepo.findById(userId)
-                    .orElseThrow(() -> new UIException("User not found", ErrorCodes.USER_NOT_FOUND)).getUsername();
+            logger.info("Randoms in ActivePurcheses: "
+                    + active.getActiveRandoms().stream().map(Random::getRandomId).toList());
+
+            Registered user = userRepo.findById(userId)
+                    .orElseThrow(() -> new UIException("User not found", ErrorCodes.USER_NOT_FOUND));
+            String userName = user.getUsername();
             ParticipationInRandomDTO res = active.participateInRandom(userId, randomId, amountPaid, userName);
             if (res.isEnded()) {
                 logger.info("Random {} has ended, no participation allowed", randomId);
                 List<Integer> participationsIds = new ArrayList<>();
                 List<Integer> ownersIds = new ArrayList<>();
-                suConnectionRepo.getOwnersInStore(storeId).forEach(user -> ownersIds.add(user.getMyId()));
-                
+                suConnectionRepo.getOwnersInStore(storeId).forEach(usera -> ownersIds.add(usera.getMyId()));
+
                 active.getRandom(randomId).getParticipationsUsersIds()
                         .forEach(participationId -> participationsIds.add(participationId));
-                        
+
                 notifier.sendMessageForUsers(
                         "Random on store: " + storeJpaRepo.findById(storeId).get().getStoreName() + ", on product: "
                                 + stock.getProductById(res.getProductId()).getName() + " has ended.",
@@ -480,9 +491,10 @@ public class ActivePurchasesService {
                                 + stock.getProductById(res.getProductId()).getName() + " in store: "
                                 + storeJpaRepo.findById(storeId).get().getStoreName()
                                 + ". Please check your cart for details.");
-                
 
             }
+            // user.addSpecialItemToCart(
+            //         new UserSpecialItemCart(storeId, randomId, userId, SpecialType.Random, res.productId));
             return res;
         }
     }
@@ -529,7 +541,8 @@ public class ActivePurchasesService {
                     tempRandom.mustRefundAllParticipations();
                     List<Integer> paricpationIds = tempRandom.getParticipationsUsersIds();
                     notifier.sendMessageForUsers(
-                            "Random on store :" + store.getStoreName() + ", on product:" + productId + " has canceled. you will get your money back.",
+                            "Random on store :" + store.getStoreName() + ", on product:" + productId
+                                    + " has canceled. you will get your money back.",
                             paricpationIds);
 
                 } else {
@@ -602,7 +615,7 @@ public class ActivePurchasesService {
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
         List<BidDTO> bids = new ArrayList<>();
         for (BidDTO bidDTO : active.getBids()) {
-            for( SingleBidDTO singleBidDTO : bidDTO.getBids()) {
+            for (SingleBidDTO singleBidDTO : bidDTO.getBids()) {
                 singleBidDTO.userName = userRepo.findById(singleBidDTO.userId)
                         .orElse(new Registered()).getUsername();
             }

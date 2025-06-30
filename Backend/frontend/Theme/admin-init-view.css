@@ -1,0 +1,97 @@
+:host {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(to bottom right, #f6f8fa, #eaf0f6);
+}
+
+.admin-init-panel {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    max-width: 500px;
+    width: 100%;
+    margin-top: 40px;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    border-top: 4px solid #c471ed;
+}
+
+.main-title {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 32px;
+    font-weight: bold;
+    color: #2d3748;
+    border-bottom: 2px solid #c471ed;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+vaadin-text-field,
+vaadin-password-field,
+vaadin-text-area {
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    padding: 6px;
+}
+
+vaadin-button {
+    border-radius: 12px;
+    font-weight: 600;
+    background-color: #edf2fa;
+    color: #1a202c;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    margin-top: 6px;
+}
+
+vaadin-button:hover {
+    background-color: #d9e8f6;
+    transform: scale(1.015);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+vaadin-button[theme~="primary"] {
+    background-color: #4a90e2;
+    color: #ffffff;
+}
+
+vaadin-button[theme~="error"] {
+    background-color: #f56565;
+    color: #ffffff;
+}
+
+
+div.terminal-log {
+    font-family: 'Fira Code', 'Consolas', 'Courier New', monospace;
+    font-size: 14px;
+    background-color: #000000;
+    color: #d4d4d4;
+    border: 1px solid #333;
+    padding: 12px;
+    border-radius: 10px;
+    white-space: pre-wrap;
+    line-height: 1.4;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.6);
+    overflow-y: auto;
+    max-height: 300px;
+}
+
+.log-error {
+    color: #ff5c5c;
+    font-weight: bold;
+}
+
+.log-warn {
+    color: #f0c36d;
+}
+
+.log-success {
+    color: #4caf50;
+    font-weight: bold;
+}

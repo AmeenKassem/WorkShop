@@ -99,7 +99,13 @@ public class AdminInitPresenter {
 
             ApiResponse<?> res = response.getBody();
 
-           System.out.println(res.getData());
+        if (res != null && res.getErrorMsg() == null) {
+            String logs = String.valueOf(res.getData());
+            view.showDIFLogs(logs);
+            NotificationView.showSuccess("✅ Initialized from DIF successfully.");
+        } else {
+            NotificationView.showError("❌ Failed: " + (res != null ? res.getErrorMsg() : "Unknown error"));
+        }
         } catch (Exception e) {
             ExceptionHandlers.handleException(e);
         }

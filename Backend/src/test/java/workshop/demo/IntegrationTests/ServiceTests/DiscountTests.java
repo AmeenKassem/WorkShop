@@ -140,7 +140,7 @@ public class DiscountTests {
         assertTrue(authRepo.getUserName(NOToken).equals("owner"));
         // ======================= STORE CREATION =======================
 
-        int createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
+        createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
 
         // ======================= PRODUCT & ITEM ADDITION =======================
         String[] keywords = {"Laptop", "Lap", "top"};

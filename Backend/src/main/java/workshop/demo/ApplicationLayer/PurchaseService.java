@@ -315,8 +315,9 @@ public class PurchaseService {
                 // DO NOT DELETE THIS CODE!!!!!!!!!!!!
             } else if (specialItem.type == SpecialType.Auction) { // AUCTION
                 ActivePurcheses active = activeRepo.findById(specialItem.storeId).orElse(null);
+                
                 Auction auction = active.getAuctionById(specialItem.specialId);
-                auction.endAuction();
+                // auction.endAuction();
                 if (auction.isEnded()) {
                     if (auction.bidIsWinner(specialItem.bidId)) {
                         winningAuctions.add(auction.getBid(specialItem.bidId));

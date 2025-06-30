@@ -2,22 +2,27 @@ package workshop.demo.ApplicationLayer.DataInitilizer;
 
 import java.util.List;
 
+import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.StoreDTO;
+import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 
 import org.springframework.stereotype.Component;
 
+import jakarta.transaction.Transactional;
+
 @Component
 public class StoreParser extends ManagerDataInit {
 
+    @Transactional
     public void store(List<String> construction) {
         List<String> toSend = construction.subList(1, construction.size());
-        switch (construction.get(0)) {
-            case "open":
+        switch (construction.getFirst()) {
+            case "create":
                 createStore(toSend);
                 break;
             case "item":
@@ -26,10 +31,109 @@ public class StoreParser extends ManagerDataInit {
             case "auction":
                 auction(toSend);
                 break;
+            case "random":
+                random(toSend);
+                break;
+            case "bid":
+                addBidToStore(toSend);
+                break;
             default:
-                log("undefined function for store on line " + line + " : " + construction.get(0));
+                log("undefined function for store on line " + line + " : " + construction.getFirst());
                 error = true;
                 break;
+        }
+
+    }
+
+    private void addBidToStore(List<String> toSend) {
+        String ownerToken = getTokenForUserName(toSend.get(1));
+        int storeId = getStoreIdByName(toSend.get(2));
+        try {
+            ItemStoreDTO item = getProductByNameAndStore(storeId, toSend.get(3), ownerToken,
+                    toSend.get(2).replace("-", " "));
+            switch (toSend.get(0).toLowerCase()) {
+                case "set":
+                    setProductToBid(ownerToken, storeId, item.getProductId(), Integer.parseInt(toSend.get(4)));
+                    break;
+                case "accept":
+                    acceptBid(ownerToken, storeId, item.getProductId(), toSend.get(4));
+                    break;
+                case "reject":
+                    rejectBid(ownerToken, storeId, item.getProductId(), toSend.get(4), toSend.get(5));
+                    break;
+                default:
+                    break;
+            }
+
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
+    private void rejectBid(String ownerToken, int storeId, int productId, String string, String string2) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'rejectBid'");
+    }
+
+    private void acceptBid(String ownerToken, int storeId, int productId, String userName) {
+        try {
+            // TODO we have to get the bid that user belong to
+            BidDTO[] bids = activeService.getAllBids(ownerToken, storeId);
+            int bidId = -1;
+            for (BidDTO bidDTO : bids) {
+                if (bidDTO.productId == productId) {
+                    bidId = bidDTO.bidId;
+                }
+            }
+
+            int userId = -1;
+            List<UserDTO> users = userService.getAllUsers(ownerToken);
+            for (UserDTO user : users) {
+                if (user.username == userName)
+                    userId = user.id;
+            }
+
+            activeService.acceptBid(ownerToken, storeId, storeId, userId);//TODO check if now ghanem set the bid is user id or bid id
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+    }
+
+    private void setProductToBid(String ownerToken, int storeId, int productId, int int1) {
+        try {
+            activeService.setProductToBid(ownerToken, storeId, productId, int1);
+        } catch (Exception e) {
+            log("error on seting product to bid");
+            error = true;
+        }
+    }
+
+    @Transactional
+    public void random(List<String> toSend) {
+        if (toSend.size() != 6) {
+            log("random must be : random <usernaame> <store name> <product name> <random time> <quantity> <total price>;");
+            error = true;
+            return;
+        }
+
+        String token = getTokenForUserName(toSend.get(0));
+        if (token == null) {
+            return;
+        }
+        String storeName = toSend.get(1).replace("-", " ");
+        int id = getStoreIdByName(storeName);
+        String productName = toSend.get(2).replace("-", " ");
+        long time = Long.parseLong(toSend.get(3));
+        int quantity = Integer.parseInt(toSend.get(4));
+        double total = Double.parseDouble(toSend.get(5));
+        try {
+            ItemStoreDTO item = getProductByNameAndStore(id, productName, token, storeName);
+            activeService.setProductToRandom(token, item.getProductId(), quantity, total, id, time);
+            log("random successfuly added!");
+        } catch (Exception e) {
+            log("got error on creating random ," + e.getMessage());
         }
 
     }
@@ -52,17 +156,15 @@ public class StoreParser extends ManagerDataInit {
         int quantity = Integer.parseInt(toSend.get(4));
         double startPrice = Double.parseDouble(toSend.get(5));
         try {
-            ItemStoreDTO item = getProductByNameAndStore(id, productName,token,storeName);
+            ItemStoreDTO item = getProductByNameAndStore(id, productName, token, storeName);
             activeService.setProductToAuction(token, id, item.getProductId(), quantity, time, startPrice);
             // entityManager.flush();
             log("auction set success!!");
-            
+
         } catch (Exception e) {
-            log("line "+line+" got error :"+e.getMessage());
+            log("line " + line + " got error :" + e.getMessage());
         }
     }
-
-    
 
     private void addItem(List<String> toSend) {
         if (toSend.size() < 8) {
@@ -116,7 +218,7 @@ public class StoreParser extends ManagerDataInit {
             ids.put(storeName, storeId);
             log("successfuly create store " + storeName);
         } catch (UIException | DevException e) {
-            error = true;
+            // error = true;
             log("got error on line " + line + " :" + e.getMessage());
         }
 
