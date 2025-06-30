@@ -536,6 +536,7 @@ public ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails paym
                     .orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND))
                     .getStoreName();
             List<ReceiptProduct> items = entry.getValue().getLeft();
+            if(!items.isEmpty()) {
             double discountedTotal = entry.getValue().getRight();
             double total = items.stream()
                     .mapToDouble(item -> item.getPrice() * item.getQuantity())
@@ -551,7 +552,7 @@ public ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails paym
             orderJpaRepo.save(order);
             logger.info("Saved receipt for storeId={}, total={}", storeId, total);
 
-        }
+        }}
         return receipts.toArray(new ReceiptDTO[0]);
     }
 }
