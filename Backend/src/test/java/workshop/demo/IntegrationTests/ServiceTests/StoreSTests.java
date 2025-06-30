@@ -1382,7 +1382,7 @@ void testRemovePolicy_MinQtyMissingParam_Fails() throws Exception {
 
     Exception ex = assertThrows(Exception.class,
             () -> storeService.removePurchasePolicy(NOToken, createdStoreId, "MIN_QTY", productId, null));
-    assertEquals("Must specify minQty", ex.getMessage());
+    assertEquals("Param must be specified", ex.getMessage());
 }
 
 
