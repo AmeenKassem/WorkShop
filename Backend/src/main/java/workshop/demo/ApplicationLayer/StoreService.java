@@ -857,5 +857,20 @@ public class StoreService {
         //storeJpaRepo.save(store);
         discountRepo.save(entity);
     }
-
+    public void addDiscountToStore(int storeId, String token, String name, double percent, CreateDiscountDTO.Type type,
+            String condition, CreateDiscountDTO.Logic logic, String[] subDiscountsNames) throws Exception {
+        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+        throwExceptionIfNotActive(store);
+        List<CreateDiscountDTO> subDiscounts = new ArrayList<>();
+        store.getDiscount();
+        for (String target : subDiscountsNames) {
+            Discount d = store.findDiscountByName(target);
+            if (d == null) {
+                throw new Exception("Discount " + target + " not found in store");
+            }
+            subDiscounts.add(d.toDTO());
+        }
+        CreateDiscountDTO dto = new CreateDiscountDTO(name, percent, type, condition, logic, subDiscounts);
+        addDiscount(storeId,token,dto);
+    }
 }
