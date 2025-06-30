@@ -23,6 +23,7 @@ import jakarta.transaction.Transactional;
 
 @Component
 public class UserParser extends ManagerDataInit {
+    @Transactional
     public void user(List<String> construction) {
         List<String> toSend = construction.subList(1, construction.size());
         switch (construction.get(0).toLowerCase()) {

@@ -10,8 +10,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import workshop.demo.DomainLayer.AppSettings.AppSettingsEntity;
 
 @Service
@@ -28,6 +31,7 @@ public class InitDataService extends ManagerDataInit {
         return new String(Files.readAllBytes(Paths.get(filePath)));
     }
 
+    @Transactional
     public String init(String key, String userName, String password) throws Exception {
         String data = readFileAsString("Backend\\src\\main\\resources\\dataToInit.txt");
         List<List<String>> cons = createCons(data);
@@ -72,12 +76,14 @@ public class InitDataService extends ManagerDataInit {
         appSettingsRepository.save(settings);
     }
 
-    protected void excute(List<String> construction) throws Exception {
+    @Transactional
+    public void excute(List<String> construction) throws Exception {
         if (error)
             return;
         List<String> toSend = construction.subList(1, construction.size());
         switch (construction.get(0).toLowerCase()) {
             case "clear-all":
+                // listAllJpaRepositories();
                 clearData();
                 break;
             case "admin":
@@ -140,6 +146,19 @@ public class InitDataService extends ManagerDataInit {
         }
 
         return result;
+    }
+
+    @Autowired
+    private ApplicationContext context;
+
+    public void listAllJpaRepositories() {
+        // Get all beans that implement JpaRepository (or any interface extending it)
+        Map<String, JpaRepository> repos = context.getBeansOfType(JpaRepository.class);
+
+        repos.forEach((name, repo) -> {
+            System.out.println("Clearing repository: " + name);
+            repo.deleteAll();
+        });
     }
 
 }

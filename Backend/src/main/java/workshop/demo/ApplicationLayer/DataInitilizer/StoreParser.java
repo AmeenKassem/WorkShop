@@ -13,9 +13,12 @@ import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 
 import org.springframework.stereotype.Component;
 
+import jakarta.transaction.Transactional;
+
 @Component
 public class StoreParser extends ManagerDataInit {
 
+    @Transactional
     public void store(List<String> construction) {
         List<String> toSend = construction.subList(1, construction.size());
         switch (construction.getFirst()) {
@@ -107,7 +110,8 @@ public class StoreParser extends ManagerDataInit {
         }
     }
 
-    private void random(List<String> toSend) {
+    @Transactional
+    public void random(List<String> toSend) {
         if (toSend.size() != 6) {
             log("random must be : random <usernaame> <store name> <product name> <random time> <quantity> <total price>;");
             error = true;
