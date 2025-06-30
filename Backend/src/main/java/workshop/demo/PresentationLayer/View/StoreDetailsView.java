@@ -120,6 +120,21 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         } catch (Exception e) {
             NotificationView.showError("Failed to load products: " + e.getMessage());
         }
+        try {
+            List<String> discountDescriptions = presenter.getVisibleDiscountDescriptions(myStoreId, token);
+            if (!discountDescriptions.isEmpty()) {
+                VerticalLayout discountsLayout = new VerticalLayout();
+                discountsLayout.add(new H4("📢 Store Discounts:"));
+                for (String desc : discountDescriptions) {
+                    discountsLayout.add(new Paragraph("🔸 " + desc));
+                }
+                add(discountsLayout);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();  // or logger.error(...)
+            NotificationView.showError("Failed to load store discounts: " + e.getMessage());
+        }
+
 
     }
 

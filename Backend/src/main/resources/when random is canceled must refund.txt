@@ -19,9 +19,18 @@ user :
 	purchase <userName> <special/cart> <valid/invalid>
 	review store <user name> <store name> <msg>;
 	review product <username> <strore naame> <product name> <msg>;
+	user add-manager <ownerName> <storeName> <managerName> <perm1> <perm2> ... ;
+	user offer-answer <storeName> <senderName> <receiverName> <accept/reject> <owner/manager>;
+	user delete-manager <ownerName> <storeName> <managerName>;
+	user add-owner <ownerName> <storeName> <newOwnerName>;
+	user delete-owner <ownerUsername> <storeName> <ownerToDeleteUsername>;
+
+
+
 
 store :
 	create <username> <storeName> <storeCategory>;
+	close <ownerUsername> <storeName>;
 
 	item <ownerName> <storeName> <productName> <productCategory> <desc> <quantity> <price> <keyword1> <keyword2> ... ;
 

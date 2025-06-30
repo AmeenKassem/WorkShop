@@ -26,7 +26,8 @@ public class InitDataService extends ManagerDataInit {
     private StoreParser storeParser;
     @Autowired
     private UserParser userParser;
-
+    @Autowired
+    private ReviewParser reviewParser;
     public String readFileAsString(String filePath) throws IOException {
         return new String(Files.readAllBytes(Paths.get(filePath)));
     }
@@ -97,6 +98,9 @@ public class InitDataService extends ManagerDataInit {
                 break;
             case "wait":
                 justWait(toSend);
+                break;
+            case "review":
+                reviewParser.review(toSend);
                 break;
             default:
                 log("syntax error on line " + line + " :Unkown (" + construction.get(0) + ")");

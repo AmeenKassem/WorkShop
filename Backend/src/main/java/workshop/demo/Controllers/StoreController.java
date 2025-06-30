@@ -3,6 +3,7 @@ package workshop.demo.Controllers;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -271,39 +272,39 @@ public class StoreController {
         }
     }
 
-    @PostMapping("/addDiscount")
-    public ResponseEntity<?> addDiscountToStore(
-            @RequestParam int storeId,
-            @RequestParam String token,
-            @RequestParam String name, @RequestParam double percent, @RequestParam CreateDiscountDTO.Type type,
-            @RequestParam String condition, @RequestParam CreateDiscountDTO.Logic logic,
-            @RequestParam(required = false) String[] subDiscountsNames) {
-
-        if (subDiscountsNames == null) {
-            subDiscountsNames = new String[0];
-        }else{
-            for(int i=0;i<subDiscountsNames.length;i++){
-                subDiscountsNames[i] = URLDecoder.decode(URLDecoder.decode(subDiscountsNames[i], StandardCharsets.UTF_8), StandardCharsets.UTF_8);
-            }
-        }
-        name = URLDecoder.decode(URLDecoder.decode(name, StandardCharsets.UTF_8), StandardCharsets.UTF_8);
-        condition = URLDecoder.decode(URLDecoder.decode(condition, StandardCharsets.UTF_8), StandardCharsets.UTF_8);
-
-        try {
-            storeService.addDiscountToStore(storeId, token, name, percent, type, condition, logic, subDiscountsNames); // assumes
-            // permission
-            // check
-            // is
-            // inside
-            // service
-            return ResponseEntity.ok(new ApiResponse<>("Discount added successfully", null));
-        } catch (UIException ex) {
-            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(null, e.getMessage(), -1));
-        }
-    }
+//    @PostMapping("/addDiscount")
+//    public ResponseEntity<?> addDiscountToStore(
+//            @RequestParam int storeId,
+//            @RequestParam String token,
+//            @RequestParam String name, @RequestParam double percent, @RequestParam CreateDiscountDTO.Type type,
+//            @RequestParam String condition, @RequestParam CreateDiscountDTO.Logic logic,
+//            @RequestParam(required = false) String[] subDiscountsNames) {
+//
+//        if (subDiscountsNames == null) {
+//            subDiscountsNames = new String[0];
+//        }else{
+//            for(int i=0;i<subDiscountsNames.length;i++){
+//                subDiscountsNames[i] = URLDecoder.decode(URLDecoder.decode(subDiscountsNames[i], StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+//            }
+//        }
+//        name = URLDecoder.decode(URLDecoder.decode(name, StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+//        condition = URLDecoder.decode(URLDecoder.decode(condition, StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+//
+//        try {
+//            storeService.addDiscountToStore(storeId, token, name, percent, type, condition, logic, subDiscountsNames); // assumes
+//            // permission
+//            // check
+//            // is
+//            // inside
+//            // service
+//            return ResponseEntity.ok(new ApiResponse<>("Discount added successfully", null));
+//        } catch (UIException ex) {
+//            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+//        }
+//    }
 
     @PostMapping("/removeDiscountByName")
     public ResponseEntity<?> removeDiscountByName(
@@ -361,7 +362,7 @@ public class StoreController {
     @GetMapping("/getStoreDiscounts")
     public ResponseEntity<?> getStoreDiscounts(@RequestParam int storeId, @RequestParam String token) {
         try {
-            List<CreateDiscountDTO> discounts = storeService.getFlattenedDiscounts(storeId, token);
+            CreateDiscountDTO discounts = storeService.getFlattenedDiscounts(storeId, token);
             return ResponseEntity.ok(new ApiResponse<>(discounts, null));
         } catch (UIException ex) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
@@ -370,5 +371,60 @@ public class StoreController {
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
     }
+    @GetMapping("/getVisibleDiscountDescriptions")
+    public ResponseEntity<?> getVisibleDiscountDescriptions(@RequestParam int storeId, @RequestParam String token) {
+        try {
+            List<String> descriptions = storeService.getVisibleDiscountDescriptions(storeId, token);
+            return ResponseEntity.ok(new ApiResponse<>(descriptions, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+    @GetMapping("/getAllDiscountDetails")
+    public ResponseEntity<?> getAllDiscountDetails(@RequestParam int storeId, @RequestParam String token) {
+        try {
+            List<CreateDiscountDTO> allDiscounts = storeService.getAllDiscountsFlattened(storeId, token);
+            return ResponseEntity.ok(new ApiResponse<>(allDiscounts, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+    @GetMapping("/getStoreDiscountTree")
+    public ResponseEntity<?> getStoreDiscountTree(@RequestParam int storeId, @RequestParam String token) {
+        try {
+            List<CreateDiscountDTO> discounts = storeService.getDiscountTree(storeId, token);
+            return ResponseEntity.ok(new ApiResponse<>(discounts, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+    @PostMapping("/addDiscount")
+    public ResponseEntity<?> addDiscountTree(
+            @RequestParam int storeId,
+            @RequestParam String token,
+            @RequestBody CreateDiscountDTO dto
+    ) {
+        try {
+            storeService.addDiscount(storeId, token, dto);
+            return ResponseEntity.ok(Map.of("message", "Discount added successfully."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+
+
+
+
+
 
 }

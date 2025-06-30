@@ -3,12 +3,14 @@ package workshop.demo.ApplicationLayer.DataInitilizer;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import workshop.demo.ApplicationLayer.ReviewService;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.item;
 
+@Component
 public class ReviewParser extends ManagerDataInit {
     
     @Autowired
@@ -24,15 +26,15 @@ public class ReviewParser extends ManagerDataInit {
                 reviewService.AddReviewToStore(token, storeId, msg);
                 log("reviw "+msg+" on store "+toSend.get(2)+" success");
             } catch (UIException e) {
-                log("error on set reviw on store "+e.getMessage());
+                log("error on set reviw on store "+toSend.get(2)+" "+e.getMessage());
             }
         }else if(toSend.get(0).equals("product")){
             try {
                 ItemStoreDTO item = getProductByNameAndStore(storeId, toSend.get(3), token, msg);
                 reviewService.AddReviewToProduct(token, storeId, item.getProductId(), msg);
+                log("reviw "+msg+" on product "+toSend.get(3)+" success!");
             } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                log("reviw "+msg+" on product "+toSend.get(3)+" failed!"+e.getMessage());
             }
         }
     }
