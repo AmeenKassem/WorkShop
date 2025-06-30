@@ -1,4 +1,6 @@
 package workshop.demo.DTOs;
+import jakarta.persistence.Transient;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -33,6 +35,11 @@ public class ReceiptProduct {
     @JsonIgnore
     private Order order;
 
+    @Transient
+    private boolean isSpecial;
+
+    
+
     public ReceiptProduct(String productName, String storename, int quantity, int price, int productId,
             Category category, int storeId) {
         this.productName = productName;
@@ -59,6 +66,12 @@ public class ReceiptProduct {
                 '}';
     }
 
+    public boolean isSpecial() {
+        return isSpecial;
+    }
+    public void setSpecial(boolean special) {
+        isSpecial = special;
+    }
     public String getProductName() {
         return productName;
     }

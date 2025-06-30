@@ -24,6 +24,7 @@ import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.NotificationDTO;
 import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.SingleBidDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -117,9 +118,9 @@ public class ActivePurchasesService {
         }
     }
 
-    
     @PersistenceContext
     protected EntityManager entityManager;
+
     // ======================AUCTION========================
     @Transactional
     public int setProductToAuction(String token, int storeId, int productId, int quantity, long time, double startPrice)
@@ -280,7 +281,8 @@ public class ActivePurchasesService {
         logger.info("we have to return to te user an array of auctions. size: " + auctionDTOs.size());
         return auctionDTOs.toArray(new AuctionDTO[0]);
     }
-@Transactional
+
+    @Transactional
     public AuctionDTO[] getAllAuctions(String token, int storeId) throws Exception {
         checkUserAndStore(token, storeId, true);
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
@@ -334,12 +336,14 @@ public class ActivePurchasesService {
             int userId = checkUserAndStore(token, storeId, false);
             // SingleBid bid = stockRepo.bidOnAuction(storeId, userId, auctionId, price);
             ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
+            logger.info("Randoms in ActivePurcheses: "
+                    + active.getActiveRandoms().stream().map(Random::getRandomId).toList());
             List<Auction> auctions = active.getActiveAuctions();
-            int userLoosedTopId=-1;
-            UserAuctionBid bid=null;
+            int userLoosedTopId = -1;
+            UserAuctionBid bid = null;
             for (Auction auction : auctions) {
-                if(auction.getId()==auctionId){
-                    bid =auction.bid(userId, price);
+                if (auction.getId() == auctionId) {
+                    bid = auction.bid(userId, price);
                     userLoosedTopId = auction.getTopId();
                 }
             }
@@ -366,13 +370,17 @@ public class ActivePurchasesService {
         int userId = checkUserAndStore(token, storeId, true);
         // adding random here:
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();
+
         Random random = active.addProductToRandom(productId, quantity, productPrice, storeId, randomTime);
+
         StoreStock storeStock = storeStockRepo.findById(storeId).orElse(null);
         if (!storeStock.decreaseQuantitytoBuy(productId, quantity)) {
             throw new UIException("quantity fsh ", ErrorCodes.INVALID_QUANTITY);
         }
         storeStockRepo.saveAndFlush(storeStock);
-        activePurchasesRepo.save(active);
+        activePurchasesRepo.flush();
+        logger.info("Randoms in ActivePurcheses: "
+                + active.getActiveRandoms().stream().map(Random::getRandomId).toList());
         Store store = storeJpaRepo.findById(storeId).orElse(null);
         scheduleRandomEnd(active, randomTime, storeStock, random.getRandomId(), productId, quantity, store, random);
         List<Integer> ownersIds = new ArrayList<>();
@@ -380,6 +388,7 @@ public class ActivePurchasesService {
         notifier.sendMessageForUsers(
                 "Owner " + userRepo.findById(userId).get().getUsername() + " set a product to random in your store",
                 ownersIds);
+        logger.info("random set with id :" + random.getRandomId());
         return random.getRandomId();
     }
 
@@ -403,7 +412,8 @@ public class ActivePurchasesService {
                 .toArray(RandomDTO[]::new);
 
     }
-@Transactional
+
+    @Transactional
     public RandomDTO[] getAllRandoms(String token, int storeId) throws Exception {
         checkUserAndStore(token, storeId, true);
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
@@ -452,15 +462,26 @@ public class ActivePurchasesService {
         synchronized (lockManager.getRandomLock(randomId)) {
             logger.info("User {} trying to participate in random: {}, store: {}", userId, randomId, storeId);
             ActivePurcheses active = activePurchasesRepo.findById(storeId).orElseThrow();
-            String userName = userRepo.findById(userId)
-                    .orElseThrow(() -> new UIException("User not found", ErrorCodes.USER_NOT_FOUND)).getUsername();
+            logger.info("Randoms in ActivePurcheses: "
+                    + active.getActiveRandoms().stream().map(Random::getRandomId).toList());
+
+            Registered user = userRepo.findById(userId)
+                    .orElseThrow(() -> new UIException("User not found", ErrorCodes.USER_NOT_FOUND));
+            String userName = user.getUsername();
             ParticipationInRandomDTO res = active.participateInRandom(userId, randomId, amountPaid, userName);
             if (res.isEnded()) {
                 logger.info("Random {} has ended, no participation allowed", randomId);
                 List<Integer> participationsIds = new ArrayList<>();
+                List<Integer> ownersIds = new ArrayList<>();
+                suConnectionRepo.getOwnersInStore(storeId).forEach(usera -> ownersIds.add(usera.getMyId()));
+
                 active.getRandom(randomId).getParticipationsUsersIds()
                         .forEach(participationId -> participationsIds.add(participationId));
 
+                notifier.sendMessageForUsers(
+                        "Random on store: " + storeJpaRepo.findById(storeId).get().getStoreName() + ", on product: "
+                                + stock.getProductById(res.getProductId()).getName() + " has ended.",
+                        ownersIds);
                 notifier.sendMessageForUsers(
                         "Random on store: " + storeJpaRepo.findById(storeId).get().getStoreName() + ", on product: "
                                 + stock.getProductById(res.getProductId()).getName() + " has ended.",
@@ -472,6 +493,8 @@ public class ActivePurchasesService {
                                 + ". Please check your cart for details.");
 
             }
+            // user.addSpecialItemToCart(
+            //         new UserSpecialItemCart(storeId, randomId, userId, SpecialType.Random, res.productId));
             return res;
         }
     }
@@ -516,15 +539,17 @@ public class ActivePurchasesService {
                     tempStoreStock.IncreaseQuantitytoBuy(productId, quantity);
                     storeStockRepo.saveAndFlush(tempStoreStock);
                     tempRandom.mustRefundAllParticipations();
+                    List<Integer> paricpationIds = tempRandom.getParticipationsUsersIds();
+                    notifier.sendMessageForUsers(
+                            "Random on store :" + store.getStoreName() + ", on product:" + productId
+                                    + " has canceled. you will get your money back.",
+                            paricpationIds);
+
                 } else {
                     logger.info("random already ended, no need to refund quantity");
                 }
 
                 activePurchasesRepo.saveAndFlush(tempActivePurchases);
-                List<Integer> paricpationIds = tempRandom.getParticipationsUsersIds();
-                notifier.sendMessageForUsers(
-                        "Random on store :" + store.getStoreName() + ", on product:" + productId + " has ended!",
-                        paricpationIds);
                 List<Integer> ownersIds = new ArrayList<>();
                 suConnectionRepo.getOwnersInStore(store.getstoreId())
                         .forEach(user -> ownersIds.add(user.getMyId()));
@@ -563,7 +588,8 @@ public class ActivePurchasesService {
 
         return bidId;
     }
-@Transactional
+
+    @Transactional
     public BidDTO[] getAllActiveBids_user(String token, int storeId) throws Exception {
         logger.info("User requesting all auctions in store: {}", storeId);
         int userId = checkUserAndStore(token, storeId, false);
@@ -571,30 +597,28 @@ public class ActivePurchasesService {
         Store store = storeJpaRepo.findById(storeId).orElseThrow();
 
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
-        List<BID> bids = new ArrayList<>();
+        List<BidDTO> bids = new ArrayList<>();
         for (BID bid : active.getActiveBids()) {
             BidDTO bidDTO = bid.getDTO();
-            bidDTO.productName = stock.getProductById(bidDTO.productId).getName();
+            bidDTO.productName = stock.getProductById(bid.getProductId()).getName();
             bidDTO.storeName = store.getStoreName();
-            bids.add(bid);
+            bids.add(bidDTO);
         }
 
-        logger.info("we have to return to te user an array of auctions. size: " + bids.size());
-        return bids.stream()
-                .map(BID::getDTO)
-                .toArray(BidDTO[]::new);
+        logger.info("we have to return to the user an array of bids. size: " + bids.size());
+        return bids.toArray(new BidDTO[0]);
     }
-@Transactional
+
+    @Transactional
     public BidDTO[] getAllBids(String token, int storeId) throws Exception {
         checkUserAndStore(token, storeId, true);
         ActivePurcheses active = activePurchasesRepo.findById(storeId).orElse(null);
         List<BidDTO> bids = new ArrayList<>();
         for (BidDTO bidDTO : active.getBids()) {
-            // if (bidDTO.winnerUserId != -1) {
-            // bidDTO.winnerUserName = userRepo.findById(bidDTO.winnerUserId).orElse(new
-            // Registered())
-            // .getUsername();
-            // }
+            for (SingleBidDTO singleBidDTO : bidDTO.getBids()) {
+                singleBidDTO.userName = userRepo.findById(singleBidDTO.userId)
+                        .orElse(new Registered()).getUsername();
+            }
             bidDTO.productName = stock.getProductById(bidDTO.productId).getName();
             bidDTO.storeName = storeJpaRepo.findById(storeId).orElseThrow().getStoreName();
             bids.add(bidDTO);
@@ -659,7 +683,8 @@ public class ActivePurchasesService {
     }
 
     @Transactional
-    public SingleBid acceptBid(String token, int storeId, int bidId, int userToAcceptForId) throws Exception, DevException {
+    public SingleBid acceptBid(String token, int storeId, int bidId, int userToAcceptForId)
+            throws Exception, DevException {
 
         synchronized (lockManager.getBidLock(bidId)) {
             logger.info("User trying to accept bid: {} for bidId: {} in store: {}", userToAcceptForId, bidId, storeId);
@@ -704,7 +729,7 @@ public class ActivePurchasesService {
     }
 
     @Transactional
-    public void rejectBid(String token, int storeId, int bidId, int userToRejectForId, Integer ownerOffer)
+    public void rejectBid(String token, int storeId, int bidId, int userToRejectForId, Double ownerOffer)
             throws Exception, DevException {
         synchronized (lockManager.getBidLock(bidId)) {
             logger.info("User trying to accept bid: {} for bidId: {} in store: {}", userToRejectForId, bidId, storeId);
@@ -725,12 +750,13 @@ public class ActivePurchasesService {
                                 + " has been rejected");
             }
 
-            if( ownerOffer != null ) {
+            if (ownerOffer != null) {
                 String ownerName = userRepo.findById(userId)
                         .orElseThrow(() -> new UIException("Owner not found", ErrorCodes.USER_NOT_FOUND)).getUsername();
                 String message = "Owner is Offering you to bid again with this price: " + ownerOffer.toString()
                         + " on store: " + store.getStoreName() + ", on product : "
-                        + stock.getProductById(active.getBidById(bidId).getProductId()).getName() + ". Would you like to bid again?";
+                        + stock.getProductById(active.getBidById(bidId).getProductId()).getName()
+                        + ". Would you like to bid again?";
                 notifier.sendDelayedMessageToUser(userRepo.findById(userRejected).get().getUsername(),
                         toJsonOffer(message, NotificationDTO.NotificationType.USER_OFFER, ownerName, storeId, bidId));
             }
@@ -738,8 +764,10 @@ public class ActivePurchasesService {
         }
     }
 
-    private String toJsonOffer(String message, NotificationDTO.NotificationType type, String senderName, int storeId, int bidId) {
-        NotificationDTO dto = new NotificationDTO(message, NotificationDTO.NotificationType.USER_OFFER, senderName, storeId, bidId);
+    private String toJsonOffer(String message, NotificationDTO.NotificationType type, String senderName, int storeId,
+            int bidId) {
+        NotificationDTO dto = new NotificationDTO(message, NotificationDTO.NotificationType.USER_OFFER, senderName,
+                storeId, bidId);
         JsonObject json = Json.createObject();
         json.put("message", dto.getMessage());
         json.put("bidId", dto.getBidId());

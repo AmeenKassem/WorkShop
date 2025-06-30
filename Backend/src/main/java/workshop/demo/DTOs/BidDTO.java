@@ -16,4 +16,8 @@ public class BidDTO {
     public int storeId;
     public String storeName;
     public String productName;
+
+    public SingleBidDTO[] getBids() {
+        return bids;
+    }
 }

@@ -101,17 +101,15 @@ public class UserService {
         return userToAdd.getId();
     }
 
-    public void registerAdminDirectly(String username, String password, int age) throws UIException {
-        if (regJpaRepo.findByUsername(username).isPresent()) {
-            throw new UIException("Admin user already exists", 1002);
-        }
-
-        String encryptedPassword = encoder.encodePassword(password);
-        Registered admin = new Registered(username, encryptedPassword, age);
-        admin.setAdmin();
-        regJpaRepo.save(admin);
-    }
-
+    // public void registerAdminDirectly(String username, String password, int age) throws UIException {
+    //     if (regJpaRepo.findByUsername(username).isPresent()) {
+    //         throw new UIException("Admin user already exists", 1002);
+    //     }
+    //     String encryptedPassword = encoder.encodePassword(password);
+    //     Registered admin = new Registered(username, encryptedPassword, age);
+    //     admin.setAdmin();
+    //     regJpaRepo.save(admin);
+    // }
     public boolean isAdmin(String username, String password) {
         Optional<Registered> reg = regJpaRepo.findByUsername(username);
         if (!reg.isPresent()) {
@@ -270,7 +268,8 @@ public class UserService {
         logger.info("Item removed from cart for productId={}", itemCartId);
         return true;
     }
-@Transactional
+
+    @Transactional
     public SpecialCartItemDTO[] getSpecialCart(String token) throws UIException, Exception {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
@@ -296,10 +295,15 @@ public class UserService {
                 itemToSend.setValues(product.getName(), card.isWinner, card.ended);
                 itemToSend.dateEnd = random.getDateOfEnd(); // TODO , use the same function you have used on RandomDTO
                 itemToSend.quantity = random.getQuantity();
+                itemToSend.isEnded = card.ended;
+                itemToSend.isWinner = card.isWinner;
+                itemToSend.myBid = card.amountPaid;
             } else if (item.type == SpecialType.BID) {
                 SingleBid bid = activePurcheses.getBid(item.storeId, item.specialId, item.user.getId(), item.type);
                 itemToSend.setValues(product.getName(), bid.isWinner() || bid.isAccepted(), bid.isEnded());
                 itemToSend.quantity = activePurcheses.getBidById(item.specialId).getQuantity();
+                itemToSend.status = bid.getStatus();
+                itemToSend.myBid = bid.getBidPrice();
             } else if (item.type == SpecialType.Auction) {
                 Auction auction = activePurcheses.getAuctionById(item.specialId);
                 itemToSend.setValues(product.getName(), auction.bidIsWinner(item.bidId), auction.isEnded());

@@ -23,6 +23,7 @@ import jakarta.transaction.Transactional;
 
 @Component
 public class UserParser extends ManagerDataInit {
+    @Transactional
     public void user(List<String> construction) {
         List<String> toSend = construction.subList(1, construction.size());
         switch (construction.get(0).toLowerCase()) {
@@ -44,6 +45,7 @@ public class UserParser extends ManagerDataInit {
             case "purchase":
                 purchase(toSend);
                 break;
+
             default:
                 log("undefined function for user on line " + line + " : " + construction.getFirst());
                 error = true;
@@ -51,7 +53,8 @@ public class UserParser extends ManagerDataInit {
         }
     }
 
-    private void random(List<String> toSend) {
+    @Transactional
+    public void random(List<String> toSend) {
         if (toSend.size() != 4) {
             log("syntax error on line " + line
                     + " : params does not match auction <username> <storeName> <productName> <bid>");
@@ -67,7 +70,7 @@ public class UserParser extends ManagerDataInit {
         String productName = toSend.get(2).replace("-", " ");
         double price = Double.parseDouble(toSend.get(3));
         try {
-            RandomDTO[] randoms = activeService.getAllRandoms(token, id);
+            RandomDTO[] randoms = activeService.getAllActiveRandoms_user(token, id);
             RandomDTO random = null;
             for (RandomDTO randomDTO : randoms) {
                 if (randomDTO.productName.equals(productName))
@@ -77,7 +80,8 @@ public class UserParser extends ManagerDataInit {
                 log("random " + productName + " does not found!");
                 return;
             }
-            purchaseService.participateInRandom(token, random.id, id, price, PaymentDetails.testPayment());
+            
+            purchaseService.participateInRandom(token, random.id, id, price,PaymentDetails.testPayment());
             log("user " + toSend.get(0) + "bid on auction set successfully ");
         } catch (Exception e) {
             log("got error on line " + line + " :" + e.getMessage());
@@ -292,4 +296,6 @@ public class UserParser extends ManagerDataInit {
             error = true;
         }
     }
+
+
 }

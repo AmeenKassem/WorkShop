@@ -16,6 +16,7 @@ import workshop.demo.ApplicationLayer.PurchaseService;
 import workshop.demo.ApplicationLayer.StockService;
 import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.UserService;
+import workshop.demo.ApplicationLayer.UserSuspensionService;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.StoreDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
@@ -44,6 +45,8 @@ public class ManagerDataInit {
 
     @Autowired
     protected StockService stockService;
+    @Autowired
+    protected UserSuspensionService suspensionService;
     @Autowired
     protected AppSettingsService settings;
     @Autowired

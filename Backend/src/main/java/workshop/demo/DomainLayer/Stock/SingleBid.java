@@ -113,6 +113,7 @@ public class SingleBid {
         }
         this.voteIds.add(ownerId);
         if(this.voteIds.containsAll(ownersIds)){
+            markAsBIDAccepted();
             this.status = Status.BID_ACCEPTED;
         } else {
             this.status = Status.BID_PENDING;

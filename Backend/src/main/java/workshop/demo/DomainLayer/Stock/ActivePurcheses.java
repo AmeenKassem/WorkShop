@@ -34,7 +34,6 @@ public class ActivePurcheses {
 
     private static final Logger logger = LoggerFactory.getLogger(ActivePurcheses.class);
 
-    
     @Id
     private int storeId;
 
@@ -218,24 +217,26 @@ public class ActivePurcheses {
     public ParticipationInRandomDTO participateInRandom(int userId, int randomId, double productPrice, String userName)
             throws UIException {
         logger.debug("participateInRandom: userId={}, randomId={}, price={}", userId, randomId, productPrice);
+        // logger.info("Randoms in ActivePurcheses: "
+        // + getActiveRandoms().stream().map(Random::getRandomId).toList());
 
-        if (!activeRandom.containsKey(randomId)) {
-            logger.error("Random ID {} not found", randomId);
-
-            throw new UIException("Random ID not found!", ErrorCodes.RANDOM_NOT_FOUND);
+        Random random = null;
+        for (Random randomA : getActiveRandoms()) {
+            if (randomA.getRandomId() == randomId)
+                random = randomA;
         }
         if (productPrice <= 0) {
             logger.error("Invalid product price in random: {}", productPrice);
 
             throw new UIException("Product price must be positive!", ErrorCodes.INVALID_RANDOM_PARAMETERS);
         }
-        if (!activeRandom.get(randomId).isActive()) {
+        if (!random.isActive()) {
             logger.warn("Random ID {} is not active anymore", randomId);
 
-            activeRandom.remove(randomId);
+            // activeRandom.remove(randomId);
             throw new UIException("Random has ended!", ErrorCodes.RANDOM_FINISHED);
         }
-        return activeRandom.get(randomId).participateInRandom(userId, productPrice, userName).toDTO();
+        return random.participateInRandom(userId, productPrice, userName).toDTO();
     }
 
     public RandomDTO[] getRandoms() {
@@ -245,6 +246,8 @@ public class ActivePurcheses {
         int i = 0;
         for (Random random : activeRandom.values()) {
             randomDTOs[i] = random.getDTO();
+            randomDTOs[i].isActive = random.isActive();
+            randomDTOs[i].canceled = random.isCanceled();
             i++;
         }
         return randomDTOs;
@@ -252,24 +255,33 @@ public class ActivePurcheses {
 
     public Random getRandom(int randomId) throws DevException {
         logger.debug("getRandom: randomId={}", randomId);
-
-        if (!activeRandom.containsKey(randomId))
-
+        Random random = null;
+        for (Random randomA : activeRandom.values()) {
+            if (randomA.getRandomId() == randomId)
+                random = randomA;
+        }
+        if (random==null)
         {
             logger.error("Random ID {} not found on getRandom", randomId);
             throw new DevException("Random ID not found in active randoms!");
         }
-        return activeRandom.get(randomId);
+        return random;
     }
 
     public double getProductPrice(int randomId) throws DevException {
         logger.debug("getProductPrice: randomId={}", randomId);
 
-        if (!activeRandom.containsKey(randomId)) {
-            logger.error("Random ID {} not found on getProductPrice", randomId);
+        Random random = null;
+        for (Random randomA : activeRandom.values()) {
+            if (randomA.getRandomId() == randomId)
+                random = randomA;
+        }
+        if (random==null)
+        {
+            logger.error("Random ID {} not found on getRandom", randomId);
             throw new DevException("Random ID not found in active randoms!");
         }
-        return activeRandom.get(randomId).getProductPrice();
+        return random.getProductPrice();
     }
 
     public ParticipationInRandomDTO getRandomCardforuser(int specialId, int userId) {
@@ -399,7 +411,7 @@ public class ActivePurcheses {
     // @Transactional
     public Auction getAuctionById(int res) {
         for (Auction auction : activeAuction.values()) {
-            
+
         }
         return activeAuction.get(res);
     }

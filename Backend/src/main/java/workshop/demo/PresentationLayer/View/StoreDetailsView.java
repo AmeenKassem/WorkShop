@@ -823,7 +823,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         mainLayout.setWidthFull();
 
         for (AuctionDTO auction : auctions) {
-            if (auction.status==AuctionStatus.IN_PROGRESS && auction.productId == productId) {
+            if (auction.status == AuctionStatus.IN_PROGRESS && auction.productId == productId) {
                 VerticalLayout auctionDetailsLayout = new VerticalLayout();
                 auctionDetailsLayout.setSpacing(false);
                 auctionDetailsLayout.setPadding(false);
@@ -920,7 +920,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 HorizontalLayout row = new HorizontalLayout();
                 row.setWidthFull();
 
-                String bidDetails = "Product Name: " + bid.productName;
+                String bidDetails = "Product Name: " + bid.productName + "\n Quantity: " + bid.quantity;
 
                 Paragraph bidInfo = new Paragraph(bidDetails);
 

@@ -13,13 +13,16 @@ import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 
 import org.springframework.stereotype.Component;
 
+import jakarta.transaction.Transactional;
+
 @Component
 public class StoreParser extends ManagerDataInit {
 
+    @Transactional
     public void store(List<String> construction) {
         List<String> toSend = construction.subList(1, construction.size());
         switch (construction.getFirst()) {
-            case "open":
+            case "create":
                 createStore(toSend);
                 break;
             case "item":
@@ -107,7 +110,8 @@ public class StoreParser extends ManagerDataInit {
         }
     }
 
-    private void random(List<String> toSend) {
+    @Transactional
+    public void random(List<String> toSend) {
         if (toSend.size() != 6) {
             log("random must be : random <usernaame> <store name> <product name> <random time> <quantity> <total price>;");
             error = true;
@@ -214,7 +218,7 @@ public class StoreParser extends ManagerDataInit {
             ids.put(storeName, storeId);
             log("successfuly create store " + storeName);
         } catch (UIException | DevException e) {
-            error = true;
+            // error = true;
             log("got error on line " + line + " :" + e.getMessage());
         }
 

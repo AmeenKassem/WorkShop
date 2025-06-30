@@ -256,14 +256,14 @@ public class PurchaseService {
                 card.getProductId());
         user.addSpecialItemToCart(item);
         // Hmode
-        boolean done = paymentService.processPayment(paymentDetails, amountPaid) == -1 ? false : true;
+        int transactionalId = paymentService.processPayment(paymentDetails, amountPaid);
         // boolean done = true; // for testing purposes, must be removed later
-        if (!done) {
+        if (transactionalId == -1) {
             logger.error("Payment failed for userId={}, amountPaid={}", userId, amountPaid);
             throw new UIException("Payment failed", ErrorCodes.PAYMENT_ERROR);
         } else {
             // i really dont know ??
-            card.transactionIdForPayment = 1;
+            card.transactionIdForPayment = transactionalId;
         }
         logger.info("User {} participated in random draw {}", userId, randomId);
         regRepo.save(user);
@@ -285,7 +285,7 @@ public class PurchaseService {
 
         // winning!!
         List<SingleBid> winningBids = new ArrayList<>();
-        List<ParticipationInRandomDTO> winningRandoms = new ArrayList<>();
+        List<ParticipationInRandomDTO> allParticipationsInRandoms = new ArrayList<>();
         List<UserAuctionBid> winningAuctions = new ArrayList<>();
 
         List<UserSpecialItemCart> itemsToRemove = new ArrayList<>();
@@ -299,9 +299,12 @@ public class PurchaseService {
                 ParticipationInRandomDTO card = random.getRandomCardforuser(userId);
                 if (card != null && card.isWinner && card.ended) {
                     logger.info("random card win");
-                    winningRandoms.add(card); // Won
+                    card.quantity = random.getQuantity();
+                    allParticipationsInRandoms.add(card); // Won
+                    itemsToRemove.add(specialItem); // Remove from cart
                 } else if ((card != null && !card.isWinner && card.ended) || card == null) {
                     logger.info("");
+                    allParticipationsInRandoms.add(card);
                     itemsToRemove.add(specialItem);// Lost or not found → remove
                 } else if (card.mustRefund()) {
                     logger.info("");
@@ -344,7 +347,7 @@ public class PurchaseService {
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
         double sumToPay = setRecieptMapForBids(winningBids, storeToProducts);
         sumToPay += setRecieptMapForAuctions(winningAuctions, storeToProducts);
-        setRecieptMapForRandoms(storeToProducts, winningRandoms);
+        setRecieptMapForRandoms(storeToProducts, allParticipationsInRandoms);
         logger.info("finilizing cart with price:" + sumToPay);
         // Hmode
         int paymentTxId = paymentService.processPayment(payment, sumToPay);
@@ -402,6 +405,7 @@ public class PurchaseService {
                     (int) bid.getBidPrice(),
                     bid.getProductId(),
                     product.getCategory(), bid.getStoreId());
+            receiptProduct.setSpecial(true); // Mark as special item
 
             res.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
             // paymentService.processPayment(payment, (int) bid.getBidPrice());
@@ -439,6 +443,7 @@ public class PurchaseService {
                     (int) bid.getBidPrice(),
                     bid.getProductId(),
                     product.getCategory(), bid.getStoreId());
+            receiptProduct.setSpecial(true); // Mark as special item
 
             res.computeIfAbsent(bid.getStoreId(), k -> new ArrayList<>()).add(receiptProduct);
             // paymentService.processPayment(payment, (int) bid.getBidPrice());
@@ -461,10 +466,11 @@ public class PurchaseService {
             ReceiptProduct receiptProduct = new ReceiptProduct(
                     product.getName(),
                     storeName,
-                    card.quantity,
+                    card.isWinner ? card.quantity : 0,
                     (int) card.amountPaid,
                     product.getProductId(),
                     product.getCategory(), card.storeId);
+            receiptProduct.setSpecial(true); // Mark as special item
 
             storeToProducts.computeIfAbsent(card.storeId, k -> new ArrayList<>()).add(receiptProduct);
             // supplyService.processSupply(supply);
@@ -484,7 +490,7 @@ public class PurchaseService {
                     .getStoreName();
             List<ReceiptProduct> items = entry.getValue();
             double total = items.stream()
-                    .mapToDouble(item -> item.getPrice() * item.getQuantity())
+                    .mapToDouble(item -> item.isSpecial() ? item.getPrice() : item.getPrice() * item.getQuantity())
                     .sum();
             // changed this to do price*qunatity instead of just price itself
             ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, total);
