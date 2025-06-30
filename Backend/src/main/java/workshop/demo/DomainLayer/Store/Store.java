@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 
 import jakarta.persistence.*;
+import jakarta.transaction.Transactional;
+
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,12 +17,6 @@ import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountEntity;
 import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountMapper;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Transient;
 
 @Entity
 public class Store {
@@ -52,13 +48,16 @@ public class Store {
     @JoinColumn(name = "discount_id")
     private DiscountEntity discountEntity;
 
-    @Transient
-    private final List<PurchasePolicy> purchasePolicies = new ArrayList<>();
+
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "policy_manager_id")
+    private PolicyManager policyManager;
 
     public Store(String storeName, String cat) {
         this.storeName = storeName;
         this.category = cat;
         this.active = true;
+
 
     }
 
@@ -186,29 +185,23 @@ public class Store {
 
 
 
-    public void addPurchasePolicy(PurchasePolicy p) throws Exception {
-        if (p == null) {
-            throw new Exception("Policy must not be null");
-        }
-        purchasePolicies.add(p);
-
+public void addPurchasePolicy(PurchasePolicy p) {
+    if (p == null) {
+        throw new IllegalArgumentException("Purchase policy must not be null");
     }
+    policyManager.addPolicy(p);
+}
 
-    public void removePurchasePolicy(PurchasePolicy p) {
-        purchasePolicies.remove(p);
-    }
+public boolean removePurchasePolicy(PurchasePolicy.PolicyType type, int productId, int param) {
+    return policyManager.removePolicy(type, productId, param);
+}
 
-    public List<PurchasePolicy> getPurchasePolicies() {
-        return Collections.unmodifiableList(purchasePolicies);
-    }
+@Transactional
+public List<PurchasePolicy> getPurchasePolicies() {
+    return List.copyOf(policyManager.getPurchasePolicies());
+}
 
-    public void assertPurchasePolicies(UserDTO buyer, List<ItemStoreDTO> cart) throws Exception {
-        for (PurchasePolicy p : purchasePolicies) {
-            if (!p.isSatisfied(buyer, cart)) {
-                throw new Exception(p.violationMessage());
-            }
-        }
-    }
+   
 
     public Discount findDiscountByName(String targetName) {
         if (discount == null || targetName == null) {
@@ -258,6 +251,10 @@ public class Store {
         }
     }
 
-
-
+public void assertPurchasePolicies(int age, int quantity, int productId) {
+    policyManager.assertPolicies(age, quantity, productId);
+}
+  public void setPolicyManager(PolicyManager policyManager) {
+        this.policyManager = policyManager;
+    }
 }

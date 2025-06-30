@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Service;
 
 import elemental.json.Json;
@@ -43,6 +44,7 @@ import workshop.demo.InfrastructureLayer.IOrderRepoDB;
 import workshop.demo.InfrastructureLayer.IStoreRepoDB;
 import workshop.demo.InfrastructureLayer.IStoreStockRepo;
 import workshop.demo.InfrastructureLayer.OfferJpaRepository;
+import workshop.demo.InfrastructureLayer.PolicyManagerRepository;
 import workshop.demo.InfrastructureLayer.StoreTreeJPARepository;
 import workshop.demo.InfrastructureLayer.UserJpaRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
@@ -79,6 +81,8 @@ public class StoreService {
     private DiscountJpaRepository discountRepo;
     @Autowired
     private LockManager lockManager;
+    @Autowired
+private PolicyManagerRepository policyManagerRepository;
 
 
     @PostConstruct
@@ -161,36 +165,52 @@ public class StoreService {
             }
         }
     }
+public int addStoreToSystem(String token, String storeName, String category) throws UIException, DevException {
+    logger.info("User attempting to add a new store: '{}', category: {}", storeName, category);
+    logger.info(token);
 
-    public int addStoreToSystem(String token, String storeName, String category) throws UIException, DevException {
-        logger.info("User attempting to add a new store: '{}', category: {}", storeName, category);
-        logger.info(token);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int bossId = authRepo.getUserId(token);
-        userService.checkUserRegisterOnline_ThrowException(bossId);
-        UserSuspension suspension = suspensionJpaRepo.findById(bossId).orElse(null);
-        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
-        }
-
-        // persisting new store:
-        Store newStore = new Store();
-        newStore.setActive(true);
-        newStore.setName(storeName);
-        newStore.setCategory(category);
-        newStore = storeJpaRepo.save(newStore);
-        int storeId = newStore.getstoreId();
-        suConnectionRepo.addNewStoreOwner(storeId, bossId);
-        // stockRepo.addStore(storeId);
-        StoreStock stock4Store = new StoreStock();
-        stock4Store.setStoreId(storeId);
-        ActivePurcheses active = new ActivePurcheses(storeId);
-        activePurchasesRepo.save(active);
-        storeStock.save(stock4Store);
-
-        logger.info("Store '{}' added successfully with ID {} by boss {}", storeName, storeId, bossId);
-        return storeId;
+    // Authorization and suspension checks
+    authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    int bossId = authRepo.getUserId(token);
+    userService.checkUserRegisterOnline_ThrowException(bossId);
+    UserSuspension suspension = suspensionJpaRepo.findById(bossId).orElse(null);
+    if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+        throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
     }
+
+    // Create and save new store
+    Store newStore = new Store();
+    newStore.setActive(true);
+    newStore.setName(storeName);
+    newStore.setCategory(category);
+    newStore = storeJpaRepo.save(newStore);
+    int storeId = newStore.getstoreId();
+    
+
+    // Create and save PolicyManager linked to the new store
+    PolicyManager policyManager = new PolicyManager();
+    policyManager.setStore(newStore); // Link the PolicyManager to the Store
+        policyManager = policyManagerRepository.save(policyManager);
+
+    // Link the PolicyManager to the Store (if your Store entity has this field)
+    newStore.setPolicyManager(policyManager);
+    storeJpaRepo.save(newStore); // Update store with the manager FK
+
+    // Add the boss as the store owner
+    suConnectionRepo.addNewStoreOwner(storeId, bossId);
+
+    // Initialize stock and active purchases
+    StoreStock stock4Store = new StoreStock();
+    stock4Store.setStoreId(storeId);
+    storeStock.save(stock4Store);
+
+    ActivePurcheses active = new ActivePurcheses(storeId);
+    activePurchasesRepo.save(active);
+
+    logger.info("Store '{}' added successfully with ID {} by boss {}", storeName, storeId, bossId);
+    return storeId;
+}
+
 
     private String convertNotificationToJson(String message, String receiverName, NotificationDTO.NotificationType type,
             boolean toBeOwner,
@@ -671,62 +691,84 @@ public class StoreService {
         storeJpaRepo.save(store);
         logger.info("Discount '{}' removed and store updated", discountName);
     }
+    @Transactional
+public void addPurchasePolicy(String token, int storeId, String policyKey,
+                              int productId, Integer param) throws Exception {
 
-    public void addPurchasePolicy(String token, int storeId, String policyKey/* "NO_ALCOHOL""MIN_QTY" */,
-            Integer param/* when MIN_QTY */) throws Exception {
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        userService.checkUserRegisterOnline_ThrowException(userId);
-        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
-        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
-        }
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        throwExceptionIfNotActive(store);
-        if (!suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_PURCHASE_POLICY)) {
-            throw new UIException("You do not have permission to remove discounts", ErrorCodes.NO_PERMISSION);
-        }
-        // Store store =storeJpaRepo.findById(storeId).get();
-        switch (policyKey) {
-            case "NO_ALCOHOL" ->
-                store.addPurchasePolicy(PurchasePolicy.noAlcoholUnder18());
-            case "MIN_QTY" ->
-                store.addPurchasePolicy(PurchasePolicy.minQuantityPerProduct(param));
-            default ->
-                throw new UIException("Unknown Policy!", ErrorCodes.NO_POLICY);
-        }
+    authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    int userId = authRepo.getUserId(token);
+    userService.checkUserRegisterOnline_ThrowException(userId);
+
+    UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+    if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+        throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
     }
 
-    public void removePurchasePolicy(String token, int storeId, String policyKey/* "NO_ALCOHOL""MIN_QTY" */,
-            Integer param/* when MIN_QTY */) throws Exception {
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        userService.checkUserRegisterOnline_ThrowException(userId);
-        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
-        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
-        }
+    Store store = storeJpaRepo.findById(storeId).orElseThrow(this::storeNotFound);
+    throwExceptionIfNotActive(store);
 
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        throwExceptionIfNotActive(store);
-        if (!suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_PURCHASE_POLICY)) {
-            throw new UIException("You do not have permission to remove discounts", ErrorCodes.NO_PERMISSION);
-        }
-        // Store store =storeJpaRepo.findById(storeId).get();
-        PurchasePolicy policy = switch (policyKey) {
-            case "NO_ALCOHOL" ->
-                PurchasePolicy.noAlcoholUnder18();
-            case "MIN_QTY" -> {
-                if (param == null) {
-                    throw new Exception("Param is required!");
-                }
-                yield PurchasePolicy.minQuantityPerProduct(param);
-            }
-            default ->
-                throw new UIException("Unknown Policy!", ErrorCodes.NO_POLICY);
-        };
-        store.removePurchasePolicy(policy);
+    if (!suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_PURCHASE_POLICY)) {
+        throw new UIException("You do not have permission to manage purchase policies", ErrorCodes.NO_PERMISSION);
     }
+
+    switch (policyKey) {
+        case "NO_PRODUCT_UNDER_AGE" -> {
+            if (param == null) throw new UIException("Must specify minBuyerAge", ErrorCodes.BAD_INPUT);
+            var p=PurchasePolicy.noProductUnderAge(productId, param);
+            p.setParam(param);
+            p.setProductId(productId);
+            store.addPurchasePolicy(p);
+            
+        }
+        case "MIN_QTY" -> {
+            if (param == null) throw new UIException("Must specify minQty", ErrorCodes.BAD_INPUT);
+                var p=PurchasePolicy.minQuantityPerProduct(productId, param);
+            p.setParam(param);
+            p.setProductId(productId);
+            store.addPurchasePolicy(p);
+            
+        }
+        default -> throw new UIException("Unknown Policy!", ErrorCodes.NO_POLICY);
+    }
+}
+
+@Transactional
+ public void removePurchasePolicy(String token, int storeId, String policyKey,
+                                 int productId, Integer param) throws Exception {
+
+    authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    int userId = authRepo.getUserId(token);
+    userService.checkUserRegisterOnline_ThrowException(userId);
+
+    UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+    if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+        throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+    }
+
+    Store store = storeJpaRepo.findById(storeId).orElseThrow(this::storeNotFound);
+    throwExceptionIfNotActive(store);
+
+    if (!suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_PURCHASE_POLICY)) {
+        throw new UIException("You do not have permission to remove purchase policies", ErrorCodes.NO_PERMISSION);
+    }
+
+    // Map policyKey string to PolicyType enum
+    PurchasePolicy.PolicyType type = switch (policyKey) {
+        case "NO_PRODUCT_UNDER_AGE" -> PurchasePolicy.PolicyType.NO_PRODUCT_UNDER_AGE;
+        case "MIN_QTY" -> PurchasePolicy.PolicyType.MIN_QTY_PER_PRODUCT;
+        default -> throw new UIException("Unknown Policy!", ErrorCodes.NO_POLICY);
+    };
+
+    if (param == null) {
+        throw new UIException("Param must be specified", ErrorCodes.BAD_INPUT);
+    }
+
+    boolean removed = store.removePurchasePolicy(type, productId, param);
+    if (!removed) {
+        throw new UIException("Policy not found to remove", ErrorCodes.NO_POLICY);
+    }
+}
+
 
     public String[] getAllDiscountNames(int storeId, String token) throws UIException {
         Store store = storeJpaRepo.findById(storeId).get(); // assumes auth already validated
@@ -802,49 +844,72 @@ public class StoreService {
     }
 
 public void addDiscount(int storeId, String token, CreateDiscountDTO dto) throws Exception {
-    logger.info("User attempting to add a discount tree to store {}", storeId);
+        logger.info("User attempting to add a discount tree to store {}", storeId);
 
-    authRepo.checkAuth_ThrowTimeOutException(token, logger);
-    int userId = authRepo.getUserId(token);
-    userService.checkUserRegisterOnline_ThrowException(userId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int userId = authRepo.getUserId(token);
+        userService.checkUserRegisterOnline_ThrowException(userId);
+        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        }
 
-    UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
-    if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-        throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+        Store store = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND));
+        throwExceptionIfNotActive(store);
+
+        boolean hasPermission = suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_STORE_POLICY);
+        if (!hasPermission) {
+            throw new UIException("No permission to add discounts", ErrorCodes.NO_PERMISSION);
+        }
+
+        if(store.getDiscount()==null){
+            store.addDiscount(new MaxDiscount("MANUALLY_COMBINED"));
+
+        }
+        // hydrate old discount (if any)
+        store.getDiscount();
+        Discount newDiscount = DiscountFactory.fromDTO(dto);
+        Discount old = store.getDiscount();
+        //ASSI
+//        if (old != null) {
+//            // combine both under a new composite
+//            CompositeDiscount combined = new MultiplyDiscount("AUTO_COMBINED");
+//            combined.addDiscount(old);
+//            combined.addDiscount(newDiscount);
+//            newDiscount = combined;
+//
+//            // optional: delete old entity from DB
+//            removeDiscountFromStore(token, storeId, old.getName());
+//        }
+//
+//// replace the current store discount with the combined one
+//        store.setDiscount(newDiscount);
+//        DiscountEntity entity = DiscountMapper.toEntity(newDiscount);
+//        store.setDiscountEntity(entity);
+//        discountRepo.save(entity);
+        //HMODE
+        store.addDiscount(newDiscount);
+        newDiscount = store.getDiscount();
+        if (old != null) {
+            System.out.println("ASSI");
+            removeDiscountFromStore(token, storeId, old.getName());
+        }
+
+        store.setDiscount(newDiscount);
+        DiscountEntity entity = DiscountMapper.toEntity(newDiscount);
+        store.setDiscountEntity(entity);
+        //storeJpaRepo.save(store);
+        discountRepo.save(entity);
+    }        @Transactional
+    public List<PurchasePolicy> getStorePolicies(int storeId) {
+        Store store = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new RuntimeException("Store not found"));
+
+        // Access the collection inside the transaction so it gets initialized
+      //  store.getPolicyManager().getPurchasePolicies().size();
+
+        // Return a copy of the policies list
+        return List.copyOf(store.getPurchasePolicies());
     }
-
-    Store store = storeJpaRepo.findById(storeId)
-            .orElseThrow(() -> new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND));
-    throwExceptionIfNotActive(store);
-
-    boolean hasPermission = suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_STORE_POLICY);
-    if (!hasPermission) {
-        throw new UIException("No permission to add discounts", ErrorCodes.NO_PERMISSION);
-    }
-
-    Discount newDiscount = DiscountFactory.fromDTO(dto);
-    Discount oldDiscount = store.getDiscount();
-
-    MultiplyDiscount combined = new MultiplyDiscount("AUTO_MULTIPLY_COMBINED");
-
-    if (oldDiscount != null) {
-        combined.addDiscount(oldDiscount);
-    }
-    combined.addDiscount(newDiscount);
-
-    // Remove old discount entity to clean up DB if needed
-    if (oldDiscount != null) {
-        removeDiscountFromStore(token, storeId, oldDiscount.getName());
-    }
-
-    // Set the new combined discount to the store
-    store.setDiscount(combined);
-    DiscountEntity entity = DiscountMapper.toEntity(combined);
-    store.setDiscountEntity(entity);
-
-    discountRepo.save(entity);
-    storeJpaRepo.save(store);
-}
-
-    
 }
