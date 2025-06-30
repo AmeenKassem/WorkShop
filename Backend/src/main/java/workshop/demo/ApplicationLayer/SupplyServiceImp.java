@@ -27,6 +27,7 @@ public class SupplyServiceImp implements ISupplyService {
                 supplyDetails.city == null || supplyDetails.country == null ||
                 supplyDetails.zipCode == null) {
             logger.error("Supply failed due to missing fields: {}", supplyDetails);
+            System.out.println(supplyDetails.name+"-"+supplyDetails.address+"-"+supplyDetails.city+"-"+supplyDetails.country+"-"+supplyDetails.zipCode);
             throw new UIException("Missing supply details", ErrorCodes.SUPPLY_ERROR);
         }
         return 1001;

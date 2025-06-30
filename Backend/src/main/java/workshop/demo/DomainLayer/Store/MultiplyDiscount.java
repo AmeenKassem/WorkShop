@@ -1,5 +1,7 @@
 package workshop.demo.DomainLayer.Store;
 
+import workshop.demo.DTOs.CreateDiscountDTO;
+
 import java.util.List;
 
 public class MultiplyDiscount extends CompositeDiscount{
@@ -22,5 +24,20 @@ public class MultiplyDiscount extends CompositeDiscount{
         }
         double overAll = 1.0 - factor;
         return scope.getTotalPrice()*overAll;
+    }
+    @Override
+    public CreateDiscountDTO toDTO() {
+        CreateDiscountDTO dto = new CreateDiscountDTO();
+        dto.setName(getName());
+        dto.setLogic(CreateDiscountDTO.Logic.MULTIPLY);
+        dto.setType(CreateDiscountDTO.Type.VISIBLE);
+        dto.setPercent(0); // the discount logic is applied to children
+        dto.setCondition("None"); // override if condition is added
+
+        dto.setSubDiscounts(discounts.stream()
+                .map(Discount::toDTO)
+                .toList());
+
+        return dto;
     }
 }

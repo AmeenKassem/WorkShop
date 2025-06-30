@@ -15,6 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapKey;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Transient;
 import workshop.demo.ApplicationLayer.LockManager;
@@ -36,6 +37,7 @@ public class BID {
     private int bidId;
 
     @OneToMany(mappedBy = "bid", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @MapKey(name = "userId")
     public Map<Integer, SingleBid> bids;
 
     private int productId;
@@ -45,13 +47,17 @@ public class BID {
 
     @Transient
     private SingleBid winner;
-    
+
     @ManyToOne
     @JoinColumn(name = "active_store_id")
     private ActivePurcheses activePurcheses;
 
+    // @Transient
+    // Object lock = new Object();
+
     @Transient
-    Object lock = new Object();
+    @Autowired
+    private IActivePurchasesRepo activePurchasesRepository;
 
     public BID(int productId, int quantity, int storeId) {
         this.productId = productId;
@@ -88,61 +94,57 @@ public class BID {
     }
 
     public SingleBid bid(int userId, double price) throws UIException {
-        synchronized (lock) {
-            if (isAccepted)
-                throw new UIException("This bid is already closed!", ErrorCodes.BID_FINISHED);
 
-            SingleBid bid = new SingleBid(productId, quantity, userId, price, SpecialType.BID, storeId, bidId);
-            bid.setBid(this);
-            bids.put(bid.getId(), bid);
-            return bid;
-        }
+        if (isAccepted)
+            throw new UIException("This bid is already closed!", ErrorCodes.BID_FINISHED);
+
+        SingleBid bid = new SingleBid(productId, quantity, userId, price, SpecialType.BID, storeId, bidId);
+        bid.setBid(this);
+        bids.put(userId, bid);
+        return bid;
+
     }
 
-    public SingleBid acceptBid(int userBidId, List<Integer> ownersIds, int userId) throws DevException, UIException {
-        synchronized (lock) {
-            SingleBid curr = null;
-            if (isAccepted)
-                throw new UIException("This bid is already closed!", ErrorCodes.BID_FINISHED);
+    public SingleBid acceptBid(int userToAcceptForId, List<Integer> ownersIds, int userId)
+            throws DevException, UIException {
+                
+        SingleBid curr = null;
+        if (isAccepted)
+            throw new UIException("This bid is already closed!", ErrorCodes.BID_FINISHED);
 
-            for (Integer id : bids.keySet()) {
-                if (id == userBidId) {
-                    bids.get(id).acceptBid(ownersIds, userId);
-                    curr = bids.get(id);
-                    if (bids.get(id).isWinner()) {
-                        winner = bids.get(id);
-                        isAccepted = true;
-                        return winner;
+        if (bids.containsKey(userToAcceptForId)) {
+            curr = bids.get(userToAcceptForId);
+            // Accept the bid
+            curr.acceptBid(ownersIds, userId);
+            if (curr.isWinner()) {
+                isAccepted = true;
+                winner = curr;
+                for (SingleBid bid : bids.values()) {
+                    if (bid.getId() != curr.getId()) {
+                        bid.markAsBIDLosed();
                     }
-                } else {
-                    bids.get(id).rejectBid();
                 }
             }
-            if (!bids.containsKey(userBidId) || winner == null) {
 
-                throw new DevException("Trying to accept bid for non-existent ID.");
-            }
+        } else {
 
-            return curr;
+            throw new DevException("Trying to accept bid for non-existent ID.");
         }
+
+        return curr;
+
     }
 
-    public boolean rejectBid(int userBidId) throws DevException, UIException {
-        synchronized (lock) {
-            if (isAccepted)
-                throw new UIException("The bid is already closed!", ErrorCodes.BID_FINISHED);
-            if (!bids.containsKey(userBidId))
-                throw new DevException("Trying to reject bid with non-existent ID.");
-            bids.get(userBidId).rejectBid();
-            bids.remove(userBidId);
-            return true;
-        }
-    }
+    public boolean rejectBid(int userToRejectForId) throws DevException, UIException {
 
-    public boolean isOpen() {
-        synchronized (lock) {
-            return !isAccepted;
-        }
+        if (isAccepted)
+            throw new UIException("The bid is already closed!", ErrorCodes.BID_FINISHED);
+        if (!bids.containsKey(userToRejectForId))
+            throw new DevException("Trying to reject bid with non-existent ID.");
+        bids.get(userToRejectForId).rejectBid();
+        //bids.remove(userBidId);
+        return true;
+
     }
 
     public boolean userIsWinner(int userId) {
@@ -171,9 +173,9 @@ public class BID {
         return bidId;
     }
 
-	public boolean isAccepted() {
-		return isAccepted;
-	}
+    public boolean isAccepted() {
+        return isAccepted;
+    }
 
     public List<Integer> getLosersIdsIfAccepted() {
         if (isAccepted) {
@@ -190,5 +192,9 @@ public class BID {
             throw new IllegalArgumentException("ActivePurchases cannot be null");
         }
         this.activePurcheses = activePurcheses2;
+    }
+
+    public int getQuantity() {
+        return quantity;
     }
 }

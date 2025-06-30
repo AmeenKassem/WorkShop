@@ -92,4 +92,8 @@ public class Authorization {
         logger.debug("setMyAutho called, map updated");
 
     }
+
+    public Long getId() {
+        return id;
+    }
 }

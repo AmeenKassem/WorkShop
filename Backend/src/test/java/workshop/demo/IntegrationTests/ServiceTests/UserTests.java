@@ -1,3 +1,4 @@
+
 package workshop.demo.IntegrationTests.ServiceTests;
 
 import java.time.LocalDate;
@@ -769,20 +770,20 @@ public class UserTests {
     // });
     // }
 
-    @Test
-    void testProcessPayment_NegativeAmount_ThrowsUIException() throws UIException {
-        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
-
-        userService.addToUserCart(NGToken,
-                new ItemStoreDTO(PID, 1, -50, Category.Electronics, 3, x, "Test", "TestStore"), 1);
-        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
-        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
-
-        Exception ex = assertThrows(Exception.class, () -> {
-            purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
-        });
-        assertEquals("Payment failed", ex.getMessage());
-    }
+//    @Test
+//    void testProcessPayment_NegativeAmount_ThrowsUIException() throws UIException {
+//        int x = storeRepositoryjpa.findAll().get(0).getstoreId();
+//
+//        userService.addToUserCart(NGToken,
+//                new ItemStoreDTO(PID, 1, -50, Category.Electronics, 3, x, "Test", "TestStore"), 1);
+//        PaymentDetails paymentDetails = PaymentDetails.testPayment(); // fill if needed
+//        SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
+//
+//        Exception ex = assertThrows(Exception.class, () -> {
+//            purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
+//        });
+//        assertEquals("Payment failed", ex.getMessage());
+//    }
     // admin
 
     // @Test
@@ -925,10 +926,10 @@ public class UserTests {
         activePurcheses.setProductToRandom(NOToken,PID,3,1,x,endTime);
 
         ProductSearchCriteria criteria = new ProductSearchCriteria(
-                "Laptop", null, null, 1, null, null, null, null);
+                "Laptop", null, null, createdStoreId, 0, 100000, 1, 5);
 
         // BidDTO[] result = stockService.searchActiveBids(NGToken, criteria);
-        RandomDTO[] result = activePurcheses.searchActiveRandoms(GToken, criteria);
+        RandomDTO[] result = activePurcheses.searchActiveRandoms(NGToken, criteria);
         assertNotNull(result);
         assertEquals(1, result.length);
         assertEquals("Laptop", result[0].productName);

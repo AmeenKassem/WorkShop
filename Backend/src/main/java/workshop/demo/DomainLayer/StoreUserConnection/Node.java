@@ -35,7 +35,9 @@ public class Node {
     })
     private NodeKey key;
 
-    //private int myId;//this is my id,the user id
+    @Column(name = "parent_id")//null if boss
+    private Integer parentId;
+
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Authorization myAuth; // null if owner
 
@@ -45,6 +47,11 @@ public class Node {
     private List<Node> children = Collections.synchronizedList(new ArrayList<>());
 
     //private int parentId; // -1 if I'm the boss
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumns({
+    //     @JoinColumn(name = "store_id", referencedColumnName = "store_id", insertable = false, updatable = false),
+    //     @JoinColumn(name = "parent_id", referencedColumnName = "my_id", insertable = false, updatable = false)
+    // })
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
         @JoinColumn(name = "store_id", referencedColumnName = "store_id", insertable = false, updatable = false),
@@ -63,6 +70,8 @@ public class Node {
         this.isManager = isManager;
         this.children = Collections.synchronizedList(new ArrayList<>());
         this.parent = parent;
+        // If there is no parent, mark as root (use -1 to indicate root explicitly)
+        this.parentId = parent != null ? parent.getMyId() : null;
         // if (parent != null) {
         //     this.parentId = parent.getMyId();
         // } else {

@@ -38,7 +38,7 @@ public class AdminParser extends ManagerDataInit {
     }
 
     private void suspendUser(List<String> toSend) {
-        if (toSend.size() != 2) {
+        if (toSend.size() != 3) {
             log("syntax error on line " + line + " : admin suspend <username> <minutes>");
             error = true;
             return;
@@ -47,7 +47,7 @@ public class AdminParser extends ManagerDataInit {
         String username = toSend.get(0);
         int minutes = Integer.parseInt(toSend.get(1));
 
-        String adminToken = tokens.get("ana");  // assumes admin is 'ana'
+        String adminToken = tokens.get(toSend.get(2));  // assumes admin is 'ana'
         if (adminToken == null) {
             log("admin token not found. Make sure admin is logged in before suspend.");
             error = true;
@@ -70,14 +70,14 @@ public class AdminParser extends ManagerDataInit {
     }
 
     private void pauseSuspension(List<String> toSend) {
-        if (toSend.size() != 1) {
+        if (toSend.size() != 2) {
             log("syntax error on line " + line + " : admin pause <username>");
             error = true;
             return;
         }
 
         String username = toSend.get(0);
-        String adminToken = tokens.get("ana");
+        String adminToken = tokens.get(toSend.get(1));
 
         Integer userId = ids.get(username);
         if (userId == null || adminToken == null) {
@@ -96,14 +96,14 @@ public class AdminParser extends ManagerDataInit {
     }
 
     private void resumeSuspension(List<String> toSend) {
-        if (toSend.size() != 1) {
+        if (toSend.size() != 2) {
             log("syntax error on line " + line + " : admin resume <username>");
             error = true;
             return;
         }
 
         String username = toSend.get(0);
-        String adminToken = tokens.get("ana");
+        String adminToken = tokens.get(toSend.get(1));
 
         Integer userId = ids.get(username);
         if (userId == null || adminToken == null) {
@@ -122,14 +122,14 @@ public class AdminParser extends ManagerDataInit {
     }
 
     private void cancelSuspension(List<String> toSend) {
-        if (toSend.size() != 1) {
+        if (toSend.size() != 2) {
             log("syntax error on line " + line + " : admin cancel <username>");
             error = true;
             return;
         }
 
         String username = toSend.get(0);
-        String adminToken = tokens.get("ana");
+        String adminToken = tokens.get(toSend.get(1));
 
         Integer userId = ids.get(username);
         if (userId == null || adminToken == null) {

@@ -73,3 +73,72 @@
     transform: translateY(-6px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
+
+/* 🔍 Search Results Grid */
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+/* 🧾 Result Cards */
+.result-card {
+    background: #fff0f6;
+    padding: 1.2rem;
+    border-radius: 16px;
+    border: 1px solid #f9a8d4;
+    box-shadow: 0 4px 14px rgba(249, 168, 212, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
+}
+
+.result-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(249, 168, 212, 0.5);
+}
+
+.result-card span,
+.result-card p {
+    font-size: 1rem;
+    margin-bottom: 0.3rem;
+    color: #374151;
+}
+
+.result-card button {
+    background-color: #ec4899;
+    color: white;
+    border-radius: 10px;
+    font-weight: bold;
+    margin-top: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.result-card button:hover {
+    background-color: #f472b6;
+}
+
+
+
+.right-button {
+    background: linear-gradient(90deg, #ce5290, #f472b6);
+    color: white;
+    font-weight: 500;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 10px;
+    text-decoration: none;
+    min-width: 90px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.right-button:hover {
+    background: linear-gradient(90deg, #f472b6, #ec4899);
+    transform: scale(1.05);
+}

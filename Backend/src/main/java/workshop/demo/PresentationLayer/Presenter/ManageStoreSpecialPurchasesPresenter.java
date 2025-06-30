@@ -22,7 +22,7 @@ import java.util.List;
 public class ManageStoreSpecialPurchasesPresenter {
     private final ManageStoreSpecialPurchasesView view;
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String baseUrl = Base.url+"/stock";
+    private final String baseUrl = Base.url + "/stock";
     private int storeId = -1;
 
     public ManageStoreSpecialPurchasesPresenter(ManageStoreSpecialPurchasesView view) {
@@ -95,25 +95,33 @@ public class ManageStoreSpecialPurchasesPresenter {
         return null;
     }
 
-    public void respondToSingleBid(int bidId, int bidToRespondId, boolean accept) {
+    public void respondToSingleBid(int bidId, int bidToRespondId, boolean accept, Double counterOffer) {
         try {
             String endpoint = accept ? "/acceptBid" : "/rejectBid";
             String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-            String url = String.format("%s%s?token=%s&storeId=%d&bidId=%d&%s=%d",
+
+            StringBuilder urlBuilder = new StringBuilder(String.format("%s%s?token=%s&storeId=%d&bidId=%d",
                     baseUrl,
                     endpoint,
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     storeId,
-                    bidId,
-                    accept ? "bidToAcceptId" : "bidToRejectId",
-                    bidToRespondId);
+                    bidId));
+
+            if (accept) {
+                urlBuilder.append("&userToAcceptForId=").append(bidToRespondId);
+            } else {
+                urlBuilder.append("&userToRejectForId=").append(bidToRespondId);
+                if (counterOffer != null) {
+                    urlBuilder.append("&ownerOffer=").append(counterOffer);
+                }
+            }
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<?> entity = new HttpEntity<>(headers);
 
             ResponseEntity<ApiResponse<String>> response = restTemplate.exchange(
-                    url,
+                    urlBuilder.toString(),
                     HttpMethod.POST,
                     entity,
                     new ParameterizedTypeReference<ApiResponse<String>>() {
@@ -124,7 +132,7 @@ public class ManageStoreSpecialPurchasesPresenter {
                 NotificationView.showError("Failed to process bid response: " + body.getErrorMsg());
             } else {
                 NotificationView.showSuccess("Bid has been " + (accept ? "accepted" : "rejected") + " successfully.");
-                view.refreshPage();
+                // view.refreshPage();
             }
         } catch (Exception e) {
             ExceptionHandlers.handleException(e);

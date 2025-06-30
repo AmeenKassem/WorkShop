@@ -1,9 +1,9 @@
 admin :
-	init <username> <password> <adminkey>;
-	suspend <username> <minutes>
-	pause <username>;
-	resume <username>;
-	cancel <username>;
+	init <admin username> <password> <adminkey>;
+	suspend <username> <minutes> <admin username>;
+	pause <username> <admin username>;
+	resume <username> <admin username>;
+	cancel <username> <admin username>;
 
 user :
 	reg <username> <password> <age>;
@@ -13,10 +13,12 @@ user :
 		+ <username> <productName> <storeName> <quantity>
 		- <username> <productName> <storeName> <quantity>
 
-	auction <username> <storeName> <productName> <bid>
-
+	auction <username> <storeName> <productName> <bid>;
+	random <username> <store name> <product name> <price>;
+	bid <username> <store name> <product name> <price>
 	purchase <userName> <special/cart> <valid/invalid>
-
+	review store <user name> <store name> <msg>;
+	review product <username> <strore naame> <product name> <msg>;
 
 store :
 	create <username> <storeName> <storeCategory>;
@@ -24,3 +26,8 @@ store :
 	item <ownerName> <storeName> <productName> <productCategory> <desc> <quantity> <price> <keyword1> <keyword2> ... ;
 
 	auction <username> <storeName> <productName> <auctionTime> <quantity> <startPrice>;
+	random <username> <store name> <product name> <random time> <quantity> <total price>;
+	bid :
+		set <user name> <store name> <productname> <quantity>;
+		accept <username owner> <store name> <product name> <username bid> ;
+		reject <username owner> <store name> <product name> <username bid> <new bid>; 

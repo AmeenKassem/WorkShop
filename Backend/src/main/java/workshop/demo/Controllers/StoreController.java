@@ -1,5 +1,7 @@
 package workshop.demo.Controllers;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +67,8 @@ public class StoreController {
         try {
             storeService.MakeofferToAddOwnershipToStore(storeId, token, newOwner);
             return ResponseEntity.ok(new ApiResponse<>("Owner added successfully", null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
@@ -194,6 +198,7 @@ public class StoreController {
     @PostMapping("/close")
     public ResponseEntity<?> closeStore(@RequestParam int storeId,
             @RequestParam String token) {
+
         try {
             storeService.closeStore(storeId, token);
             return ResponseEntity.ok(new ApiResponse<>("Store closed successfully", null));
@@ -273,9 +278,16 @@ public class StoreController {
             @RequestParam String name, @RequestParam double percent, @RequestParam CreateDiscountDTO.Type type,
             @RequestParam String condition, @RequestParam CreateDiscountDTO.Logic logic,
             @RequestParam(required = false) String[] subDiscountsNames) {
+
         if (subDiscountsNames == null) {
             subDiscountsNames = new String[0];
+        }else{
+            for(int i=0;i<subDiscountsNames.length;i++){
+                subDiscountsNames[i] = URLDecoder.decode(URLDecoder.decode(subDiscountsNames[i], StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+            }
         }
+        name = URLDecoder.decode(URLDecoder.decode(name, StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+        condition = URLDecoder.decode(URLDecoder.decode(condition, StandardCharsets.UTF_8), StandardCharsets.UTF_8);
 
         try {
             storeService.addDiscountToStore(storeId, token, name, percent, type, condition, logic, subDiscountsNames); // assumes
@@ -299,6 +311,7 @@ public class StoreController {
             @RequestParam int storeId,
             @RequestParam String discountName) {
         try {
+            discountName = URLDecoder.decode(URLDecoder.decode(discountName, StandardCharsets.UTF_8), StandardCharsets.UTF_8);
             storeService.removeDiscountFromStore(token, storeId, discountName);
             return ResponseEntity.ok(new ApiResponse<>("Discount removed", null));
         } catch (UIException ex) {
@@ -343,6 +356,19 @@ public class StoreController {
     public ApiResponse names(@RequestParam int storeId, @RequestParam String token) throws UIException {
         String[] arr = storeService.getAllDiscountNames(storeId, token);
         return new ApiResponse(arr, null);
+    }
+
+    @GetMapping("/getStoreDiscounts")
+    public ResponseEntity<?> getStoreDiscounts(@RequestParam int storeId, @RequestParam String token) {
+        try {
+            List<CreateDiscountDTO> discounts = storeService.getFlattenedDiscounts(storeId, token);
+            return ResponseEntity.ok(new ApiResponse<>(discounts, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
     }
 
 }

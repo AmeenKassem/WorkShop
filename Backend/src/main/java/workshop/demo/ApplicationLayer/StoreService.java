@@ -2,6 +2,7 @@ package workshop.demo.ApplicationLayer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -23,7 +24,6 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
-import workshop.demo.DomainLayer.Stock.IStockRepo;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Store.CompositeDiscount;
 import workshop.demo.DomainLayer.Store.Discount;
@@ -37,7 +37,12 @@ import workshop.demo.DomainLayer.StoreUserConnection.OfferKey;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.StoreTreeEntity;
 import workshop.demo.DomainLayer.StoreUserConnection.Tree;
+import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import workshop.demo.InfrastructureLayer.DiscountEntities.CompositeDiscountEntity;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountEntity;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountJpaRepository;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountMapper;
 import workshop.demo.InfrastructureLayer.IOrderRepoDB;
 import workshop.demo.InfrastructureLayer.IStoreRepoDB;
 import workshop.demo.InfrastructureLayer.IStoreStockRepo;
@@ -60,8 +65,6 @@ public class StoreService {
     @Autowired
     private ISUConnectionRepo suConnectionRepo;
     @Autowired
-    private IStockRepo stockRepo;
-    @Autowired
     private UserSuspensionJpaRepository suspensionJpaRepo;
     private static final Logger logger = LoggerFactory.getLogger(StoreService.class);
     @Autowired
@@ -74,19 +77,53 @@ public class StoreService {
     private StoreTreeJPARepository storeTreeJPARepo;
     @Autowired
     private OfferJpaRepository offerJPARepo;
-    @Autowired 
+    @Autowired
     private IActivePurchasesRepo activePurchasesRepo;
+    @Autowired
+    private DiscountJpaRepository discountRepo;
+    @Autowired
+    private LockManager lockManager;
+
 
     @PostConstruct
     public void loadStoreTreesIntoMemory() {
         System.out.println("innnn load");
         for (StoreTreeEntity entity : storeTreeJPARepo.findAllWithNodes()) {
             try {
+                // DEBUG each node before building the Tree-------------------------------------
+                for (Node node : entity.getAllNodes()) {
+                    String authStatus = node.getMyAuth() != null ? "AUTH_ID=" + node.getMyAuth().getId() : "AUTH=NULL";
+                    logger.info("[DEBUG] Loading Node: my_id={} store_id={} isManager={} {}",
+                            node.getMyId(), node.getStoreId(), node.getIsManager(), authStatus);
+
+                    if (node.getIsManager() && node.getMyAuth() == null) {
+                        logger.error("[ERROR] Manager node id={} in store {} has NULL Authorization! Data issue detected.",
+                                node.getMyId(), entity.getStoreId());
+                    }
+                }
+                //----------------------------------------------------------------
+                // Force load Authorization permissions so permissions map is initialized
+                for (Node node : entity.getAllNodes()) {
+                    if (node.getIsManager() && node.getMyAuth() != null) {
+                        if (node.getIsManager() && node.getMyAuth() != null) {
+                            logger.info("[DEBUG] Initializing permissions for manager my_id={} in store {}",
+                                    node.getMyId(), entity.getStoreId());
+
+                            Map<Permission, Boolean> permissions = node.getMyAuth().getMyAutho();
+                            for (Map.Entry<Permission, Boolean> entry : permissions.entrySet()) {
+                                logger.info("  → Permission {} => {}", entry.getKey(), entry.getValue());
+                            }
+
+                            // Force loading if not already done
+                            permissions.size();
+                        }
+                    }
+                }
                 Tree tree = new Tree(entity);
                 logger.debug("Loading storeId=" + entity.getStoreId() + ", nodes=" + entity.getAllNodes().size());
 
                 this.suConnectionRepo.getData().getEmployees().put(entity.getStoreId(), tree);
-                //for offers:
+                // for offers:
                 logger.info(">> Loading offers...");
 
                 List<Offer> allOffers = offerJPARepo.findAll();
@@ -100,25 +137,27 @@ public class StoreService {
                             .add(offer);
                 }
                 logger.info(">> Loaded " + allOffers.size() + " offers");
-                //-----------will be deleted: just for testing-----------
+                // -----------will be deleted: just for testing-----------
                 // Detailed breakdown
-                // for (Map.Entry<Integer, List<Offer>> entry : suConnectionRepo.getData().getOffers().entrySet()) {
-                //     int storeId = entry.getKey();
-                //     List<Offer> offers = entry.getValue();
-                //     logger.info("Store ID {} has {} offers:", storeId, offers.size());
+                // for (Map.Entry<Integer, List<Offer>> entry :
+                // suConnectionRepo.getData().getOffers().entrySet()) {
+                // int storeId = entry.getKey();
+                // List<Offer> offers = entry.getValue();
+                // logger.info("Store ID {} has {} offers:", storeId, offers.size());
 
-                //     for (Offer offer : offers) {
-                //         OfferKey key = offer.getId();
-                //         String permissionsStr = offer.getPermissions() != null && !offer.getPermissions().isEmpty()
-                //                 ? offer.getPermissions().toString()
-                //                 : "[]";
-                //         logger.info("  → sender={} | receiver={} | toBeOwner={} | permissions={}",
-                //                 key.getSenderId(),
-                //                 key.getReceiverId(),
-                //                 offer.isToBeOwner(),
-                //                 permissionsStr
-                //         );
-                //     }
+                // for (Offer offer : offers) {
+                // OfferKey key = offer.getId();
+                // String permissionsStr = offer.getPermissions() != null &&
+                // !offer.getPermissions().isEmpty()
+                // ? offer.getPermissions().toString()
+                // : "[]";
+                // logger.info(" → sender={} | receiver={} | toBeOwner={} | permissions={}",
+                // key.getSenderId(),
+                // key.getReceiverId(),
+                // offer.isToBeOwner(),
+                // permissionsStr
+                // );
+                // }
                 // }
             } catch (DevException e) {
                 logger.debug("Failed to load store tree and offers for storeId=" + entity.getStoreId());
@@ -186,7 +225,13 @@ public class StoreService {
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
-        int newOwnerId = userRepo.findRegisteredUsersByUsername(newOwnerName).get(0).getId();
+        List<Registered> usersFound = userRepo.findRegisteredUsersByUsername(newOwnerName);
+        if (usersFound.isEmpty()) {
+            throw new UIException("User '" + newOwnerName + "' is not registered", ErrorCodes.USER_NOT_FOUND);
+        }
+        int newOwnerId = usersFound.get(0).getId();
+
+        //int newOwnerId = userRepo.findRegisteredUsersByUsername(newOwnerName).get(0).getId();
         userService.checkUserRegisterOnline_ThrowException(newOwnerId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);
@@ -195,7 +240,9 @@ public class StoreService {
         suConnectionRepo.checkToAddOwner(storeId, ownerId, newOwnerId);
         logger.info("Making an offer to be a store owner from {} to {}", ownerId, newOwnerId);
         String owner = this.userRepo.findById(ownerId).get().getUsername();
-        String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
+        String storeName = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND))
+                .getStoreName();
         String Message = String.format(
                 "In store: %s, the owner: %s is offering you: %s to become an owner of this store.",
                 storeName, owner, newOwnerName);
@@ -227,17 +274,19 @@ public class StoreService {
     }
 
     public int AddOwnershipToStore(int storeId, int ownerId, int newOwnerId, boolean decide) throws Exception {
-        userService.checkUserRegisterOnline_ThrowException(newOwnerId);
-        if (decide) {
-            suConnectionRepo.getOffer(storeId, ownerId, newOwnerId);
-            suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
+        synchronized (lockManager.getStoreLock(storeId)) {
+            userService.checkUserRegisterOnline_ThrowException(newOwnerId);
+            if (decide) {
+                suConnectionRepo.getOffer(storeId, ownerId, newOwnerId);
+                suConnectionRepo.AddOwnershipToStore(storeId, ownerId, newOwnerId);
+                suConnectionRepo.deleteOffer(storeId, ownerId, newOwnerId);
+                logger.info("Successfully added user {} as owner to store {} by user {}", newOwnerId, storeId, ownerId);
+                return newOwnerId;
+            }
+            logger.info("Ownership addition declined by user {}", newOwnerId);
             suConnectionRepo.deleteOffer(storeId, ownerId, newOwnerId);
-            logger.info("Successfully added user {} as owner to store {} by user {}", newOwnerId, storeId, ownerId);
-            return newOwnerId;
+            return -1;
         }
-        logger.info("Ownership addition declined by user {}", newOwnerId);
-        suConnectionRepo.deleteOffer(storeId, ownerId, newOwnerId);
-        return -1;
     }
 
     public void DeleteOwnershipFromStore(int storeId, String token, int ownerToDelete) throws Exception, DevException {
@@ -268,7 +317,13 @@ public class StoreService {
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
-        int managerId = userRepo.findRegisteredUsersByUsername(managerName).get(0).getId();
+        //int managerId = userRepo.findRegisteredUsersByUsername(managerName).get(0).getId();
+        List<Registered> usersFound = userRepo.findRegisteredUsersByUsername(managerName);
+        if (usersFound.isEmpty()) {
+            throw new UIException("User '" + managerName + "' is not registered", ErrorCodes.USER_NOT_FOUND);
+        }
+        int managerId = usersFound.get(0).getId();
+
         userService.checkUserRegisterOnline_ThrowException(managerId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);
@@ -277,7 +332,9 @@ public class StoreService {
         logger.info("Making an offer to be a store manager from {} to {}", ownerId, managerId);
         String owner = this.userRepo.findById(ownerId).get().getUsername();
         String nameNew = this.userRepo.findById(managerId).get().getUsername();
-        String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
+        String storeName = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND))
+                .getStoreName();
         String message = String.format(
                 "In store: %s, the owner: %s is offering you: %s to be a manager of this store.",
                 storeName, owner, nameNew);
@@ -339,15 +396,15 @@ public class StoreService {
         logger.info("about to rank store: {}", storeId);
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
-        //userService.checkUserRegisterOnline_ThrowException(userId);
+        // userService.checkUserRegisterOnline_ThrowException(userId);
         UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
             throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
         }
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         store.rankStore(newRank);
-        //storeJpaRepo.save(store);
-        //this.storeRepo.rankStore(storeId, newRank);
+        // storeJpaRepo.save(store);
+        // this.storeRepo.rankStore(storeId, newRank);
         logger.info("store ranked sucessfully!");
 
     }
@@ -370,8 +427,10 @@ public class StoreService {
         suConnectionRepo.checkMainOwnerToDeactivateStore_ThrowException(storeId, ownerId);
         List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
         storeJpaRepo.deactivateStore(storeId);
-        //storeRepo.deactivateStore(storeId, ownerId);
-        String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
+        // storeRepo.deactivateStore(storeId, ownerId);
+        String storeName = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND))
+                .getStoreName();
         logger.info("Store {} successfully deactivated by owner {}", storeId, ownerId);
         logger.info("About to notify all employees");
         /// we have to notify the employees here
@@ -391,10 +450,12 @@ public class StoreService {
         userService.checkAdmin_ThrowException(adminId);
         logger.info("trying to close store: {} by: {}", storeId, adminId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
+        String storeName = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND))
+                .getStoreName();
         List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
         // this.storeRepo.closeStore(storeId);
-        //store.setActive(false);
+        // store.setActive(false);
 
         this.suConnectionRepo.closeStore(storeId);
         storeJpaRepo.delete(store);
@@ -417,12 +478,18 @@ public class StoreService {
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         List<Node> nodes = suConnectionRepo.getAllWorkers(storeId); // return this as nodes
-        String storeName = storeJpaRepo.findById(storeId).orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND)).getStoreName();
+        logger.info("ine view roles -> got the nodes! the size is {}" + nodes.size());
+
+        String storeName = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND))
+                .getStoreName();
         List<WorkerDTO> result = new ArrayList<>();
         for (Node node : nodes) {
+            logger.info("ine view roles -> got the nodes -> on nodes!");
             String username = userRepo.findById(node.getMyId()).get().getUsername();
             boolean isManager = node.getIsManager();
             Permission[] permissions = suConnectionRepo.getPermissions(node);
+            logger.info("ine view roles -> got the nodes -> no nodes! -> permisstions {}" + permissions.length);
             boolean setByMe = node.getParentId() == userId;
             result.add(new WorkerDTO(node.getMyId(), username, isManager, !isManager, storeName, permissions, setByMe));
         }
@@ -435,6 +502,15 @@ public class StoreService {
         int userId = authRepo.getUserId(token);
         userService.checkUserRegisterOnline_ThrowException(userId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+        // Load discount from DB
+        DiscountEntity rootEntity = discountRepo.findByName("ROOT_" + storeId)
+                .orElse(null);
+
+        if (rootEntity != null) {
+            Discount discount = DiscountMapper.toDomain(rootEntity);
+            store.setDiscount(discount);
+        }
+
         return store.getStoreDTO();
     }
 
@@ -500,6 +576,7 @@ public class StoreService {
         List<Discount> subDiscounts = new ArrayList<>();
         // Find createDiscountDTO for each subDiscount and add it to the subDiscounts
         // list
+        store.getDiscount();
         for (String target : subDiscountsNames) {
             Discount d = store.findDiscountByName(target);
             if (d == null) {
@@ -513,40 +590,89 @@ public class StoreService {
         }
         CreateDiscountDTO dto = new CreateDiscountDTO(name, percent, type, condition, logic, List.of());
         Discount discount = DiscountFactory.fromDTO(dto);
-        if (!subDiscounts.isEmpty()) {
-            if (!(discount instanceof CompositeDiscount comp)) {
-                throw new Exception("Chosen logic does not allow sub‑discounts");
-            }
-            subDiscounts.forEach(comp::addDiscount);
-        }
-        store.addDiscount(discount);
+//        if (!subDiscounts.isEmpty()) {
+//            if (!(discount instanceof CompositeDiscount comp)) {
+//                throw new Exception("Chosen logic does not allow sub‑discounts");
+//            }
+//            subDiscounts.forEach(comp::addDiscount);
+//        }
+
+        Discount oldDiscount =store.getDiscount(); // hydrate transient discount if needed
+
+        DiscountEntity oldEntity = store.getDiscountEntity();
+        //deleteConflictingNamesRecursively(oldEntity); // ✅ cleanup before inserting
+        if(oldDiscount!=null)
+            removeDiscountFromStore(token,storeId,oldDiscount.getName());
+        store.getDiscountEntity();
+        store.getDiscount();
+        store.addDiscount(oldDiscount);
+        store.addDiscount(discount); // now safe to merge
+        DiscountEntity newEntity = DiscountMapper.toEntity(store.getDiscount());
+        //discountRepo.save(newEntity);
+        store.setDiscountEntity(newEntity);
+        store.setDiscount(store.getDiscount());
+
+        storeJpaRepo.save(store);
+
+
         logger.info("Discount '{}' added successfully to store {}", discount.getName(), storeId);
     }
+    private void deleteConflictingNamesRecursively(DiscountEntity entity) {
+        if (entity == null) return;
 
+        // First delete all children (if composite)
+        if (entity instanceof CompositeDiscountEntity composite) {
+            for (DiscountEntity child : composite.getSubDiscounts()) {
+                deleteConflictingNamesRecursively(child);
+            }
+        }
+
+        // Then delete this entity
+        discountRepo.delete(entity);
+    }
+
+
+    @Transactional
     public void removeDiscountFromStore(String token, int storeId, String discountName)
             throws UIException, DevException {
+        logger.info("User attempting to remove discount '{}' from store {}", discountName, storeId);
+
         authRepo.checkAuth_ThrowTimeOutException(token, logger);
         int userId = authRepo.getUserId(token);
         userService.checkUserRegisterOnline_ThrowException(userId);
         UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
         if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+            throw new UIException("Suspended user", ErrorCodes.USER_SUSPENDED);
         }
 
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
         throwExceptionIfNotActive(store);
-
         if (!suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_STORE_POLICY)) {
-            throw new UIException("You do not have permission to remove discounts", ErrorCodes.NO_PERMISSION);
+            throw new UIException("No permission", ErrorCodes.NO_PERMISSION);
         }
 
-        // Store store =storeJpaRepo.findById(storeId).get();
+        // Manually remove from domain
         boolean removed = store.removeDiscountByName(discountName);
         if (!removed) {
-            throw new UIException("Discount not found: " + discountName, ErrorCodes.DISCOUNT_NOT_FOUND);
+            throw new UIException("Discount not found", ErrorCodes.DISCOUNT_NOT_FOUND);
         }
 
-        logger.info("Discount '{}' removed from store {}", discountName, storeId);
+        DiscountEntity oldEntity = store.getDiscountEntity();
+        if (oldEntity != null) {
+            discountRepo.delete(oldEntity);
+        }
+
+        store.setDiscountEntity(null);
+        store.setDiscount(null);
+
+        Discount newTree = store.getDiscount();
+        if (newTree != null) {
+            DiscountEntity updated = DiscountMapper.toEntity(newTree);
+            store.setDiscountEntity(updated);
+        }
+
+        storeJpaRepo.save(store);
+        logger.info("Discount '{}' removed and store updated", discountName);
     }
 
     public void addPurchasePolicy(String token, int storeId, String policyKey/* "NO_ALCOHOL""MIN_QTY" */,
@@ -621,6 +747,26 @@ public class StoreService {
         if (node instanceof CompositeDiscount comp) {
             comp.getDiscounts().forEach(d -> collectNames(d, acc));
         }
+    }
+
+    public List<CreateDiscountDTO> getFlattenedDiscounts(int storeId, String token) throws UIException {
+        Store store = storeJpaRepo.findById(storeId).get();
+        Discount root = store.getDiscount();
+
+        if (root == null) {
+            return List.of();
+        }
+
+        // If it's composite, extract children
+        CreateDiscountDTO rootDTO = root.toDTO();
+        List<CreateDiscountDTO> subs = rootDTO.getSubDiscounts();
+
+        if (subs != null && !subs.isEmpty()) {
+            return subs;
+        }
+
+        // Otherwise, return root as a single-item list
+        return List.of(rootDTO);
     }
 
 }

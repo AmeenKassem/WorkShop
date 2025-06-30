@@ -1,6 +1,7 @@
 package workshop.demo.PresentationLayer.View;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.vaadin.flow.component.Component;
@@ -9,6 +10,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
@@ -22,6 +24,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
 import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.CreateDiscountDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
@@ -474,6 +477,26 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                 ExceptionHandlers.handleException(ex);
             }
         });
+        // ── Discount display grid ──
+        Grid<CreateDiscountDTO> grid = new Grid<>();
+        grid.addColumn(CreateDiscountDTO::getName).setHeader("Name");
+        grid.addColumn(CreateDiscountDTO::getPercent).setHeader("Percent");
+        grid.addColumn(d -> {
+            String c = d.getCondition();
+            return (c == null || c.isBlank()) ? "No condition" : c;
+        }).setHeader("Condition");
+        grid.addColumn(d -> d.getLogic() != null ? d.getLogic().name() : "SINGLE").setHeader("Logic");
+        grid.addColumn(d -> d.getType() != null ? d.getType().name() : "VISIBLE").setHeader("Type");
+
+        try {
+            List<CreateDiscountDTO> discounts = discPresenter.fetchDiscountDetails(storeId, token);
+            grid.setItems(discounts);
+        } catch (Exception ex) {
+            ExceptionHandlers.handleException(ex);
+        }
+
+        grid.setHeight("300px");
+        grid.setWidthFull();
 
         /* ── SAVE ───────────────────────────────────────────────── */
         Button save = new Button("Save", e -> {
@@ -542,17 +565,17 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
         Button cancel = new Button("Cancel", e -> dlg.close());
 
-        /* ── assemble dialog ───────────────────────────────────── */
-        VerticalLayout content = new VerticalLayout(
-            nameField, percent,
-            new HorizontalLayout(predBox, opBox, valueWrapper),
-            new HorizontalLayout(typeBox, logicBox),
-            subs,
-            deleteBtn,
-            new HorizontalLayout(save, cancel)
-        );
-        content.addClassName("dialog-content");
-        dlg.add(content);
+        dlg.add(new VerticalLayout(
+                nameField, percent,
+                new HorizontalLayout(predBox, opBox, valueWrapper),
+                new HorizontalLayout(typeBox, logicBox),
+                subs,
+                deleteBtn,
+                new Span("Current Discounts:"),  // optional label
+                grid,
+                new HorizontalLayout(save, cancel)
+        ));
+
         dlg.open();
     }
 

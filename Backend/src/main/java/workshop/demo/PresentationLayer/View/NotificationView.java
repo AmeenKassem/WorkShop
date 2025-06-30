@@ -31,6 +31,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 //import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.Json;
@@ -54,9 +55,9 @@ public class NotificationView extends com.vaadin.flow.component.Component {
         // Important: Add this component to the UI when it's created
         getElement().executeJs(
                 "const elem = this; "
-                + "setTimeout(() => {"
-                + "  console.log('NotificationView initialized and ready');"
-                + "}, 100);");
+                        + "setTimeout(() => {"
+                        + "  console.log('NotificationView initialized and ready');"
+                        + "}, 100);");
     }
 
     public void setReceivedNotification(List<JsonObject> receivedNotifications) {
@@ -99,7 +100,9 @@ public class NotificationView extends com.vaadin.flow.component.Component {
                 storeNotification(json);
                 String type = json.getString("type");
 
-                if ("OFFER".equals(type)) {
+                if ("USER_OFFER".equals(type)) {
+                    showUserOfferNotification(json);
+                } else if ("OFFER".equals(type)) {
                     showOfferNotification(json);
                 } else {
                     showSimpleNotification(msg); // fallback for plain string
@@ -112,6 +115,92 @@ public class NotificationView extends com.vaadin.flow.component.Component {
                 showSimpleNotification(msg);
             }
         });
+    }
+
+    private void showUserOfferNotification(JsonObject json) {
+        String message = json.getString("message");
+        int storeId = (int) json.getNumber("storeId");
+        int bidId = (int) json.getNumber("bidId");
+        String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+
+        Span body = new Span("💼 " + message);
+        body.getStyle().set("font-size", "1.1rem");
+
+        Notification notification = new Notification();
+        notification.setDuration(0); // Manual close
+        notification.setPosition(Notification.Position.TOP_END);
+        notification.addThemeVariants(NotificationVariant.LUMO_PRIMARY);
+
+        // Approve button
+        Button approve = new Button("✅ Approve", e -> {
+            notification.close();
+
+            // Create dialog for offer input
+            Dialog offerDialog = new Dialog();
+            offerDialog.setHeaderTitle("Type Your Offer");
+
+            TextField offerInput = new TextField("Offer Amount");
+            offerInput.setPlaceholder("Enter your price...");
+            offerInput.setWidthFull();
+
+            Button send = new Button("Send", sendClick -> {
+                String offerValue = offerInput.getValue();
+
+                try {
+                    double offer = Double.parseDouble(offerValue);
+
+                    if (offer <= 0) {
+                        Notification.show("Offer must be a positive number", 3000, Notification.Position.MIDDLE);
+                        return;
+                    }
+
+                    // ✅ Valid input
+                    addRegularBid(token, bidId, storeId, offer);
+                    Notification.show("Offer sent: " + offer);
+                    receivedNotifications.remove(json);
+                    offerDialog.close();
+
+                } catch (NumberFormatException ex) {
+                    Notification.show("Please enter a valid number (e.g., 10 or 10.5)", 3000,
+                            Notification.Position.MIDDLE);
+                    // 🛑 Keep dialog open so user can retry
+                }
+            });
+
+            Button cancel = new Button("Cancel", cancelClick -> {
+                offerDialog.close();
+            });
+
+            HorizontalLayout buttons = new HorizontalLayout(send, cancel);
+            offerDialog.add(offerInput, buttons);
+            offerDialog.open();
+        });
+
+        // Decline button
+        Button decline = new Button("❌ Decline", e -> {
+            receivedNotifications.remove(json);
+            Notification.show("You declined the owner offer");
+            notification.close();
+        });
+
+        // Close (Dismiss) button
+        Button closeButton = new Button("✖", e -> notification.close());
+        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+        closeButton.getStyle().set("margin-left", "auto");
+
+        HorizontalLayout actions = new HorizontalLayout(approve, decline, closeButton);
+        actions.setWidthFull();
+        actions.setAlignItems(FlexComponent.Alignment.CENTER);
+        actions.getStyle().set("margin-top", "0.5rem");
+
+        VerticalLayout layout = new VerticalLayout(body, actions);
+        layout.setPadding(false);
+        layout.setSpacing(false);
+        layout.setMargin(false);
+        layout.getStyle().set("width", "100%");
+
+        notification.add(layout);
+        notification.open();
     }
 
     private void showSimpleNotification(String message) {
@@ -148,7 +237,7 @@ public class NotificationView extends com.vaadin.flow.component.Component {
             // 🔽 This part is executed when Approve is clicked
             sendOfferResponse(json, true);
             receivedNotifications.remove(json); // remove this message
-            //Notification.show("You accepted the offer");
+            // Notification.show("You accepted the offer");
             notification.close();
         });
 
@@ -212,7 +301,7 @@ public class NotificationView extends com.vaadin.flow.component.Component {
                 });
 
                 Button decline = new Button("❌ Decline", e -> {
-                    sendOfferResponse(json, false);
+                    // sendOfferResponse(json, false);
                     Notification.show("You declined the offer");
                     content.remove(offerLayout); // remove this message
                     receivedNotifications.remove(json); // remove this message
@@ -222,6 +311,37 @@ public class NotificationView extends com.vaadin.flow.component.Component {
                 offerLayout.add(offerMsg, actionRow);
                 content.add(offerLayout);
 
+            } else if("USER_OFFER".equals(type)) {
+                String msg = json.getString("message");
+                int storeId = (int) json.getNumber("storeId");
+                int bidId = (int) json.getNumber("bidId");
+                String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
+
+                Span userOfferMsg = new Span("💼 " + msg);
+
+                // Container for the message + buttons (so we can remove it)
+                VerticalLayout userOfferLayout = new VerticalLayout();
+                userOfferLayout.setSpacing(false);
+                userOfferLayout.setPadding(false);
+                userOfferLayout.setMargin(false);
+
+                Button approve = new Button("✅ Approve", e -> {
+                    userOfferLayout.removeAll(); // clear the layout
+                    addRegularBid(token, bidId, storeId, 0); // 0 means no price set yet
+                    Notification.show("You accepted the owner offer");
+                    content.remove(userOfferLayout); // remove this message
+                    receivedNotifications.remove(json); // remove this message
+                });
+
+                Button decline = new Button("❌ Decline", e -> {
+                    Notification.show("You declined the owner offer");
+                    content.remove(userOfferLayout); // remove this message
+                    receivedNotifications.remove(json); // remove this message
+                });
+
+                HorizontalLayout actionRow = new HorizontalLayout(approve, decline);
+                userOfferLayout.add(userOfferMsg, actionRow);
+                content.add(userOfferLayout);
             } else {
                 String message = json.getString("message");
                 Span textMsg = new Span("🔔 " + message);
@@ -252,7 +372,7 @@ public class NotificationView extends com.vaadin.flow.component.Component {
 
                     // First check if the notification.js is loaded
                     page.executeJs("console.log('Testing if JS module is loaded properly');");
-                    String wsUrl = Base.url.replace("http","ws");
+                    String wsUrl = Base.url.replace("http", "ws");
                     // Then initialize the WebSocket with proper error handling
                     page.executeJs("try { "
                             + "console.log('About to initialize notification socket for: ' + $0); "
@@ -298,7 +418,7 @@ public class NotificationView extends com.vaadin.flow.component.Component {
 
         // Construct URL with query parameters
         String url = String.format(
-                Base.url+"/api/store/respondToOffer?storeId=%d&senderName=%s&receiverName=%s&answer=%s&toBeOwner=%s",
+                Base.url + "/api/store/respondToOffer?storeId=%d&senderName=%s&receiverName=%s&answer=%s&toBeOwner=%s",
                 storeId,
                 UriUtils.encodeQueryParam(senderName, StandardCharsets.UTF_8),
                 UriUtils.encodeQueryParam(receiverName, StandardCharsets.UTF_8),
@@ -360,6 +480,29 @@ public class NotificationView extends com.vaadin.flow.component.Component {
         Notification notification = new Notification(string, 3000, Notification.Position.BOTTOM_CENTER);
         notification.addThemeVariants(NotificationVariant.LUMO_CONTRAST);
         notification.open();
+    }
+
+    public boolean addRegularBid(String token, int bidId, int storeId, double price) {
+        try {
+            String url = String.format(
+                    Base.url + "/stock/addRegularBid?token=%s&bidId=%d&storeId=%d&offer=%s",
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                    bidId,
+                    storeId,
+                    Double.toString(price));
+
+            ResponseEntity<ApiResponse> response = restTemplate.postForEntity(url, null, ApiResponse.class);
+
+            if (response.getBody() != null && response.getBody().getErrNumber() == -1) {
+                NotificationView.showSuccess("Bid placed successfully!");
+                return true;
+            }
+
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+
+        return false;
     }
 
 }

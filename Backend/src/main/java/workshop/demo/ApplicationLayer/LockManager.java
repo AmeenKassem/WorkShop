@@ -11,6 +11,7 @@ public class LockManager {
     private final ConcurrentMap<Integer, Object> randomLocks = new ConcurrentHashMap<>();
     private final ConcurrentMap<Integer, Object> auctionLocks = new ConcurrentHashMap<>();
     private final ConcurrentMap<Integer, Object> bidLocks = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Integer, Object> storeLocks = new ConcurrentHashMap<>();
 
     public Object getRandomLock(int randomId) {
         return randomLocks.computeIfAbsent(randomId, id -> new Object());
@@ -24,6 +25,10 @@ public class LockManager {
         return bidLocks.computeIfAbsent(bidId, id -> new Object());
     }
 
+    public Object getStoreLock(int storeId) {
+        return storeLocks.computeIfAbsent(storeId, id -> new Object());
+    }
+
     // Optional cleanup methods
     public void removeRandomLock(int randomId) {
         randomLocks.remove(randomId);
@@ -35,6 +40,10 @@ public class LockManager {
 
     public void removeBidLock(int bidId) {
         bidLocks.remove(bidId);
+    }
+
+    public void removeStoreLock(int storeId) {
+        storeLocks.remove(storeId);
     }
 }
 

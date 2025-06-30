@@ -19,37 +19,59 @@ import workshop.demo.InfrastructureLayer.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@TestMethodOrder(OrderAnnotation.class) 
+@TestMethodOrder(OrderAnnotation.class)
 public class SuspendconTests {
 
     // ============ Autowired Repositories & Services ============
-    @Autowired private StoreTreeJPARepository tree;
-    @Autowired private NodeJPARepository node;
-  
-    @Autowired private StockRepository stockRepository;
-    @Autowired private IStockRepoDB stockRepositoryjpa;
-    @Autowired private IStoreRepoDB storeRepositoryjpa;
-    @Autowired private PurchaseRepository purchaseRepository;
-    @Autowired private UserSuspensionJpaRepository suspensionRepo;
-    @Autowired private AuthenticationRepo authRepo;
-    @Autowired private UserJpaRepository userRepo;
-    @Autowired private SUConnectionRepository sIsuConnectionRepo;
-    @Autowired private GuestJpaRepository guestRepo;
-    @Autowired private IStoreStockRepo storeStockRepo;
-    @Autowired private OfferJpaRepository offerRepo;
+    @Autowired
+    private StoreTreeJPARepository tree;
+    @Autowired
+    private NodeJPARepository node;
 
-    @Autowired private UserService userService;
-    @Autowired private StoreService storeService;
-    @Autowired private StockService stockService;
-    @Autowired private PurchaseService purchaseService;
-    @Autowired private OrderService orderService;
-    @Autowired private UserSuspensionService suspensionService;
+    //@Autowired private StockRepository stockRepository;
+    @Autowired
+    private IStockRepoDB stockRepositoryjpa;
+    @Autowired
+    private IStoreRepoDB storeRepositoryjpa;
+    @Autowired
+    private PurchaseRepository purchaseRepository;
+    @Autowired
+    private UserSuspensionJpaRepository suspensionRepo;
+    @Autowired
+    private AuthenticationRepo authRepo;
+    @Autowired
+    private UserJpaRepository userRepo;
+    @Autowired
+    private SUConnectionRepository sIsuConnectionRepo;
+    @Autowired
+    private GuestJpaRepository guestRepo;
+    @Autowired
+    private IStoreStockRepo storeStockRepo;
+    @Autowired
+    private OfferJpaRepository offerRepo;
 
-    @Autowired private PaymentServiceImp payment;
-    @Autowired private SupplyServiceImp serviceImp;
-    @Autowired private Encoder encoder;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private StoreService storeService;
+    @Autowired
+    private StockService stockService;
+    @Autowired
+    private PurchaseService purchaseService;
+    @Autowired
+    private OrderService orderService;
+    @Autowired
+    private UserSuspensionService suspensionService;
 
-    public SuspendconTests() throws Exception {}
+    @Autowired
+    private PaymentServiceImp payment;
+    @Autowired
+    private SupplyServiceImp serviceImp;
+    @Autowired
+    private Encoder encoder;
+
+    public SuspendconTests() throws Exception {
+    }
 
     @BeforeEach
     void setup() {
@@ -61,7 +83,7 @@ public class SuspendconTests {
         offerRepo.deleteAll();
         storeRepositoryjpa.deleteAll();
         storeStockRepo.deleteAll();
-        suspensionRepo.deleteAll();
+        //suspensionRepo.deleteAll();
     }
 
     @Test
@@ -92,14 +114,16 @@ public class SuspendconTests {
             try {
                 suspensionService.suspendRegisteredUser(authRepo.getUserId(userTokenA), 1, adminTokenA);
                 successCount.incrementAndGet();
-            } catch (UIException ignored) {}
+            } catch (UIException ignored) {
+            }
         });
 
         Thread t2 = new Thread(() -> {
             try {
                 suspensionService.suspendRegisteredUser(authRepo.getUserId(userTokenB), 1, adminTokenB);
                 successCount.incrementAndGet();
-            } catch (UIException ignored) {}
+            } catch (UIException ignored) {
+            }
         });
 
         t1.start();
