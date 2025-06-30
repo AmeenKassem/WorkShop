@@ -650,9 +650,9 @@ public class StoreService {
 
         // Manually remove from domain
         boolean removed = store.removeDiscountByName(discountName);
-        if (!removed) {
-            throw new UIException("Discount not found", ErrorCodes.DISCOUNT_NOT_FOUND);
-        }
+        // if (!removed) {
+        //     throw new UIException("Discount not found", ErrorCodes.DISCOUNT_NOT_FOUND);
+        // }
 
         DiscountEntity oldEntity = store.getDiscountEntity();
         if (oldEntity != null) {
@@ -801,80 +801,50 @@ public class StoreService {
         return List.of(root.toDTO()); // the root DTO contains nested sub-discounts
     }
 
+public void addDiscount(int storeId, String token, CreateDiscountDTO dto) throws Exception {
+    logger.info("User attempting to add a discount tree to store {}", storeId);
 
-    public void addDiscount(int storeId, String token, CreateDiscountDTO dto) throws Exception {
-        logger.info("User attempting to add a discount tree to store {}", storeId);
+    authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    int userId = authRepo.getUserId(token);
+    userService.checkUserRegisterOnline_ThrowException(userId);
 
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        userService.checkUserRegisterOnline_ThrowException(userId);
-        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
-        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
-        }
-
-        Store store = storeJpaRepo.findById(storeId)
-                .orElseThrow(() -> new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND));
-        throwExceptionIfNotActive(store);
-
-        boolean hasPermission = suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_STORE_POLICY);
-        if (!hasPermission) {
-            throw new UIException("No permission to add discounts", ErrorCodes.NO_PERMISSION);
-        }
-
-        if(store.getDiscount()==null){
-            store.addDiscount(new MaxDiscount("MANUALLY_COMBINED"));
-
-        }
-        // hydrate old discount (if any)
-        store.getDiscount();
-        Discount newDiscount = DiscountFactory.fromDTO(dto);
-        Discount old = store.getDiscount();
-        //ASSI
-//        if (old != null) {
-//            // combine both under a new composite
-//            CompositeDiscount combined = new MultiplyDiscount("AUTO_COMBINED");
-//            combined.addDiscount(old);
-//            combined.addDiscount(newDiscount);
-//            newDiscount = combined;
-//
-//            // optional: delete old entity from DB
-//            removeDiscountFromStore(token, storeId, old.getName());
-//        }
-//
-//// replace the current store discount with the combined one
-//        store.setDiscount(newDiscount);
-//        DiscountEntity entity = DiscountMapper.toEntity(newDiscount);
-//        store.setDiscountEntity(entity);
-//        discountRepo.save(entity);
-        //HMODE
-        store.addDiscount(newDiscount);
-        newDiscount = store.getDiscount();
-        if (old != null) {
-            System.out.println("ASSI");
-            removeDiscountFromStore(token, storeId, old.getName());
-        }
-
-        store.setDiscount(newDiscount);
-        DiscountEntity entity = DiscountMapper.toEntity(newDiscount);
-        store.setDiscountEntity(entity);
-        //storeJpaRepo.save(store);
-        discountRepo.save(entity);
+    UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+    if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+        throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
     }
-    public void addDiscountToStore(int storeId, String token, String name, double percent, CreateDiscountDTO.Type type,
-            String condition, CreateDiscountDTO.Logic logic, String[] subDiscountsNames) throws Exception {
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        throwExceptionIfNotActive(store);
-        List<CreateDiscountDTO> subDiscounts = new ArrayList<>();
-        store.getDiscount();
-        for (String target : subDiscountsNames) {
-            Discount d = store.findDiscountByName(target);
-            if (d == null) {
-                throw new Exception("Discount " + target + " not found in store");
-            }
-            subDiscounts.add(d.toDTO());
-        }
-        CreateDiscountDTO dto = new CreateDiscountDTO(name, percent, type, condition, logic, subDiscounts);
-        addDiscount(storeId,token,dto);
+
+    Store store = storeJpaRepo.findById(storeId)
+            .orElseThrow(() -> new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND));
+    throwExceptionIfNotActive(store);
+
+    boolean hasPermission = suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_STORE_POLICY);
+    if (!hasPermission) {
+        throw new UIException("No permission to add discounts", ErrorCodes.NO_PERMISSION);
     }
+
+    Discount newDiscount = DiscountFactory.fromDTO(dto);
+    Discount oldDiscount = store.getDiscount();
+
+    MultiplyDiscount combined = new MultiplyDiscount("AUTO_MULTIPLY_COMBINED");
+
+    if (oldDiscount != null) {
+        combined.addDiscount(oldDiscount);
+    }
+    combined.addDiscount(newDiscount);
+
+    // Remove old discount entity to clean up DB if needed
+    if (oldDiscount != null) {
+        removeDiscountFromStore(token, storeId, oldDiscount.getName());
+    }
+
+    // Set the new combined discount to the store
+    store.setDiscount(combined);
+    DiscountEntity entity = DiscountMapper.toEntity(combined);
+    store.setDiscountEntity(entity);
+
+    discountRepo.save(entity);
+    storeJpaRepo.save(store);
+}
+
+    
 }
