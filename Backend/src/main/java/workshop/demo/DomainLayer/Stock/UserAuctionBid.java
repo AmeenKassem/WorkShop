@@ -59,6 +59,7 @@ public class UserAuctionBid {
 
     public void markAsWinner() {
         isEnded = true;
+        isTop = true;
     }
 
     public void finishAuction() {

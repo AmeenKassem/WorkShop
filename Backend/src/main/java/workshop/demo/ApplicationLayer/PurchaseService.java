@@ -213,6 +213,8 @@ public class PurchaseService {
 
         // Hmode
         storeStockRepo.flush();
+        regRepo.flush();
+        guestRepo.flush();
         return saveReceiptsWithDiscount(userId, storeToProducts, paymentTxId, supplyTxId);
     }
 
@@ -314,12 +316,14 @@ public class PurchaseService {
                 }
                 // DO NOT DELETE THIS CODE!!!!!!!!!!!!
             } else if (specialItem.type == SpecialType.Auction) { // AUCTION
+                // activeRepo.flush();
                 ActivePurcheses active = activeRepo.findById(specialItem.storeId).orElse(null);
                 
                 Auction auction = active.getAuctionById(specialItem.specialId);
                 // auction.endAuction();
-                if (auction.isEnded()) {
-                    if (auction.bidIsWinner(specialItem.bidId)) {
+                UserAuctionBid bid = auction.getBid(specialItem.bidId);
+                if (auction.getRestMS()<=0) {
+                    if (bid.isCurrTop()) {
                         winningAuctions.add(auction.getBid(specialItem.bidId));
                         logger.info("user win bid. id:" + specialItem.bidId);
                     }
@@ -343,7 +347,7 @@ public class PurchaseService {
                 logger.warn("Unknown special item type: {}", specialItem.type);
             }
         }
-        logger.info("hiiiiiiiiiiiii");
+        logger.info("wining auctions size is "+winningAuctions.size());
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
         double sumToPay = setRecieptMapForBids(winningBids, storeToProducts);
         sumToPay += setRecieptMapForAuctions(winningAuctions, storeToProducts);

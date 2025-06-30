@@ -14,7 +14,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
+
+// import jakarta.transaction.Transactional;
 import workshop.demo.DomainLayer.AppSettings.AppSettingsEntity;
 
 @Service
@@ -32,7 +35,7 @@ public class InitDataService extends ManagerDataInit {
         return new String(Files.readAllBytes(Paths.get(filePath)));
     }
 
-    @Transactional
+    // @Transactional
     public String init(String key, String userName, String password) throws Exception {
         String data = readFileAsString("Backend\\src\\main\\resources\\dataToInit.txt");
         List<List<String>> cons = createCons(data);
@@ -77,7 +80,7 @@ public class InitDataService extends ManagerDataInit {
         appSettingsRepository.save(settings);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void excute(List<String> construction) throws Exception {
         if (error)
             return;
