@@ -48,7 +48,6 @@ public class InvisibleDiscount implements Discount {
         dto.setType(CreateDiscountDTO.Type.INVISIBLE);
         dto.setLogic(CreateDiscountDTO.Logic.SINGLE);
         dto.setCondition(this.conditionString); // ✅ use stored string
-
         return dto;
     }
 
@@ -73,4 +72,8 @@ public class InvisibleDiscount implements Discount {
     public String getConditionString() {
         return conditionString;
     }
+    public boolean isLogicalOnly() {
+        return percent == 0;
+    }
+
 }

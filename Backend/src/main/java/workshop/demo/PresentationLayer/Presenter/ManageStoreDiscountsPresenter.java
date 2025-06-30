@@ -49,34 +49,19 @@ public class ManageStoreDiscountsPresenter {
     /*───────────────────────────────────────────────────────────────
      * 2 ▸ Add / compose a new discount
      *──────────────────────────────────────────────────────────────*/
-    public void addDiscount(int storeId, String token,
-                            String name, double percent,
-                            String type,            // "VISIBLE" | "INVISIBLE"
-                            String condition,       // can be ""
-                            String logic,           // "SINGLE" | "AND" | …
-                            List<String> subNames)  // optional
-    {
-
+    public void addDiscount(int storeId, String token, CreateDiscountDTO dto) {
         try {
-            UriComponentsBuilder b = UriComponentsBuilder
+            String url = UriComponentsBuilder
                     .fromHttpUrl(Base.url + "/api/store/addDiscount")
                     .queryParam("storeId", storeId)
-                    .queryParam("token",  UriUtils.encodeQueryParam(token,  StandardCharsets.UTF_8))
-                    .queryParam("name",   UriUtils.encodeQueryParam(name,   StandardCharsets.UTF_8))
-                    .queryParam("percent", percent)
-                    .queryParam("type",   type)
-                    .queryParam("condition",  condition == null ? "" : condition)
-                    .queryParam("logic",  logic);
+                    .queryParam("token", UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8))
+                    .toUriString();
 
-            subNames.forEach(n ->
-                    b.queryParam("subDiscountsNames",
-                            UriUtils.encodeQueryParam(n, StandardCharsets.UTF_8)));
-
-            ApiResponse rsp = rest.postForObject(b.toUriString(), null, ApiResponse.class);
+            ApiResponse rsp = rest.postForObject(url, dto, ApiResponse.class);
 
             if (rsp == null || rsp.getErrNumber() != -1) {
                 throw new RuntimeException(rsp == null
-                        ? "Null response from /addDiscount"
+                        ? "Null response from /addDiscountTree"
                         : rsp.getErrorMsg());
             }
 
@@ -84,6 +69,7 @@ public class ManageStoreDiscountsPresenter {
             ExceptionHandlers.handleException(ex);
         }
     }
+
 
     /*───────────────────────────────────────────────────────────────
      * 3 ▸ Remove a discount by name
@@ -132,4 +118,52 @@ public class ManageStoreDiscountsPresenter {
             return Collections.emptyList();
         }
     }
+    public List<CreateDiscountDTO> fetchAllDiscountsFlattened(int storeId, String token) {
+        try {
+            String url = String.format(
+                    Base.url + "/api/store/getAllDiscountDetails?storeId=%d&token=%s",
+                    storeId,
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
+
+            ApiResponse rsp = rest.getForObject(url, ApiResponse.class);
+
+            if (rsp == null || rsp.getErrNumber() != -1) {
+                throw new RuntimeException(rsp == null
+                        ? "Null response from /getAllDiscountDetails"
+                        : rsp.getErrorMsg());
+            }
+
+            return Arrays.asList(mapper.convertValue(rsp.getData(), CreateDiscountDTO[].class));
+
+        } catch (Exception ex) {
+            ExceptionHandlers.handleException(ex);
+            return Collections.emptyList();
+        }
+    }
+    public CreateDiscountDTO fetchDiscountTree(int storeId, String token) {
+        try {
+            String url = String.format(
+                    Base.url + "/api/store/getStoreDiscountTree?storeId=%d&token=%s",
+                    storeId,
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
+
+            ApiResponse rsp = rest.getForObject(url, ApiResponse.class);
+            if (rsp == null || rsp.getErrNumber() != -1) {
+                throw new RuntimeException(rsp == null
+                        ? "Null response from /getStoreDiscountTree"
+                        : rsp.getErrorMsg());
+            }
+
+            CreateDiscountDTO[] rootList = mapper.convertValue(rsp.getData(), CreateDiscountDTO[].class);
+            return rootList.length > 0 ? rootList[0] : null;
+
+        } catch (Exception ex) {
+            ExceptionHandlers.handleException(ex);
+            return null;
+        }
+    }
+
+
+
+
 }

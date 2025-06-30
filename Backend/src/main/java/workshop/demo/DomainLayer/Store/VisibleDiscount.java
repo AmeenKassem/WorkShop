@@ -66,5 +66,9 @@ public class VisibleDiscount implements Discount {
     public String toReadableString() {
         return String.format("%s: %.0f%% off when %s", name, percent*100, DiscountConditions.describe(conditionString));
     }
+    @Override
+    public boolean isLogicalOnly() {
+        return percent == 0;
+    }
 
 }

@@ -1,5 +1,6 @@
 package workshop.demo.DTOs;
 
+import java.util.Collections;
 import java.util.List;
 
 public class CreateDiscountDTO {
@@ -56,8 +57,9 @@ public class CreateDiscountDTO {
     public void setLogic(Logic logic){this.logic=logic;}
 
     public List<CreateDiscountDTO> getSubDiscounts() {
-        return subDiscounts;
+        return subDiscounts == null ? Collections.emptyList() : subDiscounts;
     }
+
     public void setSubDiscounts(List<CreateDiscountDTO> subDiscounts){
         this.subDiscounts=subDiscounts;
     }

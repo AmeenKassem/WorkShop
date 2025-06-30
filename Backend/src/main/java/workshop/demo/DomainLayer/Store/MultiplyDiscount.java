@@ -14,7 +14,10 @@ public class MultiplyDiscount extends CompositeDiscount{
     }
     @Override
     public double apply(DiscountScope scope){
-        List<Discount> applicable = discounts.stream().filter(d -> d.isApplicable(scope)).toList();
+        List<Discount> applicable = discounts.stream()
+                .filter(d -> d.isApplicable(scope) && !d.isLogicalOnly())
+                .toList();
+
         if(applicable.isEmpty())
             return 0.0;
         double factor = 1.0;
@@ -30,9 +33,9 @@ public class MultiplyDiscount extends CompositeDiscount{
         CreateDiscountDTO dto = new CreateDiscountDTO();
         dto.setName(getName());
         dto.setLogic(CreateDiscountDTO.Logic.MULTIPLY);
-        dto.setType(CreateDiscountDTO.Type.VISIBLE);
-        dto.setPercent(0); // the discount logic is applied to children
-        dto.setCondition("None"); // override if condition is added
+        dto.setType(CreateDiscountDTO.Type.VISIBLE); // override if needed
+        dto.setPercent(0);
+        dto.setCondition(conditionString); // ✅ retain original condition
 
         dto.setSubDiscounts(discounts.stream()
                 .map(Discount::toDTO)

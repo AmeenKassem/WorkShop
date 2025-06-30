@@ -14,6 +14,9 @@ public interface Discount {
     CreateDiscountDTO toDTO();
     List<Discount> getFlattenedVisibleDiscounts(); // default implementation returning List.of(this) if VisibleDiscount
     String toReadableString(); // Describe what this discount means
+    default boolean isLogicalOnly() {
+        return false;
+    }
 
 
 }
