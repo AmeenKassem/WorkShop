@@ -6,6 +6,7 @@ import java.util.Random;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.AuctionStatus;
+import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.PaymentDetails;
@@ -42,6 +43,9 @@ public class UserParser extends ManagerDataInit {
             case "random":
                 random(toSend);
                 break;
+            case "bid":
+                bid(toSend);
+                break;
             case "purchase":
                 purchase(toSend);
                 break;
@@ -53,11 +57,40 @@ public class UserParser extends ManagerDataInit {
         }
     }
 
+    private void bid(List<String> toSend) {
+        if (toSend.size() != 4) {
+            log("syntax error on line " + line
+                    + " : params does not match bid <username> <storeName> <productName> <bid>");
+            error = true;
+            return;
+        }
+        String token = getTokenForUserName(toSend.get(0));
+        if (token == null) {
+            return;
+        }
+        String storeName = toSend.get(1).replace("-", " ");
+        int id = getStoreIdByName(storeName);
+        String productName = toSend.get(2).replace("-", " ");
+        double offer = Double.parseDouble(toSend.get(3));
+        try {
+            BidDTO[] bidsOnStore = activeService.getAllActiveBids_user(token, id);
+            int specialId = -1;
+            for (BidDTO bidDTO : bidsOnStore) {
+                if (bidDTO.productName.equals(productName))
+                    specialId = bidDTO.bidId;
+            }
+            activeService.addUserBidToBid(token, specialId, id, offer);
+            log("user bid placed successfuly!");
+        } catch (Exception e) {
+            log("Error msg , " + e.getMessage());
+        }
+    }
+
     @Transactional
     public void random(List<String> toSend) {
         if (toSend.size() != 4) {
             log("syntax error on line " + line
-                    + " : params does not match auction <username> <storeName> <productName> <bid>");
+                    + " : params does not match random <username> <storeName> <productName> <bid>");
             error = true;
             return;
         }
@@ -80,8 +113,8 @@ public class UserParser extends ManagerDataInit {
                 log("random " + productName + " does not found!");
                 return;
             }
-            
-            purchaseService.participateInRandom(token, random.id, id, price,PaymentDetails.testPayment());
+
+            purchaseService.participateInRandom(token, random.id, id, price, PaymentDetails.testPayment());
             log("user " + toSend.get(0) + "bid on auction set successfully ");
         } catch (Exception e) {
             log("got error on line " + line + " :" + e.getMessage());
@@ -209,7 +242,7 @@ public class UserParser extends ManagerDataInit {
                     return;
                 }
                 userService.addToUserCart(userToken, items[0], quantity);
-                log("removing " + productName + " from user success !!");
+                log("adding " + productName + " from user success !!");
 
             } catch (Exception e) {
                 log("line " + line + " got error :" + e.getMessage());
@@ -296,6 +329,5 @@ public class UserParser extends ManagerDataInit {
             error = true;
         }
     }
-
 
 }

@@ -136,14 +136,16 @@ public class ActivePurcheses {
     }
 
     public SingleBid addUserBidToBid(int bidId, int userId, double price) throws DevException, UIException {
-        logger.debug("addUserBidToBid called with bidId={}, userId={}, price={}", bidId, userId, price);
+        logger.info("addUserBidToBid called with bidId={}, userId={}, price={}", bidId, userId, price);
 
-        if (!activeBid.containsKey(bidId)) {
-            logger.error("Bid ID {} not found", bidId);
-
-            throw new DevException("Bid ID not found in active bids!");
+        for (BID iterable_element : activeBid.values()) {
+            if (iterable_element.getBidId() == bidId) {
+                return iterable_element.bid(userId, price);
+            }
+            // res.add(iterable_element);
         }
-        return activeBid.get(bidId).bid(userId, price);
+        // return activeBid.get(bidId).bid(userId, price);
+        throw new UIException("bid not found!", ErrorCodes.BID_FINISHED);
     }
 
     public BidDTO[] getBids() {
@@ -162,23 +164,35 @@ public class ActivePurcheses {
             throws DevException, UIException {
         logger.debug("acceptBid called with userBidId={}, bidId={}", userToAcceptForId, bidId);
 
-        if (!activeBid.containsKey(bidId)) {
-            logger.error("Bid ID {} not  ound", bidId);
-
-            throw new DevException("Bid ID not found in active bids!");
+        for (BID iterable_element : activeBid.values()) {
+            if (iterable_element.getBidId() == bidId) {
+                return iterable_element.acceptBid(userToAcceptForId, ownersIds, userId);
+            }
+            // res.add(iterable_element);
         }
-        return activeBid.get(bidId).acceptBid(userToAcceptForId, ownersIds, userId);
+
+        // if (!activeBid.containsKey(bidId)) {
+        logger.error("Bid ID {} not  ound", bidId);
+
+        throw new DevException("Bid ID not found in active bids!");
+        // }
+        // return activeBid.get(bidId).acceptBid(userToAcceptForId, ownersIds, userId);
     }
 
     public boolean rejectBid(int bidId, int userToRejectForId) throws DevException, UIException {
         logger.debug("rejectBid called with userBidId={}, bidId={}", userToRejectForId, bidId);
 
-        if (!activeBid.containsKey(bidId)) {
-            logger.error("Bid ID {} not found", bidId);
-
-            throw new DevException("Bid ID not found in active bids!");
+        for (BID iterable_element : activeBid.values()) {
+            if (iterable_element.getBidId() == bidId) {
+                return iterable_element.rejectBid(userToRejectForId);
+            }
+            // res.add(iterable_element);
         }
-        return activeBid.get(bidId).rejectBid(userToRejectForId);
+
+        // if (!activeBid.containsKey(bidId)) {
+        logger.error("Bid ID {} not  ound", bidId);
+
+        throw new DevException("Bid ID not found in active bids!");
     }
 
     // ========== Random ==========
@@ -260,8 +274,7 @@ public class ActivePurcheses {
             if (randomA.getRandomId() == randomId)
                 random = randomA;
         }
-        if (random==null)
-        {
+        if (random == null) {
             logger.error("Random ID {} not found on getRandom", randomId);
             throw new DevException("Random ID not found in active randoms!");
         }
@@ -276,8 +289,7 @@ public class ActivePurcheses {
             if (randomA.getRandomId() == randomId)
                 random = randomA;
         }
-        if (random==null)
-        {
+        if (random == null) {
             logger.error("Random ID {} not found on getRandom", randomId);
             throw new DevException("Random ID not found in active randoms!");
         }
@@ -417,8 +429,14 @@ public class ActivePurcheses {
     }
 
     @Transactional
-    public BID getBidById(int res) {
-        return activeBid.get(res);
+    public BID getBidById(int res) throws UIException {
+        for (BID bid : activeBid.values()) {
+            if (bid.getBidId() == res ) {
+
+                return bid;
+            }
+        }
+        throw new UIException("bid not found!", ErrorCodes.INVALID_BID_PARAMETERS);
     }
 
     public Integer getStoreId() {
@@ -471,6 +489,7 @@ public class ActivePurcheses {
     public List<BID> getActiveBids() {
         List<BID> res = new ArrayList<>();
         for (BID iterable_element : activeBid.values()) {
+            logger.info("found bid " + iterable_element.getBidId());
             if (!iterable_element.isAccepted())
                 res.add(iterable_element);
         }

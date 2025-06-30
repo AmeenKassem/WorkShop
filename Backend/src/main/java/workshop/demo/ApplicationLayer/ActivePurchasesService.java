@@ -577,7 +577,7 @@ public class ActivePurchasesService {
             throw new UIException("quantity fsh ", ErrorCodes.INVALID_QUANTITY);
         }
         storeStockRepo.saveAndFlush(storeStock);
-        activePurchasesRepo.save(active);
+        activePurchasesRepo.saveAndFlush(active);
         List<Integer> ownersIds = new ArrayList<>();
         suConnectionRepo.getOwnersInStore(storeId).forEach(user -> ownersIds.add(user.getMyId()));
         notifier.sendMessageForUsers(
