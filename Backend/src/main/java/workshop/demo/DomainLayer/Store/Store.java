@@ -257,4 +257,7 @@ public void assertPurchasePolicies(int age, int quantity, int productId) {
   public void setPolicyManager(PolicyManager policyManager) {
         this.policyManager = policyManager;
     }
+     public PolicyManager getPolicyManager() {
+        return policyManager;
+    }
 }
