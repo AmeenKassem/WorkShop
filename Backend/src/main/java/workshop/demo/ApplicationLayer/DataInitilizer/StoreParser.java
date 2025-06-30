@@ -16,7 +16,7 @@ public class StoreParser extends ManagerDataInit {
 
     public void store(List<String> construction) {
         List<String> toSend = construction.subList(1, construction.size());
-        switch (construction.getFirst()) {
+        switch (construction.get(0)) {
             case "open":
                 createStore(toSend);
                 break;
@@ -27,7 +27,7 @@ public class StoreParser extends ManagerDataInit {
                 auction(toSend);
                 break;
             default:
-                log("undefined function for store on line " + line + " : " + construction.getFirst());
+                log("undefined function for store on line " + line + " : " + construction.get(0));
                 error = true;
                 break;
         }

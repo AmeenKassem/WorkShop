@@ -33,7 +33,7 @@ public class UserParser extends ManagerDataInit {
                 auction(toSend);
                 break;
             default:
-                log("undefined function for user on line " + line + " : " + construction.getFirst());
+                log("undefined function for user on line " + line + " : " + construction.get(0));
                 error = true;
                 break;
         }

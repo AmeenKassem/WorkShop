@@ -768,5 +768,17 @@ public class StoreService {
         // Otherwise, return root as a single-item list
         return List.of(rootDTO);
     }
+    public List<String> getVisibleDiscountDescriptions(int storeId,String token) throws UIException {
+        Store store = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND));
+        if (store.getDiscount() == null) return List.of();
+
+        return store.getDiscount()
+                .getFlattenedVisibleDiscounts()
+                .stream()
+                .map(Discount::toReadableString) // You’ll implement this below
+                .toList();
+    }
+
 
 }

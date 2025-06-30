@@ -43,5 +43,20 @@ public abstract class CompositeDiscount implements Discount {
     public List<Discount> getDiscounts() {
         return discounts;
     }
+    @Override
+    public List<Discount> getFlattenedVisibleDiscounts() {
+        List<Discount> result = new ArrayList<>();
+        for (Discount d : discounts) {
+            result.addAll(d.getFlattenedVisibleDiscounts());
+        }
+        return result;
+    }
+    @Override
+    public String toReadableString() {
+        return String.format("%s (composite %s with %d sub-discounts)",
+                name, this.getClass().getSimpleName().replace("Discount", ""), discounts.size());
+    }
+
+
 
 }

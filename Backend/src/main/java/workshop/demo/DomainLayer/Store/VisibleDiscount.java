@@ -2,6 +2,7 @@ package workshop.demo.DomainLayer.Store;
 
 import workshop.demo.DTOs.CreateDiscountDTO;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 public class VisibleDiscount implements Discount {
@@ -56,4 +57,14 @@ public class VisibleDiscount implements Discount {
     public String getConditionString() {
         return conditionString;
     }
+    @Override
+    public List<Discount> getFlattenedVisibleDiscounts() {
+        return List.of(this);
+    }
+
+    @Override
+    public String toReadableString() {
+        return String.format("%s: %.0f%% off when %s", name, percent*100, DiscountConditions.describe(conditionString));
+    }
+
 }

@@ -2,6 +2,8 @@ package workshop.demo.DomainLayer.Store;
 
 import workshop.demo.DTOs.CreateDiscountDTO;
 
+import java.util.List;
+
 public interface Discount {
     boolean isApplicable(DiscountScope scope);
     double apply(DiscountScope scope);
@@ -10,6 +12,9 @@ public interface Discount {
         return false;
     }
     CreateDiscountDTO toDTO();
+    List<Discount> getFlattenedVisibleDiscounts(); // default implementation returning List.of(this) if VisibleDiscount
+    String toReadableString(); // Describe what this discount means
+
 
 }
 

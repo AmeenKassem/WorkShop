@@ -370,5 +370,19 @@ public class StoreController {
                     .body(new ApiResponse<>(null, e.getMessage(), -1));
         }
     }
+    @GetMapping("/getVisibleDiscountDescriptions")
+    public ResponseEntity<?> getVisibleDiscountDescriptions(@RequestParam int storeId, @RequestParam String token) {
+        try {
+            List<String> descriptions = storeService.getVisibleDiscountDescriptions(storeId, token);
+            return ResponseEntity.ok(new ApiResponse<>(descriptions, null));
+        } catch (UIException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(null, ex.getMessage(), ex.getNumber()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, e.getMessage(), -1));
+        }
+    }
+
+
 
 }
