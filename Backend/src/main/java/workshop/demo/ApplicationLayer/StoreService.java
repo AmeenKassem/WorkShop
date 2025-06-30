@@ -822,6 +822,10 @@ public class StoreService {
             throw new UIException("No permission to add discounts", ErrorCodes.NO_PERMISSION);
         }
 
+        if(store.getDiscount()==null){
+            store.addDiscount(new MaxDiscount("MANUALLY_COMBINED"));
+
+        }
         // hydrate old discount (if any)
         store.getDiscount();
         Discount newDiscount = DiscountFactory.fromDTO(dto);
