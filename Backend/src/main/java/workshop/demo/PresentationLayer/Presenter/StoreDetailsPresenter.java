@@ -12,11 +12,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -624,5 +620,27 @@ public class StoreDetailsPresenter {
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         return headers;
     }
+    public List<String> getVisibleDiscountDescriptions(int storeId, String token) throws Exception {
+        String url = UriComponentsBuilder
+                .fromHttpUrl(Base.url + "/api/store/getVisibleDiscountDescriptions")
+                .queryParam("storeId", storeId)
+                .queryParam("token", UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8))
+                .build().toUriString();
+
+        ResponseEntity<ApiResponse<String[]>> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ApiResponse<String[]>>() {}
+        );
+
+        if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null)
+            throw new Exception("Failed to get discounts");
+
+        String[] discounts = response.getBody().getData();
+        return discounts != null ? List.of(discounts) : List.of();
+    }
+
+
 
 }

@@ -3,6 +3,7 @@ package workshop.demo.PresentationLayer.View;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
@@ -18,6 +19,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.treegrid.TreeGrid;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
@@ -161,10 +164,10 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             Button bidButton = new Button("💸 Enable Bidding", e -> showBidDialog(storeId, token, item.getProductId()));
             Button randomButton = new Button("🎲 Start Random Draw", e -> showRandomDialog(storeId, token, item.getProductId()));
             HorizontalLayout row1 = new HorizontalLayout(edit, auctionButton, delete);
-            HorizontalLayout row2 = new HorizontalLayout(bidButton, randomButton); 
+            HorizontalLayout row2 = new HorizontalLayout(bidButton, randomButton);
             row1.addClassName("button-row");
             row2.addClassName("button-row");
-  
+
            VerticalLayout actions = new VerticalLayout(row1, row2);
             actions.setSpacing(true);
             actions.setJustifyContentMode(JustifyContentMode.END);
@@ -362,202 +365,72 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         dialog.open();
     }
 
-    /* ---------------------------------------------------------
-     *  Add / Combine Discounts dialog – revised implementation
-     * --------------------------------------------------------- */
- /* ---------------------------------------------------------
-     *  Add / Combine Discounts dialog – final implementation
-     * --------------------------------------------------------- */
- /* ------------------------------------------------------------------
-     *  Add / Combine Discounts dialog  –  backend-compatible version
-     * ------------------------------------------------------------------ */
- /* --------------------------------------------------------------
-     *  Add / Combine Discounts dialog – hardened numeric handling
-     * -------------------------------------------------------------- */
     private void openDiscountDialog() {
-
         Dialog dlg = new Dialog();
         dlg.setHeaderTitle("Add / Combine Discounts");
 
-        /* ── generic fields ─────────────────────────────────────── */
-        TextField nameField = new TextField("Name");
+        VerticalLayout container = new VerticalLayout();
+        DiscountFormEditor rootEditor = new DiscountFormEditor();
+        container.add(rootEditor);
+        TreeGrid<CreateDiscountDTO> tree = new TreeGrid<>();
 
-        NumberField percent = new NumberField("Percent (0-100)");
-        percent.setMin(0);
-        percent.setMax(100);
-        percent.setValue(0.0);
+        tree.addComponentHierarchyColumn(discount -> {
+                    Span nameSpan = new Span(discount.getName());
+                    nameSpan.getElement().setProperty("title", discount.getName());
+                    return nameSpan;
+                }).setHeader("Name")
+                .setAutoWidth(true)
+                .setFlexGrow(2)
+                .setResizable(true)
+                .setWidth("300px");
 
-        ComboBox<String> typeBox = new ComboBox<>("Type", "VISIBLE", "INVISIBLE");
-        typeBox.setValue("VISIBLE");
+        tree.addColumn(CreateDiscountDTO::getPercent).setHeader("Percent");
+        tree.addColumn(d -> {
+            String c = d.getCondition();
+            return (c == null || c.isBlank()) ? "No condition" : c;
+        }).setHeader("Condition");
+        tree.addColumn(d -> d.getLogic() != null ? d.getLogic().name() : "SINGLE").setHeader("Logic");
+        tree.addColumn(d -> d.getType() != null ? d.getType().name() : "VISIBLE").setHeader("Type");
 
-        ComboBox<String> logicBox = new ComboBox<>("Logic",
-                "SINGLE", "AND", "OR", "XOR", "MAX", "MULTIPLY");
-        logicBox.setValue("SINGLE");
-
-        /* ── predicate section ─────────────────────────────────── */
-        ComboBox<String> predBox = new ComboBox<>("Predicate");
-        predBox.setItems("TOTAL", "QUANTITY", "CATEGORY", "PRODUCT");
-        predBox.setPlaceholder("Predicate (optional)");
-        predBox.setClearButtonVisible(true);
-
-        ComboBox<String> opBox = new ComboBox<>("Op");   // visible but never enabled now
-        opBox.setEnabled(false);
-
-        Div valueWrapper = new Div();
-
-        /* refresh helper */
-        Runnable refreshUI = () -> {
-            String p = predBox.getValue();
-
-            // operator (always ">")
-            if ("TOTAL".equals(p) || "QUANTITY".equals(p)) {
-                opBox.setItems(">");
-                opBox.setValue(">");
-                opBox.setEnabled(false);
-            } else {
-                opBox.clear();
-                opBox.setItems();
-                opBox.setEnabled(false);
-            }
-
-            // value editor
-            valueWrapper.removeAll();
-            switch (p == null ? "" : p) {
-                case "TOTAL", "QUANTITY" -> {
-                    NumberField n = new NumberField("Value");
-                    n.setMin(0);
-                    valueWrapper.add(n);
-                }
-                case "CATEGORY" -> {
-                    ComboBox<Category> c = new ComboBox<>("Value");
-                    c.setItems(Category.values());
-                    c.setItemLabelGenerator(Category::name);
-                    valueWrapper.add(c);
-                }
-                case "PRODUCT" -> {
-                    ComboBox<ItemStoreDTO> prod = new ComboBox<>("Value");
-                    prod.setItems(currentProducts.keySet());
-                    prod.setItemLabelGenerator(ItemStoreDTO::getProductName);
-                    prod.setPlaceholder("Choose product");
-                    prod.setPageSize(20);
-                    valueWrapper.add(prod);
-                }
-                default ->
-                    valueWrapper.add(new Span());
-            }
-        };
-        predBox.addValueChangeListener(e -> refreshUI.run());
-        refreshUI.run();
-
-        /* ── sub-discount list / delete unchanged … ───────────────── */
-        CheckboxGroup<String> subs = new CheckboxGroup<>();
-        subs.setLabel("Sub-discounts");
-        try {
-            subs.setItems(discPresenter.fetchDiscountNames(storeId, token));
-        } catch (Exception ex) {
-            ExceptionHandlers.handleException(ex);
+// 👇 Ensure root is treated as list
+        CreateDiscountDTO root = discPresenter.fetchDiscountTree(storeId, token);
+        if (root != null) {
+            tree.setItems(List.of(root), CreateDiscountDTO::getSubDiscounts);
+        } else {
+            NotificationView.showInfo("No discount tree found.");
         }
 
-        Button deleteBtn = new Button("🗑 Delete selected", ev -> {
-            var toDelete = new ArrayList<>(subs.getSelectedItems());
-            if (toDelete.isEmpty()) {
-                NotificationView.showError("Select a discount first");
-                return;
-            }
-            toDelete.forEach(name -> {
-                try {
-                    discPresenter.deleteDiscount(storeId, token, name);
-                } catch (Exception ex) {
-                    ExceptionHandlers.handleException(ex);
-                }
-            });
+        tree.setHeight("300px");
+        tree.setWidthFull();
+        Button deleteAllBtn = new Button("🗑 Clear All Discounts", ev -> {
             try {
-                subs.setItems(discPresenter.fetchDiscountNames(storeId, token));
+                List<String> all = discPresenter.fetchDiscountNames(storeId, token);
+                if (all.isEmpty()) {
+                    NotificationView.showInfo("There are no discounts to delete.");
+                    return;
+                }
+
+                for (String name : all) {
+                    try {
+                        discPresenter.deleteDiscount(storeId, token, name);
+                    } catch (Exception ex) {
+                        ExceptionHandlers.handleException(ex); // Log but continue
+                    }
+                }
+
+                NotificationView.showSuccess("All discounts deleted.");
+                tree.setItems(List.of()); // clear tree from UI too
             } catch (Exception ex) {
                 ExceptionHandlers.handleException(ex);
             }
         });
-        // ── Discount display grid ──
-        Grid<CreateDiscountDTO> grid = new Grid<>();
-        grid.addColumn(CreateDiscountDTO::getName).setHeader("Name");
-        grid.addColumn(CreateDiscountDTO::getPercent).setHeader("Percent");
-        grid.addColumn(d -> {
-            String c = d.getCondition();
-            return (c == null || c.isBlank()) ? "No condition" : c;
-        }).setHeader("Condition");
-        grid.addColumn(d -> d.getLogic() != null ? d.getLogic().name() : "SINGLE").setHeader("Logic");
-        grid.addColumn(d -> d.getType() != null ? d.getType().name() : "VISIBLE").setHeader("Type");
 
-        try {
-            List<CreateDiscountDTO> discounts = discPresenter.fetchDiscountDetails(storeId, token);
-            grid.setItems(discounts);
-        } catch (Exception ex) {
-            ExceptionHandlers.handleException(ex);
-        }
-
-        grid.setHeight("300px");
-        grid.setWidthFull();
-
-        /* ── SAVE ───────────────────────────────────────────────── */
         Button save = new Button("Save", e -> {
             try {
-                /* 1 extract value */
-                String valuePart = "";
-                if (valueWrapper.getElement().getChildCount() > 0) {
-                    Component editor = valueWrapper.getChildren().findFirst().get();
-                    if (editor instanceof ComboBox<?> cb
-                            && cb.getValue() instanceof ItemStoreDTO dto) {
-                        valuePart = String.valueOf(dto.getProductId());  // PRODUCT → id
-                    } else if (editor instanceof HasValue<?, ?> hv
-                            && hv.getValue() != null) {
-                        valuePart = hv.getValue().toString();
-                    }
-                }
-
-                /* 2 normalize numeric (trim, strip .0) */
-                valuePart = valuePart.trim();
-                String predicate = predBox.getValue();
-                if (("TOTAL".equals(predicate) || "QUANTITY".equals(predicate))
-                        && valuePart.isBlank()) {
-                    NotificationView.showError("Enter a numeric value for " + predicate);
-                    return;
-                }
-                if (valuePart.endsWith(".0")) {
-                    valuePart = valuePart.substring(0, valuePart.length() - 2);
-                }
-
-                /* 3 build condition */
-                String condition;
-                switch (predicate == null ? "" : predicate) {
-                    case "" ->
-                        condition = "";
-                    case "CATEGORY" ->
-                        condition = "CATEGORY:" + valuePart;
-                    case "TOTAL" ->
-                        condition = "TOTAL>" + valuePart;
-                    case "QUANTITY" ->
-                        condition = "QUANTITY>" + valuePart;
-                    case "PRODUCT" ->
-                        condition = "ITEM:" + valuePart;
-                    default ->
-                        condition = "";
-                }
-
-                System.out.println("DEBUG addDiscount condition = [" + condition + "]");
-
-                /* 4 send */
-                discPresenter.addDiscount(
-                        storeId, token,
-                        nameField.getValue(),
-                        percent.getValue() / 100.0,
-                        typeBox.getValue(),
-                        condition,
-                        logicBox.getValue(),
-                        new ArrayList<>(subs.getSelectedItems())
-                );
+                CreateDiscountDTO dto = rootEditor.buildDTO();
+                discPresenter.addDiscount(storeId, token, dto);
                 NotificationView.showSuccess("Discount added!");
                 dlg.close();
-
             } catch (Exception ex) {
                 ExceptionHandlers.handleException(ex);
             }
@@ -565,18 +438,135 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
         Button cancel = new Button("Cancel", e -> dlg.close());
 
-        dlg.add(new VerticalLayout(
-                nameField, percent,
-                new HorizontalLayout(predBox, opBox, valueWrapper),
-                new HorizontalLayout(typeBox, logicBox),
-                subs,
-                deleteBtn,
-                new Span("Current Discounts:"),  // optional label
-                grid,
+        dlg.add(
+                container,
+                deleteAllBtn,                           // 👈 Inserted here
+                new Span("Current Discounts in Store:"),
+                tree,
                 new HorizontalLayout(save, cancel)
-        ));
+        );
+
 
         dlg.open();
     }
+
+    private class DiscountFormEditor extends VerticalLayout {
+        private final TextField name = new TextField("Name");
+        private final NumberField percent = new NumberField("Percent (0–100)");
+        private final ComboBox<CreateDiscountDTO.Type> type = new ComboBox<>("Type");
+        private final ComboBox<CreateDiscountDTO.Logic> logic = new ComboBox<>("Logic");
+        private final ComboBox<String> predicate = new ComboBox<>("Predicate");
+        private final Div valueWrapper = new Div();
+        private final VerticalLayout subEditors = new VerticalLayout();
+        private final Button addSubBtn = new Button("+ Add Sub-Discount");
+
+        public DiscountFormEditor() {
+            name.setRequired(true);
+            percent.setMin(0);
+            percent.setMax(100);
+            percent.setValue(0.0);
+
+            type.setItems(CreateDiscountDTO.Type.values());
+            type.setValue(CreateDiscountDTO.Type.VISIBLE);
+
+            logic.setItems(CreateDiscountDTO.Logic.values());
+            logic.setValue(CreateDiscountDTO.Logic.SINGLE);
+
+            predicate.setItems("TOTAL", "QUANTITY", "CATEGORY", "PRODUCT");
+            predicate.setVisible(true);
+            valueWrapper.setVisible(true);
+
+            logic.addValueChangeListener(e -> {
+                boolean isSingle = logic.getValue() == CreateDiscountDTO.Logic.SINGLE;
+                predicate.setVisible(isSingle);
+                valueWrapper.setVisible(isSingle);
+                addSubBtn.setVisible(!isSingle);
+            });
+
+            predicate.addValueChangeListener(e -> renderValueInput());
+            renderValueInput();
+
+            addSubBtn.addClickListener(e -> {
+                DiscountFormEditor sub = new DiscountFormEditor();
+                sub.logic.setValue(CreateDiscountDTO.Logic.SINGLE); // always SINGLE
+                sub.logic.setReadOnly(true);                        // force SINGLE
+                sub.addSubBtn.setVisible(false);                    // prevent nesting
+                subEditors.add(sub);
+            });
+
+
+            HorizontalLayout topRow = new HorizontalLayout(name, percent, type, logic);
+            HorizontalLayout condRow = new HorizontalLayout(predicate, valueWrapper);
+
+            add(topRow, condRow, addSubBtn, subEditors);
+        }
+
+        private void renderValueInput() {
+            valueWrapper.removeAll();
+            String selected = predicate.getValue();
+            if (selected == null) return;
+            switch (selected) {
+                case "TOTAL", "QUANTITY" -> {
+                    NumberField num = new NumberField("Value");
+                    num.setMin(0);
+                    valueWrapper.add(num);
+                }
+                case "CATEGORY" -> {
+                    ComboBox<Category> c = new ComboBox<>("Category");
+                    c.setItems(Category.values());
+                    valueWrapper.add(c);
+                }
+                case "PRODUCT" -> {
+                    ComboBox<ItemStoreDTO> prod = new ComboBox<>("Product");
+                    prod.setItems(currentProducts.keySet());
+                    prod.setItemLabelGenerator(ItemStoreDTO::getProductName);
+                    valueWrapper.add(prod);
+                }
+            }
+        }
+
+        public CreateDiscountDTO buildDTO() {
+            String cond = "";
+            if (logic.getValue() == CreateDiscountDTO.Logic.SINGLE) {
+                String val = valueWrapper.getChildren()
+                        .filter(c -> c instanceof HasValue)
+                        .map(c -> ((HasValue<?, ?>) c).getValue())
+                        .filter(Objects::nonNull)
+                        .map(v -> {
+                            if (predicate.getValue().equals("PRODUCT") && v instanceof ItemStoreDTO dto)
+                                return dto.getProductId() + ""; // or any unique identifier
+                            return v.toString();
+                        })
+
+                        .map(v -> v.endsWith(".0") ? v.substring(0, v.length() - 2) : v)
+                        .findFirst().orElse("");
+
+                cond = switch (predicate.getValue()) {
+                    case "TOTAL" -> "TOTAL>" + val;
+                    case "QUANTITY" -> "QUANTITY>" + val;
+                    case "CATEGORY" -> "CATEGORY:" + val.toUpperCase();
+                    case "PRODUCT" -> "ITEM:" + val;
+                    default -> "";
+                };
+            }
+
+            List<CreateDiscountDTO> subDiscounts = subEditors.getChildren()
+                    .filter(c -> c instanceof DiscountFormEditor)
+                    .map(c -> ((DiscountFormEditor) c).buildDTO())
+                    .toList();
+
+            return new CreateDiscountDTO(
+                    name.getValue(),
+                    percent.getValue() / 100.0,
+                    type.getValue(),
+                    cond,
+                    logic.getValue(),
+                    subDiscounts
+            );
+        }
+    }
+
+
+
 
 }

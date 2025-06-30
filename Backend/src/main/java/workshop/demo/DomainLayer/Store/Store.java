@@ -155,7 +155,7 @@ public class Store {
             this.discount = d;
         } else {
             // wrap old and new discount into MaxDiscount by default
-            MaxDiscount combo = new MaxDiscount("MAX("+this.discount.getName()+"+"+d.getName()+")");
+            MultiplyDiscount combo = new MultiplyDiscount("MULTIPLY("+this.discount.getName()+"+"+d.getName()+")");
             combo.addDiscount(discount);
             combo.addDiscount(d);
             this.discount = combo;
@@ -166,19 +166,23 @@ public class Store {
     public boolean removeDiscountByName(String name) {
         Discount root = getDiscount(); // reconstructs if null
 
-        if (root instanceof CompositeDiscount composite) {
-            boolean removed = composite.removeDiscountByName(name);
-            if (removed && composite.getDiscounts().isEmpty()) {
-                this.discount = null;  // fully remove empty composite
-            }
-            return removed;
-        } else if (root != null && root.getName().equals(name)) {
+        if (root == null) return false;
+        if (root.getName().equals(name)) {
             this.discount = null;
             return true;
         }
 
+        if (root instanceof CompositeDiscount composite) {
+            boolean removed = composite.removeDiscountByName(name);
+            if (removed && composite.getDiscounts().isEmpty()) {
+                this.discount = null;
+            }
+            return removed;
+        }
+
         return false;
     }
+
 
 
 

@@ -2,6 +2,7 @@ package workshop.demo.DomainLayer.Store;
 
 import workshop.demo.DTOs.CreateDiscountDTO;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 public class InvisibleDiscount implements Discount {
@@ -47,8 +48,17 @@ public class InvisibleDiscount implements Discount {
         dto.setType(CreateDiscountDTO.Type.INVISIBLE);
         dto.setLogic(CreateDiscountDTO.Logic.SINGLE);
         dto.setCondition(this.conditionString); // ✅ use stored string
-
         return dto;
+    }
+
+    @Override
+    public List<Discount> getFlattenedVisibleDiscounts() {
+        return null;
+    }
+
+    @Override
+    public String toReadableString() {
+        return null;
     }
 
     public double getPercent() {
@@ -62,4 +72,8 @@ public class InvisibleDiscount implements Discount {
     public String getConditionString() {
         return conditionString;
     }
+    public boolean isLogicalOnly() {
+        return percent == 0;
+    }
+
 }
