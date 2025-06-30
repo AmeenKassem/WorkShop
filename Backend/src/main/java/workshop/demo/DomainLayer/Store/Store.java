@@ -48,7 +48,7 @@ public class Store {
 
     @Transient
     private Discount discount;
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "discount_id")
     private DiscountEntity discountEntity;
 
@@ -155,7 +155,7 @@ public class Store {
             this.discount = d;
         } else {
             // wrap old and new discount into MaxDiscount by default
-            MaxDiscount combo = new MaxDiscount("Auto-wrapped discounts");
+            MaxDiscount combo = new MaxDiscount("MAX("+this.discount.getName()+"+"+d.getName()+")");
             combo.addDiscount(discount);
             combo.addDiscount(d);
             this.discount = combo;
@@ -237,13 +237,23 @@ public class Store {
         this.storeName = storeName2;
     }
     public DiscountEntity getDiscountEntity() {
-        return discountEntity;
+        if (discountEntity != null) {
+            return (DiscountEntity) Hibernate.unproxy(discountEntity);
+        }
+        return null;
     }
+
 
     public void setDiscountEntity(DiscountEntity discountEntity) {
         this.discountEntity = discountEntity;
-        if(discountEntity!=null){discountEntity.setStore(this);}
+        if (discountEntity != null) {
+            discountEntity.setStore(this);
+            this.discount = DiscountMapper.toDomain(discountEntity); // 👈 sync right away
+        } else {
+            this.discount = null;
+        }
     }
+
 
 
 }
