@@ -474,7 +474,10 @@ public int addStoreToSystem(String token, String storeName, String category) thr
         // store.setActive(false);
 
         this.suConnectionRepo.closeStore(storeId);
+                policyManagerRepository.delete(store.getPolicyManager());
+
         storeJpaRepo.delete(store);
+    
         logger.info("store removed successfully!");
         logger.info("About to notify all employees");
         // also notify the employees
