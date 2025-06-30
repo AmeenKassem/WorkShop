@@ -25,11 +25,7 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
 import workshop.demo.DomainLayer.Stock.StoreStock;
-import workshop.demo.DomainLayer.Store.CompositeDiscount;
-import workshop.demo.DomainLayer.Store.Discount;
-import workshop.demo.DomainLayer.Store.DiscountFactory;
-import workshop.demo.DomainLayer.Store.PurchasePolicy;
-import workshop.demo.DomainLayer.Store.Store;
+import workshop.demo.DomainLayer.Store.*;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Offer;
@@ -544,92 +540,93 @@ public class StoreService {
         }
         return res;
     }
-    // private String name;
-    // private double percent;
-    // private CreateDiscountDTO.Type type;
-    // private String condition; // e.g. "CATEGORY:DAIRY", "TOTAL>100", or null
-    // private CreateDiscountDTO.Logic logic ;// default to simple discount
-    // private List<CreateDiscountDTO> subDiscounts;
 
-    public void addDiscountToStore(int storeId, String token, String name, double percent, CreateDiscountDTO.Type type,
-            String condition, CreateDiscountDTO.Logic logic, String[] subDiscountsNames) throws Exception {
-        logger.info("User attempting to add a discount to store {}", storeId);
-        //
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        int userId = authRepo.getUserId(token);
-        userService.checkUserRegisterOnline_ThrowException(userId);
-        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
-        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
-            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
-        }
-
-        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
-        throwExceptionIfNotActive(store);
-        boolean hasPermission = suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_STORE_POLICY);
-        if (!hasPermission) {
-            throw new UIException("You do not have permission to add discounts to this store",
-                    ErrorCodes.NO_PERMISSION);
-        }
-
-        // Store store =storeJpaRepo.findById(storeId).get();
-        // Hmode
-        List<Discount> subDiscounts = new ArrayList<>();
-        // Find createDiscountDTO for each subDiscount and add it to the subDiscounts
-        // list
-        store.getDiscount();
-        for (String target : subDiscountsNames) {
-            Discount d = store.findDiscountByName(target);
-            if (d == null) {
-                throw new Exception("Discount " + target + " not found in store");
-            }
-            boolean removed = store.removeDiscountByName(target);
-            if (!removed) {
-                throw new Exception("Failed to remove discount " + target + "!");
-            }
-            subDiscounts.add(d);
-        }
-        CreateDiscountDTO dto = new CreateDiscountDTO(name, percent, type, condition, logic, List.of());
-        Discount discount = DiscountFactory.fromDTO(dto);
+//    public void addDiscountToStore(int storeId, String token, String name, double percent, CreateDiscountDTO.Type type,
+//            String condition, CreateDiscountDTO.Logic logic, String[] subDiscountsNames) throws Exception {
+//        logger.info("User attempting to add a discount to store {}", storeId);
+//        //
+//        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+//        int userId = authRepo.getUserId(token);
+//        userService.checkUserRegisterOnline_ThrowException(userId);
+//        UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+//        if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+//            throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+//        }
+//        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+//        throwExceptionIfNotActive(store);
+//        boolean hasPermission = suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_STORE_POLICY);
+//        if (!hasPermission) {
+//            throw new UIException("You do not have permission to add discounts to this store",
+//                    ErrorCodes.NO_PERMISSION);
+//        }
+//        List<Discount> subDiscounts = new ArrayList<>();
+//        store.getDiscount();
+//        for (String target : subDiscountsNames) {
+//            Discount d = store.findDiscountByName(target);
+//            if (d == null) {
+//                throw new Exception("Discount " + target + " not found in store");
+//            }
+//            boolean removed = store.removeDiscountByName(target);
+//            if (!removed) {
+//                throw new Exception("Failed to remove discount " + target + "!");
+//            }
+//            subDiscounts.add(d);
+//        }
+//        CreateDiscountDTO dto = new CreateDiscountDTO(name, percent, type, condition, logic, List.of());
+//        Discount discount = DiscountFactory.fromDTO(dto);
 //        if (!subDiscounts.isEmpty()) {
 //            if (!(discount instanceof CompositeDiscount comp)) {
 //                throw new Exception("Chosen logic does not allow sub‑discounts");
 //            }
 //            subDiscounts.forEach(comp::addDiscount);
 //        }
-
-        Discount oldDiscount =store.getDiscount(); // hydrate transient discount if needed
-
-        DiscountEntity oldEntity = store.getDiscountEntity();
-        //deleteConflictingNamesRecursively(oldEntity); // ✅ cleanup before inserting
-        if(oldDiscount!=null)
-            removeDiscountFromStore(token,storeId,oldDiscount.getName());
-        store.getDiscountEntity();
-        store.getDiscount();
-        store.addDiscount(oldDiscount);
-        store.addDiscount(discount); // now safe to merge
-        DiscountEntity newEntity = DiscountMapper.toEntity(store.getDiscount());
-        //discountRepo.save(newEntity);
-        store.setDiscountEntity(newEntity);
-        store.setDiscount(store.getDiscount());
-
-        storeJpaRepo.save(store);
-
-
-        logger.info("Discount '{}' added successfully to store {}", discount.getName(), storeId);
-    }
-    private void deleteConflictingNamesRecursively(DiscountEntity entity) {
-        if (entity == null) return;
-
-        // First delete all children (if composite)
-        if (entity instanceof CompositeDiscountEntity composite) {
-            for (DiscountEntity child : composite.getSubDiscounts()) {
-                deleteConflictingNamesRecursively(child);
-            }
-        }
-
-        // Then delete this entity
-        discountRepo.delete(entity);
-    }
+//
+//        Discount oldDiscount =store.getDiscount(); // hydrate transient discount if needed
+//
+//        DiscountEntity oldEntity = store.getDiscountEntity();
+//        //deleteConflictingNamesRecursively(oldEntity); // ✅ cleanup before inserting
+//        if(oldDiscount!=null&&logic!= CreateDiscountDTO.Logic.SINGLE){
+//            removeDiscountFromStore(token,storeId,oldDiscount.getName());
+//            store.getDiscountEntity();
+//            store.getDiscount();
+//            //store.addDiscount(oldDiscount);
+//            store.addDiscount(discount); // now safe to merge
+//            DiscountEntity newEntity = DiscountMapper.toEntity(store.getDiscount());
+//            //discountRepo.save(newEntity);
+//            store.setDiscountEntity(newEntity);
+//            store.setDiscount(store.getDiscount());
+//        }
+//
+//        else if (oldDiscount!=null){
+//            MultiplyDiscount combo = new MultiplyDiscount(discount.getName());
+//            combo.addDiscount(oldDiscount);
+//            //combo.addDiscount(combo);
+//            removeDiscountFromStore(token,storeId,oldDiscount.getName());
+//            store.getDiscountEntity();
+//            store.getDiscount();
+//            //store.addDiscount(oldDiscount);
+//            store.addDiscount(combo); // now safe to merge
+//            DiscountEntity newEntity = DiscountMapper.toEntity(store.getDiscount());
+//            //discountRepo.save(newEntity);
+//            store.setDiscountEntity(newEntity);
+//            store.setDiscount(store.getDiscount());
+//        }
+//        else{
+//            store.getDiscountEntity();
+//            store.getDiscount();
+//            //store.addDiscount(oldDiscount);
+//            store.addDiscount(discount); // now safe to merge
+//            DiscountEntity newEntity = DiscountMapper.toEntity(store.getDiscount());
+//            //discountRepo.save(newEntity);
+//            store.setDiscountEntity(newEntity);
+//            store.setDiscount(store.getDiscount());
+//        }
+//
+//        storeJpaRepo.save(store);
+//
+//
+//        logger.info("Discount '{}' added successfully to store {}", discount.getName(), storeId);
+//    }
 
 
     @Transactional
@@ -653,9 +650,9 @@ public class StoreService {
 
         // Manually remove from domain
         boolean removed = store.removeDiscountByName(discountName);
-        if (!removed) {
-            throw new UIException("Discount not found", ErrorCodes.DISCOUNT_NOT_FOUND);
-        }
+        // if (!removed) {
+        //     throw new UIException("Discount not found", ErrorCodes.DISCOUNT_NOT_FOUND);
+        // }
 
         DiscountEntity oldEntity = store.getDiscountEntity();
         if (oldEntity != null) {
@@ -749,24 +746,105 @@ public class StoreService {
         }
     }
 
-    public List<CreateDiscountDTO> getFlattenedDiscounts(int storeId, String token) throws UIException {
-        Store store = storeJpaRepo.findById(storeId).get();
+    public CreateDiscountDTO getFlattenedDiscounts(int storeId, String token) throws UIException {
+        Store store = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND));
+
         Discount root = store.getDiscount();
+        if (root == null) return null;
 
-        if (root == null) {
-            return List.of();
-        }
-
-        // If it's composite, extract children
-        CreateDiscountDTO rootDTO = root.toDTO();
-        List<CreateDiscountDTO> subs = rootDTO.getSubDiscounts();
-
-        if (subs != null && !subs.isEmpty()) {
-            return subs;
-        }
-
-        // Otherwise, return root as a single-item list
-        return List.of(rootDTO);
+        return root.toDTO(); // 🌳 includes sub-discounts recursively
     }
 
+
+    public List<String> getVisibleDiscountDescriptions(int storeId, String token) throws UIException {
+        Store store = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND));
+
+        if (store.getDiscount() == null) return List.of();
+
+        return store.getDiscount()
+                .getFlattenedVisibleDiscounts()
+                .stream()
+                .filter(d -> !d.isLogicalOnly()) // exclude logical-only helper discounts
+                .map(Discount::toReadableString)
+                .toList();
+    }
+    public List<CreateDiscountDTO> getAllDiscountsFlattened(int storeId, String token) throws UIException {
+        Store store = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND));
+
+        Discount root = store.getDiscount();
+        if (root == null) return List.of();
+
+        List<CreateDiscountDTO> result = new ArrayList<>();
+        collectDiscountDTOs(root, result);
+        return result;
+    }
+
+    private void collectDiscountDTOs(Discount discount, List<CreateDiscountDTO> list) {
+        CreateDiscountDTO dto = discount.toDTO();
+        list.add(dto);
+        if (dto.getSubDiscounts() != null) {
+            for (CreateDiscountDTO child : dto.getSubDiscounts()) {
+                collectDiscountDTOs(DiscountFactory.fromDTO(child), list);
+            }
+        }
+    }
+    public List<CreateDiscountDTO> getDiscountTree(int storeId, String token) throws UIException {
+        Store store = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND));
+
+        Discount root = store.getDiscount();
+        if (root == null) return List.of();
+
+        return List.of(root.toDTO()); // the root DTO contains nested sub-discounts
+    }
+
+public void addDiscount(int storeId, String token, CreateDiscountDTO dto) throws Exception {
+    logger.info("User attempting to add a discount tree to store {}", storeId);
+
+    authRepo.checkAuth_ThrowTimeOutException(token, logger);
+    int userId = authRepo.getUserId(token);
+    userService.checkUserRegisterOnline_ThrowException(userId);
+
+    UserSuspension suspension = suspensionJpaRepo.findById(userId).orElse(null);
+    if (suspension != null && !suspension.isExpired() && !suspension.isPaused()) {
+        throw new UIException("Suspended user trying to perform an action", ErrorCodes.USER_SUSPENDED);
+    }
+
+    Store store = storeJpaRepo.findById(storeId)
+            .orElseThrow(() -> new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND));
+    throwExceptionIfNotActive(store);
+
+    boolean hasPermission = suConnectionRepo.hasPermission(userId, storeId, Permission.MANAGE_STORE_POLICY);
+    if (!hasPermission) {
+        throw new UIException("No permission to add discounts", ErrorCodes.NO_PERMISSION);
+    }
+
+    Discount newDiscount = DiscountFactory.fromDTO(dto);
+    Discount oldDiscount = store.getDiscount();
+
+    MultiplyDiscount combined = new MultiplyDiscount("AUTO_MULTIPLY_COMBINED");
+
+    if (oldDiscount != null) {
+        combined.addDiscount(oldDiscount);
+    }
+    combined.addDiscount(newDiscount);
+
+    // Remove old discount entity to clean up DB if needed
+    if (oldDiscount != null) {
+        removeDiscountFromStore(token, storeId, oldDiscount.getName());
+    }
+
+    // Set the new combined discount to the store
+    store.setDiscount(combined);
+    DiscountEntity entity = DiscountMapper.toEntity(combined);
+    store.setDiscountEntity(entity);
+
+    discountRepo.save(entity);
+    storeJpaRepo.save(store);
+}
+
+    
 }

@@ -15,19 +15,20 @@ public class MaxDiscount extends CompositeDiscount {
     @Override
     public double apply(DiscountScope scope) {
         return discounts.stream()
-                .filter(d -> d.isApplicable(scope))
+                .filter(d -> d.isApplicable(scope) && !d.isLogicalOnly())
                 .mapToDouble(d -> d.apply(scope))
                 .max()
                 .orElse(0.0);
+
     }
     @Override
     public CreateDiscountDTO toDTO() {
         CreateDiscountDTO dto = new CreateDiscountDTO();
         dto.setName(getName());
         dto.setLogic(CreateDiscountDTO.Logic.MAX);
-        dto.setType(CreateDiscountDTO.Type.VISIBLE);
-        dto.setPercent(0); // the discount logic is applied to children
-        dto.setCondition("None"); // override if condition is added
+        dto.setType(CreateDiscountDTO.Type.VISIBLE); // override if needed
+        dto.setPercent(0);
+        dto.setCondition(conditionString); // ✅ retain original condition
 
         dto.setSubDiscounts(discounts.stream()
                 .map(Discount::toDTO)

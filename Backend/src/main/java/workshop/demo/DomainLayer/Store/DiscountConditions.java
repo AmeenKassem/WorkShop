@@ -37,4 +37,36 @@ public class DiscountConditions {
         // fallback: never apply
         return scope -> false;
     }
+    public static String describe(String condition) {
+        if (condition == null || condition.isBlank())
+            return "always applies";
+
+        if (condition.startsWith("CATEGORY:")) {
+            String category = condition.substring("CATEGORY:".length()).trim();
+            return "item belongs to category \"" + category + "\"";
+        }
+
+        if (condition.startsWith("TOTAL>")) {
+            String amount = condition.substring("TOTAL>".length()).trim();
+            return "cart total is over " + amount + "₪";
+        }
+
+        if (condition.startsWith("QUANTITY>")) {
+            String qty = condition.substring("QUANTITY>".length()).trim();
+            return "cart has quantity ≥ " + qty;
+        }
+
+        if (condition.startsWith("ITEM:")) {
+            String itemId = condition.substring("ITEM:".length()).trim();
+            return "item ID equals " + itemId;
+        }
+
+        if (condition.startsWith("STORE:")) {
+            String storeId = condition.substring("STORE:".length()).trim();
+            return "store ID equals " + storeId;
+        }
+
+        return "unspecified condition: \"" + condition + "\"";
+    }
+
 }

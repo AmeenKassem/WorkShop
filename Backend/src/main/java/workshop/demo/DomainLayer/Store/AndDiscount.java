@@ -9,7 +9,7 @@ public class AndDiscount extends CompositeDiscount {
 
     @Override
     public boolean isApplicable(DiscountScope scope) {
-        return discounts.stream().allMatch(d -> d.isApplicable(scope));
+        return condition.test(scope) && discounts.stream().allMatch(d -> d.isApplicable(scope));
     }
 
     @Override
@@ -17,6 +17,7 @@ public class AndDiscount extends CompositeDiscount {
         if (!isApplicable(scope)) return 0.0;
 
         return discounts.stream()
+                .filter(d -> !d.isLogicalOnly())
                 .mapToDouble(d -> d.apply(scope))
                 .sum();
     }
@@ -26,9 +27,9 @@ public class AndDiscount extends CompositeDiscount {
         CreateDiscountDTO dto = new CreateDiscountDTO();
         dto.setName(getName());
         dto.setLogic(CreateDiscountDTO.Logic.AND);
-        dto.setType(CreateDiscountDTO.Type.VISIBLE); // or INVISIBLE if you support it
-        dto.setPercent(0); // composite discount itself may not have a percent
-        dto.setCondition("None");
+        dto.setType(CreateDiscountDTO.Type.VISIBLE); // override if needed
+        dto.setPercent(0);
+        dto.setCondition(conditionString); // ✅ retain original condition
 
         dto.setSubDiscounts(discounts.stream()
                 .map(Discount::toDTO)
@@ -36,5 +37,4 @@ public class AndDiscount extends CompositeDiscount {
 
         return dto;
     }
-
 }
