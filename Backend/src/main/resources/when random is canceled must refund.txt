@@ -17,6 +17,7 @@ user :
 	random <username> <store name> <product name> <price>;
 	bid <username> <store name> <product name> <price>
 	purchase <userName> <special/cart> <valid/invalid>
+	
 	review store <user name> <store name> <msg>;
 	review product <username> <strore naame> <product name> <msg>;
 	user add-manager <ownerName> <storeName> <managerName> <perm1> <perm2> ... ;

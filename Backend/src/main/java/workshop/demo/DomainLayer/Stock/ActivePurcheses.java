@@ -420,10 +420,11 @@ public class ActivePurcheses {
         randomIdGen.set(0);
     }
 
-    // @Transactional
+    @Transactional
     public Auction getAuctionById(int res) {
         for (Auction auction : activeAuction.values()) {
-
+            if (auction.getId() == res)
+                return auction;
         }
         return activeAuction.get(res);
     }
@@ -431,7 +432,7 @@ public class ActivePurcheses {
     @Transactional
     public BID getBidById(int res) throws UIException {
         for (BID bid : activeBid.values()) {
-            if (bid.getBidId() == res ) {
+            if (bid.getBidId() == res) {
 
                 return bid;
             }
@@ -447,8 +448,9 @@ public class ActivePurcheses {
         return getRandom(specialId).getCard(userId).toDTO();
     }
 
-    public SingleBid getBid(int storeId2, int specialId, int userId, SpecialType type) {
-        return activeBid.get(specialId).getBid(userId);
+    public SingleBid getBid(int storeId2, int specialId, int userId, SpecialType type) throws UIException {
+        return getBidById(specialId).getBid(userId);
+
     }
 
     public void endAuction(int randomId) {

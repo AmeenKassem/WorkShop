@@ -20,15 +20,26 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Registered;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
-import jakarta.transaction.Transactional;
+// import jakarta.transaction.Transactional;
+
+
 
 @Component
 public class UserParser extends ManagerDataInit {
-    @Transactional
+
+
+
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void user(List<String> construction) {
         List<String> toSend = construction.subList(1, construction.size());
+       
         switch (construction.get(0).toLowerCase()) {
             case "reg":
                 register(toSend);
@@ -138,7 +149,8 @@ public class UserParser extends ManagerDataInit {
         }
     }
 
-    private void purchase(List<String> toSend) {
+    @Transactional
+    public void purchase(List<String> toSend) {
         if (toSend.size() != 3) {
             log("invalid params purchase <userName> <special/cart> <valid/unvalid> . line " + line);
             error = true;
