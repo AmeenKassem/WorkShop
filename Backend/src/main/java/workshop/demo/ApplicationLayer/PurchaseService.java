@@ -14,7 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -30,11 +37,8 @@ import workshop.demo.DomainLayer.Stock.Random;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.UserAuctionBid;
-
-import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Discount;
 import workshop.demo.DomainLayer.Store.DiscountScope;
-
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
@@ -142,7 +146,7 @@ public class PurchaseService {
             String storeName = store.getStoreName();
             logger.info("Processing basket for active storeId={} ({})", storeId, storeName);
             List<ReceiptProduct> boughtItems = new ArrayList<>();
-            List<ItemStoreDTO>   itemStoreDTOS = new ArrayList<>();
+            List<ItemStoreDTO> itemStoreDTOS = new ArrayList<>();
             StoreStock stock = storeStockRepo.findById(storeId).orElseThrow();
             for (CartItem itemOnUserCart : basket.getItems()) {
                 if (stock.decreaseQuantitytoBuy(itemOnUserCart.productId, itemOnUserCart.quantity)) {
@@ -157,30 +161,32 @@ public class PurchaseService {
                     itemStoreDTOS.add(new ItemStoreDTO(
                             itemOnUserCart.productId, itemOnUserCart.quantity, itemOnUserCart.price,
                             itemOnUserCart.category, 0, storeId,
-                            itemOnUserCart.name,      storeName));
+                            itemOnUserCart.name, storeName));
                     totalForStore += price;
                 } else if (isGuest) {
                     logger.info("user guest tring to buy items with not enough stock on the store ... " + userId);
                     throw new UIException(store.getStoreName(), ErrorCodes.INSUFFICIENT_STOCK);
                 }
             }
-            if(!isGuest) {
+            if (!isGuest) {
                 UserDTO buyer = regRepo.getReferenceById(userId).getUserDTO();            // policy check
                 store.assertPurchasePolicies(buyer, itemStoreDTOS);
-            }else{
+            } else {
                 UserDTO buyer = guestRepo.getReferenceById(userId).getUserDTO();
                 store.assertPurchasePolicies(buyer, itemStoreDTOS);
             }
 
-            Discount discount     = store.getDiscount();
-            double   discountAmt  = 0.0;
+            Discount discount = store.getDiscount();
+            double discountAmt = 0.0;
             //System.out.println("Hmode is"+discount.toDTO().getCondition().toString());
             if (discount != null) {
                 discountAmt = discount.apply(new DiscountScope(itemStoreDTOS));
             }
 
             totalForStore -= discountAmt;            // apply basket-level discount
-            if (totalForStore < 0) totalForStore = 0;
+            if (totalForStore < 0) {
+                totalForStore = 0;
+            }
 
             logger.info("Store={}, Discount={}, Final={}",
                     storeName, discountAmt, totalForStore);
@@ -237,7 +243,8 @@ public class PurchaseService {
             }
         }
     }
-@Transactional
+
+    @Transactional
     public ParticipationInRandomDTO participateInRandom(String token, int randomId, int storeId, double amountPaid,
             PaymentDetails paymentDetails) throws Exception {
         logger.info("participateInRandom called with randomId={}, storeId={}", randomId, storeId);
@@ -307,7 +314,7 @@ public class PurchaseService {
                     allParticipationsInRandoms.add(card);
                     itemsToRemove.add(specialItem);// Lost or not found → remove
                 } else if (card.mustRefund()) {
-                    logger.info("");
+                    logger.info("here in must refund -> refunding");
                     // If the card must be refunded, we remove it from the user's cart
                     itemsToRemove.add(specialItem);
                     paymentService.processRefund(card.transactionIdForPayment);
@@ -315,7 +322,7 @@ public class PurchaseService {
                 // DO NOT DELETE THIS CODE!!!!!!!!!!!!
             } else if (specialItem.type == SpecialType.Auction) { // AUCTION
                 ActivePurcheses active = activeRepo.findById(specialItem.storeId).orElse(null);
-                
+
                 Auction auction = active.getAuctionById(specialItem.specialId);
                 // auction.endAuction();
                 if (auction.isEnded()) {
