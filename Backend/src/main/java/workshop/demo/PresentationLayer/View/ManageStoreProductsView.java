@@ -1,9 +1,6 @@
 package workshop.demo.PresentationLayer.View;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
@@ -523,7 +520,8 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             }
 
             NotificationView.showSuccess("All discounts deleted.");
-            tree.setItems(List.of()); // Clear tree from UI too
+            tree.setItems(Collections.emptyList(), item -> Collections.emptyList());
+            // Clear tree from UI too
         } catch (Exception ex) {
             ExceptionHandlers.handleException(ex);
         }
