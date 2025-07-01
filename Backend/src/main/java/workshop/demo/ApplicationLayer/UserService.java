@@ -21,7 +21,6 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.Auction;
-import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.Random;
 import workshop.demo.DomainLayer.Stock.SingleBid;
@@ -33,6 +32,7 @@ import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 import workshop.demo.InfrastructureLayer.Encoder;
 import workshop.demo.InfrastructureLayer.GuestJpaRepository;
+import workshop.demo.InfrastructureLayer.IActivePurchasesRepo;
 import workshop.demo.InfrastructureLayer.IStockRepoDB;
 import workshop.demo.InfrastructureLayer.IStoreRepoDB;
 import workshop.demo.InfrastructureLayer.UserJpaRepository;
@@ -226,14 +226,14 @@ public class UserService {
         Guest user = getUser(userId);
         Store store = storeRepo.findById(itemToAdd.getStoreId()).orElse(null);
         int age = -1;
-        if(user instanceof Registered){
-            age = ((Registered)user).getage();
+        if (user instanceof Registered) {
+            age = ((Registered) user).getage();
         }
         store.assertPurchasePolicies(
-                        age,
-                        itemToAdd.getQuantity(),
-                        itemToAdd.getProductId());
-       
+                age,
+                itemToAdd.getQuantity(),
+                itemToAdd.getProductId());
+
         user.addToCart(itemCart);
         guestJpaRepository.save(user);
         logger.info("Item added to user cart");

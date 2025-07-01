@@ -3,7 +3,6 @@ package workshop.demo.DomainLayer.Stock;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,16 +17,13 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKey;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Transient;
-import workshop.demo.ApplicationLayer.LockManager;
-
-// import org.hibernate.validator.internal.util.logging.Log_.logger;
-
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.SingleBidDTO;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.InfrastructureLayer.IActivePurchasesRepo;
 
 @Entity
 public class BID {
@@ -54,7 +50,6 @@ public class BID {
 
     // @Transient
     // Object lock = new Object();
-
     @Transient
     @Autowired
     private IActivePurchasesRepo activePurchasesRepository;
@@ -95,8 +90,9 @@ public class BID {
 
     public SingleBid bid(int userId, double price) throws UIException {
 
-        if (isAccepted)
+        if (isAccepted) {
             throw new UIException("This bid is already closed!", ErrorCodes.BID_FINISHED);
+        }
 
         SingleBid bid = new SingleBid(productId, quantity, userId, price, SpecialType.BID, storeId, bidId);
         bid.setBid(this);
@@ -107,10 +103,11 @@ public class BID {
 
     public SingleBid acceptBid(int userToAcceptForId, List<Integer> ownersIds, int userId)
             throws DevException, UIException {
-                
+
         SingleBid curr = null;
-        if (isAccepted)
+        if (isAccepted) {
             throw new UIException("This bid is already closed!", ErrorCodes.BID_FINISHED);
+        }
 
         if (bids.containsKey(userToAcceptForId)) {
             curr = bids.get(userToAcceptForId);
@@ -137,10 +134,12 @@ public class BID {
 
     public boolean rejectBid(int userToRejectForId) throws DevException, UIException {
 
-        if (isAccepted)
+        if (isAccepted) {
             throw new UIException("The bid is already closed!", ErrorCodes.BID_FINISHED);
-        if (!bids.containsKey(userToRejectForId))
+        }
+        if (!bids.containsKey(userToRejectForId)) {
             throw new DevException("Trying to reject bid with non-existent ID.");
+        }
         bids.get(userToRejectForId).rejectBid();
         //bids.remove(userBidId);
         return true;
