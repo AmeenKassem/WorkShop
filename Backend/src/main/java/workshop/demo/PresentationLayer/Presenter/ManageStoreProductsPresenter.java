@@ -35,7 +35,7 @@ public class ManageStoreProductsPresenter {
     private final ManageStoreProductsView view;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper mapper = new ObjectMapper();
-    private final String baseUrl = Base.url + "/stock";
+    private final String baseUrl = Base.url + "/api/store";
 
     public ManageStoreProductsPresenter(ManageStoreProductsView view) {
         this.view = view;
@@ -307,31 +307,15 @@ public class ManageStoreProductsPresenter {
                     baseUrl,
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     storeId,
-                    UriUtils.encodeQueryParam(policyKey, StandardCharsets.UTF_8),
+                    policyKey,
                     productId);
 
             if (param != null) {
                 url += "&param=" + param;
             }
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<?> entity = new HttpEntity<>(headers);
-
-            ResponseEntity<ApiResponse<String>> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.POST,
-                    entity,
-                    new ParameterizedTypeReference<ApiResponse<String>>() {
-                    });
-
-            ApiResponse<String> body = response.getBody();
-            if (body != null && body.getErrNumber() != -1) {
-                NotificationView.showError("Failed to add policy: " + body.getErrorMsg());
-            } else {
-                NotificationView.showSuccess("Policy added successfully.");
-            }
+            restTemplate.postForEntity(url, null, ApiResponse.class);
+            NotificationView.showSuccess("Policy added successfully.");
 
         } catch (Exception e) {
             ExceptionHandlers.handleException(e);
@@ -352,30 +336,15 @@ public class ManageStoreProductsPresenter {
                     baseUrl,
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     storeId,
-                    UriUtils.encodeQueryParam(policyKey, StandardCharsets.UTF_8),
+                    policyKey,
                     productId);
 
             if (param != null) {
                 url += "&param=" + param;
             }
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<?> entity = new HttpEntity<>(headers);
-
-            ResponseEntity<ApiResponse<String>> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.POST,
-                    entity,
-                    new ParameterizedTypeReference<ApiResponse<String>>() {
-                    });
-
-            ApiResponse<String> body = response.getBody();
-            if (body != null && body.getErrNumber() != -1) {
-                NotificationView.showError("Failed to remove policy: " + body.getErrorMsg());
-            } else {
-                NotificationView.showSuccess("Policy removed successfully.");
-            }
+            restTemplate.postForEntity(url, null, ApiResponse.class);
+            NotificationView.showSuccess("Policy removed successfully.");
 
         } catch (Exception e) {
             ExceptionHandlers.handleException(e);

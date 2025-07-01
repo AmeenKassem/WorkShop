@@ -348,7 +348,7 @@ public ResponseEntity<?> removePurchasePolicy(@RequestParam String token,
                                               @RequestParam int productId,
                                               @RequestParam(required = false) Integer param) {
     try {
-        storeService.removePurchasePolicy(token, storeId, policyKey, productId, param);
+        storeService.removePurchasePolicy(token, storeId, policyKey, productId, param == null ? -1 : param);
         return ResponseEntity.ok(new ApiResponse<>("PurchasePolicy removed", null));
     } catch (UIException exception) {
         return ResponseEntity.badRequest()

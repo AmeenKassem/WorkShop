@@ -163,7 +163,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             Button bidButton = new Button("💸 Enable Bidding", e -> showBidDialog(storeId, token, item.getProductId()));
             Button randomButton = new Button("🎲 Start Random Draw",
                     e -> showRandomDialog(storeId, token, item.getProductId()));
-            Button policyButton = new Button("Add Policy For Product",
+            Button policyButton = new Button("+ Add Policy For Product",
                     e -> showPolicyDialog(storeId, token, item.getProductId()));
             Button remPolicyButton = new Button("❌ Remove Policy",
                     e -> showRemovePolicyDialog(storeId, token, item.getProductId()));
@@ -172,7 +172,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             HorizontalLayout row3 = new HorizontalLayout(policyButton, remPolicyButton);
             row1.addClassName("button-row");
             row2.addClassName("button-row");
-
+            row3.addClassName("button-row");
             VerticalLayout actions = new VerticalLayout(row1, row2, row3);
             actions.setSpacing(true);
             actions.setJustifyContentMode(JustifyContentMode.END);
