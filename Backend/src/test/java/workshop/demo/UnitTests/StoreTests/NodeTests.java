@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
@@ -21,6 +22,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 
 // @SpringBootTest
 @ActiveProfiles("test")
+@Transactional
 public class NodeTests {
 
     private Node owner1;

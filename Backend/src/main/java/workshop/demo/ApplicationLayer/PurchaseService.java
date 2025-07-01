@@ -566,4 +566,11 @@ public class PurchaseService {
         }
         return receipts.toArray(new ReceiptDTO[0]);
     }
+
+    public void setPaymentService(PaymentServiceImp paymentServiceImp) {
+this.paymentService = paymentServiceImp;
+    }
+
+    public void setSupplyService(SupplyServiceImp supplyServiceImp) {
+this.supplyService = supplyServiceImp;  }
 }

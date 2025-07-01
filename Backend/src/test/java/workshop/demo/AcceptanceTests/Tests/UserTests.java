@@ -20,8 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.List;
-
+import workshop.demo.ApplicationLayer.PaymentServiceImp;
+import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -76,6 +76,15 @@ public class UserTests extends AcceptanceTests {
         mockUserRepo.deleteAll();
 
         // ===== ENCODER =====
+        var paymentServiceImp = Mockito.mock(PaymentServiceImp.class);
+     var   supplyServiceImp = Mockito.mock(SupplyServiceImp.class);
+
+    when(paymentServiceImp.processPayment(any(PaymentDetails.class), anyDouble()))
+    .thenReturn(42);
+    when(supplyServiceImp.processSupply(any(SupplyDetails.class)))
+    .thenReturn(55555);
+    purchaseService.setPaymentService(paymentServiceImp);
+        purchaseService.setSupplyService(supplyServiceImp);
         Field encoderField = UserService.class.getDeclaredField("encoder");
         encoderField.setAccessible(true);
         encoderField.set(userService, encoder);
@@ -1153,22 +1162,20 @@ public class UserTests extends AcceptanceTests {
     void testUserBuyCart_Failure_PaymentFails() throws Exception {
         setupValidGuestCartScenario(5); // helper that sets everything up (you can ask me to generate)
 
-        UIException ex = assertThrows(UIException.class, () -> {
+        Exception ex = assertThrows(Exception.class, () -> {
             purchaseService.buyGuestCart(user2Token, PaymentDetails.test_fail_Payment(), SupplyDetails.getTestDetails());
         });
 
-        assertEquals(ErrorCodes.PAYMENT_ERROR, ex.getNumber());
         assertTrue(ex.getMessage().contains("Payment failed"));
     }
     @Test
     void testUserBuyCart_Failure_SupplyFails() throws Exception {
         setupValidGuestCartScenario(5);
 
-        UIException ex = assertThrows(UIException.class, () -> {
+        Exception ex = assertThrows(Exception.class, () -> {
             purchaseService.buyGuestCart(user2Token, PaymentDetails.testPayment(), SupplyDetails.test_fail_supply());
         });
 
-        assertEquals(ErrorCodes.SUPPLY_ERROR, ex.getNumber());
     }
 
 

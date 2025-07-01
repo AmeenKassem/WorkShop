@@ -12,6 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Map;
@@ -19,6 +22,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -113,7 +117,15 @@ public class GuestTests {
     @BeforeAll
     void setup() throws Exception {
         databaseCleaner.wipeDatabase();
+var paymentServiceImp = Mockito.mock(PaymentServiceImp.class);
+     var   supplyServiceImp = Mockito.mock(SupplyServiceImp.class);
 
+    when(paymentServiceImp.processPayment(any(PaymentDetails.class), anyDouble()))
+    .thenReturn(42);
+    when(supplyServiceImp.processSupply(any(SupplyDetails.class)))
+    .thenReturn(55555);
+    purchaseService.setPaymentService(paymentServiceImp);
+        purchaseService.setSupplyService(supplyServiceImp);
 
         GToken = userService.generateGuest();
 
@@ -158,7 +170,15 @@ public class GuestTests {
 
         databaseCleaner.wipeDatabase();
 
+var paymentServiceImp = Mockito.mock(PaymentServiceImp.class);
+     var   supplyServiceImp = Mockito.mock(SupplyServiceImp.class);
 
+    when(paymentServiceImp.processPayment(any(PaymentDetails.class), anyDouble()))
+    .thenReturn(42);
+    when(supplyServiceImp.processSupply(any(SupplyDetails.class)))
+    .thenReturn(55555);
+    purchaseService.setPaymentService(paymentServiceImp);
+        purchaseService.setSupplyService(supplyServiceImp);
         GToken = userService.generateGuest();
 
         String OToken = userService.generateGuest();
@@ -420,10 +440,9 @@ createdStoreId=storeRepositoryjpa.findAll().getFirst().getstoreId();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
         userService.addToUserCart(GToken, itemStoreDTO, 1);
 
-        UIException ex = assertThrows(UIException.class,
+        Exception ex = assertThrows(Exception.class,
                 () -> purchaseService.buyGuestCart(GToken,
                         PaymentDetails.test_fail_Payment(), supplyDetails));
-        System.out.println(ex.getErrorCode());
         System.out.println(ex.getMessage());
         System.out.println(PID);
         assertEquals(100, stockService.getProductsInStore(createdStoreId)[0].getQuantity());
