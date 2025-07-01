@@ -255,4 +255,12 @@ public class Store {
     public PolicyManager getPolicyManager() {
         return policyManager;
     }
+
+    public List<String> getPurchasePoliciesStrings() {
+        List<String> res = new ArrayList<>();
+        for (PurchasePolicy string : getPurchasePolicies()) {
+            res.add(string.violationMessage());
+        }
+        return res;
+    }
 }
