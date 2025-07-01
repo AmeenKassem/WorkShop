@@ -164,31 +164,31 @@ public class StoreSTests {
 
         // ======================= SECOND GUEST SETUP =======================
     }
+
     @BeforeEach
     void setup1() throws Exception {
         storeService.activateteStore(createdStoreId, NOToken);
 
-        if(!storeRepositoryjpa.findAll().isEmpty()){
-    var roles = storeService.ViewRolesAndPermissions(NOToken, createdStoreId);
+        if (!storeRepositoryjpa.findAll().isEmpty()) {
+            var roles = storeService.ViewRolesAndPermissions(NOToken, createdStoreId);
 
-    for (int i = 1; i < roles.size(); i++) {  // start from index 1
-        var worker = roles.get(i);
-        if (worker.isManager()) {
-            storeService.deleteManager(createdStoreId, NOToken, worker.getWorkerId());
-        } else {
-            storeService.DeleteOwnershipFromStore(createdStoreId, NOToken, worker.getWorkerId());
+            for (int i = 1; i < roles.size(); i++) { // start from index 1
+                var worker = roles.get(i);
+                if (worker.isManager()) {
+                    storeService.deleteManager(createdStoreId, NOToken, worker.getWorkerId());
+                } else {
+                    storeService.DeleteOwnershipFromStore(createdStoreId, NOToken, worker.getWorkerId());
+                }
+            }
+
         }
-    }
-
-}
-        if(!storeRepositoryjpa.findAll().isEmpty()&&  !storeRepositoryjpa.findAll().getFirst().isActive()){
+        if (!storeRepositoryjpa.findAll().isEmpty() && !storeRepositoryjpa.findAll().getFirst().isActive()) {
             storeRepositoryjpa.findAll().getFirst().setActive(true);
             storeRepositoryjpa.save(storeRepositoryjpa.findAll().getFirst());
             storeService.activateteStore(createdStoreId, NOToken);
-                  }
+        }
 
-        if (userService.getRegularCart(NGToken).length != 0 || storeRepositoryjpa.findAll().isEmpty() ) {
-
+        if (userService.getRegularCart(NGToken).length != 0 || storeRepositoryjpa.findAll().isEmpty()) {
 
             databaseCleaner.wipeDatabase();
             GToken = userService.generateGuest();
@@ -210,17 +210,17 @@ public class StoreSTests {
             createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
 
             // ======================= PRODUCT & ITEM ADDITION =======================
-            String[] keywords = {"Laptop", "Lap", "top"};
+            String[] keywords = { "Laptop", "Lap", "top" };
             PID = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
-            itemStoreDTO = new ItemStoreDTO(PID, 10, 2000, Category.Electronics, 0, createdStoreId, "Laptop", "TestStore");
+            itemStoreDTO = new ItemStoreDTO(PID, 10, 2000, Category.Electronics, 0, createdStoreId, "Laptop",
+                    "TestStore");
 
             stockService.addItem(createdStoreId, NOToken, PID, 10, 2000, Category.Electronics);
 
-        }
-        else {
+        } else {
 
-                createdStoreId= storeRepositoryjpa.findAll().getFirst().getstoreId();
-            stockService.updateQuantity(createdStoreId,NOToken,PID,100);
+            createdStoreId = storeRepositoryjpa.findAll().getFirst().getstoreId();
+            stockService.updateQuantity(createdStoreId, NOToken, PID, 100);
 
         }
     }
@@ -279,7 +279,8 @@ public class StoreSTests {
         stockService.removeItem(createdStoreId, NOToken, PID);
 
         // Assert
-       // assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 0);
+        // assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity()
+        // == 0);
     }
 
     @Test
@@ -321,8 +322,9 @@ public class StoreSTests {
 
         // === Act ===
         storeService.AddOwnershipToStore(createdStoreId, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
-    //    assertTrue(storeService.ViewRolesAndPermissions(NOToken, createdStoreId).size() == 2);
-        storeService.DeleteOwnershipFromStore(createdStoreId,NOToken,authRepo.getUserId(token1));
+        // assertTrue(storeService.ViewRolesAndPermissions(NOToken,
+        // createdStoreId).size() == 2);
+        storeService.DeleteOwnershipFromStore(createdStoreId, NOToken, authRepo.getUserId(token1));
 
     }
 
@@ -331,7 +333,7 @@ public class StoreSTests {
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
         String token = userService.generateGuest();
-        userService.register(token, "token420" , "token420", 0);
+        userService.register(token, "token420", "token420", 0);
         String token1 = userService.login(token, "token420", "token420");
 
         // === Act ===
@@ -342,8 +344,7 @@ public class StoreSTests {
 
         // shouldnt work without offer
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, createdStoreId).size() == 2);
-        storeService.DeleteOwnershipFromStore(createdStoreId,NOToken,authRepo.getUserId(token1));
-
+        storeService.DeleteOwnershipFromStore(createdStoreId, NOToken, authRepo.getUserId(token1));
 
         // === Assert ===
         // assertEquals(sotre);
@@ -361,7 +362,7 @@ public class StoreSTests {
         storeService.AddOwnershipToStore(createdStoreId, authRepo.getUserId(NOToken), authRepo.getUserId(token1), true);
 
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, createdStoreId).size() == 2);
-        storeService.DeleteOwnershipFromStore(createdStoreId,NOToken,authRepo.getUserId(token1));
+        storeService.DeleteOwnershipFromStore(createdStoreId, NOToken, authRepo.getUserId(token1));
 
         Exception ex = assertThrows(Exception.class,
                 () -> storeService.reciveAnswerToOffer(createdStoreId, "owner", "token", true, true));
@@ -457,8 +458,7 @@ public class StoreSTests {
         // false = manager
         // when decide equals true some list is null (i think its permissions list)
         assertTrue(storeService.ViewRolesAndPermissions(NOToken, createdStoreId).size() == 2);
-        storeService.deleteManager(createdStoreId,NOToken,authRepo.getUserId(token1));
-
+        storeService.deleteManager(createdStoreId, NOToken, authRepo.getUserId(token1));
 
     }
 
@@ -515,7 +515,7 @@ public class StoreSTests {
         });
 
         assertEquals("This worker is already an owner/manager", ex.getMessage());
-        storeService.deleteManager(createdStoreId,NOToken,authRepo.getUserId(token1));
+        storeService.deleteManager(createdStoreId, NOToken, authRepo.getUserId(token1));
     }
 
     @Test
@@ -1002,7 +1002,7 @@ public class StoreSTests {
             System.out.println(perm.name());
         }
         assertEquals(4, storeService.ViewRolesAndPermissions(NOToken, createdStoreId).get(1).getPermessions().length);
-        storeService.deleteManager(createdStoreId,NOToken,authRepo.getUserId(managerToken));
+        storeService.deleteManager(createdStoreId, NOToken, authRepo.getUserId(managerToken));
 
     }
 
@@ -1542,21 +1542,19 @@ public class StoreSTests {
         // Add policy for productId with age restriction
         storeService.addPurchasePolicy(NOToken, createdStoreId, "NO_PRODUCT_UNDER_AGE", productId, minBuyerAge + 1);
 
-    Store store = storeRepositoryjpa.findAll().get(0);
-    assertEquals(1, storeService.getStorePolicies(createdStoreId).size());
-
         Store store = storeRepositoryjpa.findAll().get(0);
         assertEquals(1, storeService.getStorePolicies(createdStoreId).size());
+
+        
         Exception ex = assertThrows(Exception.class,
                 () -> userService.addToUserCart(NGToken, itemStoreDTO1, 1));
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
+        assertThrows(UIException.class,
+                () -> purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
 
-        assertThrows(UIException.class, ()->purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
-
-        
     }
 
     @Test
