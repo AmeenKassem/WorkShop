@@ -8,10 +8,15 @@ import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -94,7 +99,15 @@ public class DiscountTests {
     @BeforeAll
     void setup() throws Exception {
         databaseCleaner.wipeDatabase();
+var paymentServiceImp = Mockito.mock(PaymentServiceImp.class);
+     var   supplyServiceImp = Mockito.mock(SupplyServiceImp.class);
 
+    when(paymentServiceImp.processPayment(any(PaymentDetails.class), anyDouble()))
+    .thenReturn(42);
+    when(supplyServiceImp.processSupply(any(SupplyDetails.class)))
+    .thenReturn(55555);
+    purchaseService.setPaymentService(paymentServiceImp);
+        purchaseService.setSupplyService(supplyServiceImp);
         GToken = userService.generateGuest();
         userService.register(GToken, "user", "user", 25);
         NGToken = userService.login(GToken, "user", "user");
@@ -130,7 +143,15 @@ if (!storeRepositoryjpa.findAll().isEmpty()) {
 }
 else {
     databaseCleaner.wipeDatabase();
+var paymentServiceImp = Mockito.mock(PaymentServiceImp.class);
+     var   supplyServiceImp = Mockito.mock(SupplyServiceImp.class);
 
+    when(paymentServiceImp.processPayment(any(PaymentDetails.class), anyDouble()))
+    .thenReturn(42);
+    when(supplyServiceImp.processSupply(any(SupplyDetails.class)))
+    .thenReturn(55555);
+    purchaseService.setPaymentService(paymentServiceImp);
+        purchaseService.setSupplyService(supplyServiceImp);
     GToken = userService.generateGuest();
     userService.register(GToken, "user", "user", 25);
     NGToken = userService.login(GToken, "user", "user");

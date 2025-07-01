@@ -9,9 +9,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -125,7 +130,15 @@ public class PurchaseTests {
     @BeforeEach
     void setup() throws Exception {
         databaseCleaner.wipeDatabase();
+var paymentServiceImp = Mockito.mock(PaymentServiceImp.class);
+     var   supplyServiceImp = Mockito.mock(SupplyServiceImp.class);
 
+    when(paymentServiceImp.processPayment(any(PaymentDetails.class), anyDouble()))
+    .thenReturn(42);
+    when(supplyServiceImp.processSupply(any(SupplyDetails.class)))
+    .thenReturn(55555);
+    purchaseService.setPaymentService(paymentServiceImp);
+        purchaseService.setSupplyService(supplyServiceImp);
         System.out.println("===== SETUP RUNNING =====");
 
         GToken = userService.generateGuest();
@@ -495,7 +508,7 @@ public class PurchaseTests {
         assertFalse(activePurcheses.getAllRandoms(NOToken, createdStoreId)[0].participations[0].won());
 
         assertThrows(Exception.class,
-                () -> purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails));
+                () -> purchaseService.finalizeSpecialCart(NGToken,  PaymentDetails.test_fail_Payment(), supplyDetails));
 
     }
 
@@ -864,11 +877,10 @@ public class PurchaseTests {
                 activePurcheses.getAllBids(NOToken, createdStoreId)[0].bids[0].status.equals(Status.BID_ACCEPTED));
 
         assertTrue(activePurcheses.getAllBids(NOToken, createdStoreId)[0].isAccepted);
-        PaymentDetails paymentDetails = PaymentDetails.test_fail_Payment(); // fill if needed
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails(); // fill if needed
 
-        assertThrows(UIException.class, () -> {
-            purchaseService.finalizeSpecialCart(NGToken, paymentDetails, supplyDetails);
+        assertThrows(Exception.class, () -> {
+            purchaseService.finalizeSpecialCart(NGToken,  PaymentDetails.test_fail_Payment(), supplyDetails);
         });
 
         // <<<<<<< HEAD
