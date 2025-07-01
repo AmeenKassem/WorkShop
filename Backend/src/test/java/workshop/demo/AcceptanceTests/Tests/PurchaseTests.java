@@ -149,7 +149,42 @@ public class PurchaseTests extends AcceptanceTests {
 
 
     @Test
-    void Add_AuctionBidToSpecialCart_Success() throws Exception {
+    void Add_AuctionBidToSpecialCart_Success_and_buy() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user2Token, logger);
+        when(mockAuthRepo.getUserId(user2Token)).thenReturn(user2.getId());
+        when(mockSusRepo.findById(user2.getId())).thenReturn(Optional.empty());
+        when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
+        when(mockActivePurchases.findById(store.getstoreId())).thenReturn(Optional.of(activePurcheses));
+        when(mockStockRepo1.findById(0)).thenReturn(Optional.of(product));
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+
+        ReceiptDTO[] re = purchaseService.finalizeSpecialCart(user2Token, paymentDetails, supplyDetails);
+
+        print(re);
+        assertNotNull(re, "Receipts should not be null");
+        assertTrue(re.length > 0, "Should have at least one receipt");
+
+        ReceiptDTO receipt = re[0];
+        assertEquals(store.getStoreName(), receipt.getStoreName());
+        assertTrue(receipt.getFinalPrice() > 0);
+        assertFalse(receipt.getProductsList().isEmpty(), "Receipt should have products");
+
+        ReceiptProduct rp1 = receipt.getProductsList().get(1);
+        assertEquals(product.getProductId(), rp1.getProductId());
+        assertEquals(product.getName(), rp1.getProductName());
+        assertEquals(200, rp1.getPrice());
+
+
+    }
+
+
+
+
+    @Test
+    void Add_BidProductToSpecialCart_Success_And_Buy() throws Exception {
         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user2Token, logger);
         when(mockAuthRepo.getUserId(user2Token)).thenReturn(user2.getId());
         when(mockSusRepo.findById(user2.getId())).thenReturn(Optional.empty());
@@ -176,11 +211,32 @@ public class PurchaseTests extends AcceptanceTests {
         assertEquals(product.getProductId(), rp.getProductId());
         assertEquals(product.getName(), rp.getProductName());
         assertEquals(150, rp.getPrice());
-        
-        ReceiptProduct rp1 = receipt.getProductsList().get(1);
-        assertEquals(product.getProductId(), rp1.getProductId());
-        assertEquals(product.getName(), rp1.getProductName());
-        assertEquals(200, rp1.getPrice());
+
+
+    }
+    @Test
+    void ParticipateInRandom_Success_And_Buy() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user2Token, logger);
+        when(mockAuthRepo.getUserId(user2Token)).thenReturn(user2.getId());
+        when(mockSusRepo.findById(user2.getId())).thenReturn(Optional.empty());
+        when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
+        when(mockActivePurchases.findById(store.getstoreId())).thenReturn(Optional.of(activePurcheses));
+        when(mockStockRepo1.findById(0)).thenReturn(Optional.of(product));
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+
+        ReceiptDTO[] re = purchaseService.finalizeSpecialCart(user2Token, paymentDetails, supplyDetails);
+
+        print(re);
+        assertNotNull(re, "Receipts should not be null");
+        assertTrue(re.length > 0, "Should have at least one receipt");
+
+        ReceiptDTO receipt = re[0];
+        assertEquals(store.getStoreName(), receipt.getStoreName());
+        assertTrue(receipt.getFinalPrice() > 0);
+        assertFalse(receipt.getProductsList().isEmpty(), "Receipt should have products");
 
         ReceiptProduct rp2 = receipt.getProductsList().get(2);
         assertEquals(product.getProductId(), rp2.getProductId());
@@ -189,77 +245,62 @@ public class PurchaseTests extends AcceptanceTests {
     }
 
 
-//    @Test
-//    void Add_BidProductToSpecialCart_Success() throws UIException, DevException {
-//
-//    }
-//
-//    @Test
-//    void Add_BidProductToSpecialCart_Success_And_Buy() throws Exception {
-//
-//    }
-//
-//    @Test
-//    void Add_BidProduct_Failure_InvalidToken() throws UIException {
-//    }
-//
-//    @Test
-//    void Add_BidProduct_Failure_UserSuspended() throws Exception {
-//    }
-//
-//    @Test
-//    void Add_BidProduct_Failure_StoreNotFound() throws Exception {
-//    }
-//
-//    @Test
-//    void Add_BidProduct_Failure_BidNotFound() throws Exception {
-//    }
-////
-////    @Test
-////    void Add_AuctionBidToSpecialCart_Success() throws UIException, DevException {
-////    }
-//
-//    @Test
-//    void Add_AuctionBidToSpecialCart_Success_And_Buy() throws Exception {
-//
-//    }
-//
-//    @Test
-//    void Add_AuctionBid_Failure_InvalidToken() throws UIException {
-//    }
-//
-//    @Test
-//    void Add_AuctionBid_Failure_UserSuspended() throws Exception {
-//
-//    }
-//
-//    @Test
-//    void Add_AuctionBid_Failure_StoreNotFound() throws Exception {
-//    }
-//
-//    @Test
-//    void Add_AuctionBid_Failure_AuctionNotFound() throws Exception {
-//    }
-//
-//    @Test
-//    void Set_ProductToRandom_Success() throws Exception {
-//    }
-//
-//    @Test
-//    void ParticipateInRandom_Success_And_Buy() throws Exception {
-//    }
-//
-//    @Test
-//    void Set_ProductToRandom_Failure_InvalidToken() throws UIException {
-//    }
-//
-//    @Test
-//    void Set_ProductToRandom_Failure_UserSuspended() throws Exception {
-//    }
-//
-//    @Test
-//    void testBuyRegisteredCart_Success() throws Exception {
-//    }
+
+
+    @Test
+    void Add_BidProductToSpecialCart_Success() throws UIException, DevException {
+
+    }
+    @Test
+    void Add_BidProduct_Failure_InvalidToken() throws UIException {
+    }
+
+    @Test
+    void Add_BidProduct_Failure_UserSuspended() throws Exception {
+    }
+
+    @Test
+    void Add_BidProduct_Failure_StoreNotFound() throws Exception {
+    }
+
+    @Test
+    void Add_BidProduct_Failure_BidNotFound() throws Exception {
+    }
+
+    @Test
+    void Add_AuctionBidToSpecialCart_Success() throws UIException, DevException {
+    }
+
+
+
+    @Test
+    void Add_AuctionBid_Failure_InvalidToken() throws UIException {
+    }
+
+    @Test
+    void Add_AuctionBid_Failure_UserSuspended() throws Exception {
+
+    }
+
+    @Test
+    void Add_AuctionBid_Failure_StoreNotFound() throws Exception {
+    }
+
+    @Test
+    void Add_AuctionBid_Failure_AuctionNotFound() throws Exception {
+    }
+
+    @Test
+    void Set_ProductToRandom_Success() throws Exception {
+
+    }
+    @Test
+    void Set_ProductToRandom_Failure_InvalidToken() throws UIException {
+    }
+
+    @Test
+    void Set_ProductToRandom_Failure_UserSuspended() throws Exception {
+    }
 
     void print(ReceiptDTO[] re) {
         System.out.println("=== RECEIPTS ARRAY ===");

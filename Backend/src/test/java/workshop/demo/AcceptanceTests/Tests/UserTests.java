@@ -1150,46 +1150,62 @@ public class UserTests extends AcceptanceTests {
         });
 
     }
-
-    //    paymentfail
     @Test
-    void testBuyRegisteredCart_Failure_PaymentFailed() throws Exception {
+    void testUserBuyCart_Failure_PaymentFails() throws Exception {
+        setupValidGuestCartScenario(5); // helper that sets everything up (you can ask me to generate)
 
+        UIException ex = assertThrows(UIException.class, () -> {
+            purchaseService.buyGuestCart(user2Token, PaymentDetails.test_fail_Payment(), SupplyDetails.getTestDetails());
+        });
+
+        assertEquals(ErrorCodes.PAYMENT_ERROR, ex.getNumber());
+        assertTrue(ex.getMessage().contains("Payment failed"));
+    }
+    @Test
+    void testUserBuyCart_Failure_SupplyFails() throws Exception {
+        setupValidGuestCartScenario(5);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            purchaseService.buyGuestCart(user2Token, PaymentDetails.testPayment(), SupplyDetails.test_fail_supply());
+        });
+
+        assertEquals(ErrorCodes.SUPPLY_ERROR, ex.getNumber());
     }
 
-    @Test
-    void testBuyRegisteredCart_Failure_SupplyFailed() throws Exception {
-
-    }
-
-    @Test
-    void testBuyRegisteredCart_Failure_SupplyThrows() throws Exception {
-
-    }
 
 
+    private void setupValidGuestCartScenario(int cartQuantity) throws Exception {
+        when(mockAuthRepo.validToken(user2Token)).thenReturn(true);
+        when(mockAuthRepo.getUserId(user2Token)).thenReturn(0);
+        when(mockSusRepo.findById(0)).thenReturn(Optional.empty());
 
+        // Guest with cart
+        Guest guest = new Guest();
+        forceField(guest, "id", 0);
+        guest.addToCart(new CartItem(new ItemCartDTO(
+                store.getstoreId(),
+                product.getProductId(),
+                cartQuantity,
+                100,
+                product.getName(),
+                store.getStoreName(),
+                Category.Electronics
+        )));
+        when(mockGuestRepo.findById(0)).thenReturn(Optional.of(guest));
+        when(mockGuestRepo.getReferenceById(0)).thenReturn(guest);
 
+        // Store exists
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
 
+        // StoreStock with enough quantity
+        StoreStock stock = new StoreStock(store.getstoreId());
+        stock.addItem(new item(product.getProductId(), cartQuantity + 5, 100, Category.Electronics));
+        when(mockStoreStock.findById(store.getstoreId())).thenReturn(Optional.of(stock));
+        when(mockStoreStock.saveAndFlush(any())).thenAnswer(inv -> inv.getArgument(0));
 
-
-
-
-
-
-    @Test
-    void testUserGetPurchasePolicy_Success() throws Exception {
-
-    }
-
-    @Test
-    void testUserGetPurchasePolicy_Failure() throws Exception {
-
-    }
-
-    @Test
-    void testBuyRegisteredCart_Failure_PurchasePolicyViolation() throws Exception {
-
+        // Policies and discount
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        store.setActive(true);
 
     }
 }

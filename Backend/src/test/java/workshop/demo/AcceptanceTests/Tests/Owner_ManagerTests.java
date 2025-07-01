@@ -1387,43 +1387,7 @@ public class Owner_ManagerTests extends AcceptanceTests {
         //TODO
     }
 
-    @Test
-    void testOwner_AddToAuction_Success() throws Exception {
 
-        //checkUserAndStore
-        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token,logger);
-        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
-        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
-        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
-        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
-        when(suConnectionRepo.manipulateItem(USER1_ID,store.getstoreId(),Permission.SpecialType)).thenReturn(true);
-        //start now
-        ActivePurcheses active=new ActivePurcheses();
-        when(mockActivePurchases.findById(store.getstoreId())).thenReturn(Optional.of(active));
-
-        when(mockStoreStock.findById(store.getstoreId())).thenReturn(Optional.of(stock));
-        when(mockStoreStock.saveAndFlush(stock)).thenReturn(stock);
-        when(mockActivePurchases.saveAndFlush(active)).thenReturn(active);
-        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
-        Node p=new Node(store.getstoreId(),USER1_ID,false,null);
-        when(suConnectionRepo.getOwnersInStore(store.getstoreId())).thenReturn(List.of(p));
-
-        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
-        DelayedNotification noti = new DelayedNotification();
-        noti.setMessage("message");
-        noti.setUsername(USER1_USERNAME);
-        when(mockNotiRepo.save(noti)).thenReturn(noti);
-        //noti
-        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
-
-
-        assertDoesNotThrow(() -> {
-            activePurchesesService.setProductToAuction(
-                    user1Token, store.getstoreId(), product.getProductId(), 1, 10000, 20.0
-            );
-        });
-
-    }
 
     @Test
     void testSetProductToRandom_Success() throws Exception {
@@ -1571,7 +1535,43 @@ public class Owner_ManagerTests extends AcceptanceTests {
         });
     }
 
+    @Test
+    void testOwner_AddToAuction_Success() throws Exception {
 
+        //checkUserAndStore
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token,logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.manipulateItem(USER1_ID,store.getstoreId(),Permission.SpecialType)).thenReturn(true);
+        //start now
+        ActivePurcheses active=new ActivePurcheses();
+        when(mockActivePurchases.findById(store.getstoreId())).thenReturn(Optional.of(active));
+
+        when(mockStoreStock.findById(store.getstoreId())).thenReturn(Optional.of(stock));
+        when(mockStoreStock.saveAndFlush(stock)).thenReturn(stock);
+        when(mockActivePurchases.saveAndFlush(active)).thenReturn(active);
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        Node p=new Node(store.getstoreId(),USER1_ID,false,null);
+        when(suConnectionRepo.getOwnersInStore(store.getstoreId())).thenReturn(List.of(p));
+
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        DelayedNotification noti = new DelayedNotification();
+        noti.setMessage("message");
+        noti.setUsername(USER1_USERNAME);
+        when(mockNotiRepo.save(noti)).thenReturn(noti);
+        //noti
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+
+
+        assertDoesNotThrow(() -> {
+            activePurchesesService.setProductToAuction(
+                    user1Token, store.getstoreId(), product.getProductId(), 1, 10000, 20.0
+            );
+        });
+
+    }
 
 
     @Test

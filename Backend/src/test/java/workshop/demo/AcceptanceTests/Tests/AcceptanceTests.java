@@ -23,6 +23,7 @@ import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.InfrastructureLayer.*;
 
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountJpaRepository;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -86,7 +87,8 @@ public class AcceptanceTests {
 
     @MockBean
     protected IActivePurchasesRepo mockActivePurchases;
-
+    @MockBean
+    protected DiscountJpaRepository mockdiscountrepo;
     //    @MockBean
 //    protected AISearch mockAISearch;
     //    @MockBean

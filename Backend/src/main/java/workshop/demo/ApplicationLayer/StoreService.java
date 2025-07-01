@@ -914,7 +914,7 @@ public class StoreService {
         store.addDiscount(newDiscount);
         newDiscount = store.getDiscount();
         if (old != null) {
-            System.out.println("ASSI");
+            //System.out.println("ASSI");
             removeDiscountFromStore(token, storeId, old.getName());
         }
 
