@@ -56,8 +56,7 @@ public class StockService {
     private IStoreStockRepo storeStockRepo;
     @Autowired
     private NotificationService notifier;
-    @Autowired
-    private IStockRepo stockRepo;
+
     private AISearch aiSearch = new AISearch();
 
     private UIException storeNotFound() {
@@ -116,15 +115,7 @@ public class StockService {
         return products;
     }
 
-    public RandomDTO[] searchActiveRandoms(String token, ProductSearchCriteria criteria) throws Exception {
-        logger.info("Starting searchRandoms with criteria: {}", criteria);
-        authRepo.checkAuth_ThrowTimeOutException(token, logger);
-        // String storeName = this.storeRepo.getStoreNameById(criteria.getStoreId());
-        RandomDTO[] randoms = stockRepo.searchActiveRandoms(criteria);
-        // storeRepo.fillWithStoreName(randoms);
-        // -> must be jpa
-        return randoms;
-    }
+
 
     // public BidDTO[] searchActiveBids(String token, ProductSearchCriteria
     // criteria) throws Exception {
