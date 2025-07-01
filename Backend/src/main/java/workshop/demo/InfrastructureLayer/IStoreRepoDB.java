@@ -12,4 +12,7 @@ public interface IStoreRepoDB extends JpaRepository<Store, Integer> {
     @Modifying
     @Query("UPDATE Store s SET s.active = false WHERE s.storeId = :storeId")
     void deactivateStore(@Param("storeId") int storeId);
+    @Modifying
+    @Query("UPDATE Store s SET s.active = true WHERE s.storeId = :storeId")
+    void activateStore(@Param("storeId") int storeId);
 }

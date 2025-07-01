@@ -458,6 +458,30 @@ public class StoreService {
         }
         return storeId;
     }
+    @Transactional
+    public int activateteStore(int storeId, String token) throws Exception {
+        logger.info("user attempting to deactivate store {}", storeId);
+        authRepo.checkAuth_ThrowTimeOutException(token, logger);
+        int ownerId = authRepo.getUserId(token);
+        userService.checkUserRegisterOnline_ThrowException(ownerId);
+        Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());
+        suConnectionRepo.checkMainOwnerToDeactivateStore_ThrowException(storeId, ownerId);
+        List<Integer> toNotify = suConnectionRepo.getWorkersInStore(storeId);
+        storeJpaRepo.activateStore(storeId);
+        // storeRepo.deactivateStore(storeId, ownerId);
+        String storeName = storeJpaRepo.findById(storeId)
+                .orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND))
+                .getStoreName();
+        logger.info("Store {} successfully deactivated by owner {}", storeId, ownerId);
+        logger.info("About to notify all employees");
+        for (int userId : toNotify) {
+            String userName = this.userRepo.findById(userId).get().getUsername();
+            String message = String.format("The store: %s is activated ✅", storeName);
+            this.notifier.sendDelayedMessageToUser(userName, message);
+        }
+        return storeId;
+    }
+
 
     @Transactional
     public int closeStore(int storeId, String token) throws Exception {

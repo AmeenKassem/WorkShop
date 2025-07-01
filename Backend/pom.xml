@@ -149,6 +149,38 @@
                                 <exclude>workshop/demo/Controllers/**</exclude>
                                 <exclude>workshop/demo/SocketCommunication/**</exclude>
                                 <exclude>workshop/demo/DomainLayer/Exceptions/**</exclude>
+                                <exclude><workshop/>
+                                <demo/>
+                                <ApplicationLayer/>
+                                <DataInitilizer/>
+                                <AdminParser></AdminParser>**</exclude>
+                                <exclude><workshop/>
+                                <demo/>
+                                <ApplicationLayer/>
+                                <DataInitilizer/>
+                                <InitDataService></InitDataService>**</exclude>
+                                <exclude><workshop/>
+                                <demo/>
+                                <ApplicationLayer/>
+                                <DataInitilizer/>
+                                <ManagerDataInit></ManagerDataInit>**</exclude>
+                                <exclude><workshop/>
+                                <demo/>
+                                <ApplicationLayer/>
+                                <DataInitilizer/>
+                                <ReviewParser></ReviewParser>**</exclude>
+                                <exclude><workshop/>
+                                <demo/>
+                                <ApplicationLayer/>
+                                <DataInitilizer/>
+                                <StoreParser></StoreParser>**</exclude>
+                                <exclude><workshop/>
+                                <demo/>
+                                <ApplicationLayer/>
+                                <DataInitilizer/>
+                                <UserParser></UserParser>**</exclude>
+
+
                             </excludes>
                         </configuration>
                     </execution>

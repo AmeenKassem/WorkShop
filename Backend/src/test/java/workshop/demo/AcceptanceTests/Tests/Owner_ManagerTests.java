@@ -1,12 +1,10 @@
 package workshop.demo.AcceptanceTests.Tests;
-//UpdateProductInStock_Failure_InvalidData() throws Exception
 
 import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import org.springframework.test.util.AopTestUtils;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,13 +20,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import workshop.demo.ApplicationLayer.ReviewService;
 import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.WorkerDTO;
-import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.DelayedNotification;
@@ -275,11 +270,11 @@ public class Owner_ManagerTests extends AcceptanceTests {
 
         when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.empty());
 
-        Exception ex = assertThrows(UIException.class, () -> {
+        UIException ex = assertThrows(UIException.class, () -> {
             storeService.MakeofferToAddOwnershipToStore(storeId, user1Token, USER2_USERNAME);
         });
 
-        assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ((UIException)ex).getNumber());
+        assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ex.getNumber());
         assertTrue(ex.getMessage().toLowerCase().contains("user not registered"));
     }
 
@@ -1342,89 +1337,6 @@ public class Owner_ManagerTests extends AcceptanceTests {
         assertEquals(ErrorCodes.USER_SUSPENDED, ex.getNumber());
     }
 
-
-
-    @Test
-    void testOwner_ViewStorePurchaseHistory() throws Exception {
-
-    }
-
-    @Test
-    void testOwner_ViewStorePurchaseHistory_Failure_StoreNotExist() throws Exception {
-
-    }
-
-
-    @Test
-    void testOwner_AddPurchasePolicy() throws Exception {
-        //TODO
-    }
-
-    @Test
-    void testOwner_AddPurchasePolicy_Failure_InvalidPolicy() throws Exception {
-        //TODO
-    }
-
-    @Test
-    void testOwner_AddPurchasePolicy_Failure_NotOwner() throws Exception {
-        //TODO
-
-    }
-
-    @Test
-    void testOwner_DeletePurchasePolicy() throws Exception {
-        //TODO
-
-    }
-
-    @Test
-    void testOwner_DeletePurchasePolicy_Failure_NotFound() throws Exception {
-        //TODO
-    }
-
-    @Test
-    void testOwner_DeletePurchasePolicy_Failure_NoPermission() throws Exception {
-        //TODO
-    }
-
-    @Test
-    void testOwner_AddToAuction_Success() throws Exception {
-
-        //checkUserAndStore
-        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token,logger);
-        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
-        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
-        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
-        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
-        when(suConnectionRepo.manipulateItem(USER1_ID,store.getstoreId(),Permission.SpecialType)).thenReturn(true);
-        //start now
-        ActivePurcheses active=new ActivePurcheses();
-        when(mockActivePurchases.findById(store.getstoreId())).thenReturn(Optional.of(active));
-
-        when(mockStoreStock.findById(store.getstoreId())).thenReturn(Optional.of(stock));
-        when(mockStoreStock.saveAndFlush(stock)).thenReturn(stock);
-        when(mockActivePurchases.saveAndFlush(active)).thenReturn(active);
-        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
-        Node p=new Node(store.getstoreId(),USER1_ID,false,null);
-        when(suConnectionRepo.getOwnersInStore(store.getstoreId())).thenReturn(List.of(p));
-
-        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
-        DelayedNotification noti = new DelayedNotification();
-        noti.setMessage("message");
-        noti.setUsername(USER1_USERNAME);
-        when(mockNotiRepo.save(noti)).thenReturn(noti);
-        //noti
-        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
-
-
-        assertDoesNotThrow(() -> {
-            activePurchesesService.setProductToAuction(
-                    user1Token, store.getstoreId(), product.getProductId(), 1, 10000, 20.0
-            );
-        });
-
-    }
-
     @Test
     void testSetProductToRandom_Success() throws Exception {
         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token,logger);
@@ -1472,7 +1384,6 @@ public class Owner_ManagerTests extends AcceptanceTests {
             );
         });
 
-        //assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ex.getErrorCode());
     }
 
 
@@ -1537,7 +1448,6 @@ public class Owner_ManagerTests extends AcceptanceTests {
             );
         });
     }
-
     @Test
     void testOwner_AddToBID_Success() throws Exception {
         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token,logger);
@@ -1571,7 +1481,43 @@ public class Owner_ManagerTests extends AcceptanceTests {
         });
     }
 
+    @Test
+    void testOwner_AddToAuction_Success() throws Exception {
 
+        //checkUserAndStore
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token,logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.manipulateItem(USER1_ID,store.getstoreId(),Permission.SpecialType)).thenReturn(true);
+        //start now
+        ActivePurcheses active=new ActivePurcheses();
+        when(mockActivePurchases.findById(store.getstoreId())).thenReturn(Optional.of(active));
+
+        when(mockStoreStock.findById(store.getstoreId())).thenReturn(Optional.of(stock));
+        when(mockStoreStock.saveAndFlush(stock)).thenReturn(stock);
+        when(mockActivePurchases.saveAndFlush(active)).thenReturn(active);
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        Node p=new Node(store.getstoreId(),USER1_ID,false,null);
+        when(suConnectionRepo.getOwnersInStore(store.getstoreId())).thenReturn(List.of(p));
+
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        DelayedNotification noti = new DelayedNotification();
+        noti.setMessage("message");
+        noti.setUsername(USER1_USERNAME);
+        when(mockNotiRepo.save(noti)).thenReturn(noti);
+        //noti
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+
+
+        assertDoesNotThrow(() -> {
+            activePurchesesService.setProductToAuction(
+                    user1Token, store.getstoreId(), product.getProductId(), 1, 10000, 20.0
+            );
+        });
+
+    }
 
 
     @Test
@@ -1588,5 +1534,49 @@ public class Owner_ManagerTests extends AcceptanceTests {
     void testOwner_AddToAuction_Failure() throws Exception {
 
     }
+
+    @Test
+    void testOwner_ViewStorePurchaseHistory() throws Exception {
+
+    }
+
+    @Test
+    void testOwner_ViewStorePurchaseHistory_Failure_StoreNotExist() throws Exception {
+
+    }
+
+
+    @Test
+    void testOwner_AddPurchasePolicy() throws Exception {
+        //TODO
+    }
+
+    @Test
+    void testOwner_AddPurchasePolicy_Failure_InvalidPolicy() throws Exception {
+        //TODO
+    }
+
+    @Test
+    void testOwner_AddPurchasePolicy_Failure_NotOwner() throws Exception {
+        //TODO
+
+    }
+
+    @Test
+    void testOwner_DeletePurchasePolicy() throws Exception {
+        //TODO
+
+    }
+
+    @Test
+    void testOwner_DeletePurchasePolicy_Failure_NotFound() throws Exception {
+        //TODO
+    }
+
+    @Test
+    void testOwner_DeletePurchasePolicy_Failure_NoPermission() throws Exception {
+        //TODO
+    }
+
 
 }

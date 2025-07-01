@@ -17,17 +17,16 @@ import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.*;
-import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.*;
+import workshop.demo.DomainLayer.Store.PolicyManager;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.*;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 
 import java.lang.reflect.Field;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -132,6 +131,11 @@ public class GuestTests extends AcceptanceTests {
         when(mockStoreRepo.findById(0)).thenReturn(Optional.of(store));
         when(suConnectionRepo.addNewStoreOwner(0, USER1_ID)).thenReturn(true);
         when(mockActivePurchases.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        PolicyManager policyManager = new PolicyManager();
+        policyManager.setStore(store);
+        store.setPolicyManager(policyManager);
+        when(policyManagerRepository.save(any())).thenReturn(policyManager);
 
         int storeId = storeService.addStoreToSystem(user1Token, STORE_NAME, STORE_CATEGORY);
         assertEquals(0, storeId);

@@ -1,9 +1,6 @@
 package workshop.demo.AcceptanceTests.Tests;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -11,23 +8,17 @@ import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.DemoApplication;
 import workshop.demo.ApplicationLayer.*;
-import workshop.demo.DTOs.*;
-import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Notification.BaseNotifier;
 import workshop.demo.DomainLayer.Stock.*;
 import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.InfrastructureLayer.*;
 
-import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountJpaRepository;
 
 import java.lang.reflect.Field;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -86,7 +77,10 @@ public class AcceptanceTests {
 
     @MockBean
     protected IActivePurchasesRepo mockActivePurchases;
-
+    @MockBean
+    protected DiscountJpaRepository mockdiscountrepo;
+    @MockBean
+    protected PolicyManagerRepository policyManagerRepository;
     //    @MockBean
 //    protected AISearch mockAISearch;
     //    @MockBean
