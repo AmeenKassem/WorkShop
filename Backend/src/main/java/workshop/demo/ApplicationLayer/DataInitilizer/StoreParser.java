@@ -45,7 +45,9 @@ public class StoreParser extends ManagerDataInit {
             case "removediscount":
                 removeDiscountFromStore(toSend);
                 break;
-
+            case "policy":
+                policy(toSend);
+                break;
             default:
                 log("undefined function for store on line " + line + " : " + construction.getFirst());
                 error = true;
