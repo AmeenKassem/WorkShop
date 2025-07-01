@@ -100,7 +100,7 @@ public class Random {
             throw new UIException("Random event is over.", ErrorCodes.RANDOM_FINISHED);
         if (amountPaid > amountLeft)
             throw new UIException("Maximum amount you can pay is: " + amountLeft,
-                    ErrorCodes.INVALID_RANDOM_PARAMETERS);
+                    ErrorCodes.TOO_MUCH_MONEY_FOR_RANDOM);
         if (amountPaid <= 0)
             throw new UIException("Amount paid must be positive.", ErrorCodes.INVALID_RANDOM_PARAMETERS);
         if (usersParticipations.containsKey(userId)) {

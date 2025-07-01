@@ -157,6 +157,7 @@ public class ActivePurchasesService {
             time = 1;
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
+            @Transactional
             @Override
             public void run() {
                 try {
@@ -164,6 +165,7 @@ public class ActivePurchasesService {
                     // get the proxy of the current bean from Spring context
                     ActivePurchasesService self = context.getBean(ActivePurchasesService.class);
                     self.runAuctionEndTask(active, auctionId, storeStock, productId, store);
+                    
                 } catch (UIException | DevException e) {
                     e.printStackTrace();
                 }
@@ -171,38 +173,7 @@ public class ActivePurchasesService {
 
         }, time);
     }
-    // @Transactional
-    // public void runAuctionEndTask(ActivePurcheses active, int auctionId,
-    // StoreStock storeStock, int productId,
-    // Store store) throws UIException, DevException {
-    // logger.info("Running auction end task for auction id: {}", auctionId);
-    // ActivePurcheses a =
-    // activePurchasesRepo.findById(active.getStoreId()).orElseThrow();
-    // Auction auction = a.getAuctionById(auctionId);
-    // auction.loadBids();
-    // auction.endAuction();
-    // auction.setActivePurchases(a);
 
-    // String productName = stock.getProductById(auction.getProductId()).getName();
-    // activePurchasesRepo.saveAndFlush(a);
-
-    // if (auction.mustReturnToStock()) {
-    // logger.info("Refunding auction quantity to stock");
-    // storeStock.IncreaseQuantitytoBuy(productId, auction.getAmount());
-    // storeStockRepo.saveAndFlush(storeStock);
-    // }
-
-    // List<Integer> participants = auction.getBidsUsersIds();
-    // notifier.sendMessageForUsers(
-    // "Auction on store: " + store.getStoreName() + " with product " + productName
-    // + " has ended!",
-    // participants);
-
-    // List<Integer> owners = suConnectionRepo.getOwnersInStore(store.getstoreId())
-    // .stream().map(user -> user.getMyId()).toList();
-    // notifier.sendMessageForUsers("Auction on " + productName + " has ended!",
-    // owners);
-    // }
 
     @Transactional
     public void runAuctionEndTask(ActivePurcheses active, int auctionId, StoreStock storeStock, int productId,
@@ -231,6 +202,7 @@ public class ActivePurchasesService {
         List<Integer> owners = suConnectionRepo.getOwnersInStore(store.getstoreId())
                 .stream().map(user -> user.getMyId()).toList();
         notifier.sendMessageForUsers("Auction on " + productName + " has ended!", owners);
+        activePurchasesRepo.flush();
     }
 
     private void checkUserRegisterOnline_ThrowException(int userId) throws UIException {
@@ -577,7 +549,7 @@ public class ActivePurchasesService {
             throw new UIException("quantity fsh ", ErrorCodes.INVALID_QUANTITY);
         }
         storeStockRepo.saveAndFlush(storeStock);
-        activePurchasesRepo.save(active);
+        activePurchasesRepo.saveAndFlush(active);
         List<Integer> ownersIds = new ArrayList<>();
         suConnectionRepo.getOwnersInStore(storeId).forEach(user -> ownersIds.add(user.getMyId()));
         notifier.sendMessageForUsers(

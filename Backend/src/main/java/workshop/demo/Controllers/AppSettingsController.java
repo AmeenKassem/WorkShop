@@ -44,8 +44,10 @@ public class AppSettingsController {
     }
 
     @GetMapping("/isInitialized")
-    public ResponseEntity<?> isSiteInitialized() {
+    public ResponseEntity<ApiResponse<Boolean>> isSiteInitialized() {
+        System.out.println("hiiiiiiiiiiiiii");
         boolean initialized = appSettingsService.isInitialized();
+        System.out.println("hiiiiiiiiiiiiii");
         return ResponseEntity.ok(new ApiResponse<>(initialized, null));
     }
 

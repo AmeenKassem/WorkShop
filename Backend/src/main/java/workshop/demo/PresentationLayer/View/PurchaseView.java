@@ -157,13 +157,21 @@ public class PurchaseView extends VerticalLayout implements HasUrlParameter<Stri
             wrapper.add(empty);
         } else {
             for (ReceiptDTO receipt : receipts) {
-                VerticalLayout card = new VerticalLayout();
-                card.addClassName("receipt-card");
-                card.add(new Paragraph("📦 Store: " + receipt.getStoreName()));
-                card.add(new Paragraph("📅 Date: " + receipt.getDate()));
-                card.add(new Paragraph("💳 Total: $" + receipt.getFinalPrice()));
-                wrapper.add(card);
-            }
+            VerticalLayout card = new VerticalLayout();
+    card.addClassName("receipt-card");
+    card.add(new Paragraph("📦 Store: " + receipt.getStoreName()));
+    card.add(new Paragraph("📅 Date: " + receipt.getDate()));
+
+    Paragraph productsParagraph = new Paragraph("🛒 Products:\n");
+    for (ReceiptProduct product : receipt.getProductsList()) {
+        String productInfo = "- " + product.getProductName()  ;
+        productsParagraph.add(new Paragraph(productInfo));
+    }
+    card.add(productsParagraph);
+
+    card.add(new Paragraph("💳 Total: $" + receipt.getFinalPrice()));
+    wrapper.add(card);
+}
         }
 
         Button close = new Button("Close", e -> dialog.close());
