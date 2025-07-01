@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import workshop.demo.ApplicationLayer.DatabaseCleaner;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
@@ -22,6 +23,7 @@ import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 // @SpringBootTest
 @SpringBootTest
 @ActiveProfiles("test")
+ @Transactional
 public class OwnershipTests {
     @Autowired
     private ISUConnectionRepo repository;

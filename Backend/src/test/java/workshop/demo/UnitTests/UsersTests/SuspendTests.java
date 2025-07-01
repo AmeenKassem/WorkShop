@@ -28,56 +28,29 @@ public class SuspendTests {
 
  @Autowired
     StoreTreeJPARepository tree;
-    @Autowired
-    private NodeJPARepository node;
+ 
     // @Autowired
     // private NotificationRepository notificationRepository;
    
-    @Autowired
-    private IStockRepoDB stockRepositoryjpa;
-    @Autowired
-    private IStoreRepoDB storeRepositoryjpa;
-    @Autowired
-    private IOrderRepoDB orderRepository;
+
     // @Autowired
     // private PurchaseRepository purchaseRepository;
-    @Autowired
-    private UserSuspensionJpaRepository suspensionRepo;
+  
     @Autowired
     private AuthenticationRepo authRepo;
-    @Autowired
-    private UserJpaRepository userRepo;
-    @Autowired
-    private SUConnectionRepository sIsuConnectionRepo;
-    @Autowired
-    private GuestJpaRepository guestRepo;
-    @Autowired
-    private IStoreStockRepo storeStockRepo;
-    @Autowired
-    private OfferJpaRepository offerRepo;
+ 
     // ======================== Services ========================
     @Autowired
     private UserService userService;
-    @Autowired
-    private StoreService storeService;
-    @Autowired
-    private StockService stockService;
-    @Autowired
-    private PurchaseService purchaseService;
-    @Autowired
-    private OrderService orderService;
+  
     @Autowired
     private UserSuspensionService suspensionService;
 
     // ======================== Payment / Supply ========================
-    @Autowired
-    private PaymentServiceImp payment;
-    @Autowired
-    private SupplyServiceImp serviceImp;
+  
 
     // ======================== Utility ========================
-    @Autowired
-    private Encoder encoder;
+   
     @Autowired
     DatabaseCleaner data;
 
@@ -97,6 +70,7 @@ public class SuspendTests {
     }
     public SuspendTests() throws Exception {
     }
+@Transactional
 
     @Test
     public void test_suspendRegisteredUser() throws Exception {
@@ -115,6 +89,7 @@ public class SuspendTests {
         assertTrue(suspensionService.isUserSuspended(userId));
 
     }
+@Transactional
 
     @Test
     public void test_suspendGuestUser() throws Exception {
@@ -130,6 +105,7 @@ public class SuspendTests {
         assertTrue(suspensionService.isUserSuspended(guestId));
 
     }
+@Transactional
 
     @Test
     public void test_pauseAndResumeSuspension_behavior() throws Exception {
@@ -157,6 +133,7 @@ public class SuspendTests {
         //Thread.sleep(65000);
        // assertFalse(suspensionService.isUserSuspended(guestId));
     }
+@Transactional
 
     @Test
     public void test_suspendRegisteredUser_AlreadySuspended() throws Exception {
@@ -176,6 +153,7 @@ public class SuspendTests {
         });
         assertEquals(ErrorCodes.USER_SUSPENDED, ex.getErrorCode());
     }
+@Transactional
 
     @Test
     public void test_suspendGuestUser_AlreadySuspended() throws Exception {
@@ -194,6 +172,7 @@ public class SuspendTests {
         });
         assertEquals(ErrorCodes.USER_SUSPENDED, ex.getErrorCode());
     }
+@Transactional
 
     @Test
     public void test_isUserSuspended_ReturnsCorrectStatus() throws Exception {
@@ -210,6 +189,7 @@ public class SuspendTests {
         suspensionService.suspendGuestUser(guestId, 1, adminToken);
         assertTrue(suspensionService.isUserSuspended(guestId));
     }
+@Transactional
 
     @Test
     public void test_failure_wrongAdminKey() throws Exception {
@@ -226,6 +206,7 @@ public class SuspendTests {
         });
         assertFalse(suspensionService.isUserSuspended(userId));
     }
+@Transactional
 
     @Test
     void test_suspendGuestUser_UserIsNotAdmin_ThrowsException() throws Exception {
