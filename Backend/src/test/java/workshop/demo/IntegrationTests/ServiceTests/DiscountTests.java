@@ -4,8 +4,6 @@ import java.util.List;
 
 import static org.junit.Assert.assertThrows;
 
-import org.aspectj.lang.annotation.Before;
-import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -18,26 +16,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
-import org.springframework.transaction.annotation.Transactional;
 import workshop.demo.ApplicationLayer.ActivePurchasesService;
 import workshop.demo.ApplicationLayer.DatabaseCleaner;
 import workshop.demo.ApplicationLayer.OrderService;
-import workshop.demo.ApplicationLayer.PaymentServiceImp;
+import workshop.demo.External.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.PurchaseService;
 import workshop.demo.ApplicationLayer.ReviewService;
 import workshop.demo.ApplicationLayer.StockService;
 import workshop.demo.ApplicationLayer.StoreService;
-import workshop.demo.ApplicationLayer.SupplyServiceImp;
+import workshop.demo.External.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.ApplicationLayer.UserSuspensionService;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.CreateDiscountDTO;
-import workshop.demo.DTOs.CreateDiscountDTO.Logic;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ReceiptDTO;

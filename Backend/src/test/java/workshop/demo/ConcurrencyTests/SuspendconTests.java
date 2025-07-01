@@ -15,6 +15,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.ApplicationLayer.*;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.External.PaymentServiceImp;
+import workshop.demo.External.SupplyServiceImp;
 import workshop.demo.InfrastructureLayer.*;
 
 @SpringBootTest

@@ -16,8 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import workshop.demo.ApplicationLayer.PaymentServiceImp;
-import workshop.demo.ApplicationLayer.SupplyServiceImp;
+import workshop.demo.External.PaymentServiceImp;
+import workshop.demo.External.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;

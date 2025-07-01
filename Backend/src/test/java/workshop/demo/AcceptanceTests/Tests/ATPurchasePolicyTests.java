@@ -1,7 +1,6 @@
 package workshop.demo.AcceptanceTests.Tests;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -18,13 +17,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ActiveProfiles;
 
-import workshop.demo.ApplicationLayer.PaymentServiceImp;
-import workshop.demo.ApplicationLayer.SupplyServiceImp;
+import workshop.demo.External.PaymentServiceImp;
+import workshop.demo.External.SupplyServiceImp;
 import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.*;
 import workshop.demo.DomainLayer.Store.*;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.*;
 
 @ActiveProfiles("test")

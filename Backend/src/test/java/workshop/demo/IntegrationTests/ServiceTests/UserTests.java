@@ -1,12 +1,10 @@
 package workshop.demo.IntegrationTests.ServiceTests;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertArrayEquals;
-import org.junit.jupiter.api.AfterEach;
+
 import org.junit.jupiter.api.BeforeAll;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -27,33 +25,26 @@ import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.metamodel.EntityType;
-import jakarta.transaction.Transactional;
 // import workshop.demo.ApplicationLayer.AdminHandler;
 import workshop.demo.ApplicationLayer.*;
 import workshop.demo.DTOs.AuctionDTO;
-import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ProductDTO;
-import workshop.demo.DTOs.PurchaseHistoryDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.SupplyDetails;
-import workshop.demo.DTOs.SystemAnalyticsDTO;
 import workshop.demo.DTOs.UserDTO;
 
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.User.Registered;
-import workshop.demo.DomainLayer.User.ShoppingCart;
+import workshop.demo.External.PaymentServiceImp;
+import workshop.demo.External.SupplyServiceImp;
 import workshop.demo.InfrastructureLayer.*;
 
 @SpringBootTest

@@ -2,7 +2,6 @@ package workshop.demo.IntegrationTests.ServiceTests;
 
 import static org.junit.Assert.assertNull;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -16,7 +15,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -25,22 +23,20 @@ import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.ApplicationLayer.*;
 import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.SupplyDetails;
-import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-import workshop.demo.DomainLayer.User.ShoppingCart;
+import workshop.demo.External.PaymentServiceImp;
+import workshop.demo.External.SupplyServiceImp;
 import workshop.demo.InfrastructureLayer.*;
 
 @SpringBootTest
