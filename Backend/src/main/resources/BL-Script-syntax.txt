@@ -20,15 +20,11 @@ user :
 	
 	review store <user name> <store name> <msg>;
 	review product <username> <strore naame> <product name> <msg>;
-	user add-manager <ownerName> <storeName> <managerName> <perm1> <perm2> ... ;
-	user offer-answer <storeName> <senderName> <receiverName> <accept/reject> <owner/manager>;
-	user delete-manager <ownerName> <storeName> <managerName>;
-	user add-owner <ownerName> <storeName> <newOwnerName>;
-	user delete-owner <ownerUsername> <storeName> <ownerToDeleteUsername>;
-
-
-
-
+user add-manager <ownerName> <storeName> <managerName> <perm1> <perm2> ... ;
+user offer-answer <storeName> <senderName> <receiverName> <accept/reject> <owner/manager>;
+user delete-manager <ownerName> <storeName> <managerName>;
+user add-owner <ownerName> <storeName> <newOwnerName>;
+user delete-owner <ownerUsername> <storeName> <ownerToDeleteUsername>;
 store :
 	create <username> <storeName> <storeCategory>;
 	close <ownerUsername> <storeName>;
@@ -41,3 +37,5 @@ store :
 		set <user name> <store name> <productname> <quantity>;
 		accept <username owner> <store name> <product name> <username bid> ;
 		reject <username owner> <store name> <product name> <username bid> <new bid>; 
+	policy <+/-> <user name> <store name> <product name> <policy Key> <param>;
+	
