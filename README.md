@@ -1,132 +1,156 @@
- README – Market System 
 
-## 🧾 Project Overview
-This project implements a scalable, modular e-commerce platform designed for the Software Engineering Workshop at Ben-Gurion University. The system provides a complete marketplace environment supporting both buyers and sellers with advanced features such as role management, flexible purchasing flows, real-time notifications, and enforceable business policies.
+# 🛍️ MarketPlace System – Version 3: Persistency, Robustness & Initialization
 
-The project is structured into well-defined architectural layers to support extensibility and maintainability, and it meets the functional and non-functional requirements outlined in versions 0, 1, 2, and 3 of the specification.
+## 📌 Project Overview
+This is a Spring Boot-based multi-layer e-commerce system built with layered architecture and MVP-based UI using Vaadin. The system supports:
 
----
+- 🧾 User registration, login, roles (admin, owner, manager, guest)
+- 🏬 Store creation and management
+- 🛒 Shopping cart and advanced purchase types (auction, lottery/bid)
+- 💳 External payment and supply APIs
+- 🔁 Initialization via custom DSL file (`dataToInit.txt`)
+- 💾 Full persistency using Hibernate + SQL Server
+- 📡 Real-time notification system via WebSocket
 
-## 🌐 Core Capabilities
-- Multi-role user support: guest, subscriber, store owner, store manager, system admin
-- Store and product management
-- Multiple purchase types: regular, bid, auction, lottery
-- Real-time and deferred notifications
-- Comprehensive discount and purchase policy engine
-- Administrative controls: user suspension, permission editing, ownership transfers
-- Support for extensibility and persistence (init system, mock external integrations)
+## 🗂️ Project Structure
 
----
-
-## 🧱 Architecture Summary
-The platform is divided into six main layers:
-
-- **Presentation Layer**: User interfaces (Vaadin) following MVP architecture
-- **Controller Layer**: REST endpoints for client interactions
-- **Application Layer**: Coordinates commands and validation flows between client and domain logic
-- **Domain Layer**: Business entities and rules
-- **Infrastructure Layer**: Repositories and communication with external systems (e.g., payment/supply mocks)
-- **Notification System**: Real-time messaging and alerting framework
-
----
-
-## 🔄 System Implementation Strategy
-The implementation follows a structured and layered approach, enabling clean separation of responsibilities and long-term scalability. Each user interaction follows a clear path:
-
-- Actions start at the **Presentation Layer** using the MVP pattern for UI logic.
-- Presenters call the **Controllers**, which expose REST APIs and forward client requests.
-- The **Application Layer** interprets these requests, handles coordination logic, and communicates with domain services.
-- Core business logic is enforced in the **Domain Layer**, ensuring data integrity and validation.
-- Repositories in the **Infrastructure Layer** manage in-memory persistence, identity generation, session tracking, and communication with mock external services.
-
-Subsystems such as cart management, store-role hierarchy, user suspension, and discount enforcement are modeled independently and connected using DTOs and service interfaces.
-
-Examples include:
-- Role and permission delegation using dynamic tree structures
-- Policy validation through configurable logic
-- Token-based session validation
-- Full user management from guest creation to admin promotion
-
-This method ensures all system requirements—including concurrency, modularity, extensibility, and persistency—are handled in a consistent and robust way.
-
----
-
-## 🚀 Launch Instructions
-To build and run the project locally:
 ```bash
-# Build and install the project
-mvn clean install
-
-# Start the backend server
-mvn spring-boot:run
-
-# Open the user interface in your browser
-http://localhost:8080/login
+src/
+├── ApplicationLayer/           # Business logic coordination (e.g., StoreService)
+├── Config/                     # JWT, Interceptors, WebSocketConfig
+├── Controllers/                # REST API endpoints
+├── DomainLayer/                # Core business logic (not included here)
+├── DTOs/                       # Data transfer objects used across layers
+├── InfrastructureLayer/       # Persistence, Repositories, JWT, AI, Auth
+├── PresentationLayer/          # Connects views to services, UI screens and Request DTOs and ExceptionHandlers
+└── DemoApplication.java        # Entry point of the Spring Boot app
 ```
 
----
+## 🔧 System Configuration
 
-## 📁 Folder Structure (Simplified)
+### `application.properties`
+WorkShop\Backend\src\main\resources\application.properties
+
+### `application-db.properties`
+WorkShop\Backend\src\main\resources\application-db.properties
+
+## ⚙️ System Initialization
+
+### 1. Initialization File: `dataToInit.txt`
+WorkShop\Backend\src\main\resources\dataToInit.txt
+
+### 2. API for Initialization
+```http 
+POST  /admin/init 
+``` 
+
+The system uses:
+- `AppSettingsService` to control initialization status
+- `AppInitializationInterceptor` to block usage before init
+- `DemoApplication` to load context on startup
+
+## 🔐 Authentication & Authorization
+
+- Based on **JWT** tokens (`AuthenticationRepo`)
+- Managed by `JwtConfig` and used across all services
+- Validated before executing any restricted endpoint
+- Role-based access for guests, users, managers, and admins
+
+## 💾 Persistency
+
+- All persistent data stored in SQL Server using **Spring Data JPA**
+
+> Transient data (e.g. guest carts) are kept in memory.
+
+## 🧠 AI Integration
+
+Implemented in `AISearch` using REST to Flask server:
+- `GET /get-matches-products`
+- `POST /addPairs`
+
+Used to match product names/suggestions during search.
+
+## 🔌 External Systems
+
+All integrations use HTTP POST via the URL:
 ```
-Backend/
-├── DomainLayer/         ← Core business logic (users, stores, policies...)
-├── ApplicationLayer/    ← Coordinates request flows and manages service orchestration
-├── Controllers/         ← REST API endpoints for frontend-backend communication
-├── DTOs/                ← Data Transfer Objects used across all layers
-├── Infrastructure/      ← Repository implementations and in-memory persistence logic
-├── PresentationLayer/   ← Views, presenters (Vaadin, MVP), and centralized exception handling
-└── Tests/               ← Unit tests, concurrency tests, integration tests, acceptance tests, and demo tests
+https://damp-lynna-wsep-1984852e.koyeb.app/
 ```
 
----
+### Supported actions:
+- `handshake`
+- `pay`, `cancel_pay`
+- `supply`, `cancel_supply`
 
-## ✅ Requirements Coverage
-This implementation covers:
-- ✔ Architecture modeling, use case definition
-- ✔ Core system and user flows (registration, login, cart, purchases)
-- ✔ Real-time notification and advanced policy support
-- ✔ Persistent init system, external service integration, extensibility support
+Implemented in the infrastructure and triggered from `PurchaseService`.
 
----
+## 📡 WebSocket & Notifications
 
-## 🛠 Technologies Used
-- Java 17, Spring Boot 3, Maven
-- Vaadin 24 (MVP architecture)
-- JWT for authentication
-- WebSocket and polling for notifications
-- JUnit 5, Mockito, JaCoCo for testing and coverage
+Real-time support via:
+- `WebSocketConfig` – enables STOMP protocol
+- `SocketHandler` – routes messages to clients
+- Used for: manager updates, store activity, auction outcomes, etc.
 
----
+## 🎨 UI – Presentation Layer
 
-## 📚 Additional Technical Details
-For full breakdowns of each module (StoreUserConnection tree, Cart system, Suspension engine, DiscountPolicies, Repositories, etc.), refer to the technical appendix section below in this README.
+### 1. `View/`
+- Built with **Vaadin**
+- Examples: `LoginView`, `MyCartView`
+- UI-only, no business logic
 
----
+### 2. `Presenter/`
+- Responsible for:
+  - Calling backend APIs via `RestTemplate`
+  - Handling success/failure and displaying results
+  - Communicating with `NotificationView` on errors
 
-## 📌 Technical Appendix (Modular Subsystems)
+### 3. `Requests/`
+- Contains DTOs like `AddToCartRequest`
+- `ExceptionHandlers` provides centralized UI-level error capture
 
-### 🔐 User & Cart Subsystem
-Manages guests, registered users, and their interactions with store-specific carts, user sessions, and purchase logic.
+## 🧪 Testing & Use Cases
 
-### 🌲 Store-User Connection Tree
-Models ownership and management hierarchy in stores using a dynamic tree structure that enforces parent-child permissions and secure delegation.
-If a manager or owner (e.g., user X) appoints a subordinate (e.g., user Y), then removing user X will also cascade and remove Y from the store structure, maintaining consistent authorization hierarchy.
+- Initialization is verified using `dataToInit.txt`
+- Acceptance tests include:
+  - View owned stores, add items, cart operations
+  - Auction/lottery flows and refunds upon cancellation
+  - User/manager permission handling
+- All errors passed through `UIException` and `ApiResponse`
 
-### ⏸️ User Suspension Engine
-Implements timed user suspensions with accurate tracking and control options such as pause and resume. Ensures users cannot bypass suspension periods.
+## 📝 Example API Requests
 
-### 🎯 Purchase Policy System
-Provides modular and reusable rules for enforcing store policies—such as age restrictions (e.g., alcohol under 18), minimum quantity checks, total cart value constraints, or category-based conditions.
+### Register new user
+```http
+POST /api/users/register?username=joe&password=123&age=25
+```
 
-### 🗃 Repository Layer
-Implements runtime storage using thread-safe data structures (ConcurrentHashMap, AtomicInteger, etc.), maintaining session data, carts, user states, and store information. It acts as the glue between the Domain and Application Layers.
+### Add item to cart
+```json
+POST /api/cart/add
+Authorization: Bearer <token>
+Body:
+{
+  "productId": 1,
+  "storeId": 2,
+  "quantity": 1
+}
+```
 
-### 🔔 Notification System
-Delivers both real-time and deferred messages based on events such as bids, auction outcomes, ownership changes, or system announcements.
+## ✅ Features Summary
 
-### 🧩 System Initialization Support
-The system includes a persistent initialization mechanism that allows loading admin users, default stores, or test data via configuration or external integration. This supports recovery, extensibility, and ensures consistent system state during startup and testing.
+| Feature                    | Description                                       |
+|---------------------------|---------------------------------------------------|
+| Guest and User flows      | Registration, login, carts, bidding              |
+| Store management          | Open stores, manage products, permissions        |
+| Purchase types            | Standard, Lottery, Auction                       |
+| Persistency               | Hibernate with SQL Server                        |
+| System initialization     | From file with rollback on failure               |
+| JWT Auth                  | Token-based secured access                       |
+| Real-time notifications   | Via WebSocket                                     |
+| AI product search         | Via local Flask service                          |
+| External systems          | Integrated Payment and Supply via REST           |
 
----
-
-**Team**: Workshop in Software Engineering, Ben-Gurion University – 2025
+## 👩‍💻 Authors
+- Team: WSEP 2025
+- Institution: Software Engineering Workshop
+- Version: 3 – Final System Design and Integration
