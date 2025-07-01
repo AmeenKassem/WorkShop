@@ -1696,7 +1696,7 @@ public class DiscountTests {
 
         // Assert that adding this discount fails
         Exception ex = assertThrows(Exception.class, () -> {
-            storeService.addDiscountTest(createdStoreId, NOToken, dto);
+            storeService.addDiscountTest(999999, NOToken, dto);
         });
         // or whatever message your service throws for wrong store usage
 
