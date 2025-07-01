@@ -823,7 +823,7 @@ public class StoreService {
         }
 
         if(store.getDiscount()==null){
-            store.addDiscount(new MultiplyDiscount("MANUALLY_COMBINED"));
+            store.addDiscount(new MultiplyDiscount("MANUALLY_COMBINED_STORE"+storeId));
 
         }
         // hydrate old discount (if any)

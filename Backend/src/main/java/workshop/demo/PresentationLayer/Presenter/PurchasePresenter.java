@@ -150,7 +150,7 @@ public class PurchasePresenter {
             String city,
             String country,
             String zipCode,
-            String name) {
+            String name,String coupon) {
 
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
         if (token == null) {
@@ -172,17 +172,22 @@ public class PurchasePresenter {
 
             Object userType = VaadinSession.getCurrent().getAttribute("user-type");
             String url;
+            String encodedCoupon = UriUtils.encodeQueryParam(coupon != null ? coupon : "", StandardCharsets.UTF_8);
+
             if ("user".equals(userType) || userType.equals("admin")) {
-                System.out.println("User type is registered, using registered purchase endpoint.");
-                url = String.format(Base.url + "/purchase/registered?token=%s&paymentJson=%s&supplyJson=%s",
-                        UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8), encodedPaymentJson,
-                        encodedSupplyJson);
+                url = String.format(Base.url + "/purchase/registered?token=%s&paymentJson=%s&supplyJson=%s&coupon=%s",
+                        UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                        encodedPaymentJson,
+                        encodedSupplyJson,
+                        encodedCoupon);
             } else {
-                System.out.println("User type is guest, using guest purchase endpoint.");
-                url = String.format(Base.url + "/purchase/guest?token=%s&paymentJson=%s&supplyJson=%s",
-                        UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8), encodedPaymentJson,
-                        encodedSupplyJson);
+                url = String.format(Base.url + "/purchase/guest?token=%s&paymentJson=%s&supplyJson=%s&coupon=%s",
+                        UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                        encodedPaymentJson,
+                        encodedSupplyJson,
+                        encodedCoupon);
             }
+
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
