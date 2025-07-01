@@ -5,8 +5,11 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -15,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import workshop.demo.ApplicationLayer.PaymentServiceImp;
+import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.PaymentDetails;
@@ -79,6 +84,15 @@ public class PurchaseTests extends AcceptanceTests {
 
     @BeforeEach
     void setup() throws Exception {
+        var paymentServiceImp = Mockito.mock(PaymentServiceImp.class);
+     var   supplyServiceImp = Mockito.mock(SupplyServiceImp.class);
+
+    when(paymentServiceImp.processPayment(any(PaymentDetails.class), anyDouble()))
+    .thenReturn(42);
+    when(supplyServiceImp.processSupply(any(SupplyDetails.class)))
+    .thenReturn(55555);
+    purchaseService.setPaymentService(paymentServiceImp);
+        purchaseService.setSupplyService(supplyServiceImp);
         // Setup user2
         user2 = new Registered(USER2_ID, USER2_USERNAME, ENCODED_PASSWORD, 20);
         user2.login();

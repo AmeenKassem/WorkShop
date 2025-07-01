@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -15,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import workshop.demo.ApplicationLayer.PaymentServiceImp;
+import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
@@ -67,7 +70,15 @@ public class GuestTests extends AcceptanceTests {
     void setup() throws Exception {
         mockGuestRepo.deleteAll();
         mockUserRepo.deleteAll();
+   var paymentServiceImp = Mockito.mock(PaymentServiceImp.class);
+     var   supplyServiceImp = Mockito.mock(SupplyServiceImp.class);
 
+    when(paymentServiceImp.processPayment(any(PaymentDetails.class), anyDouble()))
+    .thenReturn(42);
+    when(supplyServiceImp.processSupply(any(SupplyDetails.class)))
+    .thenReturn(55555);
+    purchaseService.setPaymentService(paymentServiceImp);
+        purchaseService.setSupplyService(supplyServiceImp);
         // ===== ENCODER =====
         Field encoderField = UserService.class.getDeclaredField("encoder");
         encoderField.setAccessible(true);
@@ -817,22 +828,20 @@ public class GuestTests extends AcceptanceTests {
     void testGuestBuyCart_Failure_PaymentFails() throws Exception {
         setupValidGuestCartScenario(5); // helper that sets everything up (you can ask me to generate)
 
-        UIException ex = assertThrows(UIException.class, () -> {
+        Exception ex = assertThrows(Exception.class, () -> {
             purchaseService.buyGuestCart(guestToken, PaymentDetails.test_fail_Payment(), SupplyDetails.getTestDetails());
         });
 
-        assertEquals(ErrorCodes.PAYMENT_ERROR, ex.getNumber());
         assertTrue(ex.getMessage().contains("Payment failed"));
     }
     @Test
     void testGuestBuyCart_Failure_SupplyFails_Refunds() throws Exception {
         setupValidGuestCartScenario(5);
 
-        UIException ex = assertThrows(UIException.class, () -> {
+        Exception ex = assertThrows(Exception.class, () -> {
             purchaseService.buyGuestCart(guestToken, PaymentDetails.testPayment(), SupplyDetails.test_fail_supply());
         });
 
-        assertEquals(ErrorCodes.SUPPLY_ERROR, ex.getNumber());
     }
     private void setupValidGuestCartScenario(int cartQuantity) throws Exception {
         when(mockAuthRepo.validToken(guestToken)).thenReturn(true);

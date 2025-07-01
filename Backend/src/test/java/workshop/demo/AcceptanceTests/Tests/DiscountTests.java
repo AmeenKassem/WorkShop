@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -15,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import workshop.demo.ApplicationLayer.PaymentServiceImp;
+import workshop.demo.ApplicationLayer.SupplyServiceImp;
 import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.DiscountEntities.VisibleDiscountEntity;
 import workshop.demo.DomainLayer.Stock.*;
@@ -65,6 +68,15 @@ public class DiscountTests extends AcceptanceTests {
 
     @BeforeEach
     void setup() throws Exception {
+        var paymentServiceImp = Mockito.mock(PaymentServiceImp.class);
+     var   supplyServiceImp = Mockito.mock(SupplyServiceImp.class);
+
+    when(paymentServiceImp.processPayment(any(PaymentDetails.class), anyDouble()))
+    .thenReturn(42);
+    when(supplyServiceImp.processSupply(any(SupplyDetails.class)))
+    .thenReturn(55555);
+    purchaseService.setPaymentService(paymentServiceImp);
+        purchaseService.setSupplyService(supplyServiceImp);
         when(mockUserRepo.save(any(Registered.class))).thenAnswer(inv -> {
             Registered reg = inv.getArgument(0);
             if (USER1_USERNAME.equals(reg.getUsername())) {

@@ -118,10 +118,8 @@ public class AcceptanceTests {
 
 
 
-    @Autowired
     protected PaymentServiceImp paymentServiceImp;
 
-    @Autowired
     protected SupplyServiceImp supplyServiceImp;
 
     @Autowired
