@@ -650,9 +650,9 @@ public class StoreService {
 
         // Manually remove from domain
         boolean removed = store.removeDiscountByName(discountName);
-        if (!removed) {
-            throw new UIException("Discount not found", ErrorCodes.DISCOUNT_NOT_FOUND);
-        }
+//        if (!removed) {
+//            throw new UIException("Discount not found", ErrorCodes.DISCOUNT_NOT_FOUND);
+//        }
 
         DiscountEntity oldEntity = store.getDiscountEntity();
         if (oldEntity != null) {
@@ -801,7 +801,7 @@ public class StoreService {
         return List.of(root.toDTO()); // the root DTO contains nested sub-discounts
     }
 
-
+    @Transactional
     public void addDiscount(int storeId, String token, CreateDiscountDTO dto) throws Exception {
         logger.info("User attempting to add a discount tree to store {}", storeId);
 
@@ -823,7 +823,7 @@ public class StoreService {
         }
 
         if(store.getDiscount()==null){
-            store.addDiscount(new MaxDiscount("MANUALLY_COMBINED"));
+            store.addDiscount(new MultiplyDiscount("MANUALLY_COMBINED"));
 
         }
         // hydrate old discount (if any)
