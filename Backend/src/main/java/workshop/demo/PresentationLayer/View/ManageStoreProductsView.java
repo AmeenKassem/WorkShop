@@ -169,7 +169,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                     e -> showRemovePolicyDialog(storeId, token, item.getProductId()));
             HorizontalLayout row1 = new HorizontalLayout(edit, auctionButton, delete);
             HorizontalLayout row2 = new HorizontalLayout(bidButton, randomButton);
-            HorizontalLayout row3 = new HorizontalLayout(policyButton);
+            HorizontalLayout row3 = new HorizontalLayout(policyButton, remPolicyButton);
             row1.addClassName("button-row");
             row2.addClassName("button-row");
 
