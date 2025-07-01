@@ -8,11 +8,12 @@ import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.DemoApplication;
 import workshop.demo.ApplicationLayer.*;
-import workshop.demo.DomainLayer.Stock.*;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.AdminInitilizer;
 import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.Registered;
+import workshop.demo.External.PaymentServiceImp;
+import workshop.demo.External.SupplyServiceImp;
 import workshop.demo.InfrastructureLayer.*;
 
 // import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountJpaRepository;

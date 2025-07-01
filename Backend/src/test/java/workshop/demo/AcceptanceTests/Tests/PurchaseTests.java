@@ -18,8 +18,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import workshop.demo.ApplicationLayer.PaymentServiceImp;
-import workshop.demo.ApplicationLayer.SupplyServiceImp;
+import workshop.demo.External.PaymentServiceImp;
+import workshop.demo.External.SupplyServiceImp;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.PaymentDetails;
@@ -30,7 +30,6 @@ import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.*;
-import workshop.demo.DomainLayer.Store.PolicyManager;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.*;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
