@@ -58,52 +58,30 @@ import workshop.demo.InfrastructureLayer.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS) // allows non-static @BeforeAll
 
 public class UserTests {
-    @Autowired
-    StoreTreeJPARepository tree;
-    @Autowired
-    private NodeJPARepository node;
-    // @Autowired
-    // private NotificationRepository notificationRepository;
 
 
-    @Autowired
-    private IStockRepoDB stockRepositoryjpa;
+
+
+
     @Autowired
     private IStoreRepoDB storeRepositoryjpa;
-    @Autowired
-    private GuestJpaRepository guestRepo;
 
-    @Autowired
-    private IOrderRepoDB orderRepository;
-    @Autowired
-    private PurchaseRepository purchaseRepository;
 
     @Autowired
     private AuthenticationRepo authRepo;
 
-    @Autowired
-    PaymentServiceImp payment;
-    @Autowired
-    SupplyServiceImp serviceImp;
-    @Autowired
-    private IStoreStockRepo storeStockRepo;
-    @Autowired
-    private OfferJpaRepository offerRepo;
-    @Autowired
-    SUConnectionRepository sIsuConnectionRepo;
+
+
+
     @Autowired
     private UserJpaRepository userRepo;
-    @Autowired
-    Encoder encoder;
-    @Autowired
-    private IActivePurchasesRepo activePurchasesRepo;
-    @Autowired
-    UserSuspensionService suspensionService;
+
+
+
     @Autowired
     public ActivePurchasesService activePurcheses;
 
-    // @Autowired
-    // AdminHandler adminService;
+
     @Autowired
     UserService userService;
     @Autowired
@@ -114,16 +92,14 @@ public class UserTests {
     PurchaseService purchaseService;
     @Autowired
     OrderService orderService;
-    @Autowired
-    ReviewService reviewService;
+
     @Autowired
     DatabaseCleaner databaseCleaner;
 
     // ======================== Test Data ========================
     String NOToken;
     String NGToken;
-    String GToken;
-    String Admin;
+
     ItemStoreDTO itemStoreDTO;
     int PID;
 
