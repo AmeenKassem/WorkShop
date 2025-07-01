@@ -17,3 +17,7 @@ user purchase bhaa cart valid;
 wait 10000;
 user purchase bhaa special valid;
 user purchase bhaa123 special valid;
+user logout bhaa;
+store discount bhaa123 masho SummerSale 15.0 VISIBLE CATEGORY:FOOD MAX;
+store removediscount bhaa123 masho SummerSale;
+
