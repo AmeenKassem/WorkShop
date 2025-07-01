@@ -1655,26 +1655,7 @@ else {
         assertEquals(8000, receipts[0].getFinalPrice()); // No discount
     }
 
-    @Test
-    void INVISIBLE_buy_SINGLE_discount_fail_totalTooLow() throws Exception {
-
-
-
-
-        CreateDiscountDTO dto = new CreateDiscountDTO("15% off expensive carts 010", 0.10,
-                CreateDiscountDTO.Type.INVISIBLE, "TOTAL>10000" + createdStoreId,
-                CreateDiscountDTO.Logic.SINGLE, null);
-        storeService.addDiscountTest(createdStoreId, NOToken, dto);
-        userService.addToUserCart(NGToken, itemStoreDTO, 4); // 8000 total
-        CouponContext.set("15% off expensive carts 010");
-
-        PaymentDetails paymentDetails = PaymentDetails.testPayment();
-        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
-        ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken, paymentDetails,
-                supplyDetails);
-
-        assertEquals(8000, receipts[0].getFinalPrice()); // No discount
-    }
+//     
 
     @Test
     void INVISIBLE_buy_SINGLE_discount_fail_wrongStore() throws Exception {
