@@ -14,4 +14,3 @@ user offer-answer masho bhaa123 mohamed accept owner;
 store auction mohamed masho btata2 60000 10 10.0;
 store policy + mohamed masho btata2 NO_PRODUCT_UNDER_AGE 20;
 user reg baby a123321 19;
-store policy - mohamed masho btata2 NO_PRODUCT_UNDER_AGE 20;

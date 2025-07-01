@@ -385,7 +385,7 @@ public class StockService {
                     .orElseThrow(() -> new DevException("Db has no product!")).getName();
             res[i] = new ItemStoreDTO(item.getProductId(), item.getQuantity(), item.getPrice(), item.getCategory(),
                     item.getFinalRank(), store.getstoreId(), productName, store.getStoreName());
-            res[i].policies = store.getPurchasePoliciesStrings();
+            res[i].policies = store.getPurchasePoliciesStrings(item.getProductId());
         }
         logger.info("fetched {} products from store: {}", res.length, storeId);
         return res;

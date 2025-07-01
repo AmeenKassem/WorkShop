@@ -256,10 +256,11 @@ public class Store {
         return policyManager;
     }
 
-    public List<String> getPurchasePoliciesStrings() {
+    public List<String> getPurchasePoliciesStrings(int productId) {
         List<String> res = new ArrayList<>();
         for (PurchasePolicy string : getPurchasePolicies()) {
-            res.add(string.violationMessage());
+            if (string.getProductId() == productId)
+                res.add(string.violationMessage());
         }
         return res;
     }
