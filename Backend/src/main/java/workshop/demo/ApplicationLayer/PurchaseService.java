@@ -21,6 +21,7 @@ import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -329,7 +330,7 @@ public class PurchaseService {
                     allParticipationsInRandoms.add(card);
                     itemsToRemove.add(specialItem);// Lost or not found → remove
                 } else if (card.mustRefund()) {
-                    logger.info("");
+                    logger.info("here in must refund -> refunding");
                     // If the card must be refunded, we remove it from the user's cart
                     itemsToRemove.add(specialItem);
                     paymentService.processRefund(card.transactionIdForPayment);
