@@ -36,10 +36,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.StoreTreeEntity;
 import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
-import workshop.demo.InfrastructureLayer.DiscountEntities.CompositeDiscountEntity;
-import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountEntity;
-import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountJpaRepository;
-import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountMapper;
+import workshop.demo.InfrastructureLayer.DiscountJpaRepository;
 import workshop.demo.InfrastructureLayer.IOrderRepoDB;
 import workshop.demo.InfrastructureLayer.IStoreRepoDB;
 import workshop.demo.InfrastructureLayer.IStoreStockRepo;
@@ -48,6 +45,9 @@ import workshop.demo.InfrastructureLayer.PolicyManagerRepository;
 import workshop.demo.InfrastructureLayer.StoreTreeJPARepository;
 import workshop.demo.InfrastructureLayer.UserJpaRepository;
 import workshop.demo.InfrastructureLayer.UserSuspensionJpaRepository;
+import workshop.demo.InfrastructureLayer.DiscountEntities.CompositeDiscountEntity;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountEntity;
+import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountMapper;
 
 @Service
 public class StoreService {

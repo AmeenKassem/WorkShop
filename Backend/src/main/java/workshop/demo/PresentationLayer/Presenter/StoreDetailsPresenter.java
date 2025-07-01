@@ -31,6 +31,8 @@ import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ProductDTO;
 import workshop.demo.DTOs.RandomDTO;
 import workshop.demo.DTOs.ReviewDTO;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.PresentationLayer.Handlers.ExceptionHandlers;
 import workshop.demo.PresentationLayer.View.NotificationView;
 
@@ -55,7 +57,7 @@ public class StoreDetailsPresenter {
         }
 
         ItemStoreDTO[] items = mapper.convertValue(body.getData(), ItemStoreDTO[].class);
-        //all product:
+        // all product:
         String productsUrl = Base.url + "/stock/getAllProducts?token="
                 + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8);
         ResponseEntity<ApiResponse> productsResponse = restTemplate.getForEntity(productsUrl, ApiResponse.class);
@@ -84,8 +86,7 @@ public class StoreDetailsPresenter {
                 Base.url + "/api/store/rankStore?token=%s&storeId=%d&newRank=%d",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                 storeId,
-                newRank
-        );
+                newRank);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -98,11 +99,10 @@ public class StoreDetailsPresenter {
                     url,
                     HttpMethod.POST,
                     entity,
-                    ApiResponse.class
-            );
+                    ApiResponse.class);
             ApiResponse body = response.getBody();
             if (body != null && body.getErrNumber() == -1) {
-                //NotificationView.showSuccess("Store ranked successfully.");
+                // NotificationView.showSuccess("Store ranked successfully.");
             } else if (body != null) {
                 NotificationView.showError(ExceptionHandlers.getErrorMessage(body.getErrNumber()));
             } else {
@@ -119,8 +119,7 @@ public class StoreDetailsPresenter {
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                 storeId,
                 productId,
-                UriUtils.encodeQueryParam(review, StandardCharsets.UTF_8)
-        );
+                UriUtils.encodeQueryParam(review, StandardCharsets.UTF_8));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -133,8 +132,7 @@ public class StoreDetailsPresenter {
                     url,
                     HttpMethod.POST,
                     entity,
-                    ApiResponse.class
-            );
+                    ApiResponse.class);
 
             ApiResponse body = response.getBody();
             if (body != null && body.getErrNumber() == -1) {
@@ -155,8 +153,7 @@ public class StoreDetailsPresenter {
                 Base.url + "/api/Review/addToStore?token=%s&storeId=%d&review=%s",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                 storeId,
-                UriUtils.encodeQueryParam(review, StandardCharsets.UTF_8)
-        );
+                UriUtils.encodeQueryParam(review, StandardCharsets.UTF_8));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -169,8 +166,7 @@ public class StoreDetailsPresenter {
                     url,
                     HttpMethod.POST,
                     entity,
-                    ApiResponse.class
-            );
+                    ApiResponse.class);
 
             ApiResponse body = response.getBody();
             if (body != null && body.getErrNumber() == -1) {
@@ -200,8 +196,7 @@ public class StoreDetailsPresenter {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<ApiResponse<List<ReviewDTO>>>() {
-            }
-            );
+                    });
 
             ApiResponse<List<ReviewDTO>> body = response.getBody();
             if (body != null && body.getErrNumber() == -1) {
@@ -225,8 +220,7 @@ public class StoreDetailsPresenter {
                 storeId,
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                 productId,
-                newRank
-        );
+                newRank);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -237,8 +231,7 @@ public class StoreDetailsPresenter {
                     url,
                     HttpMethod.POST,
                     entity,
-                    ApiResponse.class
-            );
+                    ApiResponse.class);
 
             ApiResponse body = response.getBody();
             if (body != null && body.getErrNumber() == -1) {
@@ -260,8 +253,7 @@ public class StoreDetailsPresenter {
         body.put("quantity", quantity);
         String url = String.format(
                 Base.url + "/api/users/addToCart?token=%s",
-                UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8)
-        );
+                UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -273,28 +265,33 @@ public class StoreDetailsPresenter {
                     url,
                     HttpMethod.POST,
                     entity,
-                    ApiResponse.class
-            );
+                    ApiResponse.class);
 
             ApiResponse bodyResponse = response.getBody();
             if (bodyResponse != null && bodyResponse.getErrNumber() == -1) {
                 NotificationView.showSuccess("Added to cart successfully.");
             } else if (bodyResponse != null) {
-                NotificationView.showError(ExceptionHandlers.getErrorMessage(bodyResponse.getErrNumber()));
+                System.out.println(bodyResponse.getErrorMsg());
+                if (bodyResponse.getErrNumber() == ErrorCodes.NO_POLICY)
+                    NotificationView.showError(bodyResponse.getErrorMsg());
+                else
+                    NotificationView.showError(ExceptionHandlers.getErrorMessage(bodyResponse.getErrNumber()));
             } else {
                 NotificationView.showError("Unexpected empty response.");
             }
 
         } catch (Exception e) {
-            ExceptionHandlers.handleException(e);
+            if (e instanceof UIException && ((UIException) e).getErrorCode() == ErrorCodes.NO_POLICY) {
+                NotificationView.showError(e.getMessage());
+            } else
+                ExceptionHandlers.handleException(e);
         }
     }
 
     public List<ReviewDTO> getProductReviews(int storeId, int productId) {
         String url = String.format(
                 Base.url + "/api/Review/getProductReviews?storeId=%d&productId=%d",
-                storeId, productId
-        );
+                storeId, productId);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -307,7 +304,7 @@ public class StoreDetailsPresenter {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<ApiResponse<List<ReviewDTO>>>() {
-            });
+                    });
             ApiResponse<List<ReviewDTO>> body = response.getBody();
             if (body != null && body.getErrNumber() == -1) {
                 return body.getData() != null ? body.getData() : List.of();
@@ -328,8 +325,7 @@ public class StoreDetailsPresenter {
             String url = String.format(
                     Base.url + "/stock/getAllActiveRandomsInStore?token=%s&storeId=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
-                    storeId
-            );
+                    storeId);
 
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);
@@ -351,8 +347,7 @@ public class StoreDetailsPresenter {
             String url = String.format(
                     Base.url + "/stock/getAllActiveAuctionsInStore?token=%s&storeId=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
-                    storeId
-            );
+                    storeId);
             ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);
 
             if (response.getBody() != null && response.getBody().getErrNumber() == -1) {
@@ -372,8 +367,7 @@ public class StoreDetailsPresenter {
             String url = String.format(
                     Base.url + "/stock/addBidOnAuction?token=%s&auctionId=%d&storeId=%d&price=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
-                    auctionId, storeId, price
-            );
+                    auctionId, storeId, price);
 
             restTemplate.postForEntity(url, null, ApiResponse.class);
             NotificationView.showSuccess(" Bid placed successfully!");
@@ -383,13 +377,13 @@ public class StoreDetailsPresenter {
 
     }
 
-    public void participateInRandomDraw(String token, int randomId, int storeId, double amountPaid, PaymentDetails payment) {
+    public void participateInRandomDraw(String token, int randomId, int storeId, double amountPaid,
+            PaymentDetails payment) {
         try {
             String url = String.format(
                     Base.url + "/purchase/participateRandom?token=%s&randomId=%d&storeId=%d&amountPaid=%.2f",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
-                    randomId, storeId, amountPaid
-            );
+                    randomId, storeId, amountPaid);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -399,8 +393,7 @@ public class StoreDetailsPresenter {
                     url,
                     HttpMethod.POST,
                     entity,
-                    ApiResponse.class
-            );
+                    ApiResponse.class);
 
             NotificationView.showSuccess("Successfully participated in the random draw!");
 
@@ -415,8 +408,7 @@ public class StoreDetailsPresenter {
             String url = String.format(
                     Base.url + "/stock/getAllActiveBidsInStore?token=%s&storeId=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
-                    storeId
-            );
+                    storeId);
 
             ResponseEntity<ApiResponse> response = restTemplate.getForEntity(url, ApiResponse.class);
 
@@ -438,8 +430,7 @@ public class StoreDetailsPresenter {
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
                     bidId,
                     storeId,
-                    Double.toString(price)
-            );
+                    Double.toString(price));
 
             ResponseEntity<ApiResponse> response = restTemplate.postForEntity(url, null, ApiResponse.class);
 
@@ -455,24 +446,26 @@ public class StoreDetailsPresenter {
         return false;
     }
 
-    // public List<ItemStoreDTO> searchNormal(String token, String name, String keyword, Category category,
-    //         Double minPrice, Double maxPrice, Integer productRate, Integer storeId) {
-    //     try {
-    //         String url = buildUrl("/searchProducts", token, name, keyword, category, minPrice, maxPrice, productRate, storeId);
-    //         ResponseEntity<ApiResponse<ItemStoreDTO[]>> response = restTemplate.exchange(
-    //                 url,
-    //                 HttpMethod.GET,
-    //                 new HttpEntity<>(buildHeaders()),
-    //                 new ParameterizedTypeReference<>() {
-    //         });
-    //         ApiResponse<ItemStoreDTO[]> body = response.getBody();
-    //         if (body != null && body.getErrNumber() == -1) {
-    //             return List.of(body.getData());
-    //         }
-    //     } catch (Exception e) {
-    //         ExceptionHandlers.handleException(e);
-    //     }
-    //     return Collections.emptyList();
+    // public List<ItemStoreDTO> searchNormal(String token, String name, String
+    // keyword, Category category,
+    // Double minPrice, Double maxPrice, Integer productRate, Integer storeId) {
+    // try {
+    // String url = buildUrl("/searchProducts", token, name, keyword, category,
+    // minPrice, maxPrice, productRate, storeId);
+    // ResponseEntity<ApiResponse<ItemStoreDTO[]>> response = restTemplate.exchange(
+    // url,
+    // HttpMethod.GET,
+    // new HttpEntity<>(buildHeaders()),
+    // new ParameterizedTypeReference<>() {
+    // });
+    // ApiResponse<ItemStoreDTO[]> body = response.getBody();
+    // if (body != null && body.getErrNumber() == -1) {
+    // return List.of(body.getData());
+    // }
+    // } catch (Exception e) {
+    // ExceptionHandlers.handleException(e);
+    // }
+    // return Collections.emptyList();
     // }
     public List<ItemStoreDTO> searchNormal(String token, String name, String keyword, Category category,
             Double minPrice, Double maxPrice, Integer productRate, Integer storeId) {
@@ -509,7 +502,7 @@ public class StoreDetailsPresenter {
                     HttpMethod.GET,
                     new HttpEntity<>(buildHeaders()),
                     new ParameterizedTypeReference<>() {
-            });
+                    });
 
             ApiResponse<ItemStoreDTO[]> body = response.getBody();
             if (body != null && body.getErrNumber() == -1) {
@@ -524,14 +517,14 @@ public class StoreDetailsPresenter {
     public List<BidDTO> searchBids(String token, String name, String keyword, Category category,
             Double minPrice, Double maxPrice, Integer productRate, Integer storeId) {
         try {
-            String url = buildUrl("/searchBids", token, name, keyword, category, minPrice, maxPrice, productRate, storeId);
+            String url = buildUrl("/searchBids", token, name, keyword, category, minPrice, maxPrice, productRate,
+                    storeId);
             ResponseEntity<ApiResponse<BidDTO[]>> response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     new HttpEntity<>(buildHeaders()),
                     new ParameterizedTypeReference<>() {
-            }
-            );
+                    });
             ApiResponse<BidDTO[]> body = response.getBody();
             if (body != null && body.getErrNumber() == -1) {
                 return List.of(body.getData());
@@ -545,14 +538,14 @@ public class StoreDetailsPresenter {
     public List<AuctionDTO> searchAuctions(String token, String name, String keyword, Category category,
             Double minPrice, Double maxPrice, Integer productRate, Integer storeId) {
         try {
-            String url = buildUrl("/searchAuctions", token, name, keyword, category, minPrice, maxPrice, productRate, storeId);
+            String url = buildUrl("/searchAuctions", token, name, keyword, category, minPrice, maxPrice, productRate,
+                    storeId);
             ResponseEntity<ApiResponse<AuctionDTO[]>> response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     new HttpEntity<>(buildHeaders()),
                     new ParameterizedTypeReference<>() {
-            }
-            );
+                    });
             ApiResponse<AuctionDTO[]> body = response.getBody();
             if (body != null && body.getErrNumber() == -1) {
                 return List.of(body.getData());
@@ -566,14 +559,14 @@ public class StoreDetailsPresenter {
     public List<RandomDTO> searchRandoms(String token, String name, String keyword, Category category,
             Double minPrice, Double maxPrice, Integer productRate, Integer storeId) {
         try {
-            String url = buildUrl("/searchRandoms", token, name, keyword, category, minPrice, maxPrice, productRate, storeId);
+            String url = buildUrl("/searchRandoms", token, name, keyword, category, minPrice, maxPrice, productRate,
+                    storeId);
             ResponseEntity<ApiResponse<RandomDTO[]>> response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     new HttpEntity<>(buildHeaders()),
                     new ParameterizedTypeReference<>() {
-            }
-            );
+                    });
             ApiResponse<RandomDTO[]> body = response.getBody();
             if (body != null && body.getErrNumber() == -1) {
                 return List.of(body.getData());
@@ -620,6 +613,7 @@ public class StoreDetailsPresenter {
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         return headers;
     }
+
     public List<String> getVisibleDiscountDescriptions(int storeId, String token) throws Exception {
         String url = UriComponentsBuilder
                 .fromHttpUrl(Base.url + "/api/store/getVisibleDiscountDescriptions")
@@ -631,8 +625,8 @@ public class StoreDetailsPresenter {
                 url,
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<ApiResponse<String[]>>() {}
-        );
+                new ParameterizedTypeReference<ApiResponse<String[]>>() {
+                });
 
         if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null)
             throw new Exception("Failed to get discounts");
@@ -640,7 +634,5 @@ public class StoreDetailsPresenter {
         String[] discounts = response.getBody().getData();
         return discounts != null ? List.of(discounts) : List.of();
     }
-
-
 
 }

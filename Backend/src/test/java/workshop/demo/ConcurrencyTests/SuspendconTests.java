@@ -33,8 +33,8 @@ public class SuspendconTests {
     private IStockRepoDB stockRepositoryjpa;
     @Autowired
     private IStoreRepoDB storeRepositoryjpa;
-    @Autowired
-    private PurchaseRepository purchaseRepository;
+    // @Autowired
+    // private PurchaseRepository purchaseRepository;
     @Autowired
     private UserSuspensionJpaRepository suspensionRepo;
     @Autowired

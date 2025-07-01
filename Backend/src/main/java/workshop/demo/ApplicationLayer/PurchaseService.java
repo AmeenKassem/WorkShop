@@ -20,7 +20,7 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Order.Order;
 import workshop.demo.DomainLayer.Purchase.IPaymentService;
-import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
+// import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.ISupplyService;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.Auction;
@@ -58,8 +58,8 @@ public class PurchaseService {
     @Autowired
     private IOrderRepoDB orderJpaRepo;
     // private final IUserRepo userRepo;
-    @Autowired
-    private IPurchaseRepo purchaseRepo;
+    // @Autowired
+    // private IPurchaseRepo purchaseRepo;
     @Autowired
     private IPaymentService paymentService;
     @Autowired

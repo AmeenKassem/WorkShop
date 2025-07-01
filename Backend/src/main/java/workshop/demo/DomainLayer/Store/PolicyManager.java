@@ -1,8 +1,13 @@
 package workshop.demo.DomainLayer.Store;
 
 import jakarta.persistence.*;
+import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
+import workshop.demo.DomainLayer.Exceptions.UIException;
+
 import java.util.HashSet;
 import java.util.Set;
+
+// import ch.qos.logback.core.spi.ErrorCodes;
 
 @Entity
 @Table(name = "policy_manager")
@@ -90,10 +95,10 @@ public class PolicyManager {
         return violations;
     }
 
-    public void assertPolicies(int age, int quantity, int productId) {
+    public void assertPolicies(int age, int quantity, int productId) throws UIException {
         for (PurchasePolicy policy : purchasePolicies) {
             if (!policy.isSatisfied(age, quantity, productId)) {
-                throw new IllegalStateException(policy.violationMessage());
+                throw new UIException(policy.violationMessage(),ErrorCodes.NO_POLICY);
             }
         }
     }
