@@ -2,18 +2,17 @@ package workshop.demo.ApplicationLayer.DataInitilizer;
 
 import java.util.List;
 
-import workshop.demo.DTOs.BidDTO;
-import workshop.demo.DTOs.Category;
-import workshop.demo.DTOs.ItemStoreDTO;
-import workshop.demo.DTOs.StoreDTO;
-import workshop.demo.DTOs.UserDTO;
-import workshop.demo.DomainLayer.Exceptions.DevException;
-import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-
 import org.springframework.stereotype.Component;
 
 import jakarta.transaction.Transactional;
+import workshop.demo.ApplicationLayer.StoreService;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.CreateDiscountDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DomainLayer.Exceptions.DevException;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 
 @Component
 public class StoreParser extends ManagerDataInit {
@@ -37,10 +36,49 @@ public class StoreParser extends ManagerDataInit {
             case "bid":
                 addBidToStore(toSend);
                 break;
+            case "close":
+                closeStore(toSend);
+                break;
+            case "discount":
+                addDiscountToStore(toSend);
+                break;
+            case "removediscount":
+                removeDiscountFromStore(toSend);
+                break;
+            case "policy":
+                policy(toSend);
+                break;
             default:
                 log("undefined function for store on line " + line + " : " + construction.getFirst());
                 error = true;
                 break;
+        }
+
+    }
+
+    private void policy(List<String> toSend) {
+        if (toSend.size() != 6) {
+            log("request policy must be : policy <+/-> <user name> <store name> <product name> <policy Key> <param>;");
+            return;
+        }
+        String token = getTokenForUserName(toSend.get(1));
+        String storeName = toSend.get(2).replace("-", " ");
+        int storeId = getStoreIdByName(storeName);
+        String productName = toSend.get(3).replace("-", " ");
+        String ploicyKey = toSend.get(4);
+        int param = Integer.parseInt(toSend.get(5));
+        try {
+            ItemStoreDTO item = getProductByNameAndStore(param, productName, token, storeName);
+            if (toSend.get(0).equals("+"))
+                storeService.addPurchasePolicy(token, storeId, ploicyKey, item.getProductId(), param);
+            else if (toSend.get(0).equals("-"))
+                storeService.removePurchasePolicy(token, storeId, ploicyKey, item.getProductId(), param);
+            else {
+                log("syntax error :policy <+/-> <user name> <store name> <product name> <policy Key> <param>;");
+            }
+            log(ploicyKey + " added to store success on product " + productName);
+        } catch (Exception e) {
+            log("failed to add policy " + e.getMessage());
         }
 
     }
@@ -73,13 +111,35 @@ public class StoreParser extends ManagerDataInit {
     }
 
     private void rejectBid(String ownerToken, int storeId, int productId, String string, String string2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'rejectBid'");
+        // TODO we have to get the bid that user belong to
+        BidDTO[] bids;
+        try {
+            bids = activeService.getAllBids(ownerToken, storeId);
+            int bidId = -1;
+            for (BidDTO bidDTO : bids) {
+                if (bidDTO.productId == productId) {
+                    bidId = bidDTO.bidId;
+                }
+            }
+            int userId = -1;
+            List<UserDTO> users = userService.getAllUsers(ownerToken);
+            for (UserDTO user : users) {
+                if (user.username.equals(string))
+                    userId = user.id;
+            }
+            Double offer = null;
+            if (!string2.equals("no"))
+                offer = Double.parseDouble(string2);
+            activeService.rejectBid(ownerToken, storeId, bidId, userId, offer);
+            log("success to reject bid  .");
+        } catch (Exception e) {
+            log("failed to reject bid  ." + e.getMessage());
+        }
     }
 
     private void acceptBid(String ownerToken, int storeId, int productId, String userName) {
         try {
-            // TODO we have to get the bid that user belong to
+
             BidDTO[] bids = activeService.getAllBids(ownerToken, storeId);
             int bidId = -1;
             for (BidDTO bidDTO : bids) {
@@ -91,19 +151,24 @@ public class StoreParser extends ManagerDataInit {
             int userId = -1;
             List<UserDTO> users = userService.getAllUsers(ownerToken);
             for (UserDTO user : users) {
-                if (user.username == userName)
+                if (user.username.equals(userName))
                     userId = user.id;
             }
-
-            activeService.acceptBid(ownerToken, storeId, storeId, userId);//TODO check if now ghanem set the bid is user id or bid id
+            if (bidId == -1 || userId == -1) {
+                log(userId + " user id , " + bidId + " bidId ");
+                return;
+            }
+            activeService.acceptBid(ownerToken, storeId, bidId, userId);
+            log("bid for user accepted by one owner!");
         } catch (Exception e) {
-            // TODO: handle exception
+            log("failed bid for user accepted by one owner! " + e.getMessage());
         }
     }
 
     private void setProductToBid(String ownerToken, int storeId, int productId, int int1) {
         try {
             activeService.setProductToBid(ownerToken, storeId, productId, int1);
+            log("bid added succcessfuly to store! ");
         } catch (Exception e) {
             log("error on seting product to bid");
             error = true;
@@ -223,4 +288,84 @@ public class StoreParser extends ManagerDataInit {
         }
 
     }
+
+    private void closeStore(List<String> toSend) {
+        if (toSend.size() != 2) {
+            log("invalid close command format. Should be: store close <ownerUsername> <storeName>;");
+            error = true;
+            return;
+        }
+        String ownerName = toSend.get(0);
+        String storeName = toSend.get(1);
+        String token = getTokenForUserName(ownerName);
+        if (token == null) {
+            log("missing login for user: " + ownerName);
+            error = true;
+            return;
+        }
+        int storeId = getStoreIdByName(storeName);
+        try {
+            storeService.closeStore(storeId, token);
+            log("Successfully closed store: " + storeName);
+        } catch (Exception e) {
+            log("Error closing store: " + e.getMessage());
+            error = true;
+        }
+    }
+
+    private void addDiscountToStore(List<String> toSend) {
+    if (toSend.size() < 7) {
+        log("Invalid syntax for discount. Must be: store discount <username> <storeName> <discountName> <percent> <type> <condition> <logic>");
+        error = true;
+        return;
+    }
+    String username = toSend.get(0);
+    String token = getTokenForUserName(username);
+    String storeName = toSend.get(1).replace("-", " ");
+    int storeId = getStoreIdByName(storeName);
+
+    try {
+        CreateDiscountDTO dto = new CreateDiscountDTO();
+        dto.setName(toSend.get(2));
+        dto.setPercent(Double.parseDouble(toSend.get(3)));
+        dto.setType(CreateDiscountDTO.Type.valueOf(toSend.get(4).toUpperCase()));
+        String cond = toSend.get(5).equalsIgnoreCase("null") ? null : toSend.get(5).replace("-", " ");
+        dto.setCondition(cond);
+        dto.setLogic(CreateDiscountDTO.Logic.valueOf(toSend.get(6).toUpperCase()));
+        storeService.addDiscount(storeId, token, dto);
+        log("Discount added successfully to store " + storeName);
+    } catch (Exception e) {
+        log("Failed to add discount: " + e.getMessage());
+        error = true;
+    }
+    }
+
+    private void removeDiscountFromStore(List<String> toSend) {
+        if (toSend.size() != 3) {
+            log("Invalid syntax. Must be: store removediscount <username> <storeName> <discountName>");
+            error = true;
+            return;
+        }
+
+        String username = toSend.get(0);
+        String token = getTokenForUserName(username);
+        String storeName = toSend.get(1).replace("-", " ");
+        String discountName = toSend.get(2).replace("-", " ");
+        int storeId = getStoreIdByName(storeName);
+
+        try {
+            storeService.removeDiscountFromStore(token, storeId, discountName);
+            log("Successfully removed discount '" + discountName + "' from store " + storeName);
+        } catch (Exception e) {
+            log("Failed to remove discount: " + e.getMessage());
+            error = true;
+        }
+    }
+
 }
+
+
+
+
+
+

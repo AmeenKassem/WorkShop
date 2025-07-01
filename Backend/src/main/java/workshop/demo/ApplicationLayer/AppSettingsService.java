@@ -22,6 +22,7 @@ public class AppSettingsService {
     private AdminInitilizer adminInitilizer;
 
     public boolean isInitialized() {
+        // try{
         AppSettingsEntity settings = appSettingsRepository.findById(1L)
                 .orElseGet(() -> {
                     AppSettingsEntity newSettings = new AppSettingsEntity();
@@ -29,20 +30,24 @@ public class AppSettingsService {
                     return newSettings;
                 });
         return settings.isInitialized();
+        // }catch(Exception e){
+        // System.out.println(e.getMessage());
+        // return false;
+        // }
     }
 
     public void markInitialized(String userName, String password, String key) throws Exception {
 
-        //userService.registerAdmin(userName, password, key);
+        // userService.registerAdmin(userName, password, key);
         try {
             userService.registerAdmin(userName, password, key);
             System.out.println("[Admin Init] Admin registered successfully.");
         } catch (UIException ex) {
             if (ex.getNumber() == ErrorCodes.USERNAME_USED) {
-                //admin already exists → log and continue
+                // admin already exists → log and continue
                 System.out.println("[Admin Init] Admin already exists. Continuing startup.");
             } else {
-                //rethrow to fail initialization
+                // rethrow to fail initialization
                 throw ex;
             }
         }

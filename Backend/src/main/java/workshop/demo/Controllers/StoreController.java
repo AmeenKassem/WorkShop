@@ -323,35 +323,41 @@ public class StoreController {
         }
     }
 
-    @PostMapping("/addPurchasePolicy")
-    public ResponseEntity<?> addPurchasePolicy(@RequestParam String token, @RequestParam int storeId,
-            @RequestParam String policyKey, @RequestParam(required = false) Integer param) {
-        try {
-            storeService.addPurchasePolicy(token, storeId, policyKey, param);
-            return ResponseEntity.ok(new ApiResponse<>("PurchasePolicy added", null));
-        } catch (UIException exception) {
-            return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(null, exception.getMessage(), exception.getNumber()));
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(null, ex.getMessage(), -1));
-        }
+@PostMapping("/addPurchasePolicy")
+public ResponseEntity<?> addPurchasePolicy(@RequestParam String token,
+                                           @RequestParam int storeId,
+                                           @RequestParam String policyKey,
+                                           @RequestParam int productId,
+                                           @RequestParam(required = false) Integer param) {
+    try {
+        storeService.addPurchasePolicy(token, storeId, policyKey, productId, param);
+        return ResponseEntity.ok(new ApiResponse<>("PurchasePolicy added", null));
+    } catch (UIException exception) {
+        return ResponseEntity.badRequest()
+                .body(new ApiResponse<>(null, exception.getMessage(), exception.getNumber()));
+    } catch (Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponse<>(null, ex.getMessage(), -1));
     }
+}
 
-    @PostMapping("/removePurchasePolicy")
-    public ResponseEntity<?> removePurchasePolicy(@RequestParam String token, @RequestParam int storeId,
-            @RequestParam String policyKey, @RequestParam(required = false) Integer param) {
-        try {
-            storeService.removePurchasePolicy(token, storeId, policyKey, param);
-            return ResponseEntity.ok(new ApiResponse<>("PurchasePolicy removed", null));
-        } catch (UIException exception) {
-            return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(null, exception.getMessage(), exception.getNumber()));
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(null, ex.getMessage(), -1));
-        }
+@PostMapping("/removePurchasePolicy")
+public ResponseEntity<?> removePurchasePolicy(@RequestParam String token,
+                                              @RequestParam int storeId,
+                                              @RequestParam String policyKey,
+                                              @RequestParam int productId,
+                                              @RequestParam(required = false) Integer param) {
+    try {
+        storeService.removePurchasePolicy(token, storeId, policyKey, productId, param == null ? -1 : param);
+        return ResponseEntity.ok(new ApiResponse<>("PurchasePolicy removed", null));
+    } catch (UIException exception) {
+        return ResponseEntity.badRequest()
+                .body(new ApiResponse<>(null, exception.getMessage(), exception.getNumber()));
+    } catch (Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponse<>(null, ex.getMessage(), -1));
     }
+}
 
     @GetMapping("/discountNames")
     public ApiResponse names(@RequestParam int storeId, @RequestParam String token) throws UIException {

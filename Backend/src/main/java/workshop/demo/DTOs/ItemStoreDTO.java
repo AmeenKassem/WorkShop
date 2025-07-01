@@ -1,5 +1,8 @@
 package workshop.demo.DTOs;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ItemStoreDTO {
 
     private int productId;
@@ -10,6 +13,7 @@ public class ItemStoreDTO {
     private int storeId;
     private String productName;
     private String storeName;
+    public List<String> policies=new ArrayList<>();
 
     public ItemStoreDTO(int id, int quantity, int price, Category category, int rank, int storeId, String productName,
             String storeName) {
