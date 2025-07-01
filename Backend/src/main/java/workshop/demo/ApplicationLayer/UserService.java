@@ -101,14 +101,15 @@ public class UserService {
         return userToAdd.getId();
     }
 
-    // public void registerAdminDirectly(String username, String password, int age) throws UIException {
-    //     if (regJpaRepo.findByUsername(username).isPresent()) {
-    //         throw new UIException("Admin user already exists", 1002);
-    //     }
-    //     String encryptedPassword = encoder.encodePassword(password);
-    //     Registered admin = new Registered(username, encryptedPassword, age);
-    //     admin.setAdmin();
-    //     regJpaRepo.save(admin);
+    // public void registerAdminDirectly(String username, String password, int age)
+    // throws UIException {
+    // if (regJpaRepo.findByUsername(username).isPresent()) {
+    // throw new UIException("Admin user already exists", 1002);
+    // }
+    // String encryptedPassword = encoder.encodePassword(password);
+    // Registered admin = new Registered(username, encryptedPassword, age);
+    // admin.setAdmin();
+    // regJpaRepo.save(admin);
     // }
     public boolean isAdmin(String username, String password) {
         Optional<Registered> reg = regJpaRepo.findByUsername(username);
@@ -223,7 +224,16 @@ public class UserService {
         CartItem itemCart = new CartItem(item);
 
         Guest user = getUser(userId);
-
+        Store store = storeRepo.findById(itemToAdd.getStoreId()).orElse(null);
+        int age = -1;
+        if(user instanceof Registered){
+            age = ((Registered)user).getage();
+        }
+        store.assertPurchasePolicies(
+                        age,
+                        itemToAdd.getQuantity(),
+                        itemToAdd.getProductId());
+       
         user.addToCart(itemCart);
         guestJpaRepository.save(user);
         logger.info("Item added to user cart");

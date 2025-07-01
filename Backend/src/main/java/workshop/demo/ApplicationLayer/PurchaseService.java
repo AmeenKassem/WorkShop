@@ -172,25 +172,25 @@ public ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails paym
             }
         }
 
-        if (!isGuest) {
-            int buyerAge = regRepo.getReferenceById(userId).getage();
-            for (CartItem itemOnUserCart : basket.getItems()) {
-                store.assertPurchasePolicies(
-                        buyerAge,
-                        itemOnUserCart.getQuantity(),
-                        itemOnUserCart.getProductId()
-                );
-            }
-        } else {
-            int buyerAge = -1; // guest has no known age
-            for (CartItem itemOnUserCart : basket.getItems()) {
-                store.assertPurchasePolicies(
-                        buyerAge,
-                        itemOnUserCart.getQuantity(),
-                        itemOnUserCart.getProductId()
-                );
-            }
-        }
+        // if (!isGuest) {
+        //     int buyerAge = regRepo.getReferenceById(userId).getage();
+        //     for (CartItem itemOnUserCart : basket.getItems()) {
+        //         store.assertPurchasePolicies(
+        //                 buyerAge,
+        //                 itemOnUserCart.getQuantity(),
+        //                 itemOnUserCart.getProductId()
+        //         );
+        //     }
+        // } else {
+        //     int buyerAge = -1; // guest has no known age
+        //     for (CartItem itemOnUserCart : basket.getItems()) {
+        //         store.assertPurchasePolicies(
+        //                 buyerAge,
+        //                 itemOnUserCart.getQuantity(),
+        //                 itemOnUserCart.getProductId()
+        //         );
+        //     }
+        // }
 
         // 🔥 Apply discounts
         Discount discount = store.getDiscount();

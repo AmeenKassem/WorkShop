@@ -121,7 +121,7 @@ public class PurchasePolicy implements StorePolicy {
 
             @Override
             public String violationMessage() {
-                return "Product ID " + restrictedProductId + " may be purchased only by users aged " + minBuyerAge + " or older.";
+                return "Product may be purchased only by users aged " + minBuyerAge + " or older.";
             }
 
             @Override
@@ -147,7 +147,7 @@ public class PurchasePolicy implements StorePolicy {
 
             @Override
             public String violationMessage() {
-                return "You must purchase at least " + minQty + " of product ID " + restrictedProductId + ".";
+                return "You must purchase at least " + minQty + " of this product.";
             }
 
             @Override
@@ -161,4 +161,5 @@ public class PurchasePolicy implements StorePolicy {
             }
         };
     }
+
 }

@@ -472,87 +472,91 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
     }
 
     private void openDiscountDialog() {
-        Dialog dlg = new Dialog();
-        dlg.setHeaderTitle("Add / Combine Discounts");
+    Dialog dlg = new Dialog();
+    dlg.setHeaderTitle("Add / Combine Discounts");
 
-        VerticalLayout container = new VerticalLayout();
-        DiscountFormEditor rootEditor = new DiscountFormEditor();
-        container.add(rootEditor);
-        TreeGrid<CreateDiscountDTO> tree = new TreeGrid<>();
+    VerticalLayout container = new VerticalLayout();
+    DiscountFormEditor rootEditor = new DiscountFormEditor();
+    container.add(rootEditor);
 
-        tree.addComponentHierarchyColumn(discount -> {
-            Span nameSpan = new Span(discount.getName());
-            nameSpan.getElement().setProperty("title", discount.getName());
-            return nameSpan;
-        }).setHeader("Name")
-                .setAutoWidth(true)
-                .setFlexGrow(2)
-                .setResizable(true)
-                .setWidth("300px");
+    TreeGrid<CreateDiscountDTO> tree = new TreeGrid<>();
+    tree.addComponentHierarchyColumn(discount -> {
+        Span nameSpan = new Span(discount.getName());
+        nameSpan.getElement().setProperty("title", discount.getName());
+        return nameSpan;
+    }).setHeader("Name")
+      .setAutoWidth(true)
+      .setFlexGrow(2)
+      .setResizable(true)
+      .setWidth("300px");
 
-        tree.addColumn(CreateDiscountDTO::getPercent).setHeader("Percent");
-        tree.addColumn(d -> {
-            String c = d.getCondition();
-            return (c == null || c.isBlank()) ? "No condition" : c;
-        }).setHeader("Condition");
-        tree.addColumn(d -> d.getLogic() != null ? d.getLogic().name() : "SINGLE").setHeader("Logic");
-        tree.addColumn(d -> d.getType() != null ? d.getType().name() : "VISIBLE").setHeader("Type");
+    tree.addColumn(CreateDiscountDTO::getPercent).setHeader("Percent");
+    tree.addColumn(d -> (d.getCondition() == null || d.getCondition().isBlank()) ? "No condition" : d.getCondition())
+        .setHeader("Condition");
+    tree.addColumn(d -> d.getLogic() != null ? d.getLogic().name() : "SINGLE").setHeader("Logic");
+    tree.addColumn(d -> d.getType() != null ? d.getType().name() : "VISIBLE").setHeader("Type");
 
-        // 👇 Ensure root is treated as list
-        CreateDiscountDTO root = discPresenter.fetchDiscountTree(storeId, token);
-        if (root != null) {
-            tree.setItems(List.of(root), CreateDiscountDTO::getSubDiscounts);
-        } else {
-            NotificationView.showInfo("No discount tree found.");
-        }
-
-        tree.setHeight("300px");
-        tree.setWidthFull();
-        Button deleteAllBtn = new Button("🗑 Clear All Discounts", ev -> {
-            try {
-                List<String> all = discPresenter.fetchDiscountNames(storeId, token);
-                if (all.isEmpty()) {
-                    NotificationView.showInfo("There are no discounts to delete.");
-                    return;
-                }
-
-                for (String name : all) {
-                    try {
-                        discPresenter.deleteDiscount(storeId, token, name);
-                    } catch (Exception ex) {
-                        ExceptionHandlers.handleException(ex); // Log but continue
-                    }
-                }
-
-                NotificationView.showSuccess("All discounts deleted.");
-                tree.setItems(List.of()); // clear tree from UI too
-            } catch (Exception ex) {
-                ExceptionHandlers.handleException(ex);
-            }
-        });
-
-        Button save = new Button("Save", e -> {
-            try {
-                CreateDiscountDTO dto = rootEditor.buildDTO();
-                discPresenter.addDiscount(storeId, token, dto);
-                NotificationView.showSuccess("Discount added!");
-                dlg.close();
-            } catch (Exception ex) {
-                ExceptionHandlers.handleException(ex);
-            }
-        });
-
-        Button cancel = new Button("Cancel", e -> dlg.close());
-
-        dlg.add(
-                container,
-                deleteAllBtn, // 👈 Inserted here
-                new Span("Current Discounts in Store:"),
-                tree,
-                new HorizontalLayout(save, cancel));
-
-        dlg.open();
+    CreateDiscountDTO root = discPresenter.fetchDiscountTree(storeId, token);
+    if (root != null) {
+        tree.setItems(List.of(root), CreateDiscountDTO::getSubDiscounts);
+    } else {
+        NotificationView.showInfo("No discount tree found.");
     }
+
+    tree.setHeight("300px");
+    tree.setWidthFull();
+
+    Button deleteAllBtn = new Button("🗑 Clear All Discounts", ev -> {
+        try {
+            List<String> all = discPresenter.fetchDiscountNames(storeId, token);
+            if (all.isEmpty()) {
+                NotificationView.showInfo("There are no discounts to delete.");
+                return;
+            }
+
+            for (String name : all) {
+                try {
+                    discPresenter.deleteDiscount(storeId, token, name);
+                } catch (Exception ex) {
+                    ExceptionHandlers.handleException(ex); // Log but continue
+                }
+            }
+
+            NotificationView.showSuccess("All discounts deleted.");
+            tree.setItems(List.of()); // Clear tree from UI too
+        } catch (Exception ex) {
+            ExceptionHandlers.handleException(ex);
+        }
+    });
+
+    Button save = new Button("Save", e -> {
+        try {
+            CreateDiscountDTO dto = rootEditor.buildDTO();
+            discPresenter.addDiscount(storeId, token, dto);
+            NotificationView.showSuccess("Discount added!");
+            dlg.close();
+        } catch (Exception ex) {
+            ExceptionHandlers.handleException(ex);
+        }
+    });
+
+    Button cancel = new Button("Cancel", e -> dlg.close());
+
+    // ✅ Wrap everything
+    VerticalLayout wrapper = new VerticalLayout();
+    wrapper.addClassName("discount-dialog-wrapper");
+
+    wrapper.add(
+        container,
+        deleteAllBtn,
+        new Span("Current Discounts in Store:"),
+        tree,
+        new HorizontalLayout(save, cancel)
+    );
+
+    dlg.add(wrapper);
+    dlg.open();
+}
 
     private class DiscountFormEditor extends VerticalLayout {
         private final TextField name = new TextField("Name");

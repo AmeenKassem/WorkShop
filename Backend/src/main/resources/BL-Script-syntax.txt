@@ -5,6 +5,7 @@ admin :
 	resume <username> <admin username>;
 	cancel <username> <admin username>;
 
+
 user :
 	reg <username> <password> <age>;
 	login <username> <password>;
@@ -25,6 +26,8 @@ user :
 	user delete-manager <ownerName> <storeName> <managerName>;
 	user add-owner <ownerName> <storeName> <newOwnerName>;
 	user delete-owner <ownerUsername> <storeName> <ownerToDeleteUsername>;
+	logout <username>;
+
 
 
 
@@ -34,6 +37,9 @@ store :
 	close <ownerUsername> <storeName>;
 
 	item <ownerName> <storeName> <productName> <productCategory> <desc> <quantity> <price> <keyword1> <keyword2> ... ;
+	discount <ownerUsername> <storeName> <discountName> <percent> <type> <condition> <logic>
+	removediscount <ownerUsername> <storeName> <discountName>;
+
 
 	auction <username> <storeName> <productName> <auctionTime> <quantity> <startPrice>;
 	random <username> <store name> <product name> <random time> <quantity> <total price>;
@@ -41,3 +47,5 @@ store :
 		set <user name> <store name> <productname> <quantity>;
 		accept <username owner> <store name> <product name> <username bid> ;
 		reject <username owner> <store name> <product name> <username bid> <new bid>; 
+	policy <+/-> <user name> <store name> <product name> <policy Key> <param>;
+	

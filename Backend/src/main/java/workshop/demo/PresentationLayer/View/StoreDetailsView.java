@@ -156,6 +156,10 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Paragraph quantity = new Paragraph("📦 Quantity: " + item.getQuantity());
         Paragraph category = new Paragraph("🏷️ Category: " + product.category);
         Paragraph description = new Paragraph("📄 Description: " + product.getDescription());
+        Paragraph polices = new Paragraph("");
+        for (String policy : item.policies) {
+            polices.add(policy+"\n");
+        }
         Button addToCart = new Button("🛒 Add to Cart", e -> openAddToCartDialog(item));
         //here manage the special  items:
         String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
@@ -208,7 +212,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         showReview.setWidthFull();
 
         actions.add(addToCart, showReview, addReview, addRank);
-        card.add(title, rating, price, quantity, category, description, actions);
+        card.add(title, rating, price, quantity, category, description, actions,polices );
         return card;
 
     }
