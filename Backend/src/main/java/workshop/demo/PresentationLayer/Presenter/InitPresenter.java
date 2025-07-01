@@ -166,6 +166,7 @@ public class InitPresenter {
     public boolean isSiteInitialized() {
         try {
             String url = Base.url + "/api/appsettings/isInitialized";
+            System.out.println("entering the init presenter!");
             ResponseEntity<ApiResponse<Boolean>> response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,

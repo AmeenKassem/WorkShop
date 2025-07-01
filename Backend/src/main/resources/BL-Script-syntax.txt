@@ -47,3 +47,5 @@ store :
 		set <user name> <store name> <productname> <quantity>;
 		accept <username owner> <store name> <product name> <username bid> ;
 		reject <username owner> <store name> <product name> <username bid> <new bid>; 
+	policy <+/-> <user name> <store name> <product name> <policy Key> <param>;
+	

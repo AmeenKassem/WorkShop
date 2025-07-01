@@ -54,6 +54,33 @@ public class StoreParser extends ManagerDataInit {
 
     }
 
+    private void policy(List<String> toSend) {
+        if (toSend.size() != 6) {
+            log("request policy must be : policy <+/-> <user name> <store name> <product name> <policy Key> <param>;");
+            return;
+        }
+        String token = getTokenForUserName(toSend.get(1));
+        String storeName = toSend.get(2).replace("-", " ");
+        int storeId = getStoreIdByName(storeName);
+        String productName = toSend.get(3).replace("-", " ");
+        String ploicyKey = toSend.get(4);
+        int param = Integer.parseInt(toSend.get(5));
+        try {
+            ItemStoreDTO item = getProductByNameAndStore(param, productName, token, storeName);
+            if (toSend.get(0).equals("+"))
+                storeService.addPurchasePolicy(token, storeId, ploicyKey, item.getProductId(), param);
+            else if (toSend.get(0).equals("-"))
+                storeService.removePurchasePolicy(token, storeId, ploicyKey, item.getProductId(), param);
+            else {
+                log("syntax error :policy <+/-> <user name> <store name> <product name> <policy Key> <param>;");
+            }
+            log(ploicyKey + " added to store success on product " + productName);
+        } catch (Exception e) {
+            log("failed to add policy " + e.getMessage());
+        }
+
+    }
+
     private void addBidToStore(List<String> toSend) {
         String ownerToken = getTokenForUserName(toSend.get(1));
         int storeId = getStoreIdByName(toSend.get(2));
@@ -104,13 +131,13 @@ public class StoreParser extends ManagerDataInit {
             activeService.rejectBid(ownerToken, storeId, bidId, userId, offer);
             log("success to reject bid  .");
         } catch (Exception e) {
-            log("failed to reject bid  ."+e.getMessage());
+            log("failed to reject bid  ." + e.getMessage());
         }
     }
 
     private void acceptBid(String ownerToken, int storeId, int productId, String userName) {
         try {
-            
+
             BidDTO[] bids = activeService.getAllBids(ownerToken, storeId);
             int bidId = -1;
             for (BidDTO bidDTO : bids) {
@@ -127,7 +154,7 @@ public class StoreParser extends ManagerDataInit {
             }
             if (bidId == -1 || userId == -1) {
                 log(userId + " user id , " + bidId + " bidId ");
-                return ;
+                return;
             }
             activeService.acceptBid(ownerToken, storeId, bidId, userId);
             log("bid for user accepted by one owner!");
@@ -260,7 +287,7 @@ public class StoreParser extends ManagerDataInit {
 
     }
 
-     private void closeStore(List<String> toSend) {
+    private void closeStore(List<String> toSend) {
         if (toSend.size() != 2) {
             log("invalid close command format. Should be: store close <ownerUsername> <storeName>;");
             error = true;
