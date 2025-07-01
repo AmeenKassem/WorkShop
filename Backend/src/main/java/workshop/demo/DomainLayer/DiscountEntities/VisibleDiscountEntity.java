@@ -1,4 +1,4 @@
-package workshop.demo.InfrastructureLayer.DiscountEntities;
+package workshop.demo.DomainLayer.DiscountEntities;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;

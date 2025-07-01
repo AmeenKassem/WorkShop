@@ -1,6 +1,14 @@
-package workshop.demo.InfrastructureLayer.DiscountEntities;
+package workshop.demo.DomainLayer.DiscountEntities;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.OneToOne;
 import workshop.demo.DomainLayer.Store.Store;
 
 @Entity
@@ -22,15 +30,38 @@ public abstract class DiscountEntity {
     @OneToOne(mappedBy = "discountEntity")
     private Store store;
 
-    public String getName() { return name; }
-    public double getPercent() { return percent; }
-    public String getCondition() { return condition; }
+    public String getName() {
+        return name;
+    }
 
-    public void setName(String name) { this.name = name; }
-    public void setPercent(double percent) { this.percent = percent; }
-    public void setCondition(String condition) { this.condition = condition; }
+    public double getPercent() {
+        return percent;
+    }
 
-    public int getId() { return id; }
-    protected DiscountEntity() { }
-    public void setStore(Store s) { this.store = s; }
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPercent(double percent) {
+        this.percent = percent;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    protected DiscountEntity() {
+    }
+
+    public void setStore(Store s) {
+        this.store = s;
+    }
 }
