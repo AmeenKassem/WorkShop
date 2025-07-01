@@ -28,7 +28,16 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.AuctionDTO;
+import workshop.demo.DTOs.AuctionStatus;
+import workshop.demo.DTOs.BidDTO;
+import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.CreateDiscountDTO;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ProductDTO;
+import workshop.demo.DTOs.RandomDTO;
+import workshop.demo.DTOs.ReviewDTO;
 import workshop.demo.PresentationLayer.Presenter.ManageStoreDiscountsPresenter;
 import workshop.demo.PresentationLayer.Presenter.StoreDetailsPresenter;
 
@@ -114,7 +123,6 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 itemIdToName.put(item.getProductId(), item.getProductName());
             }
 
-
             for (Map.Entry<ItemStoreDTO, ProductDTO> entry : itemsWithProducts.entrySet()) {
                 Div card = createProductCard(entry.getKey(), entry.getValue());
                 productContainer.add(card);
@@ -126,7 +134,9 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         // Load and show discount tree
         try {
             CreateDiscountDTO root = discountPresenter.fetchDiscountTree(myStoreId, token);
-            if (root == null) return;
+            if (root == null) {
+                return;
+            }
 
             VerticalLayout discountsLayout = new VerticalLayout();
             discountsLayout.add(new H4("📢 Store Discounts:"));
@@ -139,7 +149,6 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 renderDiscountNode(root, 0, discountsLayout, itemIdToName);
             }
 
-
             if (discountsLayout.getComponentCount() > 1) {
                 add(discountsLayout);
             }
@@ -149,7 +158,6 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
             NotificationView.showError("Failed to load store discounts: " + e.getMessage());
         }
     }
-
 
     private Div createProductCard(ItemStoreDTO item, ProductDTO product) {
         String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
@@ -171,12 +179,12 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Paragraph description = new Paragraph("📄 Description: " + product.getDescription());
         Paragraph polices = new Paragraph("");
         for (String policy : item.policies) {
-            polices.add(policy+"\n");
+            polices.add(policy + "\n");
         }
         Button addToCart = new Button("🛒 Add to Cart", e -> openAddToCartDialog(item));
         //here manage the special  items:
         String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
-        if (userType.equals("user")) {
+        if (userType.equals("user") || userType.equals("admin")) {
 
             List<RandomDTO> randomProductIds = presenter.getRandomProductIds(myStoreId, token);
             List<AuctionDTO> auctionProductIds = presenter.getAuctionProductIds(myStoreId, token);
@@ -225,7 +233,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         showReview.setWidthFull();
 
         actions.add(addToCart, showReview, addReview, addRank);
-        card.add(title, rating, price, quantity, category, description, actions,polices );
+        card.add(title, rating, price, quantity, category, description, actions, polices);
         return card;
 
     }
@@ -614,7 +622,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
                 .set("margin-bottom", "1.5rem");
 
         String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
-        boolean isUser = "user".equals(userType);
+        boolean isUser = "user".equals(userType) || "admin".equals(userType);
 
         TextField searchField = new TextField("Search");
         searchField.setPlaceholder("Enter keyword or product name");
@@ -1023,6 +1031,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         dialog.add(layout);
         dialog.open();
     }
+
     private String buildReadableDiscountText(String encoded) {
         try {
             // Parse composite-style formatting
@@ -1034,8 +1043,10 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
     }
 
     private static class ParsedText {
+
         String text;
         int nextIndex;
+
         ParsedText(String text, int nextIndex) {
             this.text = text;
             this.nextIndex = nextIndex;
@@ -1064,7 +1075,9 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
             } else {
                 // read logic or discount
                 int j = i;
-                while (j < str.length() && str.charAt(j) != ':' && str.charAt(j) != ',' && str.charAt(j) != ']') j++;
+                while (j < str.length() && str.charAt(j) != ':' && str.charAt(j) != ',' && str.charAt(j) != ']') {
+                    j++;
+                }
                 String token = str.substring(i, j);
 
                 if (j < str.length() && str.charAt(j) == ':') {
@@ -1116,36 +1129,38 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
 //            }
 //        }
 //    }
-private void renderDiscountNode(CreateDiscountDTO dto, int level, VerticalLayout container, Map<Integer, String> itemIdToName) {
-    if (dto.getType() == CreateDiscountDTO.Type.INVISIBLE) return;
-    String indent = " ".repeat(level);
-    boolean isComposite = dto.getSubDiscounts() != null && !dto.getSubDiscounts().isEmpty();
 
-    String line;
-    if (isComposite) {
-        line = indent + "🔸 " + dto.getLogic().name() + " combination";
-        if (dto.getCondition() != null && !dto.getCondition().equalsIgnoreCase("None")) {
-            line += " (condition: " + dto.getCondition() + ")";
+    private void renderDiscountNode(CreateDiscountDTO dto, int level, VerticalLayout container, Map<Integer, String> itemIdToName) {
+        if (dto.getType() == CreateDiscountDTO.Type.INVISIBLE) {
+            return;
         }
-    } else {
-        line = String.format("%s🔹 %s: %.0f%% off%s",
-                indent,
-                dto.getName(),
-                dto.getPercent() * 100,
-                formatCondition(dto.getCondition(), itemIdToName));
-    }
+        String indent = " ".repeat(level);
+        boolean isComposite = dto.getSubDiscounts() != null && !dto.getSubDiscounts().isEmpty();
 
-    Paragraph p = new Paragraph(line);
-    p.getStyle().set("font-size", "0.95rem").set("margin-left", "0.5rem");
-    container.add(p);
+        String line;
+        if (isComposite) {
+            line = indent + "🔸 " + dto.getLogic().name() + " combination";
+            if (dto.getCondition() != null && !dto.getCondition().equalsIgnoreCase("None")) {
+                line += " (condition: " + dto.getCondition() + ")";
+            }
+        } else {
+            line = String.format("%s🔹 %s: %.0f%% off%s",
+                    indent,
+                    dto.getName(),
+                    dto.getPercent() * 100,
+                    formatCondition(dto.getCondition(), itemIdToName));
+        }
 
-    if (isComposite) {
-        for (CreateDiscountDTO sub : dto.getSubDiscounts()) {
-            renderDiscountNode(sub, level + 1, container, itemIdToName);
+        Paragraph p = new Paragraph(line);
+        p.getStyle().set("font-size", "0.95rem").set("margin-left", "0.5rem");
+        container.add(p);
+
+        if (isComposite) {
+            for (CreateDiscountDTO sub : dto.getSubDiscounts()) {
+                renderDiscountNode(sub, level + 1, container, itemIdToName);
+            }
         }
     }
-}
-
 
 //    private String formatCondition(String condition) {
 //        if (condition == null || condition.equalsIgnoreCase("none")) return "";
@@ -1158,23 +1173,27 @@ private void renderDiscountNode(CreateDiscountDTO dto, int level, VerticalLayout
 //            default -> " (condition: " + condition + ")";
 //        };
 //    }
-private String formatCondition(String condition, Map<Integer, String> itemIdToName) {
-    if (condition == null || condition.equalsIgnoreCase("none")) return "";
-
-    String[] parts = condition.split(":");
-    return switch (parts[0]) {
-        case "TOTAL" -> " when cart total is over " + parts[1];
-        case "ITEM" -> {
-            int itemId = Integer.parseInt(parts[1]);
-            String itemName = itemIdToName.getOrDefault(itemId, "#" + itemId);
-            yield " when item is '" + itemName + "'";
+    private String formatCondition(String condition, Map<Integer, String> itemIdToName) {
+        if (condition == null || condition.equalsIgnoreCase("none")) {
+            return "";
         }
-        case "CATEGORY" -> " when category is " + parts[1];
-        case "QUANTITY" -> " when quantity exceeds " + parts[1];
-        default -> " (condition: " + condition + ")";
-    };
-}
 
-
+        String[] parts = condition.split(":");
+        return switch (parts[0]) {
+            case "TOTAL" ->
+                " when cart total is over " + parts[1];
+            case "ITEM" -> {
+                int itemId = Integer.parseInt(parts[1]);
+                String itemName = itemIdToName.getOrDefault(itemId, "#" + itemId);
+                yield " when item is '" + itemName + "'";
+            }
+            case "CATEGORY" ->
+                " when category is " + parts[1];
+            case "QUANTITY" ->
+                " when quantity exceeds " + parts[1];
+            default ->
+                " (condition: " + condition + ")";
+        };
+    }
 
 }
