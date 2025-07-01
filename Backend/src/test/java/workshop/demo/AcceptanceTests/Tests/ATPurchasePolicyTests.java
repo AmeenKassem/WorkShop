@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.DTOs.*;
+import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.*;
 import workshop.demo.DomainLayer.Store.*;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
@@ -130,7 +131,7 @@ public class ATPurchasePolicyTests extends AcceptanceTests {
         when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
         when(mockUserRepo.findById(user1.getId())).thenReturn(Optional.of(user1));
 
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
+        UIException ex = assertThrows(UIException.class, () -> {
             userService.addToUserCart(user1Token,
                     new ItemStoreDTO(product.getProductId(),2,100,Category.Electronics,3,store.getstoreId(),product.getName(),store.getStoreName()), 2);
         });
@@ -145,7 +146,7 @@ public class ATPurchasePolicyTests extends AcceptanceTests {
         when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
         when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
 
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
+        UIException ex = assertThrows(UIException.class, () -> {
             userService.addToUserCart(user2Token,
                     new ItemStoreDTO(product.getProductId(),1,100,Category.Electronics,3,store.getstoreId(),product.getName(),store.getStoreName()), 1);
         });
@@ -161,7 +162,7 @@ public class ATPurchasePolicyTests extends AcceptanceTests {
         when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
         when(mockUserRepo.findById(user1.getId())).thenReturn(Optional.of(user1));
 
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
+        UIException ex = assertThrows(UIException.class, () -> {
             userService.addToUserCart(user1Token,
                     new ItemStoreDTO(product.getProductId(),1,100,Category.Electronics,3,store.getstoreId(),product.getName(),store.getStoreName()), 1);
         });
@@ -193,7 +194,7 @@ public class ATPurchasePolicyTests extends AcceptanceTests {
         when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
         when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
 
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
+        UIException ex = assertThrows(UIException.class, () -> {
             userService.addToUserCart(user2Token,
                     new ItemStoreDTO(product.getProductId(),2,100,Category.Electronics,3,store.getstoreId(),product.getName(),store.getStoreName()), 2);
         });
@@ -210,7 +211,7 @@ public class ATPurchasePolicyTests extends AcceptanceTests {
         when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
         when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
 
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
+        UIException ex = assertThrows(UIException.class, () -> {
             userService.addToUserCart(user2Token,
                     new ItemStoreDTO(product.getProductId(),3,100,Category.Electronics,3,store.getstoreId(),product.getName(),store.getStoreName()), 3);
         });
@@ -244,7 +245,7 @@ public class ATPurchasePolicyTests extends AcceptanceTests {
         when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
         when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
 
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
+        UIException ex = assertThrows(UIException.class, () -> {
             userService.addToUserCart(user2Token,
                     new ItemStoreDTO(product.getProductId(),3,100,Category.Electronics,3,store.getstoreId(),product.getName(),store.getStoreName()), 3);
         });
@@ -259,7 +260,7 @@ public class ATPurchasePolicyTests extends AcceptanceTests {
         when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
         when(mockGuestRepo.findById(guestUser.getId())).thenReturn(Optional.of(guestUser));
 
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
+        UIException ex = assertThrows(UIException.class, () -> {
             userService.addToUserCart(guestToken,
                     new ItemStoreDTO(product.getProductId(),2,100,Category.Electronics,3,store.getstoreId(),product.getName(),store.getStoreName()), 2);
         });
@@ -287,7 +288,7 @@ public class ATPurchasePolicyTests extends AcceptanceTests {
         when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
         when(mockGuestRepo.findById(guestUser.getId())).thenReturn(Optional.of(guestUser));
 
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
+        UIException ex = assertThrows(UIException.class, () -> {
             userService.addToUserCart(guestToken,
                     new ItemStoreDTO(product.getProductId(),2,100,Category.Electronics,3,store.getstoreId(),product.getName(),store.getStoreName()), 2);
         });
@@ -304,7 +305,7 @@ public class ATPurchasePolicyTests extends AcceptanceTests {
         when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
         when(mockGuestRepo.findById(guestUser.getId())).thenReturn(Optional.of(guestUser));
 
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
+        UIException ex = assertThrows(UIException.class, () -> {
             userService.addToUserCart(guestToken,
                     new ItemStoreDTO(product.getProductId(),2,100,Category.Electronics,3,store.getstoreId(),product.getName(),store.getStoreName()), 2);
         });
