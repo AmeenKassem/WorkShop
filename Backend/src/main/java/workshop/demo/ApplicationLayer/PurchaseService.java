@@ -14,7 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -30,11 +37,8 @@ import workshop.demo.DomainLayer.Stock.Random;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.UserAuctionBid;
-
-import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Discount;
 import workshop.demo.DomainLayer.Store.DiscountScope;
-
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
@@ -254,7 +258,8 @@ public ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails paym
             }
         }
     }
-@Transactional
+
+    @Transactional
     public ParticipationInRandomDTO participateInRandom(String token, int randomId, int storeId, double amountPaid,
             PaymentDetails paymentDetails) throws Exception {
         logger.info("participateInRandom called with randomId={}, storeId={}", randomId, storeId);
@@ -324,7 +329,7 @@ public ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails paym
                     allParticipationsInRandoms.add(card);
                     itemsToRemove.add(specialItem);// Lost or not found → remove
                 } else if (card.mustRefund()) {
-                    logger.info("");
+                    logger.info("here in must refund -> refunding");
                     // If the card must be refunded, we remove it from the user's cart
                     itemsToRemove.add(specialItem);
                     paymentService.processRefund(card.transactionIdForPayment);
@@ -333,7 +338,7 @@ public ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails paym
             } else if (specialItem.type == SpecialType.Auction) { // AUCTION
                 // activeRepo.flush();
                 ActivePurcheses active = activeRepo.findById(specialItem.storeId).orElse(null);
-                
+
                 Auction auction = active.getAuctionById(specialItem.specialId);
                 // auction.endAuction();
                 UserAuctionBid bid = auction.getBid(specialItem.bidId);

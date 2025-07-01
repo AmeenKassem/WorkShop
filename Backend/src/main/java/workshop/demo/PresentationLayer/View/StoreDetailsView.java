@@ -176,7 +176,7 @@ public class StoreDetailsView extends VerticalLayout implements HasUrlParameter<
         Button addToCart = new Button("🛒 Add to Cart", e -> openAddToCartDialog(item));
         //here manage the special  items:
         String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
-        if (userType.equals("user")) {
+        if (userType.equals("user") || userType.equals("admin")) {
 
             List<RandomDTO> randomProductIds = presenter.getRandomProductIds(myStoreId, token);
             List<AuctionDTO> auctionProductIds = presenter.getAuctionProductIds(myStoreId, token);
