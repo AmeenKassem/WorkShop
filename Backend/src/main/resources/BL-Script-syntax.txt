@@ -5,6 +5,7 @@ admin :
 	resume <username> <admin username>;
 	cancel <username> <admin username>;
 
+
 user :
 	reg <username> <password> <age>;
 	login <username> <password>;
@@ -20,16 +21,25 @@ user :
 	
 	review store <user name> <store name> <msg>;
 	review product <username> <strore naame> <product name> <msg>;
-user add-manager <ownerName> <storeName> <managerName> <perm1> <perm2> ... ;
-user offer-answer <storeName> <senderName> <receiverName> <accept/reject> <owner/manager>;
-user delete-manager <ownerName> <storeName> <managerName>;
-user add-owner <ownerName> <storeName> <newOwnerName>;
-user delete-owner <ownerUsername> <storeName> <ownerToDeleteUsername>;
+	user add-manager <ownerName> <storeName> <managerName> <perm1> <perm2> ... ;
+	user offer-answer <storeName> <senderName> <receiverName> <accept/reject> <owner/manager>;
+	user delete-manager <ownerName> <storeName> <managerName>;
+	user add-owner <ownerName> <storeName> <newOwnerName>;
+	user delete-owner <ownerUsername> <storeName> <ownerToDeleteUsername>;
+	logout <username>;
+
+
+
+
+
 store :
 	create <username> <storeName> <storeCategory>;
 	close <ownerUsername> <storeName>;
 
 	item <ownerName> <storeName> <productName> <productCategory> <desc> <quantity> <price> <keyword1> <keyword2> ... ;
+	discount <ownerUsername> <storeName> <discountName> <percent> <type> <condition> <logic>
+	removediscount <ownerUsername> <storeName> <discountName>;
+
 
 	auction <username> <storeName> <productName> <auctionTime> <quantity> <startPrice>;
 	random <username> <store name> <product name> <random time> <quantity> <total price>;
