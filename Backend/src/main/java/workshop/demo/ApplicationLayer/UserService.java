@@ -231,7 +231,7 @@ public class UserService {
         }
         store.assertPurchasePolicies(
                 age,
-                itemToAdd.getQuantity(),
+                quantity,
                 itemToAdd.getProductId());
 
         user.addToCart(itemCart);

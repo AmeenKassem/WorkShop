@@ -1545,7 +1545,6 @@ public class StoreSTests {
         Store store = storeRepositoryjpa.findAll().get(0);
         assertEquals(1, storeService.getStorePolicies(createdStoreId).size());
 
-        
         Exception ex = assertThrows(Exception.class,
                 () -> userService.addToUserCart(NGToken, itemStoreDTO1, 1));
 
@@ -1574,10 +1573,9 @@ public class StoreSTests {
         assertEquals(1, storeService.getStorePolicies(createdStoreId).size());
 
         // Try to add less than min qty to cart
-        userService.addToUserCart(NGToken, itemStoreDTO, 1);
+        assertThrows(UIException.class,()->userService.addToUserCart(NGToken, itemStoreDTO, 1)) ;
 
-        Exception ex = assertThrows(Exception.class,
-                () -> purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
+        assertThrows(UIException.class,()-> purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
 
         // Remove the policy and verify
         PurchasePolicy policy = storeService.getStorePolicies(createdStoreId).get(0);
