@@ -244,7 +244,7 @@ public class Store {
         }
     }
 
-    public void assertPurchasePolicies(int age, int quantity, int productId) {
+    public void assertPurchasePolicies(int age, int quantity, int productId) throws UIException {
         policyManager.assertPolicies(age, quantity, productId);
     }
 

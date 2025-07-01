@@ -1,4 +1,4 @@
-package workshop.demo.Controllers.DataInitilizer;
+package workshop.demo.DataInitilizer;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -15,7 +15,7 @@ import workshop.demo.DomainLayer.User.Guest;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.InfrastructureLayer.*;
 
-import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountJpaRepository;
+// import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountJpaRepository;
 
 import java.lang.reflect.Field;
 
@@ -48,8 +48,8 @@ public class AcceptanceTests {
     @MockBean
     protected NodeJPARepository mockNodeRepo;
 
-    @MockBean
-    protected PurchaseRepository mockPurchaseRepo;
+    // @MockBean
+    // protected PurchaseRepository mockPurchaseRepo;
 
     @MockBean
     protected IOrderRepoDB mockOrderRepo;

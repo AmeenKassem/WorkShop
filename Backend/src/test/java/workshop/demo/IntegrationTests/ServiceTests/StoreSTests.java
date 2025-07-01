@@ -85,8 +85,8 @@ public class StoreSTests {
 
     @Autowired
     private IOrderRepoDB orderRepository;
-    @Autowired
-    private PurchaseRepository purchaseRepository;
+    // @Autowired
+    // private PurchaseRepository purchaseRepository;
 
     @Autowired
     private AuthenticationRepo authRepo;

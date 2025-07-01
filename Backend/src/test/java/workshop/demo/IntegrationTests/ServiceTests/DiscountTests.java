@@ -48,7 +48,7 @@ import workshop.demo.InfrastructureLayer.IStoreRepoDB;
 import workshop.demo.InfrastructureLayer.IStoreStockRepo;
 import workshop.demo.InfrastructureLayer.NodeJPARepository;
 import workshop.demo.InfrastructureLayer.OfferJpaRepository;
-import workshop.demo.InfrastructureLayer.PurchaseRepository;
+// import workshop.demo.InfrastructureLayer.PurchaseRepository;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 import workshop.demo.InfrastructureLayer.StoreTreeJPARepository;
 import workshop.demo.InfrastructureLayer.UserJpaRepository;
@@ -64,7 +64,6 @@ public class DiscountTests {
     @Autowired private IStoreRepoDB storeRepositoryjpa;
     @Autowired private GuestJpaRepository guestRepo;
     @Autowired private IOrderRepoDB orderRepository;
-    @Autowired private PurchaseRepository purchaseRepository;
     @Autowired private AuthenticationRepo authRepo;
     @Autowired PaymentServiceImp payment;
     @Autowired SupplyServiceImp serviceImp;

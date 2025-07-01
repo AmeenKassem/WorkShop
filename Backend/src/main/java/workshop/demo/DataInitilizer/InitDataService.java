@@ -1,4 +1,5 @@
-package workshop.demo.Controllers.DataInitilizer;
+
+package workshop.demo.DataInitilizer;
 
 import java.io.IOException;
 import java.nio.file.Files;
