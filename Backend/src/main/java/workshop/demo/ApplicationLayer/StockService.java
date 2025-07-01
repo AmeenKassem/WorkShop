@@ -370,6 +370,7 @@ public class StockService {
     // return stockRepo.getRandomsInStore(storeId);
     // }
     // stock managment:
+    @Transactional
     public ItemStoreDTO[] getProductsInStore(int storeId) throws UIException, DevException {
         logger.info("Fetching all products in store: {}", storeId);
         Store store = storeJpaRepo.findById(storeId).orElseThrow(() -> storeNotFound());

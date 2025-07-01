@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -50,15 +49,12 @@ import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.BaseNotifier;
 
-
-
 import workshop.demo.DomainLayer.Store.PurchasePolicy;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 import workshop.demo.InfrastructureLayer.*;
 import workshop.demo.SocketCommunication.SocketHandler;
-
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -73,7 +69,6 @@ public class StoreSTests {
     private NodeJPARepository node;
     // @Autowired
     // private NotificationRepository notificationRepository;
-
 
     @Autowired
     private IStockRepoDB stockRepositoryjpa;
@@ -160,7 +155,7 @@ public class StoreSTests {
         createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore", "ELECTRONICS");
 
         // ======================= PRODUCT & ITEM ADDITION =======================
-        String[] keywords = {"Laptop", "Lap", "top"};
+        String[] keywords = { "Laptop", "Lap", "top" };
         PID = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
         itemStoreDTO = new ItemStoreDTO(PID, 10, 2000, Category.Electronics, 0, createdStoreId, "Laptop", "TestStore");
 
@@ -193,7 +188,7 @@ public class StoreSTests {
     void testOwner_AddProductToStock() throws Exception {
         createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-        String[] keywords = {"Tablet", "Touchscreen"};
+        String[] keywords = { "Tablet", "Touchscreen" };
 
         var PID2 = stockService.addProduct(NOToken, "Tablet", Category.Electronics, "10-inch Tablet", keywords);
 
@@ -339,7 +334,7 @@ public class StoreSTests {
         UIException ex = assertThrows(UIException.class,
                 () -> storeService.AddOwnershipToStore(createdStoreId, authRepo.getUserId(token),
                         authRepo.getUserId(token), true)
-                // shouldnt be able to add a guest
+        // shouldnt be able to add a guest
         );
 
         assertEquals("user not registered!", ex.getMessage());
@@ -710,8 +705,6 @@ public class StoreSTests {
 
         storeService.rankStore(NGToken, createdStoreId, 0);
         assertTrue(storeService.getFinalRateInStore(createdStoreId) == 3);
-
-
 
         /// 3 is deafult
 
@@ -1171,22 +1164,25 @@ public class StoreSTests {
 
     // @Test
     // void test_validatedParticipation_storeNotInitialized_throwsDevException() {
-    //     DevException ex = assertThrows(DevException.class,
-    //             () -> stockRepository.validatedParticipation(10, 1, 999, 200.0) // storeId 999 doesn't exist
-    //     );
-    //     assertTrue(ex.getMessage().contains("Store stock not initialized"));
+    // DevException ex = assertThrows(DevException.class,
+    // () -> stockRepository.validatedParticipation(10, 1, 999, 200.0) // storeId
+    // 999 doesn't exist
+    // );
+    // assertTrue(ex.getMessage().contains("Store stock not initialized"));
     // }
 
     @Test
     void test_getRandomCardIfWinner_exception_returnsNull() {
-        //   ParticipationInRandomDTO result = stockRepository.getRandomCardforuser(999, 1, 10); // storeId 999 not set up
-        //   assertNull(result);
+        // ParticipationInRandomDTO result = stockRepository.getRandomCardforuser(999,
+        // 1, 10); // storeId 999 not set up
+        // assertNull(result);
     }
 
     @Test
     void test_getBidIfWinner_exception_returnsNull() {
-        //     SingleBid result = stockRepository.getBidIfWinner(999, 1, 1, SpecialType.BID); // storeId 999 not set up
-        //   assertNull(result);
+        // SingleBid result = stockRepository.getBidIfWinner(999, 1, 1,
+        // SpecialType.BID); // storeId 999 not set up
+        // assertNull(result);
     }
 
     @Test
@@ -1356,237 +1352,229 @@ public class StoreSTests {
     }
 
     @Test
-void testAddPolicy_InvalidPermission_Fails() throws Exception {
-    createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
-    int productId = 1; // You should specify a valid productId or mock appropriately
+    void testAddPolicy_InvalidPermission_Fails() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        int productId = 1; // You should specify a valid productId or mock appropriately
 
-    UIException ex = assertThrows(UIException.class,
-            () -> storeService.addPurchasePolicy(NGToken, createdStoreId, "NO_PRODUCT_UNDER_AGE", productId, 18));
-    assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
-}
-
-@Test
-void testRemovePolicy_UnknownPolicyKey_Fails() throws Exception {
-    createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
-    int productId = 1; // You should specify a valid productId or mock appropriately
-
-    UIException ex = assertThrows(UIException.class,
-            () -> storeService.removePurchasePolicy(NOToken, createdStoreId, "UNKNOWN", productId, null));
-    assertEquals(ErrorCodes.NO_POLICY, ex.getErrorCode());
-}
-
-@Test
-void testRemovePolicy_MinQtyMissingParam_Fails() throws Exception {
-    createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
-    int productId = 1; // You should specify a valid productId or mock appropriately
-
-    Exception ex = assertThrows(Exception.class,
-            () -> storeService.removePurchasePolicy(NOToken, createdStoreId, "MIN_QTY", productId, null));
-    assertEquals("Param must be specified", ex.getMessage());
-}
-
-
-    @Test
-void testAdd_NoAlcoholPolicy_Success_sucessbuy() throws Exception {
-    createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
-
-    // Add NO_PRODUCT_UNDER_AGE policy - specify productId and minBuyerAge (e.g., 18)
-    int minBuyerAge = 18;
-    int productId = stockService.addProduct(NOToken, "Red Wine", Category.ALCOHOL, "1948 vintage alcohol", null);
-    stockService.addItem(createdStoreId, NOToken, productId, 10, 2000, Category.ALCOHOL);
-
-    // Add policy for this product and age restriction
-    storeService.addPurchasePolicy(NOToken, createdStoreId, "NO_PRODUCT_UNDER_AGE", productId, minBuyerAge);
-
-    var itemStoreDTO1 = new ItemStoreDTO(productId, 1, 2000, Category.ALCOHOL, 0, createdStoreId, "Red Wine",
-            "TestStore");
-
-    Store store = storeRepositoryjpa.findById(createdStoreId).orElseThrow();
-    assertEquals(1, storeService.getStorePolicies(createdStoreId).size());
-
-    userService.addToUserCart(NOToken, itemStoreDTO1, 1);
-
-    PaymentDetails paymentDetails = PaymentDetails.testPayment();
-    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
-
-    ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(NOToken, paymentDetails, supplyDetails);
-    assertNotNull(receipts);
-    assertEquals(1, receipts.length);
-    assertEquals("TestStore", receipts[0].getStoreName());
-    assertEquals(2000.0,
-            receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
-
-    List<ReceiptDTO> result = orderService.getReceiptDTOsByUser(NOToken);
-
-    assertEquals(1, result.size());
-    ReceiptDTO r = result.get(0);
-    assertEquals("TestStore", r.getStoreName());
-    assertEquals(2000, r.getFinalPrice());
-
-    assertEquals(2, stockService.getProductsInStore(createdStoreId).length);
-
-    // Remove NO_PRODUCT_UNDER_AGE policy
-//     PurchasePolicy policy = storeService.getStorePolicies(createdStoreId).get(0);
-//   store.removePurchasePolicy(policy);
-
-//     assertEquals(0, storeService.getStorePolicies(createdStoreId).size());
-}
-    @Test
-void testAddAndRemove_NoAlcoholPolicy_Success_sucessbuy() throws Exception {
-    createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
-
-    // Add NO_PRODUCT_UNDER_AGE policy - specify productId and minBuyerAge (e.g., 18)
-    int minBuyerAge = 18;
-    int productId = stockService.addProduct(NOToken, "Red Wine", Category.ALCOHOL, "1948 vintage alcohol", null);
-    stockService.addItem(createdStoreId, NOToken, productId, 10, 2000, Category.ALCOHOL);
-
-    // Add policy for this product and age restriction
-    storeService.addPurchasePolicy(NOToken, createdStoreId, "NO_PRODUCT_UNDER_AGE", productId, minBuyerAge);
-
-    var itemStoreDTO1 = new ItemStoreDTO(productId, 1, 2000, Category.ALCOHOL, 0, createdStoreId, "Red Wine",
-            "TestStore");
-
-    Store store = storeRepositoryjpa.findById(createdStoreId).orElseThrow();
-    assertEquals(1, storeService.getStorePolicies(createdStoreId).size());
-
-    userService.addToUserCart(NOToken, itemStoreDTO1, 1);
-
-    PaymentDetails paymentDetails = PaymentDetails.testPayment();
-    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
-
-    ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(NOToken, paymentDetails, supplyDetails);
-    assertNotNull(receipts);
-    assertEquals(1, receipts.length);
-    assertEquals("TestStore", receipts[0].getStoreName());
-    assertEquals(2000.0,
-            receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
-
-    List<ReceiptDTO> result = orderService.getReceiptDTOsByUser(NOToken);
-
-    assertEquals(1, result.size());
-    ReceiptDTO r = result.get(0);
-    assertEquals("TestStore", r.getStoreName());
-    assertEquals(2000, r.getFinalPrice());
-
-    assertEquals(2, stockService.getProductsInStore(createdStoreId).length);
-
-    PurchasePolicy policy = storeService.getStorePolicies(createdStoreId).get(0);
-storeService.removePurchasePolicy(NOToken, createdStoreId, policy.getPolicyType().name(), policy.getProductId(), minBuyerAge);
-    assertEquals(0, storeService.getStorePolicies(createdStoreId).size());
-}
-
-
-@Test
-void testAddAndRemove_NoAlcoholPolicy_Success_failed() throws Exception {
-    // Add NO_PRODUCT_UNDER_AGE policy
-    createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
-
-    // For NO_PRODUCT_UNDER_AGE you need to specify productId and minimum age
-    int minBuyerAge = 18;
-
-    int productId = stockService.addProduct(NOToken, "Red Wine", Category.ALCOHOL, "1948 vintage alcohol", null);
-    stockService.addItem(createdStoreId, NOToken, productId, 10, 1000, Category.ALCOHOL);
-    var itemStoreDTO1 = new ItemStoreDTO(productId, 1, 2000, Category.ALCOHOL, 0, createdStoreId, "Red Wine", "TestStore");
-
-    // Add policy for productId with age restriction
-    storeService.addPurchasePolicy(NOToken, createdStoreId, "NO_PRODUCT_UNDER_AGE", productId, minBuyerAge);
-
-    Store store = storeRepositoryjpa.findAll().get(0);
-    assertEquals(1, storeService.getStorePolicies(createdStoreId).size());
-
-    userService.addToUserCart(NGToken, itemStoreDTO1, 1);
-
-    PaymentDetails paymentDetails = PaymentDetails.testPayment();
-    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
-
-    Exception ex = assertThrows(Exception.class,
-            () -> purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
-
-    for (var a : stockService.getProductsInStore(createdStoreId)) {
-        System.out.println(a.getProductName());
+        UIException ex = assertThrows(UIException.class,
+                () -> storeService.addPurchasePolicy(NGToken, createdStoreId, "NO_PRODUCT_UNDER_AGE", productId, 18));
+        assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
     }
 
-    assertEquals(2, stockService.getProductsInStore(createdStoreId).length);
-    assertEquals(10, stockService.getProductsInStore(createdStoreId)[1].getQuantity());
+    @Test
+    void testRemovePolicy_UnknownPolicyKey_Fails() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        int productId = 1; // You should specify a valid productId or mock appropriately
 
-    // Remove NO_PRODUCT_UNDER_AGE policy
-    PurchasePolicy policy = storeService.getStorePolicies(createdStoreId).get(0);
-storeService.removePurchasePolicy(NOToken, createdStoreId, "NO_PRODUCT_UNDER_AGE", productId, minBuyerAge);
-    assertTrue(storeService.getStorePolicies(createdStoreId).isEmpty());
-}
+        UIException ex = assertThrows(UIException.class,
+                () -> storeService.removePurchasePolicy(NOToken, createdStoreId, "UNKNOWN", productId, null));
+        assertEquals(ErrorCodes.NO_POLICY, ex.getErrorCode());
+    }
+
+    @Test
+    void testRemovePolicy_MinQtyMissingParam_Fails() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        int productId = 1; // You should specify a valid productId or mock appropriately
+
+        Exception ex = assertThrows(Exception.class,
+                () -> storeService.removePurchasePolicy(NOToken, createdStoreId, "MIN_QTY", productId, null));
+        assertEquals("Param must be specified", ex.getMessage());
+    }
+
+    @Test
+    void testAdd_NoAlcoholPolicy_Success_sucessbuy() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+
+        // Add NO_PRODUCT_UNDER_AGE policy - specify productId and minBuyerAge (e.g.,
+        // 18)
+        int minBuyerAge = 18;
+        int productId = stockService.addProduct(NOToken, "Red Wine", Category.ALCOHOL, "1948 vintage alcohol", null);
+        stockService.addItem(createdStoreId, NOToken, productId, 10, 2000, Category.ALCOHOL);
+
+        // Add policy for this product and age restriction
+        storeService.addPurchasePolicy(NOToken, createdStoreId, "NO_PRODUCT_UNDER_AGE", productId, minBuyerAge);
+
+        var itemStoreDTO1 = new ItemStoreDTO(productId, 1, 2000, Category.ALCOHOL, 0, createdStoreId, "Red Wine",
+                "TestStore");
+
+        Store store = storeRepositoryjpa.findById(createdStoreId).orElseThrow();
+        assertEquals(1, storeService.getStorePolicies(createdStoreId).size());
+
+        userService.addToUserCart(NOToken, itemStoreDTO1, 1);
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+
+        ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(NOToken, paymentDetails, supplyDetails);
+        assertNotNull(receipts);
+        assertEquals(1, receipts.length);
+        assertEquals("TestStore", receipts[0].getStoreName());
+        assertEquals(2000.0,
+                receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
+
+        List<ReceiptDTO> result = orderService.getReceiptDTOsByUser(NOToken);
+
+        assertEquals(1, result.size());
+        ReceiptDTO r = result.get(0);
+        assertEquals("TestStore", r.getStoreName());
+        assertEquals(2000, r.getFinalPrice());
+
+        assertEquals(2, stockService.getProductsInStore(createdStoreId).length);
+
+        // Remove NO_PRODUCT_UNDER_AGE policy
+        // PurchasePolicy policy = storeService.getStorePolicies(createdStoreId).get(0);
+        // store.removePurchasePolicy(policy);
+
+        // assertEquals(0, storeService.getStorePolicies(createdStoreId).size());
+    }
+
+    @Test
+    void testAddAndRemove_NoAlcoholPolicy_Success_sucessbuy() throws Exception {
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+
+        // Add NO_PRODUCT_UNDER_AGE policy - specify productId and minBuyerAge (e.g.,
+        // 18)
+        int minBuyerAge = 18;
+        int productId = stockService.addProduct(NOToken, "Red Wine", Category.ALCOHOL, "1948 vintage alcohol", null);
+        stockService.addItem(createdStoreId, NOToken, productId, 10, 2000, Category.ALCOHOL);
+
+        // Add policy for this product and age restriction
+        storeService.addPurchasePolicy(NOToken, createdStoreId, "NO_PRODUCT_UNDER_AGE", productId, minBuyerAge - 1);
+
+        var itemStoreDTO1 = new ItemStoreDTO(productId, 1, 2000, Category.ALCOHOL, 0, createdStoreId, "Red Wine",
+                "TestStore");
+
+        Store store = storeRepositoryjpa.findById(createdStoreId).orElseThrow();
+        assertEquals(1, storeService.getStorePolicies(createdStoreId).size());
+
+        // assertThrows(UIException.class,()->{
+        userService.addToUserCart(NOToken, itemStoreDTO1, 1);
+        // });
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+
+        ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(NOToken, paymentDetails, supplyDetails);
+        assertNotNull(receipts);
+        assertEquals(1, receipts.length);
+        assertEquals("TestStore", receipts[0].getStoreName());
+        assertEquals(2000.0,
+                receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
+
+        List<ReceiptDTO> result = orderService.getReceiptDTOsByUser(NOToken);
+
+        assertEquals(1, result.size());
+        ReceiptDTO r = result.get(0);
+        assertEquals("TestStore", r.getStoreName());
+        assertEquals(2000, r.getFinalPrice());
+
+        assertEquals(2, stockService.getProductsInStore(createdStoreId).length);
+
+        PurchasePolicy policy = storeService.getStorePolicies(createdStoreId).get(0);
+        storeService.removePurchasePolicy(NOToken, createdStoreId, policy.getPolicyType().name(), policy.getProductId(),
+                minBuyerAge);
+        assertEquals(0, storeService.getStorePolicies(createdStoreId).size());
+    }
+
+    @Test
+    void testAddAndRemove_NoAlcoholPolicy_Success_failed() throws Exception {
+        // Add NO_PRODUCT_UNDER_AGE policy
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+
+        // For NO_PRODUCT_UNDER_AGE you need to specify productId and minimum age
+        int minBuyerAge = 18;
+
+        int productId = stockService.addProduct(NOToken, "Red Wine", Category.ALCOHOL, "1948 vintage alcohol", null);
+        stockService.addItem(createdStoreId, NOToken, productId, 10, 1000, Category.ALCOHOL);
+        var itemStoreDTO1 = new ItemStoreDTO(productId, 1, 2000, Category.ALCOHOL, 0, createdStoreId, "Red Wine",
+                "TestStore");
+
+        // Add policy for productId with age restriction
+        storeService.addPurchasePolicy(NOToken, createdStoreId, "NO_PRODUCT_UNDER_AGE", productId, minBuyerAge + 1);
+
+        Store store = storeRepositoryjpa.findAll().get(0);
+        assertEquals(1, storeService.getStorePolicies(createdStoreId).size());
+        Exception ex = assertThrows(Exception.class,
+                () -> userService.addToUserCart(NGToken, itemStoreDTO1, 1));
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
 
-  @Test
-void testAddAndRemove_MinQtyPolicy_Success_failedbuy() throws Exception {
-    int minQty = 2;
-    int productId = itemStoreDTO.getProductId();
+        assertThrows(UIException.class, ()->purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
 
-    PaymentDetails paymentDetails = PaymentDetails.testPayment();
-    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+        
+    }
 
-    createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+    @Test
+    void testAddAndRemove_MinQtyPolicy_Success_failedbuy() throws Exception {
+        int minQty = 2;
+        int productId = itemStoreDTO.getProductId();
 
-    // Add MIN_QTY policy
-    storeService.addPurchasePolicy(NOToken, createdStoreId, "MIN_QTY", productId, minQty);
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-    Store store = storeRepositoryjpa.findById(createdStoreId).orElseThrow();
-    assertEquals(1, storeService.getStorePolicies(createdStoreId).size());
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-    // Try to add less than min qty to cart
-    userService.addToUserCart(NGToken, itemStoreDTO, 1);
+        // Add MIN_QTY policy
+        storeService.addPurchasePolicy(NOToken, createdStoreId, "MIN_QTY", productId, minQty);
 
-    Exception ex = assertThrows(Exception.class, () ->
-            purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails)
-    );
+        Store store = storeRepositoryjpa.findById(createdStoreId).orElseThrow();
+        assertEquals(1, storeService.getStorePolicies(createdStoreId).size());
 
-    // Remove the policy and verify
-    PurchasePolicy policy = storeService.getStorePolicies(createdStoreId).get(0);
-storeService.removePurchasePolicy(NOToken, createdStoreId, "MIN_QTY", productId, minQty);
+        // Try to add less than min qty to cart
+        userService.addToUserCart(NGToken, itemStoreDTO, 1);
 
-    assertFalse(storeService.getStorePolicies(createdStoreId).stream()
-            .anyMatch(p -> p.toString().contains("MIN_QTY")));
-}
+        Exception ex = assertThrows(Exception.class,
+                () -> purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails));
 
- @Test
-void testAddAndRemove_MinQtyPolicy_Success_sucessbuy() throws Exception {
-    int minQty = 2;
-    PaymentDetails paymentDetails = PaymentDetails.testPayment();
-    SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+        // Remove the policy and verify
+        PurchasePolicy policy = storeService.getStorePolicies(createdStoreId).get(0);
+        storeService.removePurchasePolicy(NOToken, createdStoreId, "MIN_QTY", productId, minQty);
 
-    createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
+        assertFalse(storeService.getStorePolicies(createdStoreId).stream()
+                .anyMatch(p -> p.toString().contains("MIN_QTY")));
+    }
 
-    // Use productId from itemStoreDTO for the policy
-    int productId = itemStoreDTO.getProductId();
+    @Test
+    void testAddAndRemove_MinQtyPolicy_Success_sucessbuy() throws Exception {
+        int minQty = 2;
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-    // Add MIN_QTY policy with productId and minQty
-    storeService.addPurchasePolicy(NOToken, createdStoreId, "MIN_QTY", productId, minQty);
+        createdStoreId = storeRepositoryjpa.findAll().get(0).getstoreId();
 
-    Store store = storeRepositoryjpa.findById(createdStoreId).orElseThrow();
+        // Use productId from itemStoreDTO for the policy
+        int productId = itemStoreDTO.getProductId();
 
-    assertEquals(1, storeService.getStorePolicies(createdStoreId).size());
+        // Add MIN_QTY policy with productId and minQty
+        storeService.addPurchasePolicy(NOToken, createdStoreId, "MIN_QTY", productId, minQty);
 
-    // Add minimum quantity to cart to satisfy the policy
-    userService.addToUserCart(NGToken, itemStoreDTO, 2);
+        Store store = storeRepositoryjpa.findById(createdStoreId).orElseThrow();
 
-    ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
+        assertEquals(1, storeService.getStorePolicies(createdStoreId).size());
 
-    PurchasePolicy policy = storeService.getStorePolicies(createdStoreId).get(0);
-storeService.removePurchasePolicy(NOToken, createdStoreId, "MIN_QTY", productId, minQty);
+        // Add minimum quantity to cart to satisfy the policy
+        userService.addToUserCart(NGToken, itemStoreDTO, 2);
 
-    assertNotNull(receipts);
-    assertEquals(1, receipts.length);
-    assertEquals("TestStore", receipts[0].getStoreName());
-    assertEquals(4000.0, receipts[0].getFinalPrice());
- 
-    List<ReceiptDTO> result = orderService.getReceiptDTOsByUser(NGToken);
+        ReceiptDTO[] receipts = purchaseService.buyRegisteredCart(NGToken, paymentDetails, supplyDetails);
 
-    assertEquals(1, result.size());
-    ReceiptDTO r = result.get(0);
-    assertEquals("TestStore", r.getStoreName());
-    assertEquals(4000, r.getFinalPrice());
+        PurchasePolicy policy = storeService.getStorePolicies(createdStoreId).get(0);
+        storeService.removePurchasePolicy(NOToken, createdStoreId, "MIN_QTY", productId, minQty);
 
+        assertNotNull(receipts);
+        assertEquals(1, receipts.length);
+        assertEquals("TestStore", receipts[0].getStoreName());
+        assertEquals(4000.0, receipts[0].getFinalPrice());
 
-    assertTrue(storeService.getStorePolicies(createdStoreId).isEmpty());
-}
+        List<ReceiptDTO> result = orderService.getReceiptDTOsByUser(NGToken);
+
+        assertEquals(1, result.size());
+        ReceiptDTO r = result.get(0);
+        assertEquals("TestStore", r.getStoreName());
+        assertEquals(4000, r.getFinalPrice());
+
+        assertTrue(storeService.getStorePolicies(createdStoreId).isEmpty());
+    }
 
 }
