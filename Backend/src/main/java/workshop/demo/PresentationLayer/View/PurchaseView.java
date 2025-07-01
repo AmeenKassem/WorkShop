@@ -37,6 +37,8 @@ public class PurchaseView extends VerticalLayout implements HasUrlParameter<Stri
     private final TextField country = new TextField("Country");
 
     private final Button purchaseButton = new Button("Confirm Purchase");
+    private final TextField couponCode = new TextField("Coupon Code (optional)");
+
 
     private final PurchasePresenter presenter;
     private String mode = "regular"; // Default
@@ -53,7 +55,7 @@ public class PurchaseView extends VerticalLayout implements HasUrlParameter<Stri
                 NotificationView.showError("Please fill in all required fields.");
                 return;
             }
-
+            String coupon = couponCode.getValue();
             if ("special".equalsIgnoreCase(mode)) {
                 presenter.submitSpecialPurchase(
                         getCardNumber(), getCardHolderName(), getExpirationDate(), getCvv(),
@@ -61,7 +63,7 @@ public class PurchaseView extends VerticalLayout implements HasUrlParameter<Stri
             } else {
                 presenter.submitRegularPurchase(
                         getCardNumber(), getCardHolderName(), getExpirationDate(), getCvv(),
-                        getAddress(), getCity(), getCountry(), getZipCode(), getName());
+                        getAddress(), getCity(), getCountry(), getZipCode(), getName(),coupon);
             }
         });
         VerticalLayout formCard = new VerticalLayout(
@@ -76,6 +78,7 @@ public class PurchaseView extends VerticalLayout implements HasUrlParameter<Stri
                 zipCode,
                 name,
                 country,
+                couponCode,
                 purchaseButton);
         formCard.addClassName("form-card");
 
@@ -154,13 +157,21 @@ public class PurchaseView extends VerticalLayout implements HasUrlParameter<Stri
             wrapper.add(empty);
         } else {
             for (ReceiptDTO receipt : receipts) {
-                VerticalLayout card = new VerticalLayout();
-                card.addClassName("receipt-card");
-                card.add(new Paragraph("📦 Store: " + receipt.getStoreName()));
-                card.add(new Paragraph("📅 Date: " + receipt.getDate()));
-                card.add(new Paragraph("💳 Total: $" + receipt.getFinalPrice()));
-                wrapper.add(card);
-            }
+            VerticalLayout card = new VerticalLayout();
+    card.addClassName("receipt-card");
+    card.add(new Paragraph("📦 Store: " + receipt.getStoreName()));
+    card.add(new Paragraph("📅 Date: " + receipt.getDate()));
+
+    Paragraph productsParagraph = new Paragraph("🛒 Products:\n");
+    for (ReceiptProduct product : receipt.getProductsList()) {
+        String productInfo = "- " + product.getProductName()  ;
+        productsParagraph.add(new Paragraph(productInfo));
+    }
+    card.add(productsParagraph);
+
+    card.add(new Paragraph("💳 Total: $" + receipt.getFinalPrice()));
+    wrapper.add(card);
+}
         }
 
         Button close = new Button("Close", e -> dialog.close());

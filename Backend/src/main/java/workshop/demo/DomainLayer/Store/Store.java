@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 
 import jakarta.persistence.*;
+import jakarta.transaction.Transactional;
+
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,12 +17,6 @@ import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountEntity;
 import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountMapper;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Transient;
 
 @Entity
 public class Store {
@@ -34,7 +30,7 @@ public class Store {
     private String storeName;
     private String category;
     private boolean active;
-    //in the db: 5 coulmns each is a counter
+    // in the db: 5 coulmns each is a counter
     @Column(name = "rank_1_count")
     private int rank1;
     @Column(name = "rank_2_count")
@@ -52,8 +48,9 @@ public class Store {
     @JoinColumn(name = "discount_id")
     private DiscountEntity discountEntity;
 
-    @Transient
-    private final List<PurchasePolicy> purchasePolicies = new ArrayList<>();
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "policy_manager_id")
+    private PolicyManager policyManager;
 
     public Store(String storeName, String cat) {
         this.storeName = storeName;
@@ -62,9 +59,8 @@ public class Store {
 
     }
 
-    public Store() {}
-
-
+    public Store() {
+    }
 
     public int getstoreId() {
         return storeId;
@@ -115,7 +111,7 @@ public class Store {
 
         int totalVotes = 0;
         int WRank = 0;
-        int[] rank = {rank1, rank2, rank3, rank4, rank5};
+        int[] rank = { rank1, rank2, rank3, rank4, rank5 };
         for (int i = 0; i < rank.length; i++) {
             int count = rank[i]; // votes for rank (i+1)
             totalVotes += count;
@@ -142,7 +138,6 @@ public class Store {
         return discount;
     }
 
-
     public void setDiscount(Discount discount) {
         this.discount = discount;
     }
@@ -155,7 +150,8 @@ public class Store {
             this.discount = d;
         } else {
             // wrap old and new discount into MaxDiscount by default
-            MultiplyDiscount combo = new MultiplyDiscount("MULTIPLY("+this.discount.getName()+"+"+d.getName()+")");
+            MultiplyDiscount combo = new MultiplyDiscount(
+                    "MULTIPLY(" + this.discount.getName() + "+" + d.getName() + ")");
             combo.addDiscount(discount);
             combo.addDiscount(d);
             this.discount = combo;
@@ -166,7 +162,8 @@ public class Store {
     public boolean removeDiscountByName(String name) {
         Discount root = getDiscount(); // reconstructs if null
 
-        if (root == null) return false;
+        if (root == null)
+            return false;
         if (root.getName().equals(name)) {
             this.discount = null;
             return true;
@@ -183,31 +180,20 @@ public class Store {
         return false;
     }
 
-
-
-
-    public void addPurchasePolicy(PurchasePolicy p) throws Exception {
+    public void addPurchasePolicy(PurchasePolicy p) {
         if (p == null) {
-            throw new Exception("Policy must not be null");
+            throw new IllegalArgumentException("Purchase policy must not be null");
         }
-        purchasePolicies.add(p);
-
+        policyManager.addPolicy(p);
     }
 
-    public void removePurchasePolicy(PurchasePolicy p) {
-        purchasePolicies.remove(p);
+    public boolean removePurchasePolicy(PurchasePolicy.PolicyType type, int productId, int param) {
+        return policyManager.removePolicy(type, productId, param);
     }
 
+    @Transactional
     public List<PurchasePolicy> getPurchasePolicies() {
-        return Collections.unmodifiableList(purchasePolicies);
-    }
-
-    public void assertPurchasePolicies(UserDTO buyer, List<ItemStoreDTO> cart) throws Exception {
-        for (PurchasePolicy p : purchasePolicies) {
-            if (!p.isSatisfied(buyer, cart)) {
-                throw new Exception(p.violationMessage());
-            }
-        }
+        return List.copyOf(policyManager.getPurchasePolicies());
     }
 
     public Discount findDiscountByName(String targetName) {
@@ -240,13 +226,13 @@ public class Store {
     public void setName(String storeName2) {
         this.storeName = storeName2;
     }
+
     public DiscountEntity getDiscountEntity() {
         if (discountEntity != null) {
             return (DiscountEntity) Hibernate.unproxy(discountEntity);
         }
         return null;
     }
-
 
     public void setDiscountEntity(DiscountEntity discountEntity) {
         this.discountEntity = discountEntity;
@@ -258,6 +244,24 @@ public class Store {
         }
     }
 
+    public void assertPurchasePolicies(int age, int quantity, int productId) throws UIException {
+        policyManager.assertPolicies(age, quantity, productId);
+    }
 
+    public void setPolicyManager(PolicyManager policyManager) {
+        this.policyManager = policyManager;
+    }
 
+    public PolicyManager getPolicyManager() {
+        return policyManager;
+    }
+
+    public List<String> getPurchasePoliciesStrings(int productId) {
+        List<String> res = new ArrayList<>();
+        for (PurchasePolicy string : getPurchasePolicies()) {
+            if (string.getProductId() == productId)
+                res.add(string.violationMessage());
+        }
+        return res;
+    }
 }

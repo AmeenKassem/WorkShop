@@ -10,6 +10,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
+// import org.hibernate.engine.jdbc.env.internal.LobCreationLogging_.logger;
 import org.springframework.beans.factory.annotation.Autowired;
 // import org.hibernate.engine.jdbc.env.internal.LobCreationLogging_.logger;
 import org.springframework.security.access.method.P;
@@ -76,13 +77,14 @@ public class Auction {
         activePurcheses = active;
     }
 
-    // @Transactional
+    @Transactional
     public void endAuction() {
         if (endTimeMillis > System.currentTimeMillis() || status == AuctionStatus.FINISH)
             return;
         for (UserAuctionBid UserAuctionBid : bids) {
             if (maxBid == UserAuctionBid.getBidPrice()) {
                 winnerId = UserAuctionBid.getId();
+                UserAuctionBid.markAsWinner();
             }
             UserAuctionBid.finishAuction();
 
@@ -197,7 +199,9 @@ public class Auction {
         return null;
     }
 
+    @Transactional
     public boolean bidIsWinner(int bidId) {
+        loadBids();
         return bidId == winnerId;
     }
 
@@ -269,7 +273,7 @@ public class Auction {
 
     public void loadBids() {
         for (UserAuctionBid userAuctionBid : bids) {
-
+            System.out.println("bid loaded");
         }
     }
 

@@ -68,7 +68,6 @@ public class ManageStoreView extends VerticalLayout implements HasUrlParameter<I
                 new Button("👤 Manage My Owners", e -> UI.getCurrent().navigate("manageMyOwners/" + myStoreId)),
                 new Button("👔 Manage My Managers", e -> UI.getCurrent().navigate("manage-store-managers/" + myStoreId)),
                 new Button("🎯 Manage Special Purchases", e -> UI.getCurrent().navigate("manage-store-special-purchases/" + myStoreId)),
-                new Button("📋 Manage Store's Policy", e -> openPurchasePolicyDialog()),
                 new Button("📴 Deactivate Store", e -> presenter.deactivateStore(myStoreId))
         );
 

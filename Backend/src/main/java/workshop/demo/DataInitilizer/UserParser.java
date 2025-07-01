@@ -1,11 +1,15 @@
-package workshop.demo.ApplicationLayer.DataInitilizer;
+package workshop.demo.DataInitilizer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.AuctionStatus;
+import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.ItemCartDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.PaymentDetails;
@@ -15,17 +19,23 @@ import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
-import workshop.demo.DomainLayer.User.CartItem;
+import workshop.demo.DomainLayer.StoreUserConnection.Permission;
+import workshop.demo.DomainLayer.User.Registered;
 
-import org.springframework.stereotype.Component;
+// import jakarta.transaction.Transactional;
 
-import jakarta.transaction.Transactional;
+
 
 @Component
 public class UserParser extends ManagerDataInit {
-    @Transactional
+
+
+
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void user(List<String> construction) {
         List<String> toSend = construction.subList(1, construction.size());
+       
         switch (construction.get(0).toLowerCase()) {
             case "reg":
                 register(toSend);
@@ -42,8 +52,29 @@ public class UserParser extends ManagerDataInit {
             case "random":
                 random(toSend);
                 break;
+            case "bid":
+                bid(toSend);
+                break;
             case "purchase":
                 purchase(toSend);
+                break;
+            case "add-manager":
+                offerManager(toSend);
+                break;
+            case "offer-answer":
+                answerOffer(toSend);
+                break;
+            case "delete-manager":
+                deleteManager(toSend);
+                break;
+            case "add-owner":
+                offerOwner(toSend);
+                break;
+            case "delete-owner":
+                deleteOwner(toSend);
+                break;
+            case "logout":
+                logout(toSend);
                 break;
 
             default:
@@ -53,11 +84,40 @@ public class UserParser extends ManagerDataInit {
         }
     }
 
+    private void bid(List<String> toSend) {
+        if (toSend.size() != 4) {
+            log("syntax error on line " + line
+                    + " : params does not match bid <username> <storeName> <productName> <bid>");
+            error = true;
+            return;
+        }
+        String token = getTokenForUserName(toSend.get(0));
+        if (token == null) {
+            return;
+        }
+        String storeName = toSend.get(1).replace("-", " ");
+        int id = getStoreIdByName(storeName);
+        String productName = toSend.get(2).replace("-", " ");
+        double offer = Double.parseDouble(toSend.get(3));
+        try {
+            BidDTO[] bidsOnStore = activeService.getAllActiveBids_user(token, id);
+            int specialId = -1;
+            for (BidDTO bidDTO : bidsOnStore) {
+                if (bidDTO.productName.equals(productName))
+                    specialId = bidDTO.bidId;
+            }
+            activeService.addUserBidToBid(token, specialId, id, offer);
+            log("user bid placed successfuly!");
+        } catch (Exception e) {
+            log("Error msg , " + e.getMessage());
+        }
+    }
+
     @Transactional
     public void random(List<String> toSend) {
         if (toSend.size() != 4) {
             log("syntax error on line " + line
-                    + " : params does not match auction <username> <storeName> <productName> <bid>");
+                    + " : params does not match random <username> <storeName> <productName> <bid>");
             error = true;
             return;
         }
@@ -80,15 +140,16 @@ public class UserParser extends ManagerDataInit {
                 log("random " + productName + " does not found!");
                 return;
             }
-            
-            purchaseService.participateInRandom(token, random.id, id, price,PaymentDetails.testPayment());
+
+            purchaseService.participateInRandom(token, random.id, id, price, PaymentDetails.testPayment());
             log("user " + toSend.get(0) + "bid on auction set successfully ");
         } catch (Exception e) {
             log("got error on line " + line + " :" + e.getMessage());
         }
     }
 
-    private void purchase(List<String> toSend) {
+    @Transactional
+    public void purchase(List<String> toSend) {
         if (toSend.size() != 3) {
             log("invalid params purchase <userName> <special/cart> <valid/unvalid> . line " + line);
             error = true;
@@ -209,7 +270,7 @@ public class UserParser extends ManagerDataInit {
                     return;
                 }
                 userService.addToUserCart(userToken, items[0], quantity);
-                log("removing " + productName + " from user success !!");
+                log("adding " + productName + " from user success !!");
 
             } catch (Exception e) {
                 log("line " + line + " got error :" + e.getMessage());
@@ -297,5 +358,203 @@ public class UserParser extends ManagerDataInit {
         }
     }
 
+    private void offerManager(List<String> toSend) {
+        if (toSend.size() < 4) {
+            log("syntax error on line " + line + ": user manager <ownerName> <storeName> <managerName> <perm1> ...");
+            //error = true;
+            return;
+        }
 
-}
+        String ownerName = toSend.get(0);
+        String storeName = toSend.get(1);
+        String managerName = toSend.get(2);
+        List<String> permissionNames = toSend.subList(3, toSend.size());
+
+        String token = getTokenForUserName(ownerName);
+        if (token == null) return;
+
+        int storeId = getStoreIdByName(storeName);
+        if (storeId == -1) {
+            log("store " + storeName + " not found");
+            //error = true;
+            return;
+        }
+
+        List<Permission> permissions = new ArrayList<>();
+        for (String name : permissionNames) {
+            try {
+                permissions.add(Permission.valueOf(name));
+            } catch (IllegalArgumentException e) {
+                log("invalid permission '" + name + "' on line " + line);
+                //error = true;
+                return;
+            }
+        }
+        try {
+            storeService.MakeOfferToAddManagerToStore(storeId, token, managerName, permissions);
+            log("offered manager role to " + managerName + " on store " + storeName);
+        } catch (Exception e) {
+            log("error making manager offer on line " + line + ": " + e.getMessage());
+            error = true;
+        }
+    }
+
+    private void answerOffer(List<String> toSend) {
+        if (toSend.size() != 5) {
+            log("syntax error on line " + line + ": user offer-answer <storeName> <senderName> <receiverName> <accept/reject> <manager/owner>");
+            error = true;
+            return;
+        }
+
+        String storeName = toSend.get(0);
+        String senderName = toSend.get(1);
+        String receiverName = toSend.get(2);
+        boolean accepted = toSend.get(3).equalsIgnoreCase("accept");
+        boolean toBeOwner = toSend.get(4).equalsIgnoreCase("owner");
+        int storeId = getStoreIdByName(storeName);
+        if (storeId == -1) {
+            log("store " + storeName + " not found");
+            error = true;
+            return;
+        }
+        try {
+            storeService.reciveAnswerToOffer(storeId, senderName, receiverName, accepted, toBeOwner);
+            log("offer answer handled successfully: " + (accepted ? "accepted" : "rejected") + " as " + (toBeOwner ? "owner" : "manager"));
+        } catch (Exception e) {
+            log("error handling offer-answer on line " + line + ": " + e.getMessage());
+            error = true;
+        }
+    }
+
+    private void deleteManager(List<String> toSend) {
+        if (toSend.size() != 3) {
+            log("syntax error on line " + line + ": user delete-manager <ownerName> <storeName> <managerName>");
+            error = true;
+            return;
+        }
+        String ownerName = toSend.get(0);
+        String storeName = toSend.get(1);
+        String managerName = toSend.get(2);
+        String token = getTokenForUserName(ownerName);
+        if (token == null) return;
+        int storeId = getStoreIdByName(storeName);
+        if (storeId == -1) {
+            log("store " + storeName + " not found");
+            error = true;
+            return;
+        }
+        Integer managerId = ids.get(managerName);
+        if (managerId == null) {
+            log("manager " + managerName + " not found in id ");
+            error = true;
+            return;
+        }
+        try {
+            storeService.deleteManager(storeId, token, managerId);
+            log("manager " + managerName + " removed from store " + storeName);
+        } catch (Exception e) {
+            log("error deleting manager on line " + line + ": " + e.getMessage());
+            error = true;
+        }
+    }
+
+    private void deleteOwner(List<String> toSend) {
+        if (toSend.size() != 3) {
+            log("syntax error on line " + line + ": user delete-owner <ownerUsername> <storeName> <ownerToDeleteUsername>");
+            error = true;
+            return;
+        }
+
+        String ownerName = toSend.get(0);
+        String storeName = toSend.get(1);
+        String ownerToDelete = toSend.get(2);
+
+        String token = getTokenForUserName(ownerName);
+        if (token == null) return;
+
+        int storeId = getStoreIdByName(storeName);
+        if (storeId == -1) {
+            log("store " + storeName + " not found");
+            error = true;
+            return;
+        }
+
+        List<Registered> users = regJpaRepo.findRegisteredUsersByUsername(ownerToDelete);
+
+
+        if (users.isEmpty()) {
+            log("owner to delete not found: " + ownerToDelete);
+            error = true;
+            return;
+        }
+
+        int ownerToDeleteId = users.get(0).getId();
+        try {
+            storeService.DeleteOwnershipFromStore(storeId, token, ownerToDeleteId);
+            log("deleted ownership of " + ownerToDelete + " from store " + storeName);
+        } catch (Exception e) {
+            log("error deleting ownership on line " + line + ": " + e.getMessage());
+            error = true;
+        }
+    }
+
+    private void offerOwner(List<String> toSend) {
+        if (toSend.size() != 3) {
+            log("syntax error on line " + line + ": user add-owner <ownerName> <storeName> <newOwnerName>");
+            error = true;
+            return;
+        }
+
+        String ownerName = toSend.get(0);
+        String storeName = toSend.get(1);
+        String newOwnerName = toSend.get(2);
+
+        String token = getTokenForUserName(ownerName);
+        if (token == null) return;
+
+        int storeId = getStoreIdByName(storeName);
+        if (storeId == -1) {
+            log("store " + storeName + " not found");
+            error = true;
+            return;
+        }
+
+        try {
+            storeService.MakeofferToAddOwnershipToStore(storeId, token, newOwnerName);
+            log("offered ownership to " + newOwnerName + " on store " + storeName);
+        } catch (Exception e) {
+            log("error making ownership offer on line " + line + ": " + e.getMessage());
+            error = true;
+        }
+    }
+
+    private void logout(List<String> toSend) {
+        if (toSend.size() != 1) {
+            log("syntax error on line " + line + ": logout <username>");
+            error = true;
+            return;
+        }
+
+        String username = toSend.get(0);
+        String token = getTokenForUserName(username);
+        if (token == null) {
+            log("logout failed: no token for " + username);
+            error = true;
+            return;
+        }
+
+        try {
+            userService.logoutUser(token);
+            log("user " + username + " logged out successfully");
+        } catch (Exception e) {
+            log("logout failed on line " + line + ": " + e.getMessage());
+            error = true;
+        }
+    }
+
+
+
+
+
+
+    }

@@ -56,6 +56,8 @@ public class ExceptionHandlers {
         errorMessages.put(ErrorCodes.AI_NOT_WORK, "The AI service is not working right now.");
         errorMessages.put(ErrorCodes.NO_INIT_SYSTEM, "The system is not initialized.");
         errorMessages.put(ErrorCodes.NOT_ADMIN, "You are not the admin.");
+        errorMessages.put(ErrorCodes.OWNER_ALREADY_ACCEPT_BID, "You has already accepted this bid.");
+        errorMessages.put(ErrorCodes.TOO_MUCH_MONEY_FOR_RANDOM, "You have paid more than the maximum amount you can pay.");
     }
 
     public static String getErrorMessage(int code) {

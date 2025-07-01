@@ -74,6 +74,10 @@ public class Registered extends Guest {
         logger.debug("User {} logged in", username);
 
     }
+      public int getage() {
+       return age;
+
+    }
 
     public String getUsername() {
         return username;
@@ -125,5 +129,6 @@ public class Registered extends Guest {
     public void clearSpecialCart(List<UserSpecialItemCart> itemsToRemove) {
         specialCart.removeAll(itemsToRemove);
     }
+
 
 }

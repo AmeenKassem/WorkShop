@@ -57,8 +57,8 @@ public class AcceptanceTests {
     @MockBean
     protected NodeJPARepository mockNodeRepo;
 
-    @MockBean
-    protected PurchaseRepository mockPurchaseRepo;
+    // @MockBean
+    // protected PurchaseRepository mockPurchaseRepo;
 
     @MockBean
     protected IOrderRepoDB mockOrderRepo;

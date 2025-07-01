@@ -1,4 +1,4 @@
-package workshop.demo.DomainLayer.Order;
+package workshop.demo.InfrastructureLayer;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

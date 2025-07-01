@@ -42,5 +42,6 @@ public class ErrorCodes {
     public static final int NO_INIT_SYSTEM = 1038;
     public static final int NOT_ADMIN = 1039;
     public static final int OWNER_ALREADY_ACCEPT_BID = 1040;
-
+  public static final int BAD_INPUT=1041;
+  public static final int TOO_MUCH_MONEY_FOR_RANDOM = 1042;
 }

@@ -20,6 +20,7 @@ import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.UIException;
+import workshop.demo.DomainLayer.Store.CouponContext;
 
 @RestController
 @RequestMapping("/purchase")
@@ -41,7 +42,7 @@ public class PurcheseContoller {
             @RequestParam String supplyJson, @RequestParam(required = false) String coupon) {
         ApiResponse<ReceiptDTO[]> res;
         try {
-            // CouponContext.set(coupon);
+             CouponContext.set(coupon);
             System.out.println("payment received for guest");
             String decodedPaymentJson = URLDecoder.decode(paymentJson, StandardCharsets.UTF_8);
             String decodedSupplyJson = URLDecoder.decode(supplyJson, StandardCharsets.UTF_8);
@@ -59,7 +60,7 @@ public class PurcheseContoller {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(res);
         } finally {
-            // CouponContext.clear();
+             CouponContext.clear();
         }
     }
 
@@ -69,7 +70,7 @@ public class PurcheseContoller {
             @RequestParam String supplyJson, @RequestParam(required = false) String coupon) {
         ApiResponse<ReceiptDTO[]> res;
         try {
-            // CouponContext.set(coupon);
+             CouponContext.set(coupon);
             System.out.println("payment received for registered");
             String decodedPaymentJson = URLDecoder.decode(paymentJson, StandardCharsets.UTF_8);
             String decodedSupplyJson = URLDecoder.decode(supplyJson, StandardCharsets.UTF_8);
@@ -89,7 +90,7 @@ public class PurcheseContoller {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(res);
         } finally {
-            // CouponContext.clear();
+             CouponContext.clear();
         }
     }
 
