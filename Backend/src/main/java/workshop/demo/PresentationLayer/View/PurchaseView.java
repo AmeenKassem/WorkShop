@@ -37,6 +37,8 @@ public class PurchaseView extends VerticalLayout implements HasUrlParameter<Stri
     private final TextField country = new TextField("Country");
 
     private final Button purchaseButton = new Button("Confirm Purchase");
+    private final TextField couponCode = new TextField("Coupon Code (optional)");
+
 
     private final PurchasePresenter presenter;
     private String mode = "regular"; // Default
@@ -53,7 +55,7 @@ public class PurchaseView extends VerticalLayout implements HasUrlParameter<Stri
                 NotificationView.showError("Please fill in all required fields.");
                 return;
             }
-
+            String coupon = couponCode.getValue();
             if ("special".equalsIgnoreCase(mode)) {
                 presenter.submitSpecialPurchase(
                         getCardNumber(), getCardHolderName(), getExpirationDate(), getCvv(),
@@ -61,7 +63,7 @@ public class PurchaseView extends VerticalLayout implements HasUrlParameter<Stri
             } else {
                 presenter.submitRegularPurchase(
                         getCardNumber(), getCardHolderName(), getExpirationDate(), getCvv(),
-                        getAddress(), getCity(), getCountry(), getZipCode(), getName());
+                        getAddress(), getCity(), getCountry(), getZipCode(), getName(),coupon);
             }
         });
         VerticalLayout formCard = new VerticalLayout(
@@ -76,6 +78,7 @@ public class PurchaseView extends VerticalLayout implements HasUrlParameter<Stri
                 zipCode,
                 name,
                 country,
+                couponCode,
                 purchaseButton);
         formCard.addClassName("form-card");
 
