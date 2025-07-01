@@ -1,4 +1,4 @@
-package workshop.demo.ApplicationLayer.DataInitilizer;
+package workshop.demo.Controllers.DataInitilizer;
 
 import java.util.ArrayList;
 import java.util.List;

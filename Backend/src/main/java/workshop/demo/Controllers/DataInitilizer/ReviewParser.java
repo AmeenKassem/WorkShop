@@ -1,4 +1,4 @@
-package workshop.demo.ApplicationLayer.DataInitilizer;
+package workshop.demo.Controllers.DataInitilizer;
 
 import java.util.List;
 
@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import workshop.demo.ApplicationLayer.ReviewService;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Stock.item;
 
 @Component
 public class ReviewParser extends ManagerDataInit {
