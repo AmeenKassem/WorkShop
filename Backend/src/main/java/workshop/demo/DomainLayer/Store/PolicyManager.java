@@ -58,8 +58,7 @@ public class PolicyManager {
     PurchasePolicy toRemove = null;
     for (PurchasePolicy policy : purchasePolicies) {
         if (policy.getPolicyType() == type
-                && policy.getProductId() == productId
-                && policy.getParam() == param) {
+                && policy.getProductId() == productId) {
             toRemove = policy;
             break;
         }

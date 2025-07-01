@@ -8,6 +8,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -30,13 +35,14 @@ public class ManageStoreProductsPresenter {
     private final ManageStoreProductsView view;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper mapper = new ObjectMapper();
+    private final String baseUrl = Base.url + "/stock";
 
     public ManageStoreProductsPresenter(ManageStoreProductsView view) {
         this.view = view;
     }
 
     public void loadProducts(int storeId, String token) {
-        //loads the products in this store:
+        // loads the products in this store:
         try {
             System.out.println("Fetching products for storeId: " + storeId);
             String url = Base.url + "/stock/getProductsInStore?storeId=" + storeId;
@@ -48,18 +54,20 @@ public class ManageStoreProductsPresenter {
 
                 Map<ItemStoreDTO, ProductDTO> mapped = new LinkedHashMap<>();
                 for (ItemStoreDTO item : items) {
-                    //try {
+                    // try {
                     ProductDTO product = fetchProductDetails(token, item.getProductId());
                     mapped.put(item, product);
                     // } catch (Exception ex) {
-                    //     System.out.println("⚠️ Failed to fetch product info for itemId " + item.getProductId());
+                    // System.out.println("⚠️ Failed to fetch product info for itemId " +
+                    // item.getProductId());
                     // }
                 }
 
                 view.showProducts(mapped);
             } else {
                 view.showEmptyPage("📭 No products in this store yet.");
-                //NotificationView.showError("Error" + ExceptionHandlers.getErrorMessage(body.getErrNumber()));
+                // NotificationView.showError("Error" +
+                // ExceptionHandlers.getErrorMessage(body.getErrNumber()));
             }
 
         } catch (Exception e) {
@@ -81,7 +89,7 @@ public class ManageStoreProductsPresenter {
                 return mapper.convertValue(body.getData(), ProductDTO.class);
             }
         } catch (Exception ex) {
-            //System.out.println("⚠️ Could not fetch product info: " + ex.getMessage());
+            // System.out.println("⚠️ Could not fetch product info: " + ex.getMessage());
             ExceptionHandlers.handleException(ex);
         }
 
@@ -113,7 +121,8 @@ public class ManageStoreProductsPresenter {
         }
     }
 
-    private int getOrCreateProductId(String token, String name, String desc, Category category, String[] keywords) throws Exception {
+    private int getOrCreateProductId(String token, String name, String desc, Category category, String[] keywords)
+            throws Exception {
         String getAllUrl = Base.url + "/stock//getAllProducts?token="
                 + UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8);
         ResponseEntity<ApiResponse> response = restTemplate.getForEntity(getAllUrl, ApiResponse.class);
@@ -136,8 +145,7 @@ public class ManageStoreProductsPresenter {
         ResponseEntity<ApiResponse> addResponse = restTemplate.postForEntity(
                 builder.toUriString(),
                 null,
-                ApiResponse.class
-        );
+                ApiResponse.class);
         return mapper.convertValue(addResponse.getBody().getData(), Integer.class);
     }
 
@@ -152,11 +160,12 @@ public class ManageStoreProductsPresenter {
             loadProducts(storeId, token);
         } catch (Exception e) {
             ExceptionHandlers.handleException(e);
-            //NotificationView.showError("Failed to remove product: " + e.getMessage());
+            // NotificationView.showError("Failed to remove product: " + e.getMessage());
         }
     }
 
-    public void updateProduct(int storeId, String token, int productId, String quantity, String price, String description) {
+    public void updateProduct(int storeId, String token, int productId, String quantity, String price,
+            String description) {
         try {
             if (!quantity.isEmpty()) {
 
@@ -184,7 +193,7 @@ public class ManageStoreProductsPresenter {
     }
 
     public void loadAllProducts(String token, ComboBox<ProductDTO> comboBox, int storeId) {
-        //load all the products in the sytem except the products in the store:
+        // load all the products in the sytem except the products in the store:
         try {
             // Get all products in the system
             String allUrl = Base.url + "/stock/getAllProducts?token="
@@ -212,7 +221,8 @@ public class ManageStoreProductsPresenter {
         }
     }
 
-    public void addExistingProductAsItem(int storeId, String token, ProductDTO product, String price, String quantity, Dialog dialog) {
+    public void addExistingProductAsItem(int storeId, String token, ProductDTO product, String price, String quantity,
+            Dialog dialog) {
         try {
             String addItemUrl = Base.url + "/stock/addItem"
                     + "?storeId=" + storeId
@@ -231,12 +241,12 @@ public class ManageStoreProductsPresenter {
         }
     }
 
-    public void setProductToAuction(int storeId, String token, int productId, int quantity, long time, double startPrice) {
+    public void setProductToAuction(int storeId, String token, int productId, int quantity, long time,
+            double startPrice) {
         String url = String.format(
                 Base.url + "/stock/setProductToAuction?token=%s&storeId=%d&productId=%d&quantity=%d&time=%d&startPrice=%.2f",
                 UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
-                storeId, productId, quantity, time, startPrice
-        );
+                storeId, productId, quantity, time, startPrice);
 
         try {
             restTemplate.postForEntity(url, null, ApiResponse.class);
@@ -251,8 +261,7 @@ public class ManageStoreProductsPresenter {
             String url = String.format(
                     Base.url + "/stock/setProductToBid?token=%s&storeId=%d&productId=%d&quantity=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
-                    storeId, productId, quantity
-            );
+                    storeId, productId, quantity);
 
             restTemplate.postForEntity(url, null, ApiResponse.class);
             NotificationView.showSuccess("Product set to bid successfully!");
@@ -261,13 +270,13 @@ public class ManageStoreProductsPresenter {
         }
     }
 
-    public void setProductToRandom(int storeId, String token, int productId, int quantity, double productPrice, long randomTime) {
+    public void setProductToRandom(int storeId, String token, int productId, int quantity, double productPrice,
+            long randomTime) {
         try {
             String url = String.format(
                     Base.url + "/stock/setProductToRandom?token=%s&productId=%d&quantity=%d&productPrice=%.2f&storeId=%d&randomTime=%d",
                     UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
-                    productId, quantity, productPrice, storeId, randomTime
-            );
+                    productId, quantity, productPrice, storeId, randomTime);
 
             restTemplate.postForEntity(url, null, ApiResponse.class);
             NotificationView.showSuccess("Product set to random draw!");
@@ -282,6 +291,95 @@ public class ManageStoreProductsPresenter {
                 .filter(w -> w.length() > 2) // Min length 3 -> removing is, it, a...
                 .distinct()
                 .toArray(String[]::new);
+    }
+
+    public void addAgeRestrictionPolicy(int storeId, String token, int productId, int minAge) {
+        addPurchasePolicy(storeId, token, "NO_PRODUCT_UNDER_AGE", productId, minAge);
+    }
+
+    public void addMinQuantityPolicy(int storeId, String token, int productId, int minQty) {
+        addPurchasePolicy(storeId, token, "MIN_QTY", productId, minQty);
+    }
+
+    private void addPurchasePolicy(int storeId, String token, String policyKey, int productId, Integer param) {
+        try {
+            String url = String.format("%s/addPurchasePolicy?token=%s&storeId=%d&policyKey=%s&productId=%d",
+                    baseUrl,
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                    storeId,
+                    UriUtils.encodeQueryParam(policyKey, StandardCharsets.UTF_8),
+                    productId);
+
+            if (param != null) {
+                url += "&param=" + param;
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<ApiResponse<String>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    new ParameterizedTypeReference<ApiResponse<String>>() {
+                    });
+
+            ApiResponse<String> body = response.getBody();
+            if (body != null && body.getErrNumber() != -1) {
+                NotificationView.showError("Failed to add policy: " + body.getErrorMsg());
+            } else {
+                NotificationView.showSuccess("Policy added successfully.");
+            }
+
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
+    }
+
+    public void removeAgeRestrictionPolicy(int storeId, String token, int productId, Integer minAge) {
+        removePurchasePolicy(storeId, token, "NO_PRODUCT_UNDER_AGE", productId, minAge);
+    }
+
+    public void removeMinQuantityPolicy(int storeId, String token, int productId, Integer minQty) {
+        removePurchasePolicy(storeId, token, "MIN_QTY", productId, minQty);
+    }
+
+    private void removePurchasePolicy(int storeId, String token, String policyKey, int productId, Integer param) {
+        try {
+            String url = String.format("%s/removePurchasePolicy?token=%s&storeId=%d&policyKey=%s&productId=%d",
+                    baseUrl,
+                    UriUtils.encodeQueryParam(token, StandardCharsets.UTF_8),
+                    storeId,
+                    UriUtils.encodeQueryParam(policyKey, StandardCharsets.UTF_8),
+                    productId);
+
+            if (param != null) {
+                url += "&param=" + param;
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<ApiResponse<String>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    new ParameterizedTypeReference<ApiResponse<String>>() {
+                    });
+
+            ApiResponse<String> body = response.getBody();
+            if (body != null && body.getErrNumber() != -1) {
+                NotificationView.showError("Failed to remove policy: " + body.getErrorMsg());
+            } else {
+                NotificationView.showSuccess("Policy removed successfully.");
+            }
+
+        } catch (Exception e) {
+            ExceptionHandlers.handleException(e);
+        }
     }
 
 }

@@ -8,13 +8,16 @@ import java.util.Objects;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
@@ -84,7 +87,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         presenter.loadProducts(storeId, token);
     }
 
- private void openAddItemDialog() {
+    private void openAddItemDialog() {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("Add Item to Your Store");
 
@@ -107,8 +110,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                     selected,
                     priceField.getValue(),
                     quantityField.getValue(),
-                    dialog
-            );
+                    dialog);
         });
         addBtn.addClassNames("dialog-button", "confirm");
 
@@ -121,8 +123,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         VerticalLayout layout = new VerticalLayout(
                 productSelect,
                 priceField,
-                quantityField
-        );
+                quantityField);
         layout.addClassName("dialog-content");
 
         dialog.add(layout);
@@ -131,7 +132,6 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
         presenter.loadAllProducts(token, productSelect, storeId);
     }
-
 
     public void showProducts(Map<ItemStoreDTO, ProductDTO> products) {
         this.currentProducts = (products == null ? Map.of() : products);
@@ -153,28 +153,140 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                     new Span("📦 Quantity: " + item.getQuantity()),
                     new Span("💲 Price: " + item.getPrice()),
                     new Span("📄 Description: " + product.getDescription()),
-                    new Span("🏷️ Category: " + product.getCategory().name())
-            );
+                    new Span("🏷️ Category: " + product.getCategory().name()));
             card.addClassName("product-card");
 
             Button edit = new Button("✏️ Edit", e -> openEditDialog(item, product.getDescription()));
             Button delete = new Button("🗑️ Delete", e -> presenter.deleteProduct(storeId, token, item.getProductId()));
-            Button auctionButton = new Button("🎯 Start Auction", e
-                    -> showAuctionDialog(storeId, token, item.getProductId()));
+            Button auctionButton = new Button("🎯 Start Auction",
+                    e -> showAuctionDialog(storeId, token, item.getProductId()));
             Button bidButton = new Button("💸 Enable Bidding", e -> showBidDialog(storeId, token, item.getProductId()));
-            Button randomButton = new Button("🎲 Start Random Draw", e -> showRandomDialog(storeId, token, item.getProductId()));
+            Button randomButton = new Button("🎲 Start Random Draw",
+                    e -> showRandomDialog(storeId, token, item.getProductId()));
+            Button policyButton = new Button("Add Policy For Product",
+                    e -> showPolicyDialog(storeId, token, item.getProductId()));
+            Button remPolicyButton = new Button("❌ Remove Policy",
+                    e -> showRemovePolicyDialog(storeId, token, item.getProductId()));
             HorizontalLayout row1 = new HorizontalLayout(edit, auctionButton, delete);
             HorizontalLayout row2 = new HorizontalLayout(bidButton, randomButton);
+            HorizontalLayout row3 = new HorizontalLayout(policyButton);
             row1.addClassName("button-row");
             row2.addClassName("button-row");
 
-           VerticalLayout actions = new VerticalLayout(row1, row2);
+            VerticalLayout actions = new VerticalLayout(row1, row2, row3);
             actions.setSpacing(true);
             actions.setJustifyContentMode(JustifyContentMode.END);
 
             card.add(actions);
             productList.add(card);
         }
+    }
+
+    private void showRemovePolicyDialog(int storeId, String token, int productId) {
+        Dialog dialog = new Dialog();
+        dialog.setCloseOnEsc(true);
+        dialog.setCloseOnOutsideClick(false);
+
+        VerticalLayout layout = new VerticalLayout();
+        layout.setSpacing(true);
+
+        Paragraph title = new Paragraph("Select the purchase policy/policies to remove:");
+
+        Checkbox agePolicyCheckbox = new Checkbox("🧓 Cannot buy under age");
+        Checkbox quantityPolicyCheckbox = new Checkbox("📦 Cannot buy less than quantity");
+
+        Button removeBtn = new Button("Remove", event -> {
+            boolean selected = false;
+
+            if (agePolicyCheckbox.getValue()) {
+                presenter.removeAgeRestrictionPolicy(storeId, token, productId, null);
+                selected = true;
+            }
+
+            if (quantityPolicyCheckbox.getValue()) {
+                presenter.removeMinQuantityPolicy(storeId, token, productId, null);
+                selected = true;
+            }
+
+            if (!selected) {
+                Notification.show("Please select at least one policy to remove.", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+
+            dialog.close();
+            Notification.show("Selected policies removed.", 3000, Notification.Position.TOP_CENTER);
+        });
+
+        Button cancelBtn = new Button("Cancel", e -> dialog.close());
+        HorizontalLayout buttons = new HorizontalLayout(removeBtn, cancelBtn);
+
+        layout.add(title, agePolicyCheckbox, quantityPolicyCheckbox, buttons);
+        dialog.add(layout);
+        dialog.open();
+    }
+
+    private void showPolicyDialog(int storeId, String token, int productId) {
+        Dialog policyDialog = new Dialog();
+        policyDialog.setCloseOnOutsideClick(true);
+        policyDialog.setCloseOnEsc(true);
+
+        VerticalLayout dialogLayout = new VerticalLayout();
+        dialogLayout.setSpacing(true);
+        dialogLayout.setPadding(true);
+        dialogLayout.setWidth("400px");
+
+        // Policy 1: Age Restriction
+        Checkbox ageCheckbox = new Checkbox("Cannot buy under age:");
+        TextField ageInput = new TextField();
+        ageInput.setPlaceholder("Enter minimum age");
+        ageInput.setVisible(false);
+
+        ageCheckbox.addValueChangeListener(event -> {
+            ageInput.setVisible(event.getValue());
+        });
+
+        // Policy 2: Minimum Quantity Restriction
+        Checkbox quantityCheckbox = new Checkbox("Cannot buy less than quantity:");
+        TextField quantityInput = new TextField();
+        quantityInput.setPlaceholder("Enter minimum quantity");
+        quantityInput.setVisible(false);
+
+        quantityCheckbox.addValueChangeListener(event -> {
+            quantityInput.setVisible(event.getValue());
+        });
+
+        // Buttons
+        Button submit = new Button("Submit", e -> {
+            if (ageCheckbox.getValue()) {
+                try {
+                    int minAge = Integer.parseInt(ageInput.getValue());
+                    presenter.addAgeRestrictionPolicy(storeId, token, productId, minAge);
+                } catch (NumberFormatException ex) {
+                    Notification.show("Invalid age input", 3000, Notification.Position.MIDDLE);
+                    return;
+                }
+            }
+
+            if (quantityCheckbox.getValue()) {
+                try {
+                    int minQty = Integer.parseInt(quantityInput.getValue());
+                    presenter.addMinQuantityPolicy(storeId, token, productId, minQty);
+                } catch (NumberFormatException ex) {
+                    Notification.show("Invalid quantity input", 3000, Notification.Position.MIDDLE);
+                    return;
+                }
+            }
+
+            policyDialog.close();
+            Notification.show("Policies submitted", 3000, Notification.Position.TOP_CENTER);
+        });
+
+        Button cancel = new Button("Cancel", e -> policyDialog.close());
+        HorizontalLayout buttons = new HorizontalLayout(submit, cancel);
+
+        dialogLayout.add(ageCheckbox, ageInput, quantityCheckbox, quantityInput, buttons);
+        policyDialog.add(dialogLayout);
+        policyDialog.open();
     }
 
     private void openEditDialog(ItemStoreDTO item, String description) {
@@ -204,8 +316,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         dialog.open();
     }
 
-
-        private void openAddNewProductDialog() {
+    private void openAddNewProductDialog() {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("Add Product to Store");
 
@@ -237,21 +348,18 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                     category.getValue(),
                     price.getValue(),
                     quantity.getValue(),
-                    dialog
-            );
+                    dialog);
         });
         add.addClassNames("dialog-button", "confirm");
 
         VerticalLayout layout = new VerticalLayout(
-                name, description, keywordHelp, keyword, category, price, quantity
-        );
+                name, description, keywordHelp, keyword, category, price, quantity);
         layout.addClassName("dialog-content");
 
         dialog.add(layout);
         dialog.getFooter().add(new HorizontalLayout(add));
         dialog.open();
     }
-
 
     public void showEmptyPage(String msg) {
         productList.removeAll();
@@ -287,7 +395,6 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             dialog.close();
         });
 
-
         Button cancel = new Button("Cancel", e -> dialog.close());
         confirm.addClassName("dialog-button");
         confirm.addClassName("confirm");
@@ -301,7 +408,6 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
         dialog.open();
     }
-
 
     private void showBidDialog(int storeId, String token, int productId) {
         Dialog dialog = new Dialog();
@@ -375,10 +481,10 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         TreeGrid<CreateDiscountDTO> tree = new TreeGrid<>();
 
         tree.addComponentHierarchyColumn(discount -> {
-                    Span nameSpan = new Span(discount.getName());
-                    nameSpan.getElement().setProperty("title", discount.getName());
-                    return nameSpan;
-                }).setHeader("Name")
+            Span nameSpan = new Span(discount.getName());
+            nameSpan.getElement().setProperty("title", discount.getName());
+            return nameSpan;
+        }).setHeader("Name")
                 .setAutoWidth(true)
                 .setFlexGrow(2)
                 .setResizable(true)
@@ -392,7 +498,7 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         tree.addColumn(d -> d.getLogic() != null ? d.getLogic().name() : "SINGLE").setHeader("Logic");
         tree.addColumn(d -> d.getType() != null ? d.getType().name() : "VISIBLE").setHeader("Type");
 
-// 👇 Ensure root is treated as list
+        // 👇 Ensure root is treated as list
         CreateDiscountDTO root = discPresenter.fetchDiscountTree(storeId, token);
         if (root != null) {
             tree.setItems(List.of(root), CreateDiscountDTO::getSubDiscounts);
@@ -440,12 +546,10 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
 
         dlg.add(
                 container,
-                deleteAllBtn,                           // 👈 Inserted here
+                deleteAllBtn, // 👈 Inserted here
                 new Span("Current Discounts in Store:"),
                 tree,
-                new HorizontalLayout(save, cancel)
-        );
-
+                new HorizontalLayout(save, cancel));
 
         dlg.open();
     }
@@ -489,11 +593,10 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
             addSubBtn.addClickListener(e -> {
                 DiscountFormEditor sub = new DiscountFormEditor();
                 sub.logic.setValue(CreateDiscountDTO.Logic.SINGLE); // always SINGLE
-                sub.logic.setReadOnly(true);                        // force SINGLE
-                sub.addSubBtn.setVisible(false);                    // prevent nesting
+                sub.logic.setReadOnly(true); // force SINGLE
+                sub.addSubBtn.setVisible(false); // prevent nesting
                 subEditors.add(sub);
             });
-
 
             HorizontalLayout topRow = new HorizontalLayout(name, percent, type, logic);
             HorizontalLayout condRow = new HorizontalLayout(predicate, valueWrapper);
@@ -504,7 +607,8 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
         private void renderValueInput() {
             valueWrapper.removeAll();
             String selected = predicate.getValue();
-            if (selected == null) return;
+            if (selected == null)
+                return;
             switch (selected) {
                 case "TOTAL", "QUANTITY" -> {
                     NumberField num = new NumberField("Value");
@@ -561,12 +665,8 @@ public class ManageStoreProductsView extends VerticalLayout implements HasUrlPar
                     type.getValue(),
                     cond,
                     logic.getValue(),
-                    subDiscounts
-            );
+                    subDiscounts);
         }
     }
-
-
-
 
 }

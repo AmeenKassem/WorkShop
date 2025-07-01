@@ -762,10 +762,6 @@ public void addPurchasePolicy(String token, int storeId, String policyKey,
         default -> throw new UIException("Unknown Policy!", ErrorCodes.NO_POLICY);
     };
 
-    if (param == null) {
-        throw new UIException("Param must be specified", ErrorCodes.BAD_INPUT);
-    }
-
     boolean removed = store.removePurchasePolicy(type, productId, param);
     if (!removed) {
         throw new UIException("Policy not found to remove", ErrorCodes.NO_POLICY);
