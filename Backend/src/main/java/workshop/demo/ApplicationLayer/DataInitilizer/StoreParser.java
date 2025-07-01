@@ -5,8 +5,10 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import jakarta.transaction.Transactional;
+import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
+import workshop.demo.DTOs.CreateDiscountDTO;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -36,6 +38,12 @@ public class StoreParser extends ManagerDataInit {
                 break;
             case "close":
                 closeStore(toSend);
+                break;
+            case "discount":
+                addDiscountToStore(toSend);
+                break;
+            case "removediscount":
+                removeDiscountFromStore(toSend);
                 break;
             case "policy":
                 policy(toSend);
@@ -305,4 +313,59 @@ public class StoreParser extends ManagerDataInit {
         }
     }
 
+    private void addDiscountToStore(List<String> toSend) {
+    if (toSend.size() < 7) {
+        log("Invalid syntax for discount. Must be: store discount <username> <storeName> <discountName> <percent> <type> <condition> <logic>");
+        error = true;
+        return;
+    }
+    String username = toSend.get(0);
+    String token = getTokenForUserName(username);
+    String storeName = toSend.get(1).replace("-", " ");
+    int storeId = getStoreIdByName(storeName);
+
+    try {
+        CreateDiscountDTO dto = new CreateDiscountDTO();
+        dto.setName(toSend.get(2));
+        dto.setPercent(Double.parseDouble(toSend.get(3)));
+        dto.setType(CreateDiscountDTO.Type.valueOf(toSend.get(4).toUpperCase()));
+        String cond = toSend.get(5).equalsIgnoreCase("null") ? null : toSend.get(5).replace("-", " ");
+        dto.setCondition(cond);
+        dto.setLogic(CreateDiscountDTO.Logic.valueOf(toSend.get(6).toUpperCase()));
+        storeService.addDiscount(storeId, token, dto);
+        log("Discount added successfully to store " + storeName);
+    } catch (Exception e) {
+        log("Failed to add discount: " + e.getMessage());
+        error = true;
+    }
+    }
+
+    private void removeDiscountFromStore(List<String> toSend) {
+        if (toSend.size() != 3) {
+            log("Invalid syntax. Must be: store removediscount <username> <storeName> <discountName>");
+            error = true;
+            return;
+        }
+
+        String username = toSend.get(0);
+        String token = getTokenForUserName(username);
+        String storeName = toSend.get(1).replace("-", " ");
+        String discountName = toSend.get(2).replace("-", " ");
+        int storeId = getStoreIdByName(storeName);
+
+        try {
+            storeService.removeDiscountFromStore(token, storeId, discountName);
+            log("Successfully removed discount '" + discountName + "' from store " + storeName);
+        } catch (Exception e) {
+            log("Failed to remove discount: " + e.getMessage());
+            error = true;
+        }
+    }
+
 }
+
+
+
+
+
+

@@ -2,7 +2,10 @@ package workshop.demo.ApplicationLayer.DataInitilizer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.AuctionStatus;
@@ -17,14 +20,7 @@ import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
-import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Registered;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 
 // import jakarta.transaction.Transactional;
 
@@ -76,6 +72,9 @@ public class UserParser extends ManagerDataInit {
                 break;
             case "delete-owner":
                 deleteOwner(toSend);
+                break;
+            case "logout":
+                logout(toSend);
                 break;
 
             default:
@@ -529,6 +528,29 @@ public class UserParser extends ManagerDataInit {
         }
     }
 
+    private void logout(List<String> toSend) {
+        if (toSend.size() != 1) {
+            log("syntax error on line " + line + ": logout <username>");
+            error = true;
+            return;
+        }
+
+        String username = toSend.get(0);
+        String token = getTokenForUserName(username);
+        if (token == null) {
+            log("logout failed: no token for " + username);
+            error = true;
+            return;
+        }
+
+        try {
+            userService.logoutUser(token);
+            log("user " + username + " logged out successfully");
+        } catch (Exception e) {
+            log("logout failed on line " + line + ": " + e.getMessage());
+            error = true;
+        }
+    }
 
 
 
