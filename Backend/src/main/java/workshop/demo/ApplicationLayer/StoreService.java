@@ -737,6 +737,7 @@ public class StoreService {
                 store.addPurchasePolicy(p);
 
             }
+
             case "MIN_QTY" -> {
                 if (param == null)
                     throw new UIException("Must specify minQty", ErrorCodes.BAD_INPUT);

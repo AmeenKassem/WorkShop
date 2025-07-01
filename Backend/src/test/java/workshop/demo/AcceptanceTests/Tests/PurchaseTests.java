@@ -1,6 +1,5 @@
 package workshop.demo.AcceptanceTests.Tests;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,15 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
-
-import org.mockito.Mockito;
-
-import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import org.slf4j.Logger;
@@ -24,23 +15,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ParticipationInRandomDTO;
 import workshop.demo.DTOs.PaymentDetails;
 import workshop.demo.DTOs.ReceiptDTO;
 import workshop.demo.DTOs.ReceiptProduct;
 import workshop.demo.DTOs.SpecialType;
 import workshop.demo.DTOs.SupplyDetails;
 import workshop.demo.DomainLayer.Exceptions.DevException;
-import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.*;
+import workshop.demo.DomainLayer.Store.PolicyManager;
 import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.StoreUserConnection.Node;
-import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.*;
+import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -98,6 +86,7 @@ public class PurchaseTests extends AcceptanceTests {
         // Setup store and product
         store = new Store(STORE_NAME, STORE_CATEGORY);
         product = new Product(PRODUCT_NAME, Category.Electronics, PRODUCT_DESC, KEYWORD);
+
 
 
         // Needed for store
@@ -244,62 +233,76 @@ public class PurchaseTests extends AcceptanceTests {
         assertEquals(100, rp2.getPrice());
     }
 
-
-
-
     @Test
-    void Add_BidProductToSpecialCart_Success() throws UIException, DevException {
+    void FinalizeSpecialCart_EmptyCart_Failure() throws Exception {
+        user2.clearSpecialCart(); // assuming this method exists
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user2Token, logger);
+        when(mockAuthRepo.getUserId(user2Token)).thenReturn(user2.getId());
+        when(mockSusRepo.findById(user2.getId())).thenReturn(Optional.empty());
+        when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
+        when(mockActivePurchases.findById(store.getstoreId())).thenReturn(Optional.of(activePurcheses));
+        when(mockStockRepo1.findById(0)).thenReturn(Optional.of(product));
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
 
-    }
-    @Test
-    void Add_BidProduct_Failure_InvalidToken() throws UIException {
-    }
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-    @Test
-    void Add_BidProduct_Failure_UserSuspended() throws Exception {
-    }
-
-    @Test
-    void Add_BidProduct_Failure_StoreNotFound() throws Exception {
-    }
-
-    @Test
-    void Add_BidProduct_Failure_BidNotFound() throws Exception {
-    }
-
-    @Test
-    void Add_AuctionBidToSpecialCart_Success() throws UIException, DevException {
+        ReceiptDTO[] receipts = purchaseService.finalizeSpecialCart(user2Token, paymentDetails, supplyDetails);
+        assertNotNull(receipts);
+        assertEquals(0, receipts.length, "Should have no receipts if special cart is empty");
     }
 
 
-
     @Test
-    void Add_AuctionBid_Failure_InvalidToken() throws UIException {
+    void FinalizeSpecialCart_MixedSpecialTypes_Success() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user2Token, logger);
+        when(mockAuthRepo.getUserId(user2Token)).thenReturn(user2.getId());
+        when(mockSusRepo.findById(user2.getId())).thenReturn(Optional.empty());
+        when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
+        when(mockActivePurchases.findById(store.getstoreId())).thenReturn(Optional.of(activePurcheses));
+        when(mockStockRepo1.findById(0)).thenReturn(Optional.of(product));
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+
+        ReceiptDTO[] receipts = purchaseService.finalizeSpecialCart(user2Token, paymentDetails, supplyDetails);
+
+        print(receipts);
+        assertNotNull(receipts);
+        assertEquals(1, receipts.length);
     }
 
     @Test
-    void Add_AuctionBid_Failure_UserSuspended() throws Exception {
+    void FinalizeSpecialCart_UserSuspended_Failure() throws Exception {
+        when(mockAuthRepo.getUserId(user2Token)).thenReturn(user2.getId());
+        when(mockSusRepo.findById(user2.getId())).thenReturn(Optional.of(new UserSuspension(user2.getId(), System.currentTimeMillis() + 10000)));
+        when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
 
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
+
+        UIException ex = assertThrows(UIException.class, () ->
+                purchaseService.finalizeSpecialCart(user2Token, paymentDetails, supplyDetails));
+        assertTrue(ex.getMessage().contains("Suspended"));
     }
 
     @Test
-    void Add_AuctionBid_Failure_StoreNotFound() throws Exception {
-    }
+    void FinalizeSpecialCart_BadStock_Failure() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user2Token, logger);
+        when(mockAuthRepo.getUserId(user2Token)).thenReturn(user2.getId());
+        when(mockSusRepo.findById(user2.getId())).thenReturn(Optional.empty());
+        when(mockUserRepo.findById(user2.getId())).thenReturn(Optional.of(user2));
+        when(mockActivePurchases.findById(store.getstoreId())).thenReturn(Optional.of(activePurcheses));
+        when(mockStockRepo1.findById(0)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
 
-    @Test
-    void Add_AuctionBid_Failure_AuctionNotFound() throws Exception {
-    }
+        PaymentDetails paymentDetails = PaymentDetails.testPayment();
+        SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-    @Test
-    void Set_ProductToRandom_Success() throws Exception {
-
-    }
-    @Test
-    void Set_ProductToRandom_Failure_InvalidToken() throws UIException {
-    }
-
-    @Test
-    void Set_ProductToRandom_Failure_UserSuspended() throws Exception {
+        assertThrows(Exception.class, () -> {
+            purchaseService.finalizeSpecialCart(user2Token, paymentDetails, supplyDetails);
+        });
     }
 
     void print(ReceiptDTO[] re) {

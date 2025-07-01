@@ -1,12 +1,10 @@
 package workshop.demo.AcceptanceTests.Tests;
-//UpdateProductInStock_Failure_InvalidData() throws Exception
 
 import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import org.springframework.test.util.AopTestUtils;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,17 +20,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import workshop.demo.ApplicationLayer.ReviewService;
 import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.OrderDTO;
 import workshop.demo.DTOs.WorkerDTO;
-import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Notification.DelayedNotification;
+import workshop.demo.DomainLayer.Order.Order;
 import workshop.demo.DomainLayer.Stock.*;
+import workshop.demo.DomainLayer.Store.PolicyManager;
+import workshop.demo.DomainLayer.Store.PurchasePolicy;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Offer;
@@ -145,6 +144,11 @@ public class Owner_ManagerTests extends AcceptanceTests {
         when(mockStoreRepo.findById(0)).thenReturn(Optional.of(store));
         when(suConnectionRepo.addNewStoreOwner(0, USER1_ID)).thenReturn(true);
         when(mockActivePurchases.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        PolicyManager policyManager = new PolicyManager();
+        policyManager.setStore(store);
+        store.setPolicyManager(policyManager);
+        when(policyManagerRepository.save(any())).thenReturn(policyManager);
 
         int storeId = storeService.addStoreToSystem(user1Token, STORE_NAME, STORE_CATEGORY);
         assertEquals(0, storeId);
@@ -275,11 +279,11 @@ public class Owner_ManagerTests extends AcceptanceTests {
 
         when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.empty());
 
-        Exception ex = assertThrows(UIException.class, () -> {
+        UIException ex = assertThrows(UIException.class, () -> {
             storeService.MakeofferToAddOwnershipToStore(storeId, user1Token, USER2_USERNAME);
         });
 
-        assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ((UIException)ex).getNumber());
+        assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ex.getNumber());
         assertTrue(ex.getMessage().toLowerCase().contains("user not registered"));
     }
 
@@ -1342,53 +1346,6 @@ public class Owner_ManagerTests extends AcceptanceTests {
         assertEquals(ErrorCodes.USER_SUSPENDED, ex.getNumber());
     }
 
-
-
-    @Test
-    void testOwner_ViewStorePurchaseHistory() throws Exception {
-
-    }
-
-    @Test
-    void testOwner_ViewStorePurchaseHistory_Failure_StoreNotExist() throws Exception {
-
-    }
-
-
-    @Test
-    void testOwner_AddPurchasePolicy() throws Exception {
-        //TODO
-    }
-
-    @Test
-    void testOwner_AddPurchasePolicy_Failure_InvalidPolicy() throws Exception {
-        //TODO
-    }
-
-    @Test
-    void testOwner_AddPurchasePolicy_Failure_NotOwner() throws Exception {
-        //TODO
-
-    }
-
-    @Test
-    void testOwner_DeletePurchasePolicy() throws Exception {
-        //TODO
-
-    }
-
-    @Test
-    void testOwner_DeletePurchasePolicy_Failure_NotFound() throws Exception {
-        //TODO
-    }
-
-    @Test
-    void testOwner_DeletePurchasePolicy_Failure_NoPermission() throws Exception {
-        //TODO
-    }
-
-
-
     @Test
     void testSetProductToRandom_Success() throws Exception {
         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token,logger);
@@ -1436,7 +1393,6 @@ public class Owner_ManagerTests extends AcceptanceTests {
             );
         });
 
-        //assertEquals(ErrorCodes.USER_NOT_LOGGED_IN, ex.getErrorCode());
     }
 
 
@@ -1572,21 +1528,277 @@ public class Owner_ManagerTests extends AcceptanceTests {
         });
 
     }
-
-
     @Test
-    void testOwner_AddToBid_Failure() throws Exception {
+    void testOwner_AddToBID_Failure_NoPermission() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
 
+        // return false on permission
+        when(suConnectionRepo.manipulateItem(USER1_ID, store.getstoreId(), Permission.SpecialType)).thenReturn(false);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            activePurchesesService.setProductToBid(user1Token, store.getstoreId(), product.getProductId(), 1);
+        });
+        //assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
     }
 
     @Test
-    void testOwner_AddToRandom_Failure() throws Exception {
+    void testOwner_AddToAuction_Failure_StoreNotFound() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
 
+        // simulate store not found
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.empty());
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            activePurchesesService.setProductToAuction(
+                    user1Token, store.getstoreId(), product.getProductId(), 1, 10000, 20.0
+            );
+        });
+        //assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getErrorCode());
+    }
+    @Test
+    void testOwner_AddToBID_Failure_UserSuspended() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.of(new UserSuspension())); // suspended
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+
+        Exception ex = assertThrows(Exception.class, () -> {
+            activePurchesesService.setProductToBid(user1Token, store.getstoreId(), product.getProductId(), 1);
+        });
+        //assertEquals(ErrorCodes.USER_SUSPENDED, ex.getErrorCode());
+    }
+    @Test
+    void testOwner_AddToBID_Failure_ActivePurchasesNotFound() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.manipulateItem(USER1_ID, store.getstoreId(), Permission.SpecialType)).thenReturn(true);
+
+        when(mockActivePurchases.findById(store.getstoreId())).thenReturn(Optional.empty()); // active missing
+
+        Exception ex = assertThrows(Exception.class, () -> {
+            activePurchesesService.setProductToBid(user1Token, store.getstoreId(), product.getProductId(), 1);
+        });
+        //assertEquals(ErrorCodes.STORE_POLICY_ERROR, ex.getErrorCode()); // adjust if your method throws different code
+
+    }
+    @Test
+    void testOwner_AddToAuction_Failure_UserSuspended() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.of(new UserSuspension()));
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+
+        Exception ex = assertThrows(Exception.class, () -> {
+            activePurchesesService.setProductToAuction(user1Token, store.getstoreId(), product.getProductId(), 1, 10000, 20.0);
+        });
+        //assertEquals(ErrorCodes.USER_SUSPENDED, ex.getErrorCode());
+    }
+    @Test
+    void testOwner_AddToAuction_Failure_ActivePurchasesNotFound() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.manipulateItem(USER1_ID, store.getstoreId(), Permission.SpecialType)).thenReturn(true);
+
+        when(mockActivePurchases.findById(store.getstoreId())).thenReturn(Optional.empty()); // active missing
+
+        Exception ex = assertThrows(Exception.class, () -> {
+            activePurchesesService.setProductToAuction(user1Token, store.getstoreId(), product.getProductId(), 1, 10000, 20.0);
+        });
+        //assertEquals(ErrorCodes.STORE_POLICY_ERROR, ex.getErrorCode()); // adjust if needed
+    }
+    @Test
+    void testAddPurchasePolicy_NoProductUnderAge_Success() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.hasPermission(USER1_ID, store.getstoreId(), Permission.MANAGE_PURCHASE_POLICY)).thenReturn(true);
+
+        assertDoesNotThrow(() -> {
+            storeService.addPurchasePolicy(user1Token, store.getstoreId(), "NO_PRODUCT_UNDER_AGE", product.getProductId(), 18);
+        });
+
+    }
+    @Test
+    void testAddPurchasePolicy_MinQty_Success() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.hasPermission(USER1_ID, store.getstoreId(), Permission.MANAGE_PURCHASE_POLICY)).thenReturn(true);
+        assertDoesNotThrow(() -> {
+            storeService.addPurchasePolicy(user1Token, store.getstoreId(), "MIN_QTY", product.getProductId(), 5);
+        });
+    }
+    @Test
+    void testRemovePurchasePolicy_MinQty_Success() throws Exception {
+        // Setup same mocks
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.hasPermission(USER1_ID, store.getstoreId(), Permission.MANAGE_PURCHASE_POLICY)).thenReturn(true);
+
+        // Actually add policy to store so it can be removed
+        store.addPurchasePolicy(PurchasePolicy.minQuantityPerProduct(product.getProductId(), 5));
+
+        assertDoesNotThrow(() -> {
+            storeService.removePurchasePolicy(user1Token, store.getstoreId(), "MIN_QTY", product.getProductId(), 5);
+        });
+    }
+    @Test
+    void testAddPurchasePolicy_Failure_SuspendedUser() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.of(new UserSuspension()));
+
+        Exception ex = assertThrows(Exception.class, () -> {
+            storeService.addPurchasePolicy(user1Token, store.getstoreId(), "MIN_QTY", product.getProductId(), 5);
+        });
+        //assertEquals(ErrorCodes.USER_SUSPENDED, ex.getErrorCode());
+    }
+    @Test
+    void testAddPurchasePolicy_Failure_MissingParam() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.hasPermission(USER1_ID, store.getstoreId(), Permission.MANAGE_PURCHASE_POLICY)).thenReturn(true);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.addPurchasePolicy(user1Token, store.getstoreId(), "MIN_QTY", product.getProductId(), null);
+        });
+        assertEquals(ErrorCodes.BAD_INPUT, ex.getErrorCode());
+    }
+    @Test
+    void testAddPurchasePolicy_Failure_UnknownPolicy() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.hasPermission(USER1_ID, store.getstoreId(), Permission.MANAGE_PURCHASE_POLICY)).thenReturn(true);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.addPurchasePolicy(user1Token, store.getstoreId(), "UNKNOWN", product.getProductId(), 5);
+        });
+        assertEquals(ErrorCodes.NO_POLICY, ex.getErrorCode());
+    }
+    @Test
+    void testRemovePurchasePolicy_Failure_PolicyNotFound() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.hasPermission(USER1_ID, store.getstoreId(), Permission.MANAGE_PURCHASE_POLICY)).thenReturn(true);
+
+        Exception ex = assertThrows(Exception.class, () -> {
+            storeService.removePurchasePolicy(user1Token, store.getstoreId(), "MIN_QTY", product.getProductId(), 5);
+        });
+        //assertEquals(ErrorCodes.NO_POLICY, ex.getErrorCode());
+    }
+    @Test
+    void testRemovePurchasePolicy_Failure_UnknownPolicy() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.hasPermission(USER1_ID, store.getstoreId(), Permission.MANAGE_PURCHASE_POLICY)).thenReturn(true);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.removePurchasePolicy(user1Token, store.getstoreId(), "UNKNOWN", product.getProductId(), 5);
+        });
+        assertEquals(ErrorCodes.NO_POLICY, ex.getErrorCode());
+    }
+
+
+    @Test
+    void testRemovePurchasePolicy_Failure_NoPermission() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.hasPermission(USER1_ID, store.getstoreId(), Permission.MANAGE_PURCHASE_POLICY)).thenReturn(false);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.removePurchasePolicy(user1Token, store.getstoreId(), "MIN_QTY", product.getProductId(), 5);
+        });
+        assertEquals(ErrorCodes.NO_PERMISSION, ex.getErrorCode());
+    }
+    @Test
+    void testRemovePurchasePolicy_Failure_UnknownPolicyType() throws Exception {
+        doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
+        when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
+        when(mockSusRepo.findById(USER1_ID)).thenReturn(Optional.empty());
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.hasPermission(USER1_ID, store.getstoreId(), Permission.MANAGE_PURCHASE_POLICY)).thenReturn(true);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            storeService.removePurchasePolicy(user1Token, store.getstoreId(), "UNKNOWN_POLICY", product.getProductId(), 5);
+        });
+        assertEquals(ErrorCodes.NO_POLICY, ex.getErrorCode());
+    }
+
+
+
+
+    @Test
+    void testOwner_ViewStorePurchaseHistory_EmptyOrders() throws Exception {
+        // Arrange
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(mockOrderRepo.findOrdersByStoreName(store.getStoreName())).thenReturn(List.of());
+
+        // Act
+        List<OrderDTO> result = orderService.getAllOrderByStore(store.getstoreId());
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 
     @Test
-    void testOwner_AddToAuction_Failure() throws Exception {
+    void testOwner_ViewStorePurchaseHistory_StoreNotFound() throws Exception {
+        // Arrange
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.empty());
 
+        // Act + Assert
+        UIException ex = assertThrows(UIException.class, () -> {
+            orderService.getAllOrderByStore(store.getstoreId());
+        });
+        assertEquals(ErrorCodes.STORE_NOT_FOUND, ex.getErrorCode());
     }
+
+
+
+
+
+
+
+
+
 
 }

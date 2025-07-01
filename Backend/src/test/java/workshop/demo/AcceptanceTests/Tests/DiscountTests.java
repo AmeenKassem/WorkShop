@@ -1,6 +1,5 @@
 package workshop.demo.AcceptanceTests.Tests;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 import org.slf4j.Logger;
@@ -18,15 +16,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import workshop.demo.DTOs.*;
-import workshop.demo.DomainLayer.Exceptions.DevException;
 import workshop.demo.DomainLayer.Stock.*;
 import workshop.demo.DomainLayer.Store.*;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Registered;
-import workshop.demo.DomainLayer.User.ShoppingCart;
-import workshop.demo.DomainLayer.User.UserSpecialItemCart;
-import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountEntity;
 import workshop.demo.InfrastructureLayer.DiscountEntities.VisibleDiscountEntity;
 
 @SpringBootTest
@@ -1497,6 +1491,79 @@ public class DiscountTests extends AcceptanceTests {
         print(receipts);
         assertEquals(1, receipts.length);
         assertEquals(180.0, receipts[0].getFinalPrice(), 0.01);
+    }
+    @Test
+    void testAddMultipleSequentialDiscounts() throws Exception {
+        CreateDiscountDTO dto1 = new CreateDiscountDTO("10% off Electronics", 0.10,
+                CreateDiscountDTO.Type.VISIBLE, "CATEGORY:Electronics", CreateDiscountDTO.Logic.SINGLE, null);
+        CreateDiscountDTO dto2 = new CreateDiscountDTO("15% off total", 0.15,
+                CreateDiscountDTO.Type.VISIBLE, "TOTAL>50", CreateDiscountDTO.Logic.SINGLE, null);
+
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(user1.getId());
+        when(mockUserRepo.findById(user1.getId())).thenReturn(Optional.of(user1));
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.hasPermission(user1.getId(), store.getstoreId(), Permission.MANAGE_STORE_POLICY)).thenReturn(true);
+        when(mockdiscountrepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        storeService.addDiscount(store.getstoreId(), user1Token, dto1);
+        storeService.addDiscount(store.getstoreId(), user1Token, dto2);
+
+        Discount multi = store.getDiscount();
+        assertEquals("MANUALLY_COMBINED", multi.getName());
+        assertEquals(2, ((MultiplyDiscount)multi).getDiscounts().size());
+    }
+    @Test
+    void testAddMixVisibleInvisibleDiscounts() throws Exception {
+        CreateDiscountDTO visible = new CreateDiscountDTO("10% Electronics", 0.10,
+                CreateDiscountDTO.Type.VISIBLE, "CATEGORY:Electronics", CreateDiscountDTO.Logic.SINGLE, null);
+        CreateDiscountDTO invisible = new CreateDiscountDTO("20% Total", 0.20,
+                CreateDiscountDTO.Type.INVISIBLE, "TOTAL>50", CreateDiscountDTO.Logic.SINGLE, null);
+
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(user1.getId());
+        when(mockUserRepo.findById(user1.getId())).thenReturn(Optional.of(user1));
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.hasPermission(user1.getId(), store.getstoreId(), Permission.MANAGE_STORE_POLICY)).thenReturn(true);
+        when(mockdiscountrepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        storeService.addDiscount(store.getstoreId(), user1Token, visible);
+        storeService.addDiscount(store.getstoreId(), user1Token, invisible);
+
+        Discount multi = store.getDiscount();
+        assertEquals(2, ((MultiplyDiscount)multi).getDiscounts().size());
+    }
+
+    @Test
+    void testAddDiscountWithNullCondition() throws Exception {
+        CreateDiscountDTO dto = new CreateDiscountDTO("Null condition", 0.1,
+                CreateDiscountDTO.Type.VISIBLE, null, CreateDiscountDTO.Logic.SINGLE, null);
+
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(user1.getId());
+        when(mockUserRepo.findById(user1.getId())).thenReturn(Optional.of(user1));
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.hasPermission(user1.getId(), store.getstoreId(), Permission.MANAGE_STORE_POLICY)).thenReturn(true);
+        when(mockdiscountrepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        storeService.addDiscount(store.getstoreId(), user1Token, dto);
+        Discount multi = store.getDiscount();
+        assertNotNull(multi);
+        assertEquals("MANUALLY_COMBINED", multi.getName());
+    }
+    @Test
+    void testAddSameDiscountTwice() throws Exception {
+        CreateDiscountDTO dto = new CreateDiscountDTO("Duplicate", 0.2,
+                CreateDiscountDTO.Type.VISIBLE, "CATEGORY:Electronics", CreateDiscountDTO.Logic.SINGLE, null);
+
+        when(mockAuthRepo.getUserId(user1Token)).thenReturn(user1.getId());
+        when(mockUserRepo.findById(user1.getId())).thenReturn(Optional.of(user1));
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        when(suConnectionRepo.hasPermission(user1.getId(), store.getstoreId(), Permission.MANAGE_STORE_POLICY)).thenReturn(true);
+        when(mockdiscountrepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        storeService.addDiscount(store.getstoreId(), user1Token, dto);
+        storeService.addDiscount(store.getstoreId(), user1Token, dto);
+
+        Discount multi = store.getDiscount();
+        assertEquals(2, ((MultiplyDiscount)multi).getDiscounts().size());
     }
 
     void print(ReceiptDTO[] re) {

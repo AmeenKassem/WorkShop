@@ -6,15 +6,12 @@ import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
-import java.util.LinkedList;
 
-import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -36,11 +31,11 @@ import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
+import workshop.demo.DomainLayer.Store.PolicyManager;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.*;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
-import workshop.demo.InfrastructureLayer.Encoder;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -141,7 +136,10 @@ public class UserTests extends AcceptanceTests {
         when(mockStoreRepo.findById(0)).thenReturn(Optional.of(store));
         when(suConnectionRepo.addNewStoreOwner(0, USER1_ID)).thenReturn(true);
         when(mockActivePurchases.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
+        PolicyManager policyManager = new PolicyManager();
+        policyManager.setStore(store);
+        store.setPolicyManager(policyManager);
+        when(policyManagerRepository.save(any())).thenReturn(policyManager);
         int storeId = storeService.addStoreToSystem(user1Token, STORE_NAME, STORE_CATEGORY);
         assertEquals(0, storeId);
 
@@ -327,7 +325,6 @@ public class UserTests extends AcceptanceTests {
 
     @Test
     void testUser_setAdmin_Failure_InvalidToken() throws Exception {
-        int userId = USER1_ID;
         String adminKey = "123321";
 
         doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
@@ -335,7 +332,7 @@ public class UserTests extends AcceptanceTests {
                 .checkAuth_ThrowTimeOutException(eq("bad-token"), any(Logger.class));
 
         UIException ex = assertThrows(UIException.class, () -> {
-            userService.setAdmin("bad-token", adminKey, userId);
+            userService.setAdmin("bad-token", adminKey, USER1_ID);
         });
 
         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
@@ -377,14 +374,14 @@ public class UserTests extends AcceptanceTests {
         // Assert
         assertNotNull(receipts);
         assertEquals(1, receipts.size());
-        ReceiptDTO r = receipts.get(0);
+        ReceiptDTO r = receipts.getFirst();
         assertEquals("CoolStore", r.getStoreName());
         assertEquals(200, r.getFinalPrice());
         assertEquals(1, r.getProductsList().size());
-        assertEquals("Phone", r.getProductsList().get(0).getProductName());
-        assertEquals(2, r.getProductsList().get(0).getQuantity());
-        assertEquals(100, r.getProductsList().get(0).getPrice());
-        assertEquals(0, r.getProductsList().get(0).getStoreId());
+        assertEquals("Phone", r.getProductsList().getFirst().getProductName());
+        assertEquals(2, r.getProductsList().getFirst().getQuantity());
+        assertEquals(100, r.getProductsList().getFirst().getPrice());
+        assertEquals(0, r.getProductsList().getFirst().getStoreId());
     }
 
 
@@ -505,11 +502,11 @@ public class UserTests extends AcceptanceTests {
         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
 
-        // mock החזרת Registered
+        // mock  Registered
         when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
         when(mockUserRepo.save(any(Registered.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        // item להוסיף לעגלה
+        // item
         ItemStoreDTO itemToAdd = new ItemStoreDTO(0, 300, 50, Category.Electronics, 3, 0, "Phone", "CoolStore");
         int quantity = 2;
 
@@ -520,7 +517,7 @@ public class UserTests extends AcceptanceTests {
         assertTrue(result);
         assertEquals(1, user1.getCart().size());
 
-        CartItem cartItem = user1.getCart().get(0);
+        CartItem cartItem = user1.getCart().getFirst();
         assertEquals("Phone", cartItem.name);
         assertEquals(50, cartItem.price);
         assertEquals(0, cartItem.storeId);
@@ -1085,6 +1082,19 @@ public class UserTests extends AcceptanceTests {
         assertEquals(product.getProductId(), rp.getProductId());
         assertEquals(product.getName(), rp.getProductName());
         assertEquals(200, rp.getPrice());
+
+        ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+        verify(mockOrderRepo, atLeastOnce()).save(orderCaptor.capture());
+        Order savedOrder = orderCaptor.getValue();
+        assertNotNull(savedOrder, "Order should be saved to repository");
+        assertEquals(user2.getId(), savedOrder.getUserId(), "User ID should match");
+        assertEquals(store.getStoreName(), savedOrder.getStoreName(), "Store name should match");
+        assertTrue(savedOrder.getProductsList() != null && !savedOrder.getProductsList().isEmpty(), "Order should contain products");
+
+        ReceiptProduct savedProduct = savedOrder.getProductsList().get(0);
+        assertEquals(product.getProductId(), savedProduct.getProductId(), "Product ID should match in order");
+        assertEquals(product.getName(), savedProduct.getProductName(), "Product name should match in order");
+        assertEquals(200, savedProduct.getPrice(), "Price should match in order");
     }
     @Test
     void testBuyRegisteredCart_Failure_InvalidToken() {
