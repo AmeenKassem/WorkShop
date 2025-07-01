@@ -40,7 +40,9 @@ WorkShop\Backend\src\main\resources\application-db.properties
 WorkShop\Backend\src\main\resources\dataToInit.txt
 
 ### 2. API for Initialization
-admin\init 
+```http 
+POST  /admin/init 
+``` 
 
 The system uses:
 - `AppSettingsService` to control initialization status
