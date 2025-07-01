@@ -65,8 +65,7 @@ public class UserTests {
     // @Autowired
     // private NotificationRepository notificationRepository;
 
-    @Autowired
-    private StockRepository stockRepository;
+
     @Autowired
     private IStockRepoDB stockRepositoryjpa;
     @Autowired
