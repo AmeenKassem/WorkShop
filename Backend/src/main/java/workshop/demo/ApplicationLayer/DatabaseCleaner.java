@@ -145,4 +145,109 @@ public class DatabaseCleaner {
             }
         }
     }
+  @Transactional
+public void wipeDiscounts() {
+    StringBuilder sqlBuilder = new StringBuilder();
+
+    sqlBuilder.append("""
+        -- Disable foreign key constraints on discount-related tables and store.discount_id
+        ALTER TABLE [dbo].[store] NOCHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[composite_sub_discounts] NOCHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[composite_discount_entity] NOCHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[invisible_discount_entity] NOCHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[visible_discount_entity] NOCHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[discount_entity] NOCHECK CONSTRAINT ALL;
+
+        -- Clear discount references in store
+        UPDATE [dbo].[store] SET discount_id = NULL;
+
+        -- Delete all data from discount-related tables
+        DELETE FROM [dbo].[composite_sub_discounts];
+        DELETE FROM [dbo].[composite_discount_entity];
+        DELETE FROM [dbo].[invisible_discount_entity];
+        DELETE FROM [dbo].[visible_discount_entity];
+        DELETE FROM [dbo].[discount_entity];
+
+        -- Re-enable constraints
+        ALTER TABLE [dbo].[store] CHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[composite_sub_discounts] CHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[composite_discount_entity] CHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[invisible_discount_entity] CHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[visible_discount_entity] CHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[discount_entity] CHECK CONSTRAINT ALL;
+    """);
+
+    String[] statements = sqlBuilder.toString().split(";");
+    for (String statement : statements) {
+        String trimmed = statement.trim();
+        if (!trimmed.isEmpty()) {
+            entityManager.createNativeQuery(trimmed).executeUpdate();
+        }
+    }
+}
+    @Transactional
+    public void cleanAuthorizationTables() {
+        String[] statements = new String[] {
+                // Disable constraints
+                "ALTER TABLE [dbo].[node] NOCHECK CONSTRAINT ALL",
+                "ALTER TABLE [dbo].[authorization_permissions] NOCHECK CONSTRAINT ALL",
+                "ALTER TABLE [dbo].[authorization] NOCHECK CONSTRAINT ALL",
+
+                // Delete from referencing table first
+                "DELETE FROM [dbo].[node]",
+
+                // Then delete from dependent tables
+                "DELETE FROM [dbo].[authorization_permissions]",
+                "DELETE FROM [dbo].[authorization]",
+
+                // Re-enable constraints
+                "ALTER TABLE [dbo].[node] CHECK CONSTRAINT ALL",
+                "ALTER TABLE [dbo].[authorization_permissions] CHECK CONSTRAINT ALL",
+                "ALTER TABLE [dbo].[authorization] CHECK CONSTRAINT ALL"
+        };
+
+        for (String statement : statements) {
+            String trimmed = statement.trim();
+            if (!trimmed.isEmpty()) {
+                entityManager.createNativeQuery(trimmed).executeUpdate();
+            }
+        }
+    }
+@Transactional
+public void wipeSpecialsOnly() {
+    String sql = """
+        ALTER TABLE [dbo].[participation_in_random] NOCHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[user_auction_bid] NOCHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[single_bid_vote_ids] NOCHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[single_bid] NOCHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[bid] NOCHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[auction] NOCHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[random] NOCHECK CONSTRAINT ALL;
+
+        DELETE FROM [dbo].[participation_in_random];
+        DELETE FROM [dbo].[user_auction_bid];
+        DELETE FROM [dbo].[single_bid_vote_ids];
+        DELETE FROM [dbo].[single_bid];
+        DELETE FROM [dbo].[bid];
+        DELETE FROM [dbo].[auction];
+        DELETE FROM [dbo].[random];
+
+        ALTER TABLE [dbo].[participation_in_random] CHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[user_auction_bid] CHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[single_bid_vote_ids] CHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[single_bid] CHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[bid] CHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[auction] CHECK CONSTRAINT ALL;
+        ALTER TABLE [dbo].[random] CHECK CONSTRAINT ALL;
+    """;
+
+    String[] statements = sql.split(";");
+    for (String statement : statements) {
+        String trimmed = statement.trim();
+        if (!trimmed.isEmpty()) {
+            entityManager.createNativeQuery(trimmed).executeUpdate();
+        }
+    }
+}
+
 }

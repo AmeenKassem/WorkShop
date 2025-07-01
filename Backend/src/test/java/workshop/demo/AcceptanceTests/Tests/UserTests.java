@@ -10,7 +10,6 @@ import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -22,9 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
-import java.util.LinkedList;
 
-import workshop.demo.ApplicationLayer.PaymentServiceImp;
 import workshop.demo.ApplicationLayer.UserService;
 import workshop.demo.DTOs.*;
 import workshop.demo.DomainLayer.Exceptions.DevException;
@@ -36,11 +33,11 @@ import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.item;
+import workshop.demo.DomainLayer.Store.PolicyManager;
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.*;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
-import workshop.demo.InfrastructureLayer.Encoder;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -141,7 +138,10 @@ public class UserTests extends AcceptanceTests {
         when(mockStoreRepo.findById(0)).thenReturn(Optional.of(store));
         when(suConnectionRepo.addNewStoreOwner(0, USER1_ID)).thenReturn(true);
         when(mockActivePurchases.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
+        PolicyManager policyManager = new PolicyManager();
+        policyManager.setStore(store);
+        store.setPolicyManager(policyManager);
+        when(policyManagerRepository.save(any())).thenReturn(policyManager);
         int storeId = storeService.addStoreToSystem(user1Token, STORE_NAME, STORE_CATEGORY);
         assertEquals(0, storeId);
 
@@ -327,7 +327,6 @@ public class UserTests extends AcceptanceTests {
 
     @Test
     void testUser_setAdmin_Failure_InvalidToken() throws Exception {
-        int userId = USER1_ID;
         String adminKey = "123321";
 
         doThrow(new UIException("Invalid token!", ErrorCodes.INVALID_TOKEN))
@@ -335,7 +334,7 @@ public class UserTests extends AcceptanceTests {
                 .checkAuth_ThrowTimeOutException(eq("bad-token"), any(Logger.class));
 
         UIException ex = assertThrows(UIException.class, () -> {
-            userService.setAdmin("bad-token", adminKey, userId);
+            userService.setAdmin("bad-token", adminKey, USER1_ID);
         });
 
         assertEquals(ErrorCodes.INVALID_TOKEN, ex.getNumber());
@@ -377,14 +376,14 @@ public class UserTests extends AcceptanceTests {
         // Assert
         assertNotNull(receipts);
         assertEquals(1, receipts.size());
-        ReceiptDTO r = receipts.get(0);
+        ReceiptDTO r = receipts.getFirst();
         assertEquals("CoolStore", r.getStoreName());
         assertEquals(200, r.getFinalPrice());
         assertEquals(1, r.getProductsList().size());
-        assertEquals("Phone", r.getProductsList().get(0).getProductName());
-        assertEquals(2, r.getProductsList().get(0).getQuantity());
-        assertEquals(100, r.getProductsList().get(0).getPrice());
-        assertEquals(0, r.getProductsList().get(0).getStoreId());
+        assertEquals("Phone", r.getProductsList().getFirst().getProductName());
+        assertEquals(2, r.getProductsList().getFirst().getQuantity());
+        assertEquals(100, r.getProductsList().getFirst().getPrice());
+        assertEquals(0, r.getProductsList().getFirst().getStoreId());
     }
 
 
@@ -505,11 +504,11 @@ public class UserTests extends AcceptanceTests {
         doNothing().when(mockAuthRepo).checkAuth_ThrowTimeOutException(user1Token, logger);
         when(mockAuthRepo.getUserId(user1Token)).thenReturn(USER1_ID);
 
-        // mock החזרת Registered
+        // mock  Registered
         when(mockUserRepo.findById(USER1_ID)).thenReturn(Optional.of(user1));
         when(mockUserRepo.save(any(Registered.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        // item להוסיף לעגלה
+        // item
         ItemStoreDTO itemToAdd = new ItemStoreDTO(0, 300, 50, Category.Electronics, 3, 0, "Phone", "CoolStore");
         int quantity = 2;
 
@@ -520,7 +519,7 @@ public class UserTests extends AcceptanceTests {
         assertTrue(result);
         assertEquals(1, user1.getCart().size());
 
-        CartItem cartItem = user1.getCart().get(0);
+        CartItem cartItem = user1.getCart().getFirst();
         assertEquals("Phone", cartItem.name);
         assertEquals(50, cartItem.price);
         assertEquals(0, cartItem.storeId);
@@ -1150,46 +1149,62 @@ public class UserTests extends AcceptanceTests {
         });
 
     }
-
-    //    paymentfail
     @Test
-    void testBuyRegisteredCart_Failure_PaymentFailed() throws Exception {
+    void testUserBuyCart_Failure_PaymentFails() throws Exception {
+        setupValidGuestCartScenario(5); // helper that sets everything up (you can ask me to generate)
 
+        UIException ex = assertThrows(UIException.class, () -> {
+            purchaseService.buyGuestCart(user2Token, PaymentDetails.test_fail_Payment(), SupplyDetails.getTestDetails());
+        });
+
+        assertEquals(ErrorCodes.PAYMENT_ERROR, ex.getNumber());
+        assertTrue(ex.getMessage().contains("Payment failed"));
+    }
+    @Test
+    void testUserBuyCart_Failure_SupplyFails() throws Exception {
+        setupValidGuestCartScenario(5);
+
+        UIException ex = assertThrows(UIException.class, () -> {
+            purchaseService.buyGuestCart(user2Token, PaymentDetails.testPayment(), SupplyDetails.test_fail_supply());
+        });
+
+        assertEquals(ErrorCodes.SUPPLY_ERROR, ex.getNumber());
     }
 
-    @Test
-    void testBuyRegisteredCart_Failure_SupplyFailed() throws Exception {
-
-    }
-
-    @Test
-    void testBuyRegisteredCart_Failure_SupplyThrows() throws Exception {
-
-    }
 
 
+    private void setupValidGuestCartScenario(int cartQuantity) throws Exception {
+        when(mockAuthRepo.validToken(user2Token)).thenReturn(true);
+        when(mockAuthRepo.getUserId(user2Token)).thenReturn(0);
+        when(mockSusRepo.findById(0)).thenReturn(Optional.empty());
 
+        // Guest with cart
+        Guest guest = new Guest();
+        forceField(guest, "id", 0);
+        guest.addToCart(new CartItem(new ItemCartDTO(
+                store.getstoreId(),
+                product.getProductId(),
+                cartQuantity,
+                100,
+                product.getName(),
+                store.getStoreName(),
+                Category.Electronics
+        )));
+        when(mockGuestRepo.findById(0)).thenReturn(Optional.of(guest));
+        when(mockGuestRepo.getReferenceById(0)).thenReturn(guest);
 
+        // Store exists
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
 
+        // StoreStock with enough quantity
+        StoreStock stock = new StoreStock(store.getstoreId());
+        stock.addItem(new item(product.getProductId(), cartQuantity + 5, 100, Category.Electronics));
+        when(mockStoreStock.findById(store.getstoreId())).thenReturn(Optional.of(stock));
+        when(mockStoreStock.saveAndFlush(any())).thenAnswer(inv -> inv.getArgument(0));
 
-
-
-
-
-
-    @Test
-    void testUserGetPurchasePolicy_Success() throws Exception {
-
-    }
-
-    @Test
-    void testUserGetPurchasePolicy_Failure() throws Exception {
-
-    }
-
-    @Test
-    void testBuyRegisteredCart_Failure_PurchasePolicyViolation() throws Exception {
-
+        // Policies and discount
+        when(mockStoreRepo.findById(store.getstoreId())).thenReturn(Optional.of(store));
+        store.setActive(true);
 
     }
 }

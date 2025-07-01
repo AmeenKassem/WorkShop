@@ -58,6 +58,8 @@ public class ExceptionHandlers {
         errorMessages.put(ErrorCodes.NOT_ADMIN, "You are not the admin.");
         errorMessages.put(ErrorCodes.OWNER_ALREADY_ACCEPT_BID, "You has already accepted this bid.");
         errorMessages.put(ErrorCodes.TOO_MUCH_MONEY_FOR_RANDOM, "You have paid more than the maximum amount you can pay.");
+        errorMessages.put(ErrorCodes.BAD_INPUT, "Your input is invalid. Please check your data and try again.");
+
     }
 
     public static String getErrorMessage(int code) {

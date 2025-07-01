@@ -1,4 +1,5 @@
 package workshop.demo.DataInitilizer;
+// >>>>>>>> persist-auth:Backend/src/main/java/workshop/demo/DataInitilizer/UserParser.java
 
 import java.util.ArrayList;
 import java.util.List;

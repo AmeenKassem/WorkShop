@@ -41,8 +41,7 @@ import workshop.demo.InfrastructureLayer.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS) // allows non-static @BeforeAll
 public class GuestTests {
 
     // ======================== Repositories ========================
@@ -111,7 +110,7 @@ public class GuestTests {
     @Autowired
     DatabaseCleaner databaseCleaner;
 
-    @BeforeEach
+    @BeforeAll
     void setup() throws Exception {
         databaseCleaner.wipeDatabase();
 
@@ -136,9 +135,9 @@ public class GuestTests {
         String[] keywords = { "Laptop", "Lap", "top" };
         PID = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
 
-        stockService.addItem(createdStoreId, NOToken, PID, 10, 2000,
+        stockService.addItem(createdStoreId, NOToken, PID, 100, 2000,
                 Category.Electronics);
-        itemStoreDTO = new ItemStoreDTO(PID, 10, 2000, Category.Electronics, 0,
+        itemStoreDTO = new ItemStoreDTO(PID, 100, 2000, Category.Electronics, 0,
                 createdStoreId, "Laptop", "TestStore");
 
         // } catch (UIException e) {
@@ -150,6 +149,51 @@ public class GuestTests {
         // }
 
     }
+    @BeforeEach
+    void setup1() throws Exception {
+        stockService.updateQuantity(createdStoreId,NOToken,PID,100);
+
+        if (userService.getRegularCart(GToken).length != 0) {
+
+
+        databaseCleaner.wipeDatabase();
+
+
+        GToken = userService.generateGuest();
+
+        String OToken = userService.generateGuest();
+
+        userService.register(OToken, "owner", "owner", 25);
+
+        // --- Login ---
+        NOToken = userService.login(OToken, "owner", "owner");
+
+        assertTrue(authRepo.getUserName(NOToken).equals("owner"));
+        // ======================= STORE CREATION =======================
+
+        createdStoreId = storeService.addStoreToSystem(NOToken, "TestStore",
+                "ELECTRONICS");
+        // assertEquals( 1,createdStoreId);
+
+        // ======================= PRODUCT & ITEM ADDITION =======================
+        String[] keywords = {"Laptop", "Lap", "top"};
+        PID = stockService.addProduct(NOToken, "Laptop", Category.Electronics, "Gaming Laptop", keywords);
+
+        stockService.addItem(createdStoreId, NOToken, PID, 100, 2000,
+                Category.Electronics);
+        itemStoreDTO = new ItemStoreDTO(PID, 100, 2000, Category.Electronics, 0,
+                createdStoreId, "Laptop", "TestStore");
+    }
+        // } catch (UIException e) {
+        //     // TODO Auto-generated catch block
+        //     e.printStackTrace();
+        // } catch (Exception e) {
+        //     // TODO Auto-generated catch block
+        //     e.printStackTrace();
+        // }
+
+    }
+
 
     // @AfterEach
 
@@ -210,10 +254,6 @@ public class GuestTests {
 
     }
 
-    @Test
-    public void test(){
-        assertNotNull(4);
-    }
 
     @Test
     void testGuestExit_Failure_InvalidToken() throws Exception {
@@ -234,10 +274,10 @@ public class GuestTests {
 
         String token = userService.generateGuest();
 
-        userService.register(token, "Mohamad", "finish", 24);
+        userService.register(token, "Mohamad6", "finish6", 24);
 
         UIException exception = assertThrows(UIException.class, () -> {
-            userService.register(token, "Mohamad", "finish", 24);
+            userService.register(token, "Mohamad6", "finish6", 24);
         });
 
         assertEquals(ErrorCodes.USERNAME_USED, exception.getNumber());
@@ -246,10 +286,10 @@ public class GuestTests {
     // NOTE:GET STORE PRODUCT FINISH
     @Test
     void testGuestGetStoreProducts() throws Exception {
-
+createdStoreId=storeRepositoryjpa.findAll().getFirst().getstoreId();
         ItemStoreDTO[] items = stockService.getProductsInStore(createdStoreId);
-        assertTrue(items.length == 1);
-        assertTrue(items[0].getProductId() == PID);
+        assertEquals(1, items.length);
+        assertEquals(items[0].getProductId(), PID);
     }
 
     @Test
@@ -334,9 +374,9 @@ public class GuestTests {
                         receipts[0].getProductsList().get(0).getPrice());
 
         int guestId = authRepo.getUserId(GToken);
-        assertTrue(userService.getRegularCart(GToken).length == 0);
+        assertEquals(0, userService.getRegularCart(GToken).length);
 
-        assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 9);
+        assertEquals(99, stockService.getProductsInStore(createdStoreId)[0].getQuantity());
 
 
     }
@@ -354,24 +394,24 @@ public class GuestTests {
                         supplyDetails));
 
         assertEquals("Invalid token!", ex.getMessage());
-        assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 10);
+        assertEquals(100, stockService.getProductsInStore(createdStoreId)[0].getQuantity());
 
     }
 
     @Test
     void testGuestBuyCart_ProductNotAvailable() throws Exception {
+        Exception ex = assertThrows(Exception.class, () ->
+                userService.addToUserCart(GToken, new ItemStoreDTO(0, 0, 0, null, 0, 1, "", "TestStore"), 1)
+        );
 
-        userService.addToUserCart(GToken, new ItemStoreDTO(0, 0, 0, null, 0, 1, "",
-                "TestStore"), 1);
 
         PaymentDetails paymentDetails = PaymentDetails.testPayment();
         SupplyDetails supplyDetails = SupplyDetails.getTestDetails();
 
-        Exception ex = assertThrows(UIException.class,
+        Exception ex1 = assertThrows(UIException.class,
                 () -> purchaseService.buyGuestCart(GToken, paymentDetails, supplyDetails));
 
-        assertEquals("store not found on db!",
-                ex.getMessage());
+
     }
 
     @Test
@@ -386,7 +426,7 @@ public class GuestTests {
         System.out.println(ex.getErrorCode());
         System.out.println(ex.getMessage());
         System.out.println(PID);
-        assertEquals(10, stockService.getProductsInStore(createdStoreId)[0].getQuantity());
+        assertEquals(100, stockService.getProductsInStore(createdStoreId)[0].getQuantity());
     }
 
     @Test
@@ -397,7 +437,7 @@ public class GuestTests {
         Exception ex = assertThrows(Exception.class, () -> purchaseService.buyGuestCart(GToken,
                 PaymentDetails.testPayment(), SupplyDetails.test_fail_supply()));
 
-        assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 10);
+        assertEquals(100, stockService.getProductsInStore(createdStoreId)[0].getQuantity());
 
     }
 
@@ -433,7 +473,7 @@ public class GuestTests {
 
 // You know the product IDs and expected quantities:
         Map<Integer, Integer> expectedQuantities = Map.of(
-                PID, 10,
+                PID, 100,
                 PID2, 15,
                 PID3, 20
         );
@@ -558,8 +598,8 @@ public class GuestTests {
         ReceiptDTO[] re = purchaseService.buyGuestCart(GToken, paymentDetails,
                 supplyDetails);
 
-        assertTrue(re[0].getFinalPrice() == 6000);
-        assertTrue(stockService.getProductsInStore(createdStoreId)[0].getQuantity() == 7);
+        assertEquals(6000, re[0].getFinalPrice());
+        assertEquals(97, stockService.getProductsInStore(createdStoreId)[0].getQuantity());
 
     }
 

@@ -1,10 +1,27 @@
-package workshop.demo.InfrastructureLayer.DiscountEntities;
-
-import jakarta.persistence.*;
-import workshop.demo.DomainLayer.Store.*;
+package workshop.demo.DomainLayer.DiscountEntities;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.OneToMany;
+import workshop.demo.DomainLayer.Store.AndDiscount;
+import workshop.demo.DomainLayer.Store.CompositeDiscount;
+import workshop.demo.DomainLayer.Store.Discount;
+import workshop.demo.DomainLayer.Store.DiscountConditions;
+import workshop.demo.DomainLayer.Store.InvisibleDiscount;
+import workshop.demo.DomainLayer.Store.MaxDiscount;
+import workshop.demo.DomainLayer.Store.MultiplyDiscount;
+import workshop.demo.DomainLayer.Store.OrDiscount;
+import workshop.demo.DomainLayer.Store.VisibleDiscount;
+import workshop.demo.DomainLayer.Store.XorDiscount;
+import workshop.demo.InfrastructureLayer.InvisibleDiscountEntity;
 
 @Entity
 @DiscriminatorValue("COMPOSITE")
@@ -62,12 +79,18 @@ public class CompositeDiscountEntity extends DiscountEntity {
             CompositeDiscount result;
 
             switch (comp.getLogic()) {
-                case MAX -> result = new MaxDiscount(comp.getName());
-                case AND -> result = new AndDiscount(comp.getName());
-                case OR -> result = new OrDiscount(comp.getName());
-                case XOR -> result = new XorDiscount(comp.getName());
-                case MULTIPLY -> result = new MultiplyDiscount(comp.getName());
-                default -> throw new IllegalArgumentException("Unsupported logic: " + comp.getLogic());
+                case MAX ->
+                    result = new MaxDiscount(comp.getName());
+                case AND ->
+                    result = new AndDiscount(comp.getName());
+                case OR ->
+                    result = new OrDiscount(comp.getName());
+                case XOR ->
+                    result = new XorDiscount(comp.getName());
+                case MULTIPLY ->
+                    result = new MultiplyDiscount(comp.getName());
+                default ->
+                    throw new IllegalArgumentException("Unsupported logic: " + comp.getLogic());
             }
 
             for (DiscountEntity sub : comp.getSubDiscounts()) {

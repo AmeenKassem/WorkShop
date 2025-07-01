@@ -1,9 +1,19 @@
-package workshop.demo.InfrastructureLayer.DiscountEntities;
-
-import workshop.demo.DomainLayer.Store.*;
+package workshop.demo.DomainLayer.DiscountEntities;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import workshop.demo.DomainLayer.Store.AndDiscount;
+import workshop.demo.DomainLayer.Store.CompositeDiscount;
+import workshop.demo.DomainLayer.Store.Discount;
+import workshop.demo.DomainLayer.Store.DiscountConditions;
+import workshop.demo.DomainLayer.Store.InvisibleDiscount;
+import workshop.demo.DomainLayer.Store.MaxDiscount;
+import workshop.demo.DomainLayer.Store.MultiplyDiscount;
+import workshop.demo.DomainLayer.Store.OrDiscount;
+import workshop.demo.DomainLayer.Store.VisibleDiscount;
+import workshop.demo.DomainLayer.Store.XorDiscount;
+import workshop.demo.InfrastructureLayer.InvisibleDiscountEntity;
 
 public class DiscountMapper {
 
@@ -75,12 +85,18 @@ public class DiscountMapper {
             CompositeDiscount result;
 
             switch (comp.getLogic()) {
-                case MAX -> result = new MaxDiscount(comp.getName());
-                case AND -> result = new AndDiscount(comp.getName());
-                case OR -> result = new OrDiscount(comp.getName());
-                case XOR -> result = new XorDiscount(comp.getName());
-                case MULTIPLY -> result = new MultiplyDiscount(comp.getName());
-                default -> throw new IllegalArgumentException("Unsupported logic: " + comp.getLogic());
+                case MAX ->
+                    result = new MaxDiscount(comp.getName());
+                case AND ->
+                    result = new AndDiscount(comp.getName());
+                case OR ->
+                    result = new OrDiscount(comp.getName());
+                case XOR ->
+                    result = new XorDiscount(comp.getName());
+                case MULTIPLY ->
+                    result = new MultiplyDiscount(comp.getName());
+                default ->
+                    throw new IllegalArgumentException("Unsupported logic: " + comp.getLogic());
             }
 
             for (DiscountEntity sub : comp.getSubDiscounts()) {

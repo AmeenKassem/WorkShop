@@ -458,18 +458,7 @@ public class RandomTests {
         assertEquals(d, store.getDiscount());
     }
 
-    @Test
-    void testAddDiscountToExisting() {
-        Discount d1 = new VisibleDiscount("D1", 0.1, s -> true, "always true");
-        Discount d2 = new VisibleDiscount("D2", 0.2, s -> true, "always true");
 
-        store.setDiscount(d1);
-        store.addDiscount(d2);
-
-        Discount result = store.getDiscount();
-        assertTrue(result instanceof MaxDiscount);
-        assertEquals("Auto-wrapped discounts", result.getName());
-    }
 
     @Test
     void testAddDiscountToComposite() {

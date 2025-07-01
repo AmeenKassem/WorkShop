@@ -33,7 +33,6 @@ import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.Auction;
 import workshop.demo.DomainLayer.Stock.BID;
-import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.ProductSearchCriteria;
 import workshop.demo.DomainLayer.Stock.Random;
@@ -41,11 +40,11 @@ import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.UserAuctionBid;
 import workshop.demo.DomainLayer.Store.Store;
-import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.DomainLayer.User.Registered;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
+import workshop.demo.InfrastructureLayer.IActivePurchasesRepo;
 import workshop.demo.InfrastructureLayer.IStoreRepoDB;
 import workshop.demo.InfrastructureLayer.IStoreStockRepo;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
@@ -86,7 +85,6 @@ public class ActivePurchasesService {
     private LockManager lockManager;
 
     // private Timer timer = new Timer();
-
     @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void scheduleSpecialPurchases() {
@@ -153,8 +151,9 @@ public class ActivePurchasesService {
 
     public void scheduleAuctionEnd(ActivePurcheses active, long time, StoreStock storeStock, int auctionId,
             int productId, int quantity, Store store) {
-        if (time <= 0)
+        if (time <= 0) {
             time = 1;
+        }
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Transactional
@@ -165,7 +164,7 @@ public class ActivePurchasesService {
                     // get the proxy of the current bean from Spring context
                     ActivePurchasesService self = context.getBean(ActivePurchasesService.class);
                     self.runAuctionEndTask(active, auctionId, storeStock, productId, store);
-                    
+
                 } catch (UIException | DevException e) {
                     e.printStackTrace();
                 }
@@ -173,7 +172,6 @@ public class ActivePurchasesService {
 
         }, time);
     }
-
 
     @Transactional
     public void runAuctionEndTask(ActivePurcheses active, int auctionId, StoreStock storeStock, int productId,
@@ -207,8 +205,9 @@ public class ActivePurchasesService {
 
     private void checkUserRegisterOnline_ThrowException(int userId) throws UIException {
         Optional<Registered> user = userRepo.findById(userId);
-        if (!user.isPresent())
+        if (!user.isPresent()) {
             throw new UIException("stock service:user not found!", ErrorCodes.USER_NOT_FOUND);
+        }
     }
 
     private int checkUserAndStore(String token, int storeId, boolean checkWorker) throws Exception {
@@ -290,8 +289,9 @@ public class ActivePurchasesService {
                 logger.info("something went wrong with it loading auctions");
             }
             Store store = storeJpaRepo.findById(activePurcheses.getStoreId()).orElse(null);
-            if (store == null || !store.isActive())
+            if (store == null || !store.isActive()) {
                 continue;
+            }
             for (Product product : matchProducts) {
                 allAuctions.addAll(activePurcheses.getAuctionsForProduct(product.getProductId(), store.getStoreName(),
                         product.getName()));
@@ -322,8 +322,9 @@ public class ActivePurchasesService {
             // UserAuctionBid bid = active.addUserBidToAuction(auctionId, userId, price);
             logger.info("Bid placed successfully by user: {} on auction: {}", userId, auctionId);
             // int userLoosedTopId = active.getCurrAuctionTop(auctionId);
-            if (userLoosedTopId != userId && userLoosedTopId != -1)
+            if (userLoosedTopId != userId && userLoosedTopId != -1) {
                 notifier.sendMessageToUser(userLoosedTopId, "You are loosing the top of auction!");
+            }
             activePurchasesRepo.flush();
             logger.info("bid saved to user!");
             UserSpecialItemCart specialItem = new UserSpecialItemCart(storeId, auctionId, bid.getId(),
@@ -379,8 +380,8 @@ public class ActivePurchasesService {
         }
         return randoms.stream()
                 .map(rand -> rand.getDTO().setStoreNameAndProductName(
-                        stock.getProductById(rand.getProductId()).getName(),
-                        storeJpaRepo.findById(storeId).orElseThrow().getStoreName()))
+                stock.getProductById(rand.getProductId()).getName(),
+                storeJpaRepo.findById(storeId).orElseThrow().getStoreName()))
                 .toArray(RandomDTO[]::new);
 
     }
@@ -395,8 +396,9 @@ public class ActivePurchasesService {
             randomDTO.setStoreNameAndProductName(
                     stock.getProductById(randomDTO.getProductId()).getName(),
                     storeJpaRepo.findById(storeId).orElseThrow().getStoreName());
-            if (randomDTO.winner != null)
+            if (randomDTO.winner != null) {
                 randomDTO.userName = randomDTO.winner.userName;
+            }
             randoms.add(randomDTO);
         }
         return randoms.toArray(new RandomDTO[0]);
@@ -417,8 +419,9 @@ public class ActivePurchasesService {
         }
         for (ActivePurcheses activePurcheses : actives) {
             Store store = storeJpaRepo.findById(activePurcheses.getStoreId()).orElse(null);
-            if (store == null || !store.isActive())
+            if (store == null || !store.isActive()) {
                 continue;
+            }
             for (Product product : matchProducts) {
                 allRandoms.addAll(activePurcheses.getRandomsForProduct(product.getProductId(), store.getStoreName(),
                         product.getName()));
@@ -452,17 +455,17 @@ public class ActivePurchasesService {
 
                 notifier.sendMessageForUsers(
                         "Random on store: " + storeJpaRepo.findById(storeId).get().getStoreName() + ", on product: "
-                                + stock.getProductById(res.getProductId()).getName() + " has ended.",
+                        + stock.getProductById(res.getProductId()).getName() + " has ended.",
                         ownersIds);
                 notifier.sendMessageForUsers(
                         "Random on store: " + storeJpaRepo.findById(storeId).get().getStoreName() + ", on product: "
-                                + stock.getProductById(res.getProductId()).getName() + " has ended.",
+                        + stock.getProductById(res.getProductId()).getName() + " has ended.",
                         participationsIds);
                 notifier.sendDelayedMessageToUser(active.getRandom(randomId).getWinner().getUserName(),
                         "Congratulations! You have won the random on product: "
-                                + stock.getProductById(res.getProductId()).getName() + " in store: "
-                                + storeJpaRepo.findById(storeId).get().getStoreName()
-                                + ". Please check your cart for details.");
+                        + stock.getProductById(res.getProductId()).getName() + " in store: "
+                        + storeJpaRepo.findById(storeId).get().getStoreName()
+                        + ". Please check your cart for details.");
 
             }
             // user.addSpecialItemToCart(
@@ -473,8 +476,9 @@ public class ActivePurchasesService {
 
     public void scheduleRandomEnd(ActivePurcheses active, long time, StoreStock storeStock, int randomId,
             int productId, int quantity, Store store, Random random) {
-        if (time <= 0)
+        if (time <= 0) {
             time = 1;
+        }
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
@@ -514,7 +518,7 @@ public class ActivePurchasesService {
                     List<Integer> paricpationIds = tempRandom.getParticipationsUsersIds();
                     notifier.sendMessageForUsers(
                             "Random on store :" + store.getStoreName() + ", on product:" + productId
-                                    + " has canceled. you will get your money back.",
+                            + " has canceled. you will get your money back.",
                             paricpationIds);
 
                 } else {
@@ -554,8 +558,8 @@ public class ActivePurchasesService {
         suConnectionRepo.getOwnersInStore(storeId).forEach(user -> ownersIds.add(user.getMyId()));
         notifier.sendMessageForUsers(
                 "Owner " + userRepo.findById(userId).get().getUsername() + " set a product :"
-                        + stock.getProductById(productId).getName() + " to BID with quantity: " + quantity
-                        + " in your store",
+                + stock.getProductById(productId).getName() + " to BID with quantity: " + quantity
+                + " in your store",
                 ownersIds);
 
         return bidId;
@@ -614,8 +618,9 @@ public class ActivePurchasesService {
         }
         for (ActivePurcheses activePurcheses : actives) {
             Store store = storeJpaRepo.findById(activePurcheses.getStoreId()).orElse(null);
-            if (store == null || !store.isActive())
+            if (store == null || !store.isActive()) {
                 continue;
+            }
             for (Product product : matchProducts) {
                 System.out
                         .println("searching for product: " + product.getName() + " in store: " + store.getStoreName());
@@ -645,9 +650,9 @@ public class ActivePurchasesService {
             userRepo.findById(userId).get().addSpecialItemToCart(specialItem);
             notifier.sendMessageForUsers(
                     "User " + userRepo.findById(userId).get().getUsername() + " placed an offer on bid: " + bidId
-                            + ", on store: " + storeJpaRepo.findById(storeId).orElseThrow().getStoreName()
-                            + ", on product : "
-                            + stock.getProductById(active.getBidById(bidId).getProductId()).getName(),
+                    + ", on store: " + storeJpaRepo.findById(storeId).orElseThrow().getStoreName()
+                    + ", on product : "
+                    + stock.getProductById(active.getBidById(bidId).getProductId()).getName(),
                     ownersIds);
             activePurchasesRepo.flush();
             return true;
@@ -675,21 +680,21 @@ public class ActivePurchasesService {
                 if (!bidAccepted.isWinner()) {
                     notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
                             "Owner " + userRepo.findById(userId).get().getUsername() + " accepted your bid, on store: "
-                                    + store.getStoreName() + ", on product : "
-                                    + stock.getProductById(bidAccepted.getProductId()).getName());
+                            + store.getStoreName() + ", on product : "
+                            + stock.getProductById(bidAccepted.getProductId()).getName());
                 } else {
                     notifier.sendDelayedMessageToUser(userRepo.findById(bidAccepted.getUserId()).get().getUsername(),
                             "Owner " + userRepo.findById(userId).get().getUsername()
-                                    + " accepted your bid on store : " + store.getStoreName() + ", on product : "
-                                    + stock.getProductById(active.getBidById(bidId).getProductId()).getName()
-                                    + " and you are the winner!");
+                            + " accepted your bid on store : " + store.getStoreName() + ", on product : "
+                            + stock.getProductById(active.getBidById(bidId).getProductId()).getName()
+                            + " and you are the winner!");
                     for (int id : active.getBidById(bidId).getLosersIdsIfAccepted()) {
 
                         notifier.sendDelayedMessageToUser(userRepo.findById(id).get().getUsername(),
                                 "the BID on strore: "
-                                        + store.getStoreName() + ", on product : "
-                                        + stock.getProductById(active.getBidById(bidId).getProductId()).getName()
-                                        + " has ended and your bid was not accepted.");
+                                + store.getStoreName() + ", on product : "
+                                + stock.getProductById(active.getBidById(bidId).getProductId()).getName()
+                                + " has ended and your bid was not accepted.");
                     }
                 }
                 logger.info("Bid accepted. User: {} is the winner.", bidAccepted.getUserId());
@@ -717,9 +722,9 @@ public class ActivePurchasesService {
             if (bidRejected) {
                 notifier.sendDelayedMessageToUser(userRepo.findById(userRejected).get().getUsername(),
                         "Your bid on store: "
-                                + store.getStoreName() + ", on product : "
-                                + stock.getProductById(active.getBidById(bidId).getProductId()).getName()
-                                + " has been rejected");
+                        + store.getStoreName() + ", on product : "
+                        + stock.getProductById(active.getBidById(bidId).getProductId()).getName()
+                        + " has been rejected");
             }
 
             if (ownerOffer != null) {

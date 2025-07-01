@@ -107,7 +107,6 @@ public class HomePage extends VerticalLayout {
 
         String userType = (String) VaadinSession.getCurrent().getAttribute("user-type");
         boolean isUser = "user".equals(userType) || "admin".equals(userType);
-        
 
         TextField searchField = new TextField("Search");
         searchField.setPlaceholder("Enter keyword or product name");
@@ -143,7 +142,18 @@ public class HomePage extends VerticalLayout {
         productRateCombo.setPlaceholder("1-5");
         productRateCombo.setWidth("120px");
 
-        Button searchBtn = new Button("Search", event -> {
+        Button searchBtn = new Button("🔍 Search");
+        searchBtn.addClassName("search-button");
+        searchBtn.getStyle()
+                .set("background", "linear-gradient(90deg, #ce5290, #f472b6)")
+                .set("color", "white")
+                .set("font-weight", "bold")
+                .set("border-radius", "12px")
+                .set("padding", "8px 18px")
+                .set("font-size", "1rem")
+                .set("box-shadow", "0 2px 6px rgba(0, 0, 0, 0.1)");
+
+        searchBtn.addClickListener(event -> {
             String selectedType = typeSelector.getValue();
             String searchBy = searchBySelector.getValue();
             String inputText = searchField.getValue();
@@ -158,14 +168,12 @@ public class HomePage extends VerticalLayout {
             }
 
             String token = (String) VaadinSession.getCurrent().getAttribute("auth-token");
-            String name = searchBy.equals("Product Name") ? inputText : null;
-            String keyword = searchBy.equals("Keyword") ? inputText : null;
+            String name = "Product Name".equals(searchBy) ? inputText : null;
+            String keyword = "Keyword".equals(searchBy) ? inputText : null;
 
             resultsContainer.removeAll();
-            System.out.println("user-type: " + userType);
 
             if (!isUser) {
-                // guest search: Normal only
                 List<ItemStoreDTO> items = homePagePresenter.searchNormal(token, name, keyword, category, minPrice, maxPrice, productRate);
                 if (items == null || items.isEmpty()) {
                     resultsContainer.add(new Paragraph("❌ No normal products found."));
@@ -174,68 +182,56 @@ public class HomePage extends VerticalLayout {
                 }
                 return;
             }
-            //only for user:
+
             switch (selectedType) {
                 case "Bid" -> {
                     List<BidDTO> bids = homePagePresenter.searchBids(token, name, keyword, category, minPrice, maxPrice, productRate);
                     if (bids == null || bids.isEmpty()) {
                         resultsContainer.add(new Paragraph("❌ No bid products found."));
-                        return;
+                    } else {
+                        bids.forEach(bid -> resultsContainer.add(createBidCard(bid)));
                     }
-                    bids.forEach(bid -> resultsContainer.add(createBidCard(bid)));
                 }
                 case "Auction" -> {
                     List<AuctionDTO> auctions = homePagePresenter.searchAuctions(token, name, keyword, category, minPrice, maxPrice, productRate);
                     if (auctions == null || auctions.isEmpty()) {
                         resultsContainer.add(new Paragraph("❌ No auction products found."));
-                        return;
+                    } else {
+                        auctions.forEach(auction -> resultsContainer.add(createAuctionCard(auction)));
                     }
-                    auctions.forEach(auction -> resultsContainer.add(createAuctionCard(auction)));
                 }
                 case "Random Draw" -> {
                     List<RandomDTO> randoms = homePagePresenter.searchRandoms(token, name, keyword, category, minPrice, maxPrice, productRate);
                     if (randoms == null || randoms.isEmpty()) {
                         resultsContainer.add(new Paragraph("❌ No random draw products found."));
-                        return;
+                    } else {
+                        randoms.forEach(random -> resultsContainer.add(createRandomCard(random)));
                     }
-                    randoms.forEach(random -> resultsContainer.add(createRandomCard(random)));
                 }
                 default -> {
                     List<ItemStoreDTO> items = homePagePresenter.searchNormal(token, name, keyword, category, minPrice, maxPrice, productRate);
                     if (items == null || items.isEmpty()) {
                         resultsContainer.add(new Paragraph("❌ No normal products found."));
-                        return;
+                    } else {
+                        items.forEach(item -> resultsContainer.add(createItemCard(item)));
                     }
-                    items.forEach(item -> resultsContainer.add(createItemCard(item)));
                 }
             }
         });
-        searchBtn.addClassName("search-button");
 
         HorizontalLayout row = new HorizontalLayout();
         row.setSpacing(true);
         row.getStyle()
-                .set("display", "flex")
                 .set("flex-wrap", "wrap")
-                .set("justify-content", "center")
-                .set("gap", "8px");
-
-        row.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
-
-        searchField.setWidth("150px");
-        categoryCombo.setWidth("130px");
-        
-        typeSelector.setWidth("130px");
-        searchBySelector.setWidth("130px");
-        minPriceField.setWidth("80px");
-        maxPriceField.setWidth("80px");
-        productRateCombo.setWidth("100px");
+                .set("align-items", "end")
+                .set("gap", "10px");
 
         if (isUser) {
             row.add(searchField, categoryCombo, typeSelector, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
         } else {
-            row.add(searchField, categoryCombo,typeSelector, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
+            row.add(searchField, categoryCombo, searchBySelector, minPriceField, maxPriceField, productRateCombo, searchBtn);
         }
+
         layout.add(row);
         return layout;
     }
@@ -323,7 +319,7 @@ public class HomePage extends VerticalLayout {
 
         Span name = new Span("🏁 " + auction.productName);
         Paragraph store = new Paragraph("🏬 Store : " + auction.storeName);
-          Paragraph max = new Paragraph("💰 Max Bid: ₪" + auction.maxBid);
+        Paragraph max = new Paragraph("💰 Max Bid: ₪" + auction.maxBid);
 
         String formattedTime = formatEndTime(auction.endTimeMillis);
         Paragraph endsAt = new Paragraph("⏰ Ends at: " + formattedTime);
@@ -347,7 +343,7 @@ public class HomePage extends VerticalLayout {
         Span name = new Span("🎲: " + random.productName);
         Paragraph store = new Paragraph("🏬 Store: " + random.storeName);
         Paragraph amountLeft = new Paragraph("📦 Left: " + random.amountLeft);
-        Paragraph price = new Paragraph("💰 Price: ₪"  + random.productPrice);
+        Paragraph price = new Paragraph("💰 Price: ₪" + random.productPrice);
 
         String formattedEndTime = formatEndTime(random.endTimeMillis);
         Paragraph endTime = new Paragraph("🕒 Ends at: " + formattedEndTime);

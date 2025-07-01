@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import jakarta.transaction.Transactional;
-import workshop.demo.ApplicationLayer.StoreService;
 import workshop.demo.DTOs.BidDTO;
 import workshop.demo.DTOs.Category;
 import workshop.demo.DTOs.CreateDiscountDTO;

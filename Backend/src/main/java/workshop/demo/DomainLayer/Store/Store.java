@@ -1,22 +1,27 @@
 package workshop.demo.DomainLayer.Store;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-
-import jakarta.persistence.*;
-import jakarta.transaction.Transactional;
 
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import workshop.demo.DTOs.ItemCartDTO;
-import workshop.demo.DTOs.ItemStoreDTO;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Transient;
+import jakarta.transaction.Transactional;
 import workshop.demo.DTOs.StoreDTO;
-import workshop.demo.DTOs.UserDTO;
+import workshop.demo.DomainLayer.DiscountEntities.DiscountEntity;
+import workshop.demo.DomainLayer.DiscountEntities.DiscountMapper;
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountEntity;
-import workshop.demo.InfrastructureLayer.DiscountEntities.DiscountMapper;
 
 @Entity
 public class Store {
@@ -111,7 +116,7 @@ public class Store {
 
         int totalVotes = 0;
         int WRank = 0;
-        int[] rank = { rank1, rank2, rank3, rank4, rank5 };
+        int[] rank = {rank1, rank2, rank3, rank4, rank5};
         for (int i = 0; i < rank.length; i++) {
             int count = rank[i]; // votes for rank (i+1)
             totalVotes += count;
@@ -162,8 +167,9 @@ public class Store {
     public boolean removeDiscountByName(String name) {
         Discount root = getDiscount(); // reconstructs if null
 
-        if (root == null)
+        if (root == null) {
             return false;
+        }
         if (root.getName().equals(name)) {
             this.discount = null;
             return true;
@@ -259,8 +265,9 @@ public class Store {
     public List<String> getPurchasePoliciesStrings(int productId) {
         List<String> res = new ArrayList<>();
         for (PurchasePolicy string : getPurchasePolicies()) {
-            if (string.getProductId() == productId)
+            if (string.getProductId() == productId) {
                 res.add(string.violationMessage());
+            }
         }
         return res;
     }

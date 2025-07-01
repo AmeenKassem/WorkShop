@@ -1,7 +1,8 @@
-package workshop.demo.InfrastructureLayer.DiscountEntities;
+package workshop.demo.InfrastructureLayer;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import workshop.demo.DomainLayer.DiscountEntities.DiscountEntity;
 
 @Entity
 @DiscriminatorValue("INVISIBLE")

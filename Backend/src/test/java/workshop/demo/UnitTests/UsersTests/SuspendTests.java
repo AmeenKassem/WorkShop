@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,14 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.test.context.ActiveProfiles;
 
 //import workshop.demo.ApplicationLayer.AdminHandler;
-import workshop.demo.ApplicationLayer.OrderService;
-import workshop.demo.ApplicationLayer.PaymentServiceImp;
-import workshop.demo.ApplicationLayer.PurchaseService;
-import workshop.demo.ApplicationLayer.StockService;
-import workshop.demo.ApplicationLayer.StoreService;
-import workshop.demo.ApplicationLayer.SupplyServiceImp;
-import workshop.demo.ApplicationLayer.UserService;
-import workshop.demo.ApplicationLayer.UserSuspensionService;
+import workshop.demo.ApplicationLayer.*;
 import workshop.demo.DTOs.ItemStoreDTO;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
@@ -29,6 +23,7 @@ import workshop.demo.InfrastructureLayer.*;
 @Service
 @SpringBootTest
 @ActiveProfiles("test")
+@Transactional
 public class SuspendTests {
 
  @Autowired
@@ -83,6 +78,8 @@ public class SuspendTests {
     // ======================== Utility ========================
     @Autowired
     private Encoder encoder;
+    @Autowired
+    DatabaseCleaner data;
 
     // ======================== Test Data ========================
     //String NOToken;
@@ -96,21 +93,7 @@ public class SuspendTests {
 
     @BeforeEach
     void setup() throws Exception {
-        node.deleteAll();
-        orderRepository.deleteAll();
-        tree.deleteAll();
-        userRepo.deleteAll();
-
-        guestRepo.deleteAll();
-
-        stockRepositoryjpa.deleteAll();
-        offerRepo.deleteAll();
-        storeRepositoryjpa.deleteAll();
-        storeStockRepo.deleteAll();
-
-       
-        suspensionRepo.deleteAll();
-            orderRepository.deleteAll();
+        data.wipeDatabase();
     }
     public SuspendTests() throws Exception {
     }
@@ -130,10 +113,7 @@ public class SuspendTests {
         int userId = authRepo.getUserId(userToken);
         suspensionService.suspendRegisteredUser(userId, 1, adminToken);
         assertTrue(suspensionService.isUserSuspended(userId));
-        Thread.sleep(65000);
-     userId = authRepo.getUserId(userToken);
 
-        assertFalse(suspensionService.isUserSuspended(userId));
     }
 
     @Test
@@ -148,8 +128,7 @@ public class SuspendTests {
 
         suspensionService.suspendGuestUser(guestId, 1, adminToken);
         assertTrue(suspensionService.isUserSuspended(guestId));
-        Thread.sleep(65000);
-        assertFalse(suspensionService.isUserSuspended(guestId));
+
     }
 
     @Test

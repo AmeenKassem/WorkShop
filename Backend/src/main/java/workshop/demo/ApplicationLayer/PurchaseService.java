@@ -14,27 +14,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import workshop.demo.DTOs.*;
+import workshop.demo.DTOs.ItemStoreDTO;
+import workshop.demo.DTOs.ParticipationInRandomDTO;
+import workshop.demo.DTOs.PaymentDetails;
+import workshop.demo.DTOs.ReceiptDTO;
+import workshop.demo.DTOs.ReceiptProduct;
+import workshop.demo.DTOs.SpecialType;
+import workshop.demo.DTOs.SupplyDetails;
+import workshop.demo.DTOs.UserDTO;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.ErrorCodes;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.DomainLayer.Order.Order;
 import workshop.demo.DomainLayer.Purchase.IPaymentService;
-// import workshop.demo.DomainLayer.Purchase.IPurchaseRepo;
 import workshop.demo.DomainLayer.Purchase.ISupplyService;
 import workshop.demo.DomainLayer.Stock.ActivePurcheses;
 import workshop.demo.DomainLayer.Stock.Auction;
-import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
 import workshop.demo.DomainLayer.Stock.Product;
 import workshop.demo.DomainLayer.Stock.Random;
 import workshop.demo.DomainLayer.Stock.SingleBid;
 import workshop.demo.DomainLayer.Stock.StoreStock;
 import workshop.demo.DomainLayer.Stock.UserAuctionBid;
-
-import workshop.demo.DomainLayer.Stock.item;
 import workshop.demo.DomainLayer.Store.Discount;
 import workshop.demo.DomainLayer.Store.DiscountScope;
-
 import workshop.demo.DomainLayer.Store.Store;
 import workshop.demo.DomainLayer.User.CartItem;
 import workshop.demo.DomainLayer.User.Guest;
@@ -43,6 +45,7 @@ import workshop.demo.DomainLayer.User.ShoppingBasket;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 import workshop.demo.DomainLayer.UserSuspension.UserSuspension;
 import workshop.demo.InfrastructureLayer.GuestJpaRepository;
+import workshop.demo.InfrastructureLayer.IActivePurchasesRepo;
 import workshop.demo.InfrastructureLayer.IOrderRepoDB;
 import workshop.demo.InfrastructureLayer.IStockRepoDB;
 import workshop.demo.InfrastructureLayer.IStoreRepoDB;
@@ -116,124 +119,126 @@ public class PurchaseService {
         return processCart(userId, false, paymentdetails, supplydetails);
     }
 
- @Transactional(rollbackFor = UIException.class)
-public ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails payment, SupplyDetails supply)
-        throws Exception {
-    logger.info("processCart called for userId={}, isGuest={}", userId, isGuest);
-    Guest user = getUser(isGuest, userId);
-    if (user.emptyCart()) {
-        throw new UIException("Shopping cart is empty or not found", ErrorCodes.CART_NOT_FOUND);
-    }
+    @Transactional(rollbackFor = UIException.class)
+    public ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails payment, SupplyDetails supply)
+            throws Exception {
+        logger.info("processCart called for userId={}, isGuest={}", userId, isGuest);
+        Guest user = getUser(isGuest, userId);
+        if (user.emptyCart()) {
+            throw new UIException("Shopping cart is empty or not found", ErrorCodes.CART_NOT_FOUND);
+        }
 
-    Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts = new HashMap<>();
-    double finalTotal = 0;
+        Map<Integer, Pair<List<ReceiptProduct>, Double>> storeToProducts = new HashMap<>();
+        double finalTotal = 0;
 
-    for (ShoppingBasket basket : user.getBaskets()) {
-        double totalForStore = 0;
-        int storeId = basket.getStoreId();
+        for (ShoppingBasket basket : user.getBaskets()) {
+            double totalForStore = 0;
+            int storeId = basket.getStoreId();
 
-        Store store = storeJpaRepo.findById(storeId)
-                .orElseThrow(() -> new UIException("store not found on db!", ErrorCodes.STORE_NOT_FOUND));
+            Store store = storeJpaRepo.findById(storeId)
+                    .orElseThrow(() -> new UIException("store not found on db!", ErrorCodes.STORE_NOT_FOUND));
 
-        if (store == null || !store.isActive()) {
-            if (isGuest) {
-                throw new UIException(store.getStoreName(), ErrorCodes.STORE_NOT_FOUND);
+            if (store == null || !store.isActive()) {
+                if (isGuest) {
+                    throw new UIException(store.getStoreName(), ErrorCodes.STORE_NOT_FOUND);
+                }
+                logger.info("Skipping inactive or missing storeId={}", storeId);
+                continue;
             }
-            logger.info("Skipping inactive or missing storeId={}", storeId);
-            continue;
-        }
 
-        String storeName = store.getStoreName();
-        logger.info("Processing basket for active storeId={} ({})", storeId, storeName);
+            String storeName = store.getStoreName();
+            logger.info("Processing basket for active storeId={} ({})", storeId, storeName);
 
-        List<ReceiptProduct> boughtItems = new ArrayList<>();
-        List<ItemStoreDTO> itemStoreDTOS = new ArrayList<>();
-        StoreStock stock = storeStockRepo.findById(storeId).orElseThrow();
+            List<ReceiptProduct> boughtItems = new ArrayList<>();
+            List<ItemStoreDTO> itemStoreDTOS = new ArrayList<>();
+            StoreStock stock = storeStockRepo.findById(storeId).orElseThrow();
 
-        for (CartItem itemOnUserCart : basket.getItems()) {
-            if (stock.decreaseQuantitytoBuy(itemOnUserCart.productId, itemOnUserCart.quantity)) {
-                user.removeItem(itemOnUserCart.getId());
+            for (CartItem itemOnUserCart : basket.getItems()) {
+                if (stock.decreaseQuantitytoBuy(itemOnUserCart.productId, itemOnUserCart.quantity)) {
+                    user.removeItem(itemOnUserCart.getId());
 
-                double price = itemOnUserCart.price * itemOnUserCart.quantity;
-                ReceiptProduct boughtItem = new ReceiptProduct(itemOnUserCart.name, storeName,
-                        itemOnUserCart.quantity, itemOnUserCart.price, itemOnUserCart.productId,
-                        itemOnUserCart.category, itemOnUserCart.storeId);
-                boughtItems.add(boughtItem);
+                    double price = itemOnUserCart.price * itemOnUserCart.quantity;
+                    ReceiptProduct boughtItem = new ReceiptProduct(itemOnUserCart.name, storeName,
+                            itemOnUserCart.quantity, itemOnUserCart.price, itemOnUserCart.productId,
+                            itemOnUserCart.category, itemOnUserCart.storeId);
+                    boughtItems.add(boughtItem);
 
-                itemStoreDTOS.add(new ItemStoreDTO(
-                        itemOnUserCart.productId, itemOnUserCart.quantity, itemOnUserCart.price,
-                        itemOnUserCart.category, 0, storeId,
-                        itemOnUserCart.name, storeName));
+                    itemStoreDTOS.add(new ItemStoreDTO(
+                            itemOnUserCart.productId, itemOnUserCart.quantity, itemOnUserCart.price,
+                            itemOnUserCart.category, 0, storeId,
+                            itemOnUserCart.name, storeName));
 
-                totalForStore += price;
-            } else if (isGuest) {
-                logger.info("Guest user {} tried to buy items with insufficient stock.", userId);
-                throw new UIException(store.getStoreName(), ErrorCodes.INSUFFICIENT_STOCK);
+                    totalForStore += price;
+                } else if (isGuest) {
+                    logger.info("Guest user {} tried to buy items with insufficient stock.", userId);
+                    throw new UIException(store.getStoreName(), ErrorCodes.INSUFFICIENT_STOCK);
+                }
             }
+
+            // if (!isGuest) {
+            //     int buyerAge = regRepo.getReferenceById(userId).getage();
+            //     for (CartItem itemOnUserCart : basket.getItems()) {
+            //         store.assertPurchasePolicies(
+            //                 buyerAge,
+            //                 itemOnUserCart.getQuantity(),
+            //                 itemOnUserCart.getProductId()
+            //         );
+            //     }
+            // } else {
+            //     int buyerAge = -1; // guest has no known age
+            //     for (CartItem itemOnUserCart : basket.getItems()) {
+            //         store.assertPurchasePolicies(
+            //                 buyerAge,
+            //                 itemOnUserCart.getQuantity(),
+            //                 itemOnUserCart.getProductId()
+            //         );
+            //     }
+            // }
+            // 🔥 Apply discounts
+            Discount discount = store.getDiscount();
+            double discountAmt = 0.0;
+            if (discount != null) {
+                discountAmt = discount.apply(new DiscountScope(itemStoreDTOS));
+            }
+
+            totalForStore -= discountAmt;
+            if (totalForStore < 0) {
+                totalForStore = 0;
+            }
+
+            logger.info("Store={}, Discount={}, Final={}", storeName, discountAmt, totalForStore);
+
+            finalTotal += totalForStore;
+            storeToProducts.put(storeId, Pair.of(boughtItems, totalForStore));
         }
 
-        // if (!isGuest) {
-        //     int buyerAge = regRepo.getReferenceById(userId).getage();
-        //     for (CartItem itemOnUserCart : basket.getItems()) {
-        //         store.assertPurchasePolicies(
-        //                 buyerAge,
-        //                 itemOnUserCart.getQuantity(),
-        //                 itemOnUserCart.getProductId()
-        //         );
-        //     }
-        // } else {
-        //     int buyerAge = -1; // guest has no known age
-        //     for (CartItem itemOnUserCart : basket.getItems()) {
-        //         store.assertPurchasePolicies(
-        //                 buyerAge,
-        //                 itemOnUserCart.getQuantity(),
-        //                 itemOnUserCart.getProductId()
-        //         );
-        //     }
-        // }
-
-        // 🔥 Apply discounts
-        Discount discount = store.getDiscount();
-        double discountAmt = 0.0;
-        if (discount != null) {
-            discountAmt = discount.apply(new DiscountScope(itemStoreDTOS));
+        int paymentTxId = paymentService.processPayment(payment, finalTotal);
+        if (paymentTxId == -1) {
+            logger.error("Payment failed");
+            throw new UIException("Payment failed", ErrorCodes.PAYMENT_ERROR);
         }
 
-        totalForStore -= discountAmt;
-        if (totalForStore < 0) totalForStore = 0;
-
-        logger.info("Store={}, Discount={}, Final={}", storeName, discountAmt, totalForStore);
-
-        finalTotal += totalForStore;
-        storeToProducts.put(storeId, Pair.of(boughtItems, totalForStore));
-    }
-
-    int paymentTxId = paymentService.processPayment(payment, finalTotal);
-    if (paymentTxId == -1) {
-        logger.error("Payment failed");
-        throw new UIException("Payment failed", ErrorCodes.PAYMENT_ERROR);
-    }
-
-    int supplyTxId;
-    try {
-        supplyTxId = supplyService.processSupply(supply);
-        if (supplyTxId == -1) {
-            logger.error("Supply failed — issuing refund");
+        int supplyTxId;
+        try {
+            supplyTxId = supplyService.processSupply(supply);
+            if (supplyTxId == -1) {
+                logger.error("Supply failed — issuing refund");
+                paymentService.processRefund(paymentTxId);
+                throw new UIException("Supply failed", ErrorCodes.SUPPLY_ERROR);
+            }
+        } catch (Exception e) {
+            logger.error("Supply exception — issuing refund");
             paymentService.processRefund(paymentTxId);
-            throw new UIException("Supply failed", ErrorCodes.SUPPLY_ERROR);
+            throw e;
         }
-    } catch (Exception e) {
-        logger.error("Supply exception — issuing refund");
-        paymentService.processRefund(paymentTxId);
-        throw e;
-    }
 
-    storeStockRepo.flush();
+        storeStockRepo.flush();
         regRepo.flush();
         guestRepo.flush();
-    return saveReceiptsWithDiscount(userId, storeToProducts, paymentTxId, supplyTxId);
-}
-   @Transactional
+        return saveReceiptsWithDiscount(userId, storeToProducts, paymentTxId, supplyTxId);
+    }
+
+    @Transactional
     public Guest getUser(boolean isGuest, int userId) throws UIException {
         if (isGuest) {
             Optional<Guest> guset = guestRepo.findById(userId);
@@ -254,7 +259,8 @@ public ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails paym
             }
         }
     }
-@Transactional
+
+    @Transactional
     public ParticipationInRandomDTO participateInRandom(String token, int randomId, int storeId, double amountPaid,
             PaymentDetails paymentDetails) throws Exception {
         logger.info("participateInRandom called with randomId={}, storeId={}", randomId, storeId);
@@ -324,7 +330,7 @@ public ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails paym
                     allParticipationsInRandoms.add(card);
                     itemsToRemove.add(specialItem);// Lost or not found → remove
                 } else if (card.mustRefund()) {
-                    logger.info("");
+                    logger.info("here in must refund -> refunding");
                     // If the card must be refunded, we remove it from the user's cart
                     itemsToRemove.add(specialItem);
                     paymentService.processRefund(card.transactionIdForPayment);
@@ -333,11 +339,11 @@ public ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails paym
             } else if (specialItem.type == SpecialType.Auction) { // AUCTION
                 // activeRepo.flush();
                 ActivePurcheses active = activeRepo.findById(specialItem.storeId).orElse(null);
-                
+
                 Auction auction = active.getAuctionById(specialItem.specialId);
                 // auction.endAuction();
                 UserAuctionBid bid = auction.getBid(specialItem.bidId);
-                if (auction.getRestMS()<=0) {
+                if (auction.getRestMS() <= 0) {
                     if (bid.isCurrTop()) {
                         winningAuctions.add(auction.getBid(specialItem.bidId));
                         logger.info("user win bid. id:" + specialItem.bidId);
@@ -362,7 +368,7 @@ public ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails paym
                 logger.warn("Unknown special item type: {}", specialItem.type);
             }
         }
-        logger.info("wining auctions size is "+winningAuctions.size());
+        logger.info("wining auctions size is " + winningAuctions.size());
         Map<Integer, List<ReceiptProduct>> storeToProducts = new HashMap<>();
         double sumToPay = setRecieptMapForBids(winningBids, storeToProducts);
         sumToPay += setRecieptMapForAuctions(winningAuctions, storeToProducts);
@@ -540,23 +546,24 @@ public ReceiptDTO[] processCart(int userId, boolean isGuest, PaymentDetails paym
                     .orElseThrow(() -> new UIException("store not found hhhhhh", ErrorCodes.STORE_NOT_FOUND))
                     .getStoreName();
             List<ReceiptProduct> items = entry.getValue().getLeft();
-            if(!items.isEmpty()) {
-            double discountedTotal = entry.getValue().getRight();
-            double total = items.stream()
-                    .mapToDouble(item -> item.getPrice() * item.getQuantity())
-                    .sum();
-            // changed this to do price*qunatity instead of just price itself
-            ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, discountedTotal);
-            receipt.setPaymentTransactionId(paymentTxId);
-            receipt.setSupplyTransactionId(supplyTxId);
+            if (!items.isEmpty()) {
+                double discountedTotal = entry.getValue().getRight();
+                double total = items.stream()
+                        .mapToDouble(item -> item.getPrice() * item.getQuantity())
+                        .sum();
+                // changed this to do price*qunatity instead of just price itself
+                ReceiptDTO receipt = new ReceiptDTO(storeName, LocalDate.now().toString(), items, discountedTotal);
+                receipt.setPaymentTransactionId(paymentTxId);
+                receipt.setSupplyTransactionId(supplyTxId);
 
-            receipts.add(receipt);
-            // orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
-            Order order = new Order(userId, receipt, storeName);
-            orderJpaRepo.save(order);
-            logger.info("Saved receipt for storeId={}, total={}", storeId, total);
+                receipts.add(receipt);
+                // orderRepo.setOrderToStore(storeId, userId, receipt, storeName);
+                Order order = new Order(userId, receipt, storeName);
+                orderJpaRepo.save(order);
+                logger.info("Saved receipt for storeId={}, total={}", storeId, total);
 
-        }}
+            }
+        }
         return receipts.toArray(new ReceiptDTO[0]);
     }
 }

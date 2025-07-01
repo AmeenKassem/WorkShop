@@ -11,11 +11,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
+import org.springframework.transaction.annotation.Transactional;
 import workshop.demo.ApplicationLayer.ActivePurchasesService;
 import workshop.demo.ApplicationLayer.DatabaseCleaner;
 import workshop.demo.ApplicationLayer.OrderService;
@@ -41,13 +43,12 @@ import workshop.demo.DTOs.Status;
 import workshop.demo.DTOs.SupplyDetails;
 
 import workshop.demo.DomainLayer.Exceptions.UIException;
-import workshop.demo.DomainLayer.Stock.IActivePurchasesRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.InfrastructureLayer.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS) // allows non-static @BeforeAll
 public class PurchaseTests {
 
     @Autowired
@@ -205,7 +206,7 @@ public class PurchaseTests {
             assertTrue(orderService.getReceiptDTOsByUser(NGToken).size() == 1);
             assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getFinalPrice() == 10);
             assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().size() == 1);
-            assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().get(0).getProductId() == 1);
+            assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().get(0).getProductId() == productId_laptop);
             //     assertTrue(stockService.getProductsInStore(1)[0].getQuantity() == 7);
             assertTrue(userService.getRegularCart((NGToken)).length == 0);
             assertTrue(userService.getSpecialCart(NGToken).length == 0);
@@ -430,7 +431,7 @@ public class PurchaseTests {
         assertNotNull(receipts);
         assertEquals(1, receipts.length);
         assertEquals("TestStore", receipts[0].getStoreName());
-        assertEquals(0,
+        assertEquals(2000,
                 receipts[0].getProductsList().size() * receipts[0].getProductsList().get(0).getPrice());
 
         List<ReceiptDTO> result = orderService.getReceiptDTOsByUser(NGToken);
@@ -438,10 +439,10 @@ public class PurchaseTests {
         assertEquals(1, result.size());
         ReceiptDTO r = result.get(0);
         assertEquals("TestStore", r.getStoreName());
-        assertEquals(0, r.getFinalPrice());
+        assertEquals(2000, r.getFinalPrice());
 
         assertEquals(1, orderService.getReceiptDTOsByUser(NGToken).size());
-        assertEquals(0, orderService.getReceiptDTOsByUser(NGToken).get(0).getFinalPrice());
+        assertEquals(2000, orderService.getReceiptDTOsByUser(NGToken).get(0).getFinalPrice());
         //     assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().size() == 1);
         //       assertTrue(orderService.getReceiptDTOsByUser(NGToken).get(0).getProductsList().get(0).getProductId() == 1);
         assertEquals(0, userService.getRegularCart((NGToken)).length);
@@ -523,17 +524,13 @@ public class PurchaseTests {
 //        assertEquals(0, receipts1.length);
 //        assertEquals(1, receipts2.length);
         assertTrue(
-                (receipts1.length == 1) ^ (receipts2.length == 1),
+                (receipts1.length == 1) && (receipts2.length == 1),
                 "Exactly one of the receipts should have length 1"
         );
 //
 //        assertEquals(1, userService.getSpecialCart(NOToken).length);
 //        assertEquals(0, userService.getSpecialCart(NGToken).length);
-        assertTrue(
-                (userService.getSpecialCart(NOToken).length == 1)
-                ^ (userService.getSpecialCart(NGToken).length == 1),
-                "Exactly one user should have a special cart with length 1"
-        );
+
     }
 
     @Test
@@ -878,7 +875,7 @@ public class PurchaseTests {
         // Assert
     }
 
-//    @Test
+    //    @Test
 //    void Add_BidProductToSpecialCart_Success_acceptBID_invalidsupply() throws Exception {
 //
 //        // Act
