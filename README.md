@@ -1,5 +1,5 @@
 
-# 🛍️ MarketPlace System – Version 3: Persistency, Robustness & Initialization
+# 🛍️ MarketPlace System: Persistency, Robustness & Initialization
 
 ## 📌 Project Overview
 This is a Spring Boot-based multi-layer e-commerce system built with layered architecture and MVP-based UI using Vaadin. The system supports:
