@@ -695,7 +695,7 @@ public class StoreService {
             throw new UIException("Policy not found to remove", ErrorCodes.NO_POLICY);
         }
     }
-
+@Transactional
     public String[] getAllDiscountNames(int storeId, String token) throws UIException {
         Store store = storeJpaRepo.findById(storeId).get(); // assumes auth already validated
         List<String> out = new ArrayList<>();
@@ -704,7 +704,7 @@ public class StoreService {
     }
 
     /* private DFS used by the public method */
-    private void collectNames(Discount node, List<String> acc) {
+    public void collectNames(Discount node, List<String> acc) {
         if (node == null) {
             return;
         }
@@ -713,7 +713,7 @@ public class StoreService {
             comp.getDiscounts().forEach(d -> collectNames(d, acc));
         }
     }
-
+@Transactional
     public CreateDiscountDTO getFlattenedDiscounts(int storeId, String token) throws UIException {
         Store store = storeJpaRepo.findById(storeId)
                 .orElseThrow(() -> new UIException("Store not found", ErrorCodes.STORE_NOT_FOUND));
@@ -725,6 +725,7 @@ public class StoreService {
 
         return root.toDTO(); // 🌳 includes sub-discounts recursively
     }
+@Transactional
 
     public List<String> getVisibleDiscountDescriptions(int storeId, String token) throws UIException {
         Store store = storeJpaRepo.findById(storeId)
@@ -741,6 +742,7 @@ public class StoreService {
                 .map(Discount::toReadableString)
                 .toList();
     }
+@Transactional
 
     public List<CreateDiscountDTO> getAllDiscountsFlattened(int storeId, String token) throws UIException {
         Store store = storeJpaRepo.findById(storeId)
@@ -756,7 +758,7 @@ public class StoreService {
         return result;
     }
 
-    private void collectDiscountDTOs(Discount discount, List<CreateDiscountDTO> list) {
+    public void collectDiscountDTOs(Discount discount, List<CreateDiscountDTO> list) {
         CreateDiscountDTO dto = discount.toDTO();
         list.add(dto);
         if (dto.getSubDiscounts() != null) {

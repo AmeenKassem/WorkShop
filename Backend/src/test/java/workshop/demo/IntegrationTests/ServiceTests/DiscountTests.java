@@ -14,11 +14,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import jakarta.transaction.Transactional;
 import workshop.demo.ApplicationLayer.ActivePurchasesService;
 import workshop.demo.ApplicationLayer.DatabaseCleaner;
 import workshop.demo.ApplicationLayer.OrderService;
@@ -1852,7 +1854,6 @@ var paymentServiceImp = Mockito.mock(PaymentServiceImp.class);
                 PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
         assertEquals(3200, receipts[0].getFinalPrice()); // 20% off
     }
-
     @Test
     void INVISIBLE_buy_OR_discount_fail_allWrongCategory() throws Exception {
 
@@ -1880,6 +1881,21 @@ var paymentServiceImp = Mockito.mock(PaymentServiceImp.class);
         CouponContext.set("OR Discount - wrong categories 031");
 
         assertEquals(8000, receipts[0].getFinalPrice());
+
+    
+        assertThrows(Exception.class, () ->        storeService.collectDiscountDTOs(null, null)
+);
+
+ 
+                       storeService.collectNames(null, null);
+
+
+        storeService.getAllDiscountsFlattened(createdStoreId, NOToken);
+        assertThrows(Exception.class, () ->  storeService.getVisibleDiscountDescriptions(createdStoreId, NOToken));
+        storeService.getAllDiscountNames(createdStoreId, NOToken);
+        storeService.getFlattenedDiscounts(createdStoreId, NOToken);
+
+
     }
 
     @Test
@@ -2295,6 +2311,7 @@ var paymentServiceImp = Mockito.mock(PaymentServiceImp.class);
         ReceiptDTO[] receipts = purchaseService.buyGuestCart(NGToken,
                 PaymentDetails.testPayment(), SupplyDetails.getTestDetails());
         assertEquals(3600, receipts[0].getFinalPrice()); // 10% off
+
     }
 
     @Test
