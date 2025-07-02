@@ -115,7 +115,6 @@ public class AISearch {
     }
 
     public boolean isActive() {
-        // TODO Auto-generated method stub
         return true;
     }
 

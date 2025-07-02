@@ -19,7 +19,7 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 
 clf = LogisticRegression()
 
-EXCEL_FILE = "AI-Search-API\MatchWords.xlsx"
+EXCEL_FILE = "AI-Search-API\\MatchWords.xlsx"
 
 import pyodbc
 
@@ -138,7 +138,7 @@ def add_to_excel():
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
     print(labels)
-    joblib.dump(clf, 'product_match_model.pkl')
+    joblib.dump(clf, 'AI-Search-API\\product_match_model.pkl')
     return jsonify("Accuracy:", accuracy_score(y_test, y_pred)), 200
 
 
@@ -158,7 +158,7 @@ def checkPair():
         return {"match": bool(1), "confidence": 1}
     # wb = openpyxl.load_workbook(EXCEL_FILE)
     # ws = wb.active
-    clf1 = joblib.load("product_match_model.pkl")
+    clf1 = joblib.load("AI-Search-API\\product_match_model.pkl")
     emb1 = model.encode(string1)
     emb2 = model.encode(string2)
     features = np.abs(emb1 - emb2)
@@ -225,7 +225,7 @@ def add_multiple_to_excel():
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
     print(labels)
-    joblib.dump(clf, 'product_match_model.pkl')
+    joblib.dump(clf, 'AI-Search-API\\product_match_model.pkl')
     return jsonify("Accuracy:", accuracy_score(y_test, y_pred)), 200
 
     # Check if we have at least 2 classes

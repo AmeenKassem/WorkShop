@@ -4,16 +4,12 @@ admin :
 	pause <username> <admin username>;
 	resume <username> <admin username>;
 	cancel <username> <admin username>;
-
-
 user :
 	reg <username> <password> <age>;
 	login <username> <password>;
-
 	cart :
 		+ <username> <productName> <storeName> <quantity>
 		- <username> <productName> <storeName> <quantity>
-
 	auction <username> <storeName> <productName> <bid>;
 	random <username> <store name> <product name> <price>;
 	bid <username> <store name> <product name> <price>
@@ -27,11 +23,6 @@ user :
 	user add-owner <ownerName> <storeName> <newOwnerName>;
 	user delete-owner <ownerUsername> <storeName> <ownerToDeleteUsername>;
 	logout <username>;
-
-
-
-
-
 store :
 	create <username> <storeName> <storeCategory>;
 	close <ownerUsername> <storeName>;
