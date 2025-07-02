@@ -20,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import workshop.demo.DemoApplication;
 import workshop.demo.DTOs.AuctionDTO;
 import workshop.demo.DTOs.AuctionStatus;
 import workshop.demo.DTOs.BidDTO;
