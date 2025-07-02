@@ -6,15 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import workshop.demo.DemoApplication;
 import workshop.demo.DomainLayer.Authentication.IAuthRepo;
 import workshop.demo.DomainLayer.Exceptions.UIException;
 import workshop.demo.InfrastructureLayer.AuthenticationRepo;
 
-@SpringBootTest
+@SpringBootTest(classes = DemoApplication.class)
 @ActiveProfiles("test")
 public class AuthentecationTests {
-@Autowired
-    private  IAuthRepo auth ;
+    @Autowired
+    private IAuthRepo auth;
 
     @Test
     public void testAuth() throws UIException {

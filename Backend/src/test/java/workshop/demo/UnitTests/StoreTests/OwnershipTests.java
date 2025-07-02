@@ -15,15 +15,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import workshop.demo.DemoApplication;
 import workshop.demo.ApplicationLayer.DatabaseCleaner;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
 import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 
 // @SpringBootTest
-@SpringBootTest
+@SpringBootTest(classes = DemoApplication.class)
 @ActiveProfiles("test")
- @Transactional
+@Transactional
 public class OwnershipTests {
     @Autowired
     private ISUConnectionRepo repository;
@@ -34,7 +35,7 @@ public class OwnershipTests {
 
     @BeforeEach
     void setUp() {
-        cleaner.wipeDatabase();
+        // cleaner.wipeDatabase();
         try {
         } catch (Exception e) {
             // TODO Auto-generated catch block

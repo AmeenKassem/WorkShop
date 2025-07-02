@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import workshop.demo.DemoApplication;
 import workshop.demo.ApplicationLayer.DatabaseCleaner;
 import workshop.demo.DomainLayer.StoreUserConnection.Authorization;
 import workshop.demo.DomainLayer.StoreUserConnection.ISUConnectionRepo;
@@ -21,7 +22,9 @@ import workshop.demo.DomainLayer.StoreUserConnection.Node;
 import workshop.demo.DomainLayer.StoreUserConnection.Permission;
 import workshop.demo.InfrastructureLayer.SUConnectionRepository;
 
-@SpringBootTest
+@SpringBootTest(
+    classes = DemoApplication.class
+)
 @ActiveProfiles("test")
 @Transactional
 public class ManagerTests {

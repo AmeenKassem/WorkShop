@@ -65,7 +65,7 @@ import workshop.demo.DomainLayer.StoreUserConnection.SuperDataStructure;
 import workshop.demo.DomainLayer.StoreUserConnection.Tree;
 import workshop.demo.DomainLayer.User.UserSpecialItemCart;
 
-@SpringBootTest
+// @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
 public class RandomTests {
